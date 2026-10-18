@@ -122,8 +122,9 @@ kaada jobia. `archive_mp3` koodaa YouTube-WAV:t
   sallitaan (0,1 askel) ja desimaaliosa toteutuu toiston korjauksena.
   Tallentamaton arvo näkyy punaisena. `Nopeus` (50–150 %, 0,1 %) on
   harjoittelusäädin. `SYNC` (±10 %, 0,05 %) siirtää tabin aikajanaa
-  audioon nähden ja `SIIRTO` (−64…+64 tahtia) korjaa rakenne-eron;
-  molemmat tallentuvat metaan (`sync_drift`, `sync_offset_bars`,
+  audioon nähden ja `SIIRTO` (0,25 tahdin askel = 1 isku) korjaa
+  vakiosiirron tai rakenne-eron; molemmat tallentuvat metaan
+  (`sync_drift`, `sync_offset_bars`,
   `POST /api/tabs/{id}/sync`); AI-BPM on arvio.
 - Ei uusia modaaleja/toasteja; status/import/attach/BPM/SYNC inline.
 - Ei committoituja modeleita/audioita `static/`-hakemistoon.

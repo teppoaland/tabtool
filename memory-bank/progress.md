@@ -1,28 +1,31 @@
 # 📊 Projektin edistyminen – AI TABTOOL
 
-## v1.35 – SIIRTO (tahtia) (18.10.2026)
+## v1.36 – SIIRTO neljännes tahdin tarkkuudella (18.10.2026)
 
-- `SIIRTO`-kenttä (−64…+64 tahtia) siirtää tabin aikajanaa
-  kokonaisilla tahdeilla; tallentuu `meta.sync_offset_bars`iin ja
-  palautuu `loadTab`issa.
-- Siirto lasketaan tabin tahtipituudesta
-  (`masterBars[1].start - masterBars[0].start` × 60000 / (tempo × 960))
-  ja lisätään SYNC/BPM-korjauksen päälle.
-- Syy: referenssitabissa 258 tahtia vs. levytys ~249 → tabi 8 tahtia
-  (≈13 s @ 143,5 BPM) edellä; prosenttisäätö ei korjaa rakenne-eroa.
-- `POST /api/tabs/{id}/sync` hyväksyy `offset_bars`in (±64).
-- 75 pytest-testiä; headless: −8 → 40 s kohdalla tahti 13 (ilman 21).
+- SIIRTO pyöristyy lähimpään 0,25 tahtiin (1 isku 4/4:ssä), joten
+  6–7 iskun vakiosiirto korjataan suoraan (−1,5 / −1,75).
+- Tallennettu tila tarkistettu: referenssitabissa bpm 143,5,
+  GP5-tempo 144, drift −0,35 %, SIIRTO 0. 6–7 iskun heitto bar 37:ssä
+  on siten vakiosiirto, ei tempo.
+- 75 pytest-testiä; headless: −1,5 → 40 s kohdalla tahti 19 (ilman 21),
+  tallentui desimaalina.
+
+## v1.35–v1.36 – SIIRTO (tahtia) (18.10.2026)
+
+- SIIRTO siirtää tabia tahdeilla (−64…+64) ja tallentuu
+  `meta.sync_offset_bars`iin; 0,25 tahdin askel = 1 isku (v1.36).
+  Tahtipituus lasketaan `masterBars`-tickeistä.
+- Syy: 258 tahtia vs. levytys ~249; vakiosiirto (esim. 6 iskua = 1,5
+  tahtia) ei korjaannu prosentilla. Tallennettu tila: bpm 143,5,
+  GP5 144, drift −0,35 %.
+- Headless: −8 → tahti 13 @ 40 s; −1,5 → tahti 19; 75 testiä.
 
 ## v1.34 – Desimaali-TAB BPM (18.10.2026)
 
-- TAB BPM hyväksyy 0,1 askeleen (`143,55`). GP5 kirjoitetaan
-  kokonaislukuna (`int(bpm+0,5)`); `meta.gp5_tempo` tallentaa sen.
-- Toiston korjaus `bpmDrift = bpm / nuottitempo - 1` summataan
-  SYNC-arvoon; nuottitempo luetaan alphaTabin `score.tempo`sta.
-- Seek & Destroy -audion mitattu tempo **143,555 BPM**
-  (librosa, 420 beatia, mediaanibeat 0,41796 s).
-- BPM näytetään desimaalilla, kun arvo ei ole kokonaisluku.
-- 73 pytest-testiä; headless: 119,5 → GP5 120, tahti 29 @ 58 s.
+- TAB BPM 0,1 askeleen (143,55); GP5 kokonaisluku (`int(bpm+0,5)`),
+  `meta.gp5_tempo`. `bpmDrift = bpm / score.tempo - 1` summataan
+  SYNCiin. Seek & Destroy -audion tempo **143,555 BPM** (librosa).
+- 73 testiä; headless 119,5 → GP5 120, tahti 29 @ 58 s.
 
 ## v1.33 – MP3-kuunteluversiot ja seek-synkki (18.10.2026)
 
