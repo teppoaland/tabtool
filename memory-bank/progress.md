@@ -1,5 +1,14 @@
 # 📊 Projektin edistyminen – AI TABTOOL
 
+## v1.44 – scoreEndTimeMs käyttää api.endTimeä (18.10.2026)
+
+- `app/static/app.js`: `scoreEndTimeMs()` lukee suoraan `api.endTime`
+  (= sekvensserin `currentEndTime`, sama arvo kuin alphaTabin
+  backing track -kaavassa). Aiempi `api.tickCache.endTime`-haara
+  poistettiin: tick lookup -objektilla ei ole `endTime`-kenttää.
+- Toiminta ei muuttunut; korjaus on selainpuolinen → aktivoituu
+  Ctrl+F5:llä ilman palvelimen uudelleenkäynnistystä.
+
 ## v1.43 – Kursorin synkka: backing track -venytys pois (18.10.2026)
 
 - alphaTabin `EnabledExternalMedia`-kello skaalaa backing trackin ajan
@@ -10,8 +19,8 @@
   `audio.currentTime`-syötteen 1,0368× ja kursori kulki ääntä edellä
   (esim. tahti 41 viimeinen nuotti → kursori tahdissa 42).
 - Korjaus `app/static/app.js`: `backingTrackDuration` palauttaa nyt
-  partituurin keston (`api.tickCache.endTime`, fallback `api.endTime`),
-  jolloin kellotus on 1:1 ja vain TAB BPM/SYNC/SIIRTO vaikuttavat.
+  partituurin keston (`api.endTime`), jolloin kellotus on 1:1 ja vain
+  TAB BPM/SYNC/SIIRTO vaikuttavat.
   Seek & Destroy: BPM 143,5 (GP5 144) kohdistaa tahdin 41 oikein.
 - Ei backend-muutoksia; 93 pytest-testiä.
 
