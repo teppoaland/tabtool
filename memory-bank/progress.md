@@ -10,6 +10,62 @@
   seuraavasta vaiheesta.
 - Memory bank -muutokset `docs:`-commitilla, ei versiobumppia.
 
+## v1.29 – TAB BPM ja Nopeus (18.10.2026)
+
+- `TAB BPM` -kontrolli ja `POST /api/tabs/{id}/tempo`: GP5:n
+  `song.tempo`, `tabs.bpm` ja `meta.json` päivittyvät; audio 100 %.
+- `Nopeus` 95–105 %, askel 0,1 %, yhden desimaalin näyttö;
+  `mediaHandler.playbackRate` seuraa audio-ratea.
+- Referenssitabi 140 → 144 → **takaisin 140** käyttäjän toiveesta;
+  audio pysyi liitettynä, AI-tabi 144. BPM/Nopeus-kontrollit jäivät.
+- Soittotapa/refinger (asemaprofiilit, helpoin-arvio, turhien nuottien
+  karsinta) suunniteltu, **ei toteutettu**; jäissä.
+- 60 pytest-testiä.
+
+## v1.28 – Referenssitabin audio (18.10.2026)
+
+- `LIITÄ AUDIO` + `POST /api/tabs/{id}/attach-audio`: samannimisen
+  AI-tabin audio liitetään tuotuun tabiin; PLAY/aikajana/cursor.
+- Moniraitaisen tuonnin oletus Guitar 1 + Guitar 2.
+- `Nopeus`-säädin; `meta.json` päivittyy audiolinkityksellä.
+- 58 pytest-testiä.
+
+## v1.27 – Pätkägenerointi (18.10.2026)
+
+- `TEE TAB TÄSTÄ`, 30/60/120 s, `POST /api/tabs/{id}/section`.
+- Uusi tabi nimellä `[start +kesto]`; audio/options lähtötabista.
+- Tuodut tabit merkitään `Lähde: tuotu tabi`; oletus Guitar 1/2.
+- 56 pytest-testiä.
+
+## v1.26 – GP5/MusicXML-tuonti (18.10.2026)
+
+- `app/tab_import.py`, `POST /api/tabs/import`; PyGuitarPro/music21
+  metat, GP5/MusicXML-tiedostot, kirjastoon.
+- Tuotu tabi ilman audiota: PLAY/transport piilotettu; export-linkit
+  vain olemassa oleville formaateille.
+- 53 pytest-testiä.
+
+## v1.25 – Metatiedot ja aikajana (18.10.2026)
+
+- YouTube title/artist yt-dlp:stä, suffix-siivous, `audio_path` metaan.
+- Aikajana: aika/kesto, tahtilukema, ±5 s, Space/nuolet,
+  scroll-to-cursor.
+- Vanha referenssitabi nimettiin oikein (DB/meta/GP5/MusicXML).
+- 49 pytest-testiä.
+
+## v1.24 – Scroll ja dynamiikat (18.10.2026)
+
+- Smooth + negatiivinen `scrollOffsetY`: edellinen rivi näkyviin,
+  cursor ei karkaa yläreunaan.
+- Dynamiikkamerkinnät piilotettu (`EffectDynamics`); 45 testiä.
+
+## v1.23 – Katselu (18.10.2026)
+
+- Tab-only oletus, Näkymä-valinta, raitavalinnat, FULLSCREEN +
+  autofullscreen, cursor/tahtikorostus, vaakascrollbar pois,
+  kirjaston tooltipit.
+- 45 pytest-testiä.
+
 ## v1.22 – Tuotenimi AI TabTool (18.10.2026)
 
 - `APP_NAME` = "AI TabTool"; wordmark `AI TABTOOL`, brand-mark `AT`.
@@ -99,24 +155,30 @@
 
 ## Testitilanne
 
-- `pytest -q` → **45 passed**
+- `pytest -q` → **60 passed**
 - `compileall` → OK
 - `node --check app.js` / `remote.js` → OK
-- `test.bat` → exit 0
+- Headless-Chrome: alphaTab-render, cursor, fullscreen, GP5/MusicXML-
+  tuonti, audio attach, BPM 140/144, aikajana
 
 ## Tunnetut rajoitukset
 
 - AI-transkriptio on luonnos; särö/akordit/nopeat soolot virheellisiä.
+- Basic Pitch ei ole kitarakohtainen; otteet/asemat voivat poiketa
+  opitusta tabista. Referenssitabi + TuxGuitar auttavat.
 - Standard E -alueen ulkopuoliset nuotit pudotetaan varoituksella.
-- Tempo voi olla half/double-time; normalisoidaan 70–180 BPM.
-- Ei manuaalista editoria; GP5 korjataan Guitar Prossa/TuxGuitarissa.
-- Toisto on testattu handler-tasolla; käyttäjän kuuntelutesti puuttuu.
-- Rummut vaativat oman mallin.
-- Spotify-integraatio puuttuu; Phase 3.
-- Remote-näkymä on yhä pelkkä shell; Phase 4.
+- Tempo voi olla half/double-time; AI-BPM on arvio; TAB BPM/Nopeus
+  korjaa.
+- Soittotapa/refinger (asemaprofiilit, nuottien karsinta) puuttuu.
+- Referenssitabilla on 258 tahtia vs. AI 249; rakenne voi poiketa.
+- Rummut vaativat oman mallin; Spotify Phase 3; remote Phase 4.
+- Koodi v1.23–v1.29 on työpuussa, ei committoitu.
 
 ## Seuraavaksi
 
-Phase 3 / v1.30: Spotify PKCE + haku/metadata, Web Playback SDK tai
-Connect-laite, tokenit `oauth_tokens`-tauluun ja mockatut API-testit.
-Tämän jälkeen Phase 4: remote-kaukosäädin.
+1. Committaa v1.23–v1.29 koodi + testit (työpuu) ja varmistaa 60 testiä.
+2. Päättää soittotapa/refinger: asemaprofiilit, playability-score,
+   turhien nuottien karsinta, per-tahti/fraasiasema.
+3. Vasta sitten Phase 3 / Spotify: PKCE, haku/metadata, SDK/Connect,
+   tokenit `oauth_tokens`-tauluun ja mockatut API-testit.
+4. Phase 4: remote-kaukosäädin.

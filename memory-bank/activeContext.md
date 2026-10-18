@@ -1,40 +1,45 @@
 # 📍 Aktiivinen konteksti – AI TABTOOL
 
-> **Versio:** `v1.22` (18.10.2026)
-> **Git:** viimeisin koodicommit `2d4fe02` (v1.22), ei pushattu
+> **Versio:** `v1.29` (18.10.2026)
+> **Git:** HEAD `232bce3` + memory-bank docs; koodi v1.23–v1.29 työpuussa
 > **Repo:** https://github.com/teppoaland/tabtool
 
 ## Nyt
 
-- **Phase 0 valmis:** repo, säännöt, `.gitignore`, FastAPI-runko,
-  TV/remote-shell, testit, CI-tyyppiset tarkistukset.
-- **Phase 1 valmis:** koko audio-to-tab-putki toimii CLI:stä:
-  oma MP3 / YouTube → ffmpeg → Demucs `htdemucs_6s` → Basic Pitch →
-  tempo → kvantisointi → fretboard → GP5/MusicXML/MIDI + `meta.json`.
-- **Phase 2 valmis (v1.20):** SQLite (`tracks`, `jobs`, `tabs`,
-  `oauth_tokens`, `settings`), job-jono + yksi worker + SSE-progress,
-  upload / YouTube / local-path, cache + `regenerate`, alphaTab 1.8.4
-  vendoroituna, paikallinen WAV-toisto Range-tuella ja 50 ms
-  `IExternalMediaHandler`-synkka, kirjasto + CLI-tabien import ja
-  `?tab=<id>`-syvälinkki.
-- **v1.21:** `start.bat` avaa oletusselaimen automaattisesti, kun
-  `/api/health` vastaa (`scripts/open_browser.ps1`); `TABTOOL_NO_BROWSER=1`
-  ohittaa avauksen.
-- **v1.22:** tuotenimi **AI TabTool** (wordmark `AI TABTOOL`, markki `AT`).
-  Repo, `TABTOOL_*`-muuttujat ja `data/tabtool.sqlite3` säilyvät
-  teknisinä niminä. Ei toiminnallisia muutoksia.
-- **Spotify ei ole vielä mukana.** Haku/OAuth/SDK/Connect tulevat
-  Phase 3:ssa. Client ID ja Premium eivät ole vielä tarpeen.
+- Phase 0/1/2 valmiit; Phase 2:n päälle on tehty v1.23–v1.29:
+  katselu, aikajana, tuonti/audio, BPM/Nopeus ja pätkägenerointi.
+- Katselu: **tab-only oletus**, Näkymä (`Tab`/`Auto`/`Tab+nuotit`/`Nuotit`),
+  raitavalinnat ja tabikohtainen muisti, FULLSCREEN + automaattinen
+  fullscreen PLAYssa, cursor + edellinen rivi näkyvissä, dynamiikat piilossa,
+  vaakascrollbar pois.
+- Aikajana: aika/kesto, **tahtilukema**, ±5 s, Space/nuolet, seek
+  vierittää tabin cursorin kohdalle.
+- YouTube-metadata: title/artist yt-dlp:stä, `(Remastered)`-siivous;
+  `YouTube audio` vain fallback. `audio_path` myös web-tabin metassa.
+- Valmiin tabin tuonti: **GP5/MusicXML**, metat PyGuitarPro/music21,
+  kirjastoon; tuodut tabit merkitään `Lähde: tuotu tabi`.
+- **LIITÄ AUDIO**: samannimisen AI-tabin audio liitetään tuotuun tabiin;
+  PLAY/aikajana/cursor tulevat käyttöön. Moniraitaisesta tuonnista
+  oletuksena Guitar 1 + Guitar 2.
+- **TAB BPM/Nopeus**: GP5-tempo korjattavissa, audio 100 %; Nopeus
+  95–105 %/0,1 % hienosäätö. AI-BPM on arvio, ei totuus.
+- Referenssitabi palautettu **140 BPM**; audio liitetty; AI-tabi 144.
+  BPM/Nopeus-kontrollit jäävät, mutta eivät pakota 144:ään.
+- Täydet kappaleet ovat oletus; pätkägenerointi (`TEE TAB TÄSTÄ`) on
+  poikkeus.
+- Soittotapa/refinger (asemaprofiilit, helpoin-arvio, turhien nuottien
+  karsinta, per-tahti-asema) on suunniteltu mutta **ei toteutettu**;
+  jäissä, kunnes perus-SoD toimii ja koodi on committoitu.
+- Spotify ei ole vielä mukana (Phase 3).
 
-## Seuraava vaihe: Phase 3 / v1.30
+## Seuraava vaihe
 
-1. `app/spotify.py`: Authorization Code + PKCE, token refresh ja
-   `/api/spotify/*` (vain localhost, LAN-PIN huomioiden).
-2. Haku + metadata `tracks`-tauluun ja tuloslista UI:hin.
-3. Web Playback SDK tai Spotify Connect -laite; tabin audio pysyy
-   paikallisena (local-first).
-4. Tokenit `oauth_tokens`-tauluun `data/`-hakemistoon; ei gitiin.
-5. API-testit mockatulla Spotifyllä.
+1. **Commitoi v1.23–v1.29 koodi + testit** työpuusta (memory bank
+   committoidaan erikseen docs-prefixillä) ja varmista 60 testiä.
+2. Päätä soittotapa/refinger-toteutus: asemaprofiilit, playability-score,
+   turhien nuottien karsinta, per-tahti/fraasiasema.
+3. Vasta sitten Phase 3 / Spotify: PKCE, haku/metadata, SDK/Connect,
+   tokenit `oauth_tokens`-tauluun ja mockatut API-testit.
 
 
 ## Tärkeät komennot
@@ -56,29 +61,25 @@ Putki:
 
 ## Tuoreimmat validointitulokset
 
-- **v1.20 web-smoke** (20 s klippi, nopea tila): 12 tahtia, 58 nuottia;
-  GP5 luettu takaisin (78 merkintää), MusicXML jäsentyy; audio 206
-  Range-pyynnöllä (46 MB WAV).
-- **alphaTab 1.8.4** renderöi 137 tahdin KISS-tabin headless-Chromessa
-  (30 254 px korkea sivu, nuotti-ink havaittu screenshotista).
-- **Kirjasto/import:** 6 CLI-tabia (`data/tabs/*/meta.json`)
-  rekisteröityi automaattisesti; `?tab=<id>` avaa suoraan.
-- **Diablo – Mimic 47** (3:10 MP3): 108 tahtia, 884 tab-nuottia,
-  GP5 validi, ~67 s CPU:lla.
-- **KISS – I’m A Legend Tonight** (4:00 YouTube): 137 tahtia,
-  1413 tab-nuottia, GP5 validi (3050 GP5-nuottimerkintää mm. tie- ja
-  sointunuoteista), ei rikkinäisiä tahtikestoja eikä duplicate string
-  -nuotteja.
+- `pytest -q` → **60 passed**; `compileall` ja `node --check` OK.
+- Referenssitabi **140 BPM**, audio 414,72 s, PLAY + aikajana + cursor;
+  5 raitaa, oletus Guitar 1 + Guitar 2.
+- AI-tabi 144 BPM / 249 tahtia; referenssi 140 BPM / 258 tahtia.
+- GP5/MusicXML-tuonti ja `LIITÄ AUDIO` validoitu headless-selaimessa.
+- 144 BPM -kokeilu peruutettu; referenssi palautettu 140:een käyttäjän
+  toiveesta. BPM/Nopeus-kontrollit jäivät paikoilleen.
 
 ## Avoimet / myöhemmin
 
-- Spotify Client ID + Premium sekä haku/OAuth (Phase 3).
-- Playback: Web Playback SDK vs. Spotify Connect -laite.
-- Remote-kaukosäädin (Phase 4).
-- LAN-PIN ja `--lan`-tila.
-- Audion/stemmojen säilytysaika (`TABTOOL_AUDIO_RETENTION_DAYS`).
-- Basso/laulu; rummut vaativat ADTOF/Omnizart-tyyppisen mallin.
-- Manuaalinen tab-editori vai pelkkä import/export + Guitar Pro?
+- Soittotapa/refinger: asemaprofiilit, helpoin-arvio, turhien nuottien
+  karsinta, per-tahti/fraasiasema; **ei koodia vielä**. Tarkoitus on
+  käyttää samaa nuottidataa ja tehdä eri sormitusvaihtoehdot.
+- AI-transkription tarkkuus (Basic Pitch); referenssitabit ja ilmainen
+  TuxGuitar apuna, ei Guitar Pro -pakkoa.
+- KISSin kaltaiset kappaleet ilman valmista tabia: AI-tabi + korjaus.
+- Referenssitabin rakenne vs. audio (258 vs. 249 tahtia).
+- Spotify Phase 3, remote Phase 4, LAN-PIN, retention, bass/laulu,
+  rummut (ADTOF/Omnizart), manuaalinen editori.
 
 ## Uuden session aloitus
 
@@ -91,5 +92,6 @@ Se tekee automaattisesti:
 2. Lukee `.clinerules/*.md`.
 3. Ajaa `git --no-pager status -sb`, `git --no-pager log -1 --oneline`
    ja `pytest -q`.
-4. Jatkaa `Phase 3` -listasta; ei riko `.clinerules/`-sääntöjä.
+4. Jatkaa tämän tiedoston seuraavasta vaiheesta; ei riko
+   `.clinerules/`-sääntöjä.
 5. `docs/` ja `data/` ovat yksityisiä eivätkä kuulu gitiin.

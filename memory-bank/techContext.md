@@ -9,7 +9,7 @@
 - **Ei GPU:ta** (`nvidia-smi` tyhjä) → CPU-only
 - D: levytilaa ~147 GB vapaana
 
-## Python-paketit (v1.22)
+## Python-paketit (v1.29)
 
 Core:
 
@@ -56,7 +56,7 @@ python -m venv .venv
 ## Testit
 
 ```powershell
-.venv\Scripts\python.exe -m pytest -q          # 45 passed
+.venv\Scripts\python.exe -m pytest -q          # 60 passed
 .venv\Scripts\python.exe -m compileall -q app scripts tests
 node --check app\static\app.js
 node --check app\static\remote.js
@@ -77,7 +77,12 @@ Hyödylliset valinnat: `--model htdemucs_6s`, `--stem guitar`, `--tuning`,
 ## Git
 
 - `origin` = `https://github.com/teppoaland/tabtool.git`
-- `main` = **2d4fe02** (v1.22), ei pushattu (`origin/main` = v1.11)
+- HEAD `232bce3` (docs: AI TabTool rename) + memory-bank docs
+- `origin/main` = `69c2e39`; paikallinen `main` 7 committia edellä
+  (sisältää tämän memory-bank docs -commitin)
+- **Koodi v1.23–v1.29 on työpuussa, ei committoitu** (12 muokattua +
+  `app/tab_import.py` ja 5 uutta testitiedostoa); commitoi ennen
+  seuraavaa isoa vaihetta.
 - Commit author: `Azure Notepad Pipeline <azure-pipeline@notepad-automation.com>`
 - `.gitattributes`: `*.bat eol=crlf`, `app/static/vendor/** -text`
 - `.gitignore`: `docs/`, `data/`, `.venv`, audio/tabit, tokenit, mallit
@@ -85,8 +90,13 @@ Hyödylliset valinnat: `--model htdemucs_6s`, `--stem guitar`, `--tuning`,
 ## Data
 
 - `data/tabtool.sqlite3` (WAL) – tracks/jobs/tabs/oauth_tokens/settings
-- `data/audio/` – uploadit ja normalisoitu WAV
+- `data/audio/` – uploadit, YouTube-normalisoinnit ja pätkäklipit
+- `data/stems/` – Demucs-stemmat
 - `data/tabs/<id>/` – `tab.gp5`, `tab.musicxml`, `tab.mid`, `meta.json`
+- Tuodut tabit: GP5/MusicXML + `meta.json`; `source_type=import`
+- Audio attach: tuotu tabi voi osoittaa samannimisen AI-tabin audioon;
+  audioita ei kopioida. Pätkäjobi käyttää tabin audiota ja optionsia.
+- `notes.json` / refinger **ei vielä** ole käytössä.
 
 Sisäiset nimet säilyttävät `tabtool`-etuliitteen (repo, `TABTOOL_*`,
 DB-tiedosto); vain tuotenimi on `AI TabTool`.
@@ -97,3 +107,11 @@ DB-tiedosto); vain tuotenimi on `AI TabTool`.
   (`alphaTab.min.js`, `font/Bravura.woff2`, `LICENSE`).
 - Ei npm-riippuvuuksia eikä buildia; `core.useWorkers = false` pitää
   renderöinnin deterministisenä.
+- Oletus tab-only; Näkymä, raitavalinnat, FULLSCREEN, cursor/scroll,
+  aikajana/tahtilukema, tuonti, LIITÄ AUDIO, TAB BPM ja Nopeus.
+- Score-format valitaan `meta.files`:stä (gp5 ensin, muuten musicxml);
+  tuotu tabi ilman audiota piilottaa PLAYn ja transportin.
+- `mediaHandler.playbackRate` seuraa `audio.playbackRate`-arvoa;
+  `preservesPitch = true`. BPM-korjaus kirjoittaa GP5:n ja lataa tabin.
+- Headless-Chrome-validoinnit: alphaTab-render, cursor, fullscreen,
+  GP5/MusicXML-tuonti, audio attach, BPM 140/144, aikajana.

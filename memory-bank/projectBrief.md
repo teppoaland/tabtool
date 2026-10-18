@@ -1,6 +1,6 @@
 # 🎯 Projektin lyhyt kuvaus – AI TABTOOL
 
-> **Versio:** `v1.22` (18.10.2026)
+> **Versio:** `v1.29` (18.10.2026)
 > **Repo:** https://github.com/teppoaland/tabtool
 > **Paikallinen:** `D:\AI\tabtool`
 
@@ -9,10 +9,12 @@
 Lokaali web-palvelu, jossa voi:
 
 1. hakea kappaleita Spotifysta (haku/metadata),
-2. generoida kitaratablatuurin omasta MP3:sta tai YouTube-audiosta,
-3. katsoa tablatuuria alphaTabilla TV:stä/tietokoneelta,
-4. käyttää puhelinta kaukosäätimenä,
-5. viedä tabin GP5/MusicXML/MIDI-muodossa.
+2. generoida kitaratablatuuri omasta MP3:sta tai YouTube-audiosta,
+3. tuoda valmiita GP5/MusicXML-tabeja ja liittää niihin audio,
+4. katsoa tablatuuria alphaTabilla TV:stä/tietokoneelta (aikajana,
+   cursor, fullscreen, raitavalinnat, BPM/Nopeus),
+5. käyttää puhelinta kaukosäätimenä,
+6. viedä tabin GP5/MusicXML/MIDI-muodossa.
 
 ## Lukitut päätökset
 
@@ -24,10 +26,16 @@ Lokaali web-palvelu, jossa voi:
   mukaan. Käyttäjä vastaa ToS/tekijänoikeuksista.
 - **Kitara ensin.** Basso, laulu ja rummut myöhemmin; rummut vaativat
   oman transkriptiomallin.
+- **Täydet kappaleet ovat oletus.** Pätkägenerointi on poikkeus.
+- **Valmiin tabin tuonti** GP5/MusicXML; samannimisen AI-tabin audio
+  voidaan liittää tuotuun tabiin. Tabin BPM korjattavissa, Nopeus
+  95–105 % hienosäätöön; kappaleen tempo ratkaisee.
+- **Ei pakollista Guitar Prota.** TuxGuitar on ilmainen apuväline
+  tarvittaessa; appi tuo GP5/MusicXML:n.
 - **All rights reserved** (GameHubin käytäntö). Kolmannen osapuolen
   lisenssit `THIRD_PARTY_NOTICES.md`:ssä.
-- **Versiosarja `1.x`**, aloitus `v1.00`; nyt `v1.22`.
-- **Tuotenimi `AI TabTool`** (v1.22). Repo/hakemisto `tabtool`,
+- **Versiosarja `1.x`**, aloitus `v1.00`; nyt `v1.29`.
+- **Tuotenimi `AI TabTool`** (v1.22–v1.29). Repo/hakemisto `tabtool`,
   `TABTOOL_*`-ympäristömuuttujat ja `data/tabtool.sqlite3` ovat teknisiä
   nimiä. Ei sidoksissa tabtool GmbH:hen eikä SEYDEL TabTooliin.
 - UI-tekstit ovat toistaiseksi suomeksi; pelaajalle näkyvät ydintekstit
@@ -50,8 +58,10 @@ Sano Cline:lle **`lue membank`**. Sääntö on
 
 - `README.md` – käyttöohje ja tila
 - `CHANGELOG.md` – versiohistoria
-- `.clinerules/` – 6 projektisääntöä
+- `.clinerules/` – 7 projektisääntöä
 - `app/pipeline/` – audio-to-tab-putki
+- `app/tab_import.py` – GP5/MusicXML-tuonti
 - `scripts/pipeline_smoke.py` – CLI-proof
+- `tests/` – 60 pytest-testiä
 - `data/` – GITIGNORED: audio, stemmit, tabit, tokenit
 - `docs/` – GITIGNORED: henkilökohtainen suunnitelma

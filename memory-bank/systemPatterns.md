@@ -6,7 +6,9 @@
 FastAPI (app/main.py)
   ├─ /api/health, /api/version, /api/config
   ├─ /api/jobs, /api/jobs/{id}, /api/jobs/{id}/events (SSE)
-  ├─ /api/tabs, /api/tabs/{id}, score/export/audio
+  ├─ /api/tabs, /api/tabs/{id}, /api/tabs/import
+  ├─ /api/tabs/{id}/section, /attach-audio, /tempo
+  ├─ score/export/audio
   └─ /, /display, /remote  → app/static/
         │
         ▼
@@ -26,6 +28,12 @@ Putki (app/pipeline/)
 - Job-kerros importtaa putken vasta ajon aikana (kevyt käynnistys).
 - Frontend ei käsittele Spotify-client-secretiä (PKCE).
 - Kaikki polut `app/config.py`:stä. `data/` on yksityinen juuri.
+- `app/tab_import.py` hoitaa GP5/MusicXML-tuonnin ja metatiedot
+  (PyGuitarPro/music21) ilman ML-putkea.
+- YouTube-metadata haetaan `audio_source.fetch_youtube_metadata`illa;
+  `jobs.effective_track_metadata` valitsee oikean nimen/artistin.
+- Pätkäjobi luodaan tabin omasta audiopolusta (`/section`); BPM-korjaus
+  kirjoittaa GP5:n `song.tempo`-arvon (`/tempo`).
 
 ## Putken data
 
@@ -44,6 +52,11 @@ Putki (app/pipeline/)
   vapaalle kielelle tai edellistä nuottia lyhennetään.
 - Viritykset: standard, drop D, Eb, D, open G, bass 4-string.
 - Standard E -alueen ulkopuoliset nuotit pudotetaan varoituksella.
+- **Soittotapa/refinger ei ole vielä toteutettu.** Suunniteltu:
+  asemaprofiilit (1./5./7. asema, avoimet/matalat kielet, ei venytyksiä),
+  playability-score ja turhien/harmonisten nuottien karsinta. Nykyinen
+  DP tuottaa yhden sormituksen, joten sama nuottidata voi näyttää
+  erilaiselta kuin opittu tabi.
 
 ## Export
 
@@ -59,9 +72,15 @@ Toteutettu SQLite (`app/db.py`, WAL, `data/tabtool.sqlite3`):
 
 - `tracks` – title, artist, source_type, source_ref, fingerprint, audio
 - `jobs` – status, stage, progress, options, warnings, error, tab_id
-- `tabs` – `cache_key`, directory, metadata, `meta_json`
+- `tabs` – `cache_key`, directory, metadata, `meta_json`, `audio_path`
 - `oauth_tokens` – Spotify PKCE -tokenit (Phase 3)
 - `settings`
+
+Tuodut tabit: `source_type = import`; `meta.files` kertoo GP5- tai
+MusicXML-tiedoston. `db.update_tab_audio` liittää audion ja
+`db.update_tab_tempo` päivittää BPM:n sekä `meta.json`in. Audiota ei
+kopioida; tuotu tabi voi jakaa AI-tabin audiopolun. Täydet kappaleet
+oletus; pätkäjobi käyttää samaa audio-/options-lähdettä.
 
 `cache_key = sha256(fingerprint + PIPELINE_VERSION + options)`.
 Fingerprint: uploadin sisältöhash, YouTube-URL tai local path + koko +
@@ -84,6 +103,16 @@ Invariantit:
 - `PlayerMode.EnabledExternalMedia` + `IExternalMediaHandler`;
   positio 50 ms välein `api.player.output.updatePosition(ms)`.
 - Paikallinen audio: `<audio>` + Range (`FileResponse` 206).
-- UI: upload/YouTube-lomake, status-rivi + progress, kirjasto,
-  EXPORT-linkit, `?tab=<id>`-syvälinkki.
-- Ei uusia modaaleja/toasteja; status inline.
+- Oletus: **tab-only** (StaveProfile.Tab), Näkymä-valinta, raitavalinnat
+  (tabikohtainen muisti), FULLSCREEN/autofullscreen, cursor + edellinen
+  rivi, dynamiikat piilossa, vaakascrollbar pois.
+- Aikajana: aika/kesto, tahtilukema, ±5 s, Space/nuolet, seek vierittää
+  cursorin kohdalle; `TEE TAB TÄSTÄ` tekee pätkäjobin.
+- Tuonti: GP5/MusicXML-tiedostovalinta, `IMPORT TAB`; score-format
+  valitaan `meta.files`:stä (gp5/musicxml). Tuotu tabi ilman audiota:
+  PLAY ja aikajana piilotetaan, `LIITÄ AUDIO` hakee samannimisen AI-tabin
+  audion.
+- `TAB BPM` kirjoittaa GP5-tempon; `Nopeus` (95–105 %, 0,1 %) hienosäätää
+  audion tabin tempoon. AI-BPM on arvio.
+- Ei uusia modaaleja/toasteja; status/import/attach/BPM inline.
+- Ei committoituja modeleita/audioita `static/`-hakemistoon.
