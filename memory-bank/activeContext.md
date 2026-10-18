@@ -1,6 +1,6 @@
 # 📍 Aktiivinen konteksti – AI TABTOOL
 
-> **Versio:** `v1.34` (18.10.2026)
+> **Versio:** `v1.35` (18.10.2026)
 > **Git:** koodi `d07c7de`, tagi `v1.29` = `bb704e8`, `origin/main` = `69c2e39`
 > **Push:** ei pushata julkiseen GitHubiin — vain lokaalit commitit
 > **Repo:** https://github.com/teppoaland/tabtool
@@ -55,6 +55,11 @@
   toteutuu toiston korjauksena `bpm/score.tempo - 1`, joka summataan
   SYNC-arvoon. Ratkaisee "143 jää jälkeen / 144 edistää" -ongelman.
   Seek & Destroy -audion mitattu tempo **143,555 BPM** (librosa).
+- **SIIRTO (tahtia)** (v1.35): siirtää tabia kokonaisilla tahdeilla
+  (−64…+64), tallentuu `meta.sync_offset_bars`. Rakenne-ero, jota
+  prosenttisäätö ei korjaa: referenssitabissa 258 tahtia vs. levytys
+  ~249 → tabi voi olla 8 tahtia edellä (~13 s @ 143,5 BPM). Siirto
+  lasketaan tabin omasta tahtipituudesta.
 - Referenssitabi palautettu **140 BPM**; audio liitetty; AI-tabi 144.
   BPM/Nopeus-kontrollit jäävät, mutta eivät pakota 144:ään.
 - Täydet kappaleet ovat oletus; pätkägenerointi (`TEE TAB TÄSTÄ`) on
@@ -110,6 +115,8 @@ Putki:
   (alkuperäinen audio on 20 s klippi); 72 testiä.
 - v1.34: desimaali-BPM 119,5 → GP5 120, 58 s → tahti 29 (ilman
   korjausta 30); Seek & Destroy 143,555 BPM; live v1.34, 8 tabia.
+- v1.35: SIIRTO −8 → 40 s kohdalla tahti 13 (ilman siirtoa 21),
+  tallentui ja palautui reloadissa; 75 testiä; live v1.35.
 - Referenssitabi **140 BPM**, audio 414,72 s, PLAY + aikajana + cursor;
   5 raitaa, oletus Guitar 1 + Guitar 2.
 - AI-tabi 144 BPM / 249 tahtia; referenssi 140 BPM / 258 tahtia.

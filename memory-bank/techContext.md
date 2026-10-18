@@ -134,6 +134,9 @@ DB-tiedosto); vain tuotenimi on `AI TabTool`.
   `pointerup`-, dokumentin `pointerup`- ja `blur`-tapahtumissa.
 - Desimaali-TAB BPM: `bpmDrift = bpm / score.tempo - 1` summataan
   `syncDrift`iin; GP5 säilyttää kokonaislukutempon.
+- SIIRTO: `sync_offset_bars` lisätään positioon
+  `bars × tahtipituus_ms`; tahtipituus lasketaan `masterBars`-tickeistä
+  ja nuottitemposta. Tallentuu `meta.sync_offset_bars`iin.
 - `TALLENNA` (v1.31): BPM tallentuu vain napista; tallentamaton arvo
   värjää `.bpm-field`-kentän punaiseksi. Status-tekstit
   (`bpm-status`, `sync-status`) saavat `.is-error`-luokan virheestä.

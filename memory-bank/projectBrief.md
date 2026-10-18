@@ -30,8 +30,8 @@ Lokaali web-palvelu, jossa voi:
 - **Valmiin tabin tuonti** GP5/MusicXML; samannimisen AI-tabin audio
   voidaan liittää tuotuun tabiin. Tabin BPM korjattavissa desimaalilla
   (GP5 tallentaa kokonaisluvun; desimaali on toiston korjaus), `Nopeus`
-  50–150 % harjoitteluun ja `SYNC` ±10 % kohdistukseen (tallentuu
-  tabille); kappaleen tempo ratkaisee.
+  50–150 % harjoitteluun, `SYNC` ±10 % hienosäätöön ja `SIIRTO`
+  −64…+64 tahtia rakenne-eroon; kaikki tallentuvat tabille.
 - **Ei pakollista Guitar Prota.** TuxGuitar on ilmainen apuväline
   tarvittaessa; appi tuo GP5/MusicXML:n.
 - **All rights reserved** (GameHubin käytäntö). Kolmannen osapuolen

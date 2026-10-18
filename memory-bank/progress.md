@@ -1,5 +1,18 @@
 # 📊 Projektin edistyminen – AI TABTOOL
 
+## v1.35 – SIIRTO (tahtia) (18.10.2026)
+
+- `SIIRTO`-kenttä (−64…+64 tahtia) siirtää tabin aikajanaa
+  kokonaisilla tahdeilla; tallentuu `meta.sync_offset_bars`iin ja
+  palautuu `loadTab`issa.
+- Siirto lasketaan tabin tahtipituudesta
+  (`masterBars[1].start - masterBars[0].start` × 60000 / (tempo × 960))
+  ja lisätään SYNC/BPM-korjauksen päälle.
+- Syy: referenssitabissa 258 tahtia vs. levytys ~249 → tabi 8 tahtia
+  (≈13 s @ 143,5 BPM) edellä; prosenttisäätö ei korjaa rakenne-eroa.
+- `POST /api/tabs/{id}/sync` hyväksyy `offset_bars`in (±64).
+- 75 pytest-testiä; headless: −8 → 40 s kohdalla tahti 13 (ilman 21).
+
 ## v1.34 – Desimaali-TAB BPM (18.10.2026)
 
 - TAB BPM hyväksyy 0,1 askeleen (`143,55`). GP5 kirjoitetaan
@@ -38,32 +51,14 @@
   `TABTOOL_DATA_DIR`in; data oli ehjä (8 tabia). Palvelin käynnistettiin
   uudelleen oikealla juurella; live v1.32.
 
-## v1.31 – TALLENNA ja punainen muistutus (18.10.2026)
+## v1.30–v1.31 – SYNC, TALLENNA ja Nopeus (18.10.2026)
 
-- `ASETA` → **TALLENNA**; TAB BPM tallentuu vain napista (pelkkä
-  kirjoitus ei tallennu).
-- Tallentamaton BPM: kentän otsikko, syöte ja nappi punaisiksi
-  (`.bpm-field.is-dirty`), kunnes arvo on tallennettu.
-- `bpm-status` ja `sync-status` virheet punaisella (`.is-error`);
-  onnistunut tallennus kuittaa tilan.
-- "Not found" -syy: portissa 8000 oli v1.22-prosessi, jossa ei ole
-  `/tempo`- eikä `/sync`-reittiä. Palvelin käynnistettiin uudelleen
-  (v1.31); muistutus myös `.clinerules/03-versioning.md`:ssä.
-- Headless-Chrome: TALLENNA 140 → 146 (GP5-tempo 146), dirty-tila
-  `rgb(255,123,123)`, SYNC `+2.50 %` → `0.025`; 64 testiä.
-
-## v1.30 – SYNC-kohdistus ja Nopeus 50–150 % (18.10.2026)
-
-- **SYNC**-säädin (±10 %, askel 0,05 %): tabin aikajanaa siirretään
-  audioon nähden (`+` eteen, `-` taakse) `syncPosition()`issa.
-- Korjaus tallentuu tabin `meta.json`iin (`sync_drift`) ja kantaan
-  `POST /api/tabs/{id}/sync`illa; `loadTab` palauttaa arvon, joten
-  kerran säädetty kohdistus on aina mukana. GP5/audio ennallaan.
-- **Nopeus** 50–150 % (aiempi 95–105 %); `mediaHandler.playbackRate`
-  seuraa audiota eli tabi pysyy samassa suhteessa.
-- 64 pytest-testiä (`tests/test_tab_sync.py`).
-- Headless-Chrome: `SYNC +3.50 %` → `sync_drift 0.035` kantaan ja
-  `meta.json`iin, reload palautti `+3.50 %`; ei JS-virheitä.
+- v1.30: SYNC ±10 % (`sync_drift`, `POST /api/tabs/{id}/sync`),
+  Nopeus 50–150 %; arvot palautuvat `loadTab`issa, GP5/audio ennallaan.
+- v1.31: `ASETA` → **TALLENNA**; tallentamaton BPM punaisena
+  (`.bpm-field.is-dirty`), virheet `.is-error`. "Not found" johtui
+  v1.22-palvelinprosessista; uudelleenkäynnistys ohjeistettu.
+- Headless: SYNC +3.50 % → 0.035; TALLENNA 146 → GP5 146; 64 testiä.
 
 ## Session päätökset (18.10.2026)
 
