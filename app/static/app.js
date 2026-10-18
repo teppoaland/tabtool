@@ -61,6 +61,7 @@
   const syncSlider = document.getElementById("sync-slider");
   const syncReadout = document.getElementById("sync-readout");
   const syncStatus = document.getElementById("sync-status");
+  const shiftInput = document.getElementById("shift-input");
   const bpmInput = document.getElementById("bpm-input");
   const bpmButton = document.getElementById("bpm-button");
   const bpmStatus = document.getElementById("bpm-status");
@@ -82,6 +83,7 @@
   let sliderSeeking = false;
   let staveProfile = readStaveProfile();
   let syncDrift = 0;
+  let syncOffsetBars = 0;
   let syncSaveTimer = null;
 
   function setPlayLabel(playing) {
@@ -185,10 +187,41 @@
 
   // Manual tab alignment: shift the tab timeline relative to the audio so a
   // hand-tuned correction stays in effect for the whole song.
+  function barDurationMs() {
+    let ticks = 0;
+    if (api && api.score && Array.isArray(api.score.masterBars)) {
+      const bars = api.score.masterBars;
+      if (bars.length > 1) {
+        ticks = Number(bars[1].start) - Number(bars[0].start);
+      } else if (bars.length === 1) {
+        const only = bars[0];
+        if (typeof only.calculateDuration === "function") {
+          ticks = Number(only.calculateDuration()) || 0;
+        }
+      }
+    }
+    const tempo = notatedTempo() || 120;
+    if (ticks > 0) return (ticks * 60000) / (tempo * 960);
+    return (4 * 60000) / tempo;
+  }
+
+  function setSyncOffsetBars(value, options) {
+    const settings = options || {};
+    const number = Number(value);
+    syncOffsetBars = Number.isFinite(number)
+      ? Math.min(64, Math.max(-64, Math.round(number)))
+      : 0;
+    if (shiftInput && Number(shiftInput.value) !== syncOffsetBars) {
+      shiftInput.value = String(syncOffsetBars);
+    }
+    if (settings.sync !== false) syncPosition(true);
+  }
+
   function syncTimeMs() {
     const current = Number(audio.currentTime) || 0;
     const duration = Number.isFinite(audio.duration) ? audio.duration : 0;
-    const position = Math.max(0, current * 1000 * (1 + syncDrift + bpmDrift()));
+    const base = current * 1000 * (1 + syncDrift + bpmDrift());
+    const position = Math.max(0, base + syncOffsetBars * barDurationMs());
     return duration > 0 ? Math.min(position, duration * 1000) : position;
   }
 
@@ -201,6 +234,7 @@
     }
     const data = new FormData();
     data.append("drift", syncDrift.toFixed(4));
+    data.append("offset_bars", String(syncOffsetBars));
     setSyncStatus("Tallennetaan…");
     try {
       const response = await fetch(`/api/tabs/${tabId}/sync`, {
@@ -851,6 +885,10 @@
       setSyncDrift(Number.isFinite(storedSync) ? storedSync : 0, {
         sync: false,
       });
+      const storedShift = Number(tab.meta && tab.meta.sync_offset_bars);
+      setSyncOffsetBars(Number.isFinite(storedShift) ? storedShift : 0, {
+        sync: false,
+      });
       setSyncStatus("");
       try {
         localStorage.setItem("tabtool:lastTab", tab.id);
@@ -1218,6 +1256,18 @@
       syncSaveTimer = window.setTimeout(persistSyncDrift, 700);
     });
     syncSlider.addEventListener("change", persistSyncDrift);
+  }
+  if (shiftInput) {
+    shiftInput.addEventListener("input", () => {
+      setSyncStatus("");
+      setSyncOffsetBars(shiftInput.value);
+      if (syncSaveTimer) window.clearTimeout(syncSaveTimer);
+      syncSaveTimer = window.setTimeout(persistSyncDrift, 700);
+    });
+    shiftInput.addEventListener("change", () => {
+      setSyncOffsetBars(shiftInput.value);
+      persistSyncDrift();
+    });
   }
   if (bpmButton) {
     bpmButton.addEventListener("click", applyTempo);

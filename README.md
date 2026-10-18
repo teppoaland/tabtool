@@ -184,6 +184,12 @@ mukana.
 `meta.json`iin (`sync_drift`), joten kerran tehty korjaus on mukana aina
 tabia avattaessa. SYNC ei muuta GP5-tiedostoa eikä audiota.
 
+**SIIRTO (tahtia)** siirtää tabia kokonaisilla tahdeilla (−64…+64).
+Käytä sitä, kun tabissa on eri määrä tahteja kuin levytyksessä:
+esim. `-8`, jos tabi on 8 tahtia edellä. Prosenttisäätö ei voi korjata
+tällaista rakenne-eroa. Arvo tallentuu tabille (`sync_offset_bars`)
+ja pysyy mukana.
+
 Pätkägenerointi: siirry katselimessa kohtaan, valitse **30/60/120 s** ja
 paina **TEE TAB TÄSTÄ**. Ohjelma tekee uuden tabin vain siitä pätkästä
 samoilla asetuksilla ja avaa sen; nimi sisältää aikavälin.
@@ -335,7 +341,8 @@ docs/               GITIGNORED
 - **v1.32** ✅ – ulkoinen arkisto `D:\tabtool_files` (YouTube-audio + tuodut tabit)
 - **v1.33** ✅ – MP3-kuunteluversiot artistikansioihin + seek-synkin vakaunnus
 - **v1.34** ✅ – desimaali-TAB BPM (esim. 143,55) GP5:n kokonaislukutemposta huolimatta
-- **v1.35** – Spotify-haku, OAuth, SDK/Connect-synkka
+- **v1.35** ✅ – SIIRTO (tahtia): rakenne-eron korjaus tabille tallentuen
+- **v1.36** – Spotify-haku, OAuth, SDK/Connect-synkka
 - **v1.40** – remote-kaukosäädin
 - **1.x** – basso, laulu, rummut, bending
 

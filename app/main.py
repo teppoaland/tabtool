@@ -503,8 +503,12 @@ def tab_tempo(tab_id: str, bpm: float = Form(...)) -> dict[str, object]:
 
 
 @app.post("/api/tabs/{tab_id}/sync", tags=["tabs"])
-def tab_sync(tab_id: str, drift: float = Form(...)) -> dict[str, object]:
-    """Store a manual tab alignment factor (fraction of playback time)."""
+def tab_sync(
+    tab_id: str,
+    drift: float = Form(...),
+    offset_bars: float = Form(0.0),
+) -> dict[str, object]:
+    """Store manual tab alignment (playback drift and whole-bar shift)."""
     tab = _load_tab(tab_id)
     if tab is None:
         raise HTTPException(status_code=404, detail="Unknown tab")
@@ -514,7 +518,14 @@ def tab_sync(tab_id: str, drift: float = Form(...)) -> dict[str, object]:
             status_code=422,
             detail="SYNC must be between -10 and 10 percent",
         )
+    bars = float(offset_bars)
+    if not -64.0 <= bars <= 64.0:
+        raise HTTPException(
+            status_code=422,
+            detail="SIIRTO must be between -64 and 64 bars",
+        )
     meta = dict(tab.get("meta") or {})
+    meta["sync_offset_bars"] = bars
     updated = db.update_tab_sync(tab_id, value, meta)
     if updated is None:
         raise HTTPException(status_code=404, detail="Unknown tab")

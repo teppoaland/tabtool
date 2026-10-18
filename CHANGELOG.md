@@ -2,6 +2,21 @@
 
 > AI TabTool käyttää `1.x`-versiosarjaa. Aloitus `v1.00`.
 
+## v1.35 – 18.10.2026
+
+- **SIIRTO (tahtia)** -kenttä: siirtää tabia kokonaisilla tahdeilla
+  (−64…+64, tallentuu `meta.sync_offset_bars`). Tarkoitettu
+  rakenne-eroon, jota prosenttisäätö ei korjaa: esim. referenssitabissa
+  on 258 tahtia mutta levytyksessä ~249, jolloin tabi voi olla
+  8 tahtia edellä (≈13 s @ 143,5 BPM).
+- Siirto lasketaan tabin omasta tahtipituudesta
+  (`masterBars[1].start − masterBars[0].start` tickeinä) ja lisätään
+  SYNC/BPM-korjauksen päälle; arvo tallentuu ja palautuu tabia
+  avattaessa.
+- `POST /api/tabs/{id}/sync` hyväksyy nyt `offset_bars`-kentän
+  (validointi ±64).
+- Testit: siirron tallennus ja raja; 75 pytest-testiä.
+
 ## v1.34 – 18.10.2026
 
 - **Desimaali-TAB BPM:** kenttä hyväksyy 0,1 askelen (esim. `143,55`).
