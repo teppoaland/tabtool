@@ -1,5 +1,19 @@
 # 📊 Projektin edistyminen – AI TABTOOL
 
+## v1.31 – TALLENNA ja punainen muistutus (18.10.2026)
+
+- `ASETA` → **TALLENNA**; TAB BPM tallentuu vain napista (pelkkä
+  kirjoitus ei tallennu).
+- Tallentamaton BPM: kentän otsikko, syöte ja nappi punaisiksi
+  (`.bpm-field.is-dirty`), kunnes arvo on tallennettu.
+- `bpm-status` ja `sync-status` virheet punaisella (`.is-error`);
+  onnistunut tallennus kuittaa tilan.
+- "Not found" -syy: portissa 8000 oli v1.22-prosessi, jossa ei ole
+  `/tempo`- eikä `/sync`-reittiä. Palvelin käynnistettiin uudelleen
+  (v1.31); muistutus myös `.clinerules/03-versioning.md`:ssä.
+- Headless-Chrome: TALLENNA 140 → 146 (GP5-tempo 146), dirty-tila
+  `rgb(255,123,123)`, SYNC `+2.50 %` → `0.025`; 64 testiä.
+
 ## v1.30 – SYNC-kohdistus ja Nopeus 50–150 % (18.10.2026)
 
 - **SYNC**-säädin (±10 %, askel 0,05 %): tabin aikajanaa siirretään

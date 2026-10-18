@@ -1,6 +1,6 @@
 # 📍 Aktiivinen konteksti – AI TABTOOL
 
-> **Versio:** `v1.30` (18.10.2026)
+> **Versio:** `v1.31` (18.10.2026)
 > **Git:** koodi `d07c7de`, tagi `v1.29` = `bb704e8`, `origin/main` = `69c2e39`
 > **Push:** ei pushata julkiseen GitHubiin — vain lokaalit commitit
 > **Repo:** https://github.com/teppoaland/tabtool
@@ -28,6 +28,12 @@
   taakse; tallentuu tabin `meta.json`iin (`sync_drift`) ja palautuu
   aina tabia avattaessa. GP5/audio eivät muutu. Syy: pitkässä
   GP5-tabissa heitto kertyy (esim. Seek & Destroy ~60–70 tahti).
+- **TALLENNA** (v1.31, entinen ASETA): TAB BPM tallentuu vain napista;
+  tallentamaton arvo värjää kentän, syötteen ja napin punaiseksi.
+  Virheet (BPM 20–400, tallennusvirhe) punaisella; SYNC-virheet samoin.
+- **"Not found" -muistutus:** uvicorn ei käytä `--reload`ia. Jos UI on
+  uudempi kuin käynnissä oleva prosessi, `/tempo` ja `/sync` palauttavat
+  404 → käynnistä palvelin uudelleen (`start.bat`).
 - Referenssitabi palautettu **140 BPM**; audio liitetty; AI-tabi 144.
   BPM/Nopeus-kontrollit jäävät, mutta eivät pakota 144:ään.
 - Täydet kappaleet ovat oletus; pätkägenerointi (`TEE TAB TÄSTÄ`) on
@@ -71,6 +77,9 @@ Putki:
 - `pytest -q` → **64 passed**; `compileall` ja `node --check` OK.
 - Headless-Chrome: SYNC `+3.50 %` → `sync_drift 0.035` kantaan ja
   `meta.json`iin; reload palautti arvon; Nopeus 50–150 %.
+- v1.31 headless: TALLENNA-nappi, punainen dirty-tila
+  (`rgb(255,123,123)`), BPM 146 → GP5-tempo 146 ja tila tyhjeni;
+  SYNC `+2.50 %` → `0.025`, ei virheitä.
 - Referenssitabi **140 BPM**, audio 414,72 s, PLAY + aikajana + cursor;
   5 raitaa, oletus Guitar 1 + Guitar 2.
 - AI-tabi 144 BPM / 249 tahtia; referenssi 140 BPM / 258 tahtia.

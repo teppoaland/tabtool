@@ -112,7 +112,8 @@ Invariantit:
   valitaan `meta.files`:stä (gp5/musicxml). Tuotu tabi ilman audiota:
   PLAY ja aikajana piilotetaan, `LIITÄ AUDIO` hakee samannimisen AI-tabin
   audion.
-- `TAB BPM` kirjoittaa GP5-tempon; `Nopeus` (50–150 %, 0,1 %) on
+- `TAB BPM` kirjoittaa GP5-tempon **TALLENNA**-napista; tallentamaton
+  arvo näkyy punaisena. `Nopeus` (50–150 %, 0,1 %) on
   harjoittelusäädin. `SYNC` (±10 %, 0,05 %) siirtää tabin aikajanaa
   audioon nähden ja tallentuu `meta.sync_drift`iin
   (`POST /api/tabs/{id}/sync`); AI-BPM on arvio.

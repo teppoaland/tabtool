@@ -125,5 +125,10 @@ DB-tiedosto); vain tuotenimi on `AI TabTool`.
   `syncPosition()` antaa alphaTabille `audio.currentTime * (1 + drift)`
   (clamped audion kestoon). Arvo tallentuu `meta.sync_drift`iin ja
   palautuu `loadTab`issa; GP5/audio eivät muutu.
+- `TALLENNA` (v1.31): BPM tallentuu vain napista; tallentamaton arvo
+  värjää `.bpm-field`-kentän punaiseksi. Status-tekstit
+  (`bpm-status`, `sync-status`) saavat `.is-error`-luokan virheestä.
+- Uvicorn ajetaan ilman `--reload`ia: koodimuutoksen jälkeen palvelin
+  on käynnistettävä uudelleen, muuten uudet reitit palauttavat 404.
 - Headless-Chrome-validoinnit: alphaTab-render, cursor, fullscreen,
   GP5/MusicXML-tuonti, audio attach, BPM 140/144, aikajana.

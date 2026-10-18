@@ -35,7 +35,10 @@ Nosta versiota **aina kun ajettava koodi muuttuu**:
 4. **Push = julkaisu.** Projektia ei vielä julkaista: **älä pushaa**
    `origin`iin ilman käyttäjän erillistä pyyntöä. Lokaalit commitit
    riittävät palautuspisteiksi (`git revert`, `git reset`).
-5. Raportoi lyhyesti: mitä muuttui + versionumero.
+5. **Käynnistä palvelin uudelleen koodimuutoksen jälkeen.** Uvicorn ei
+   käytä `--reload`ia; muuten selain saa uusista reiteistä
+   `404 Not Found` (esim. `/tempo`, `/sync`).
+6. Raportoi lyhyesti: mitä muuttui + versionumero.
 
 ## Testit ennen committia
 
