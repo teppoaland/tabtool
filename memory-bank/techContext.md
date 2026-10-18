@@ -138,6 +138,9 @@ DB-tiedosto); vain tuotenimi on `AI TabTool`.
   `bars × tahtipituus_ms`; tahtipituus lasketaan `masterBars`-tickeistä
   ja nuottitemposta. Tallentuu `meta.sync_offset_bars`iin.
   UI pyöristää 0,25 tahdin askeleeseen (1 isku 4/4:ssä).
+- Playback range: alphaTab luo raahauksella `playbackRange`in; se
+  nollataan (`clearPlaybackRange`) ennen seekiä, latauksessa ja
+  `playbackRangeChanged`issa. Pause → `syncPosition(true)`.
 - `TALLENNA` (v1.31): BPM tallentuu vain napista; tallentamaton arvo
   värjää `.bpm-field`-kentän punaiseksi. Status-tekstit
   (`bpm-status`, `sync-status`) saavat `.is-error`-luokan virheestä.

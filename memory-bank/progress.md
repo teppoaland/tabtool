@@ -1,14 +1,15 @@
 # 📊 Projektin edistyminen – AI TABTOOL
 
-## v1.36 – SIIRTO neljännes tahdin tarkkuudella (18.10.2026)
+## v1.37 – Playback range -korjaus (18.10.2026)
 
-- SIIRTO pyöristyy lähimpään 0,25 tahtiin (1 isku 4/4:ssä), joten
-  6–7 iskun vakiosiirto korjataan suoraan (−1,5 / −1,75).
-- Tallennettu tila tarkistettu: referenssitabissa bpm 143,5,
-  GP5-tempo 144, drift −0,35 %, SIIRTO 0. 6–7 iskun heitto bar 37:ssä
-  on siten vakiosiirto, ei tempo.
-- 75 pytest-testiä; headless: −1,5 → 40 s kohdalla tahti 19 (ilman 21),
-  tallentui desimaalina.
+- Hiirellä raahaus loi alphaTabin `playbackRange`-loopin (vihreä
+  kehys), joka rajaa `mainSeek`in → tab clampautuu väärään kohtaan ja
+  Pause hyppää beat-alun mukaan. Range nollataan nyt
+  `playbackRangeChanged`-, `scoreLoaded`- ja seek-yhteyksissä.
+- Pause-palautus: `playerStateChanged` (60 ms) ja audion `pause`
+  (150 ms) pakottavat synkan audion aikaan.
+- Headless: raahaus → `.at-selection` 0×0; seek 10 s → tahti 6;
+  pause säilytti tahtilukeman. 75 testiä.
 
 ## v1.35–v1.36 – SIIRTO (tahtia) (18.10.2026)
 

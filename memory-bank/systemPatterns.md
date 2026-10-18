@@ -127,4 +127,6 @@ kaada jobia. `archive_mp3` koodaa YouTube-WAV:t
   (`sync_drift`, `sync_offset_bars`,
   `POST /api/tabs/{id}/sync`); AI-BPM on arvio.
 - Ei uusia modaaleja/toasteja; status/import/attach/BPM/SYNC inline.
+- Aluevalinta: alphaTabin raahaus ei jää loopiksi – `playbackRange`
+  nollataan heti. Pause palauttaa cursorin audion aikaan.
 - Ei committoituja modeleita/audioita `static/`-hakemistoon.

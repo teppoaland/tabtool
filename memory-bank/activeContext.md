@@ -1,6 +1,6 @@
 # 📍 Aktiivinen konteksti – AI TABTOOL
 
-> **Versio:** `v1.36` (18.10.2026)
+> **Versio:** `v1.37` (18.10.2026)
 > **Git:** koodi `d07c7de`, tagi `v1.29` = `bb704e8`, `origin/main` = `69c2e39`
 > **Push:** ei pushata julkiseen GitHubiin — vain lokaalit commitit
 > **Repo:** https://github.com/teppoaland/tabtool
@@ -50,6 +50,11 @@
 - **Seek-synkki** tutkittu: siirto sliderilla ei riko aikasynkkiä
   (tahtilukema osui 30→10→50→20→55→5 s kaikissa). `audio.seeking`
   estää välipositiot ja slider vapautetaan `pointerup`/`blur`illa.
+- **Playback range -ansa** (v1.37): hiirellä raahaus loi alphaTabin
+  loop-alueen (vihreä kehys), joka clampaa `mainSeek`in → tab näyttää
+  väärää kohtaa ja Pause hyppää. Range nollataan nyt
+  `playbackRangeChanged`issa, `scoreLoaded`issa ja ennen seekiä.
+  Pause palauttaa sijainnin audion aikaan (60/150 ms).
 - **Desimaali-TAB BPM** (v1.34): kenttä hyväksyy 0,1 askeleen
   (`143,55`). GP5 tallentaa kokonaisluvun (`int(bpm+0,5)`), desimaali
   toteutuu toiston korjauksena `bpm/score.tempo - 1`, joka summataan
@@ -118,6 +123,8 @@ Putki:
   tallentui ja palautui reloadissa; 75 testiä; live v1.35.
 - v1.36: SIIRTO −1,5 (6 iskua) → 40 s kohdalla tahti 19 (ilman 21),
   tallentui desimaalina; live v1.36.
+- v1.37: raahaus → `.at-selection` 0×0, seek 10 s → tahti 6,
+  pause säilytti tahtilukeman; live v1.37.
 - Referenssitabi **140 BPM**, audio 414,72 s, PLAY + aikajana + cursor;
   5 raitaa, oletus Guitar 1 + Guitar 2.
 - AI-tabi 144 BPM / 249 tahtia; referenssi 140 BPM / 258 tahtia.
