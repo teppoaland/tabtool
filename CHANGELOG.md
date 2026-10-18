@@ -2,6 +2,20 @@
 
 > AI TabTool käyttää `1.x`-versiosarjaa. Aloitus `v1.00`.
 
+## v1.43 – 18.10.2026
+
+- **Korjaus: osoitin kulki ääntä edellä (kursorin synkka).** alphaTabin
+  ulkoisen median kello venyttää backing trackin ajan koko partituurin
+  pituuteen suhteella `partituurin kesto / backingTrackDuration`.
+  `backingTrackDuration` palautti ääniraidan keston, joten kun tabi on
+  pidempi kuin audio (esim. Seek & Destroy -referenssi: 258 tahtia vs.
+  ~249 tahtia), jokainen `audio.currentTime`-syöte skaalattiin ylöspäin ja
+  kursori meni musiikin edelle. Nyt `backingTrackDuration` palauttaa
+  partituurin keston (`api.tickCache.endTime`), jolloin kellotus on 1:1 ja
+  vain TAB BPM / SYNC / SIIRTO -korjaukset vaikuttavat. Tab BPM 143,5
+  (GP5 144) kohdistaa tahdin 41 viimeisen nuotin oikein.
+- Ei muutoksia backendiin; 93 pytest-testiä.
+
 ## v1.42 – 18.10.2026
 
 - **Testiajon yhteenveto näkyviin:** `pytest.ini`:stä poistettiin

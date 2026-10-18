@@ -246,6 +246,26 @@
     return duration > 0 ? Math.min(position, duration * 1000) : position;
   }
 
+  // End of the score timeline in milliseconds. alphaTab's external-media
+  // clock maps the backing-track time onto the full score with the ratio
+  // (scoreEnd / backingTrackDuration). If the reported backing track length
+  // is the audio length and the score is longer, every feed of audio time is
+  // stretched and the cursor runs ahead of the music. Returning the score's
+  // own end here keeps that mapping 1:1, so only the explicit BPM/SYNC/SIIRTO
+  // corrections in syncTimeMs() are applied.
+  function scoreEndTimeMs() {
+    if (api) {
+      const cache = api.tickCache;
+      if (cache) {
+        const end = Number(cache.endTime);
+        if (Number.isFinite(end) && end > 0) return end;
+      }
+      const end = Number(api.endTime);
+      if (Number.isFinite(end) && end > 0) return end;
+    }
+    return 0;
+  }
+
   async function persistSyncDrift() {
     if (!activeTab || !activeTab.id) return;
     const tabId = activeTab.id;
@@ -700,6 +720,8 @@
 
   const mediaHandler = {
     get backingTrackDuration() {
+      const scoreEnd = scoreEndTimeMs();
+      if (scoreEnd > 0) return scoreEnd;
       return Number.isFinite(audio.duration) ? audio.duration * 1000 : 0;
     },
     get playbackRate() {
