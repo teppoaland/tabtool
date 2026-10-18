@@ -1,6 +1,6 @@
 # 🎯 Projektin lyhyt kuvaus – TABTOOL
 
-> **Versio:** `v1.20` (18.10.2026)
+> **Versio:** `v1.21` (18.10.2026)
 > **Repo:** https://github.com/teppoaland/tabtool
 > **Paikallinen:** `D:\AI\tabtool`
 
@@ -26,7 +26,7 @@ Lokaali web-palvelu, jossa voi:
   oman transkriptiomallin.
 - **All rights reserved** (GameHubin käytäntö). Kolmannen osapuolen
   lisenssit `THIRD_PARTY_NOTICES.md`:ssä.
-- **Versiosarja `1.x`**, aloitus `v1.00`; nyt `v1.20`.
+- **Versiosarja `1.x`**, aloitus `v1.00`; nyt `v1.21`.
 - UI-tekstit ovat toistaiseksi suomeksi; pelaajalle näkyvät ydintekstit
   ovat englanniksi (SEARCH, GENERATE TAB, PLAY, PAUSE, EXPORT, REMOTE).
 

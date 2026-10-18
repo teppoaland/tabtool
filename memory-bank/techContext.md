@@ -77,7 +77,7 @@ Hyödylliset valinnat: `--model htdemucs_6s`, `--stem guitar`, `--tuning`,
 ## Git
 
 - `origin` = `https://github.com/teppoaland/tabtool.git`
-- `main` = **5315f32** (v1.20), `ahead 1` vs. `origin/main` (ei pushattu)
+- `main` = **a2abc74** (v1.21), ei pushattu (`origin/main` = v1.11)
 - Commit author: `Azure Notepad Pipeline <azure-pipeline@notepad-automation.com>`
 - `.gitattributes`: `*.bat eol=crlf`, `app/static/vendor/** -text`
 - `.gitignore`: `docs/`, `data/`, `.venv`, audio/tabit, tokenit, mallit

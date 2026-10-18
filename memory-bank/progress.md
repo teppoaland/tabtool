@@ -10,6 +10,14 @@
   seuraavasta vaiheesta.
 - Memory bank -muutokset `docs:`-commitilla, ei versiobumppia.
 
+## v1.21 – Käynnistyksen automaatio (18.10.2026)
+
+- `start.bat` avaa oletusselaimen, kun `/api/health` vastaa.
+- `scripts/open_browser.ps1`: 30 s timeout, 500 ms pollaus,
+  `TABTOOL_NO_BROWSER=1` ohittaa avauksen.
+- Validoitu: timeout-tapaus 2,8 s, valmis palvelin 0,2 s,
+  `start.bat` → health 200 (v1.21) ja siisti sammutus.
+
 ## v1.20 – Phase 2: web-UI, job-jono ja alphaTab (18.10.2026)
 
 ### Muutokset
