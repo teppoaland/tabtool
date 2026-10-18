@@ -911,6 +911,17 @@ body.modal-open .at-cursors {
   font-weight: 700;
 }
 
+.sync-offset-readout {
+  min-width: 8.5rem;
+  color: var(--muted);
+  font-size: 0.72rem;
+  white-space: nowrap;
+}
+
+.sync-offset-readout.is-error {
+  color: var(--error);
+}
+
 .ghost.small {
   padding: 0.35rem 0.6rem;
   font-size: 0.68rem;

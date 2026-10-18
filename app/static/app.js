@@ -62,6 +62,8 @@
   const syncReadout = document.getElementById("sync-readout");
   const syncStatus = document.getElementById("sync-status");
   const shiftInput = document.getElementById("shift-input");
+  const syncOffsetReadout = document.getElementById("sync-offset-readout");
+  const alignButton = document.getElementById("align-button");
   const bpmInput = document.getElementById("bpm-input");
   const bpmButton = document.getElementById("bpm-button");
   const bpmStatus = document.getElementById("bpm-status");
@@ -97,6 +99,7 @@
   let syncOffsetBars = 0;
   let syncSaveTimer = null;
   let pendingDelete = null;
+  let alignArmed = false;
 
   function setPlayLabel(playing) {
     if (!playButton) return;
@@ -275,6 +278,109 @@
     return 0;
   }
 
+  // Number of ticks in one bar (4/4 at 960 PPQ = 3840).
+  function ticksPerBar() {
+    if (api && api.score && Array.isArray(api.score.masterBars)) {
+      const bars = api.score.masterBars;
+      if (bars.length > 1) {
+        const ticks = Number(bars[1].start) - Number(bars[0].start);
+        if (ticks > 0) return ticks;
+      }
+    }
+    return 3840;
+  }
+
+  // Difference between the cursor and the audio's musical position, in bars.
+  // Positive = the cursor is ahead of the music, negative = behind.
+  function currentOffsetBars() {
+    if (!api || !activeTab) return null;
+    const bpm = Number(activeTab.bpm) || 0;
+    const tick = Number(api.tickPosition);
+    if (bpm <= 0 || !Number.isFinite(tick)) return null;
+    const audioTick = ((Number(audio.currentTime) || 0) * bpm * 960) / 60000;
+    const perBar = ticksPerBar();
+    if (!perBar) return null;
+    return (tick - audioTick) / perBar;
+  }
+
+  function updateOffsetReadout() {
+    if (!syncOffsetReadout) return;
+    const offset = currentOffsetBars();
+    if (offset === null) {
+      syncOffsetReadout.textContent = "";
+      return;
+    }
+    const bars = Math.round(offset * 4) / 4;
+    if (Math.abs(bars) < 0.05) {
+      syncOffsetReadout.textContent = "Kohdallaan";
+      syncOffsetReadout.classList.remove("is-error");
+      return;
+    }
+    const value = `${bars > 0 ? "+" : "−"}${Math.abs(bars)
+      .toFixed(2)
+      .replace(".", ",")} tahtia`;
+    syncOffsetReadout.textContent =
+      bars > 0 ? `Osoitin ${value} edellä` : `Osoitin ${value} jäljessä`;
+    syncOffsetReadout.classList.toggle("is-error", Math.abs(bars) > 0.5);
+  }
+
+  // "Grab the cursor" alignment: while armed, alphaTab's click-to-seek is
+  // disabled and the next click on a note shifts the tab so that note lands
+  // on the audio's current position (saved as SIIRTO).
+  function armAlign() {
+    if (!api || !activeTab) return;
+    alignArmed = true;
+    if (alignButton) {
+      alignButton.textContent = "KLIKKAA NUOTTIA";
+      alignButton.setAttribute("aria-pressed", "true");
+    }
+    setSyncStatus("Klikkaa tabista sitä nuottia, jonka pitäisi soida nyt…");
+    if (api.settings && api.settings.player) {
+      api.settings.player.enableUserInteraction = false;
+      if (typeof api.updateSettings === "function") api.updateSettings();
+    }
+  }
+
+  function disarmAlign() {
+    alignArmed = false;
+    if (alignButton) {
+      alignButton.textContent = "KOHDISTA";
+      alignButton.removeAttribute("aria-pressed");
+    }
+    // Restore click-to-seek after the current mouseup, so alphaTab does not
+    // also seek on the click that performed the alignment.
+    window.setTimeout(() => {
+      if (!alignArmed && api && api.settings && api.settings.player) {
+        api.settings.player.enableUserInteraction = true;
+        if (typeof api.updateSettings === "function") api.updateSettings();
+      }
+    }, 200);
+  }
+
+  function handleAlignClick(beat) {
+    if (!alignArmed) return;
+    if (!api || !activeTab) {
+      disarmAlign();
+      return;
+    }
+    const clickedTick = Number(beat && beat.absolutePlaybackStart);
+    const currentTick = Number(api.tickPosition);
+    const perBar = ticksPerBar();
+    if (!Number.isFinite(clickedTick) || !Number.isFinite(currentTick) || !perBar) {
+      disarmAlign();
+      return;
+    }
+    const deltaBars = (clickedTick - currentTick) / perBar;
+    const next = Math.min(
+      64,
+      Math.max(-64, Math.round((syncOffsetBars + deltaBars) * 4) / 4)
+    );
+    setSyncOffsetBars(next);
+    persistSyncDrift();
+    setSyncStatus(`Kohdistettu ${next > 0 ? "+" : ""}${next} tahtia`);
+    disarmAlign();
+  }
+
   async function persistSyncDrift() {
     if (!activeTab || !activeTab.id) return;
     const tabId = activeTab.id;
@@ -370,6 +476,7 @@
       const bar = currentBarNumber();
       barReadout.textContent = bar ? `Tahti ${bar}` : "Tahti –";
     }
+    updateOffsetReadout();
   }
 
   function scrollScoreToCursor() {
@@ -878,6 +985,9 @@
     if (output) {
       output.handler = mediaHandler;
     }
+    if (api.beatMouseDown && typeof api.beatMouseDown.on === "function") {
+      api.beatMouseDown.on(handleAlignClick);
+    }
     return api;
   }
 
@@ -938,6 +1048,7 @@
       allTracks = [];
       visibleTrackIndexes = new Set();
       sliderSeeking = false;
+      if (alignArmed) disarmAlign();
       if (trackToggles) trackToggles.textContent = "";
       if (staveSelect) staveSelect.value = staveProfile;
       if (seekSlider) {
@@ -1576,6 +1687,12 @@
   if (bpmButton) {
     bpmButton.addEventListener("click", applyTempo);
   }
+  if (alignButton) {
+    alignButton.addEventListener("click", () => {
+      if (alignArmed) disarmAlign();
+      else armAlign();
+    });
+  }
   if (bpmInput) {
     bpmInput.addEventListener("input", () => {
       setBpmStatus("");
@@ -1646,7 +1763,10 @@
     resizeTimer = window.setTimeout(applyDisplayScale, 180);
   });
   if (audio) {
-    audio.addEventListener("play", () => setPlayLabel(true));
+    audio.addEventListener("play", () => {
+      setPlayLabel(true);
+      if (alignArmed) disarmAlign();
+    });
     audio.addEventListener("pause", () => {
       setPlayLabel(false);
       // alphaTab snaps the cursor to the start of the current beat when the

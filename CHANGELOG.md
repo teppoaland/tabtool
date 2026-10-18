@@ -2,6 +2,20 @@
 
 > AI TabTool käyttää `1.x`-versiosarjaa. Aloitus `v1.00`.
 
+## v1.46 – 18.10.2026
+
+- **Kohdistusavustin (pyynnöstä):**
+  - **Live-offset-näyttö** kuljetuspalkissa näyttää osoittimen eron
+    ääneen (`Osoitin +0,50 tahtia edellä` / `−0,50 tahtia jäljessä` /
+    `Kohdallaan`), laskettuna `api.tickPosition` vs.
+    `audio.currentTime × BPM × 960 / 60000`.
+  - **KOHDISTA-nappi**: pysäytä toisto ja klikkaa tabista sitä nuottia,
+    jonka pitäisi soida nyt. Appi laskee eron `beat.absolutePlaybackStart`
+    vs. nykyinen `tickPosition` ja tallentaa sen SIIRTO-arvoksi
+    (`/api/tabs/{id}/sync`). Klikkauksen aikana alphaTabin oma
+    click-to-seek on väliaikaisesti pois päältä.
+- Ei backend-muutoksia; 93 pytest-testiä.
+
 ## v1.45 – 18.10.2026
 
 - **Korjaus: partituurin kesto lasketaan master bar -tikeistä.** Aiempi

@@ -6,14 +6,14 @@
   <meta name="color-scheme" content="dark">
   <title>AI TabTool</title>
   <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="/static/style.css?v=1.45">
+  <link rel="stylesheet" href="/static/style.css?v=1.46">
 </head>
 <body>
   <header class="topbar">
     <div class="brand">
       <span class="brand-mark" aria-hidden="true">AT</span>
       <span class="brand-name">AI TABTOOL</span>
-      <span id="version-tag" class="version">v1.45</span>
+      <span id="version-tag" class="version">v1.46</span>
     </div>
     <nav class="nav" aria-label="Päävalikko">
       <button id="open-search-top" type="button" class="ghost small nav-search"
@@ -81,6 +81,8 @@
                 title="Siirry 5 sekuntia eteenpäin.">+5 s</button>
         <span id="bar-readout" class="bar-readout"
               title="Nykyinen tahti.">Tahti –</span>
+        <span id="sync-offset-readout" class="sync-offset-readout"
+              title="Osoittimen ero ääneen: + = osoitin edellä, − = jäljessä."></span>
         <button id="section-button" type="button" class="ghost small"
                 title="Tee uusi tabi nykyisestä kohdasta valitulla kestolla.">TEE TAB TÄSTÄ</button>
         <select id="section-length" class="section-length"
@@ -112,6 +114,8 @@
                  min="-64" max="64" step="0.25" value="0">
           <span class="shift-unit">tahtia</span>
         </label>
+        <button id="align-button" type="button" class="ghost small"
+                title="Kohdista osoitin: pysäytä toisto ja klikkaa tabista sitä nuottia, jonka pitäisi soida juuri nyt. Appi laskee ja tallentaa SIIRTO-arvon.">KOHDISTA</button>
         <label class="bpm-field"
                title="Tabin tempo. Desimaalit sallittu (esim. 143,5): GP5 tallentaa kokonaisluvun ja desimaali hienosäätää toistoa.">
           <span>TAB BPM</span>
@@ -270,8 +274,8 @@
     <span>Local-first · <a href="/remote">Remote</a></span>
   </footer>
 
-  <script src="/static/vendor/alphaTab/alphaTab.min.js?v=1.45"></script>
-  <script src="/static/app.js?v=1.45" defer></script>
+  <script src="/static/vendor/alphaTab/alphaTab.min.js?v=1.46"></script>
+  <script src="/static/app.js?v=1.46" defer></script>
 </body>
 </html>
 
