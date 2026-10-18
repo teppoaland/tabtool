@@ -43,12 +43,8 @@
 
 ## Session päätökset (18.10.2026)
 
-- Memory bankin HEAD-viittaukset korjattu pysyviin ankkureihin:
-  koodicommit `d07c7de`, tagi `v1.29` = `bb704e8`,
-  `origin/main` = `69c2e39`; työpuu clean.
-- **Ei pushia julkiseen GitHubiin:** vain lokaalit commitit
-  palautuspisteiksi (revert). Push vaatii erillisen pyynnön;
-  sääntö myös `.clinerules/03-versioning.md`:ssä.
+- HEAD-viittaukset korjattu pysyviin ankkureihin; **ei pushia
+  julkiseen GitHubiin** – vain lokaalit commitit (sääntö 03:ssa).
 
 ## Memory bank -protokolla (18.10.2026)
 
