@@ -191,6 +191,10 @@ vakiomäärän iskuja eri kohdassa: esim. `-1,5` = tabi on 6 iskua edellä,
 vakiosiirtoa. Arvo tallentuu tabille (`sync_offset_bars`) ja pysyy
 mukana.
 
+**Vihje:** älä raahaa hiirellä tabin yli – se saattoi aiemmin luoda
+alphaTabin loop-alueen. Nykyään alue nollataan automaattisesti, mutta
+klikkaaminen riittää siirtämiseen.
+
 Pätkägenerointi: siirry katselimessa kohtaan, valitse **30/60/120 s** ja
 paina **TEE TAB TÄSTÄ**. Ohjelma tekee uuden tabin vain siitä pätkästä
 samoilla asetuksilla ja avaa sen; nimi sisältää aikavälin.

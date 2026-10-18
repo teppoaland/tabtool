@@ -340,6 +340,7 @@
 
   function seekTo(seconds) {
     if (!Number.isFinite(audio.duration) || audio.duration <= 0) return;
+    clearPlaybackRange();
     const target = Math.min(
       Math.max(0, Number(seconds) || 0),
       audio.duration
@@ -707,6 +708,15 @@
     },
   };
 
+  function clearPlaybackRange() {
+    if (!api) return;
+    try {
+      if (api.playbackRange) api.playbackRange = null;
+    } catch (error) {
+      /* older alphaTab builds */
+    }
+  }
+
   function syncPosition(force) {
     if (!api || !api.player || !Number.isFinite(audio.currentTime)) return;
     // While the browser is seeking, currentTime can still report the old
@@ -773,9 +783,27 @@
       // PlayerState.Playing === 1; the UMD bundle does not always expose
       // the enum on the global object.
       setPlayLabel(Number(args.state) === 1);
+      if (Number(args.state) !== 1) {
+        // alphaTab snaps to the beat start when pausing; restore quickly.
+        window.setTimeout(() => syncPosition(true), 60);
+      }
     });
     api.error.on((error) => console.error("alphaTab", error));
+    // Dragging the mouse over the score creates a playback range (loop)
+    // inside alphaTab. That range clamps seeks and makes the cursor jump,
+    // so any range is cleared right away.
+    if (
+      api.playbackRangeChanged &&
+      typeof api.playbackRangeChanged.on === "function"
+    ) {
+      api.playbackRangeChanged.on((args) => {
+        if (!args || !args.playbackRange) return;
+        clearPlaybackRange();
+        window.setTimeout(() => syncPosition(true), 0);
+      });
+    }
     api.scoreLoaded.on(() => {
+      clearPlaybackRange();
       const output = api.player && api.player.output;
       if (output) output.handler = mediaHandler;
       allTracks =
@@ -1336,7 +1364,12 @@
   });
   if (audio) {
     audio.addEventListener("play", () => setPlayLabel(true));
-    audio.addEventListener("pause", () => setPlayLabel(false));
+    audio.addEventListener("pause", () => {
+      setPlayLabel(false);
+      // alphaTab snaps the cursor to the start of the current beat when the
+      // player pauses; restore the exact audio position shortly after.
+      window.setTimeout(() => syncPosition(true), 150);
+    });
     audio.addEventListener("loadedmetadata", updateTransport);
     audio.addEventListener("durationchange", updateTransport);
     audio.addEventListener("timeupdate", updateTransport);

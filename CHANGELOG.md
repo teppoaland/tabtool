@@ -2,6 +2,22 @@
 
 > AI TabTool käyttää `1.x`-versiosarjaa. Aloitus `v1.00`.
 
+## v1.37 – 18.10.2026
+
+- **Korjaus: vahingossa syntyvä playback range (loop).** alphaTab luo
+  hiirellä raahaamalla `playbackRange`-alueen (vihreä kehys), joka
+  rajaa `mainSeek`in. Silloin tab jämähtää/clampautuu väärään kohtaan
+  (esim. "tab bar 85, soitto bar 84") ja Pause hyppää beat-alun
+  mukaan. Range nollataan nyt heti: `playbackRangeChanged`-tapahtumassa,
+  `scoreLoaded`issa ja ennen jokaista seekiä. Klikkaus siirtää edelleen,
+  mutta raahaus ei jätä looppia.
+- **Pause-palautus:** kun alphaTab pysäyttää ja snapsauttaa cursorin
+  beat-alun mukaan, sijainti palautetaan audion aikaan
+  (`playerStateChanged` 60 ms + audion `pause` 150 ms).
+- Validoitu headless-selaimessa: raahaus → `.at-selection` 0×0,
+  seek 10 s → tahti 6 (ei clampattu); pause → tahtilukema säilyy.
+- 75 pytest-testiä (ei backend-muutoksia).
+
 ## v1.36 – 18.10.2026
 
 - **SIIRTO neljännes tahdin tarkkuudella:** 0,25 tahdin askel = 1 isku
