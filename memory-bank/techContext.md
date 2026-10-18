@@ -150,7 +150,7 @@ DB-tiedosto); vain tuotenimi on `AI TabTool`.
   (`bpm-status`, `sync-status`) saavat `.is-error`-luokan virheestä.
 - Uvicorn ajetaan ilman `--reload`ia: koodimuutoksen jälkeen palvelin
   on käynnistettävä uudelleen, muuten uudet reitit palauttavat 404.
-  Staattisten tiedostojen `?v=1.40`-leimat pakottavat tuoreen CSS/JS:n;
+  Staattisten tiedostojen `?v=1.41`-leimat pakottavat tuoreen CSS/JS:n;
   selaimessa voi silti tarvita Ctrl+F5:n.
 - Modaalin pino: alphaTabin `.at-cursors` on `z-index: 1000`; modaali
   `2000`, dialogi `2100`, viewer `isolation: isolate`, cursor piiloon
