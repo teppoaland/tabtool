@@ -2,6 +2,16 @@
 
 > AI TabTool käyttää `1.x`-versiosarjaa. Aloitus `v1.00`.
 
+## v1.47 – 18.10.2026
+
+- **Korjaus: osoitin "juoksi" edellä toiston aikana (renderöinti).** alphaTabin
+  `enableAnimatedBeatCursor` ekstrapoloi kursorin CSS-siirtymällä seuraavan
+  iskun yli (`ToNextBext` → kerroin 2), joten toiston aikana näkymä eteni
+  ääntä edellä ja pysäytyksessä palasi tarkkaan paikkaan. Animoitu kursori
+  otettiin pois käytöstä: nyt kursori hyppää suoraan oikeaan
+  `tickPosition`iin joka 50 ms -päivityksellä.
+- Ei backend-muutoksia; 93 pytest-testiä.
+
 ## v1.46 – 18.10.2026
 
 - **Kohdistusavustin (pyynnöstä):**

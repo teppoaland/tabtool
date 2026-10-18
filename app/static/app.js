@@ -904,7 +904,11 @@
         player: {
           playerMode: alphaTab.PlayerMode.EnabledExternalMedia,
           enableCursor: true,
-          enableAnimatedBeatCursor: true,
+          // The animated beat cursor extrapolates the cursor past the next
+          // beat (CSS transition), so during playback it visually runs ahead
+          // of the audio and snaps back on pause. Disable it: the cursor then
+          // jumps to the exact tickPosition on every 50 ms sync update.
+          enableAnimatedBeatCursor: false,
           enableElementHighlighting: true,
           enableUserInteraction: true,
           scrollMode: alphaTab.ScrollMode
