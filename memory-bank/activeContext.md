@@ -1,7 +1,7 @@
 # 📍 Aktiivinen konteksti – AI TABTOOL
 
 > **Versio:** `v1.29` (18.10.2026)
-> **Git:** HEAD `232bce3` + memory-bank docs; koodi v1.23–v1.29 työpuussa
+> **Git:** HEAD `d07c7de` (v1.29 code) + memory-bank docs; tag v1.29; työpuu clean
 > **Repo:** https://github.com/teppoaland/tabtool
 
 ## Nyt
@@ -29,16 +29,14 @@
   poikkeus.
 - Soittotapa/refinger (asemaprofiilit, helpoin-arvio, turhien nuottien
   karsinta, per-tahti-asema) on suunniteltu mutta **ei toteutettu**;
-  jäissä, kunnes perus-SoD toimii ja koodi on committoitu.
+  jäissä. Koodi on committoitu (`d07c7de`, tag v1.29).
 - Spotify ei ole vielä mukana (Phase 3).
 
 ## Seuraava vaihe
 
-1. **Commitoi v1.23–v1.29 koodi + testit** työpuusta (memory bank
-   committoidaan erikseen docs-prefixillä) ja varmista 60 testiä.
-2. Päätä soittotapa/refinger-toteutus: asemaprofiilit, playability-score,
+1. Päätä soittotapa/refinger-toteutus: asemaprofiilit, playability-score,
    turhien nuottien karsinta, per-tahti/fraasiasema.
-3. Vasta sitten Phase 3 / Spotify: PKCE, haku/metadata, SDK/Connect,
+2. Vasta sitten Phase 3 / Spotify: PKCE, haku/metadata, SDK/Connect,
    tokenit `oauth_tokens`-tauluun ja mockatut API-testit.
 
 

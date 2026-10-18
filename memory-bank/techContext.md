@@ -77,12 +77,13 @@ Hyödylliset valinnat: `--model htdemucs_6s`, `--stem guitar`, `--tuning`,
 ## Git
 
 - `origin` = `https://github.com/teppoaland/tabtool.git`
-- HEAD `232bce3` (docs: AI TabTool rename) + memory-bank docs
-- `origin/main` = `69c2e39`; paikallinen `main` 7 committia edellä
-  (sisältää tämän memory-bank docs -commitin)
-- **Koodi v1.23–v1.29 on työpuussa, ei committoitu** (12 muokattua +
-  `app/tab_import.py` ja 5 uutta testitiedostoa); commitoi ennen
-  seuraavaa isoa vaihetta.
+- HEAD `d07c7de` (v1.29 code) + memory-bank docs
+- `origin/main` = `69c2e39`; paikallinen `main` 9 committia edellä
+  (sisältää v1.29-koodin ja memory-bank docs); **ei pushattu**
+- **Koodi v1.23–v1.29 on committoitu** `d07c7de` (18 tiedostoa,
+  2442 lisäystä); paikallinen tag `v1.29`; työpuu clean.
+- Git ei versioi `data/`- eikä `docs/`-hakemistoa; tag/commit palauttaa
+  vain koodin, ei audioita/tabeja/tokeneita.
 - Commit author: `Azure Notepad Pipeline <azure-pipeline@notepad-automation.com>`
 - `.gitattributes`: `*.bat eol=crlf`, `app/static/vendor/** -text`
 - `.gitignore`: `docs/`, `data/`, `.venv`, audio/tabit, tokenit, mallit

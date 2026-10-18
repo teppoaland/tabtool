@@ -21,6 +21,8 @@
 - Soittotapa/refinger (asemaprofiilit, helpoin-arvio, turhien nuottien
   karsinta) suunniteltu, **ei toteutettu**; jäissä.
 - 60 pytest-testiä.
+- Committoitu `d07c7de` (v1.29; 18 tiedostoa, 2442 lisäystä);
+  paikallinen tag `v1.29`; ei pushia.
 
 ## v1.28 – Referenssitabin audio (18.10.2026)
 
@@ -172,13 +174,14 @@
 - Soittotapa/refinger (asemaprofiilit, nuottien karsinta) puuttuu.
 - Referenssitabilla on 258 tahtia vs. AI 249; rakenne voi poiketa.
 - Rummut vaativat oman mallin; Spotify Phase 3; remote Phase 4.
-- Koodi v1.23–v1.29 on työpuussa, ei committoitu.
+- Koodi v1.23–v1.29 on committoitu `d07c7de`; tag v1.29 on lokaali.
+  `data/` ja `docs/` eivät ole gitissä, joten ne tarvitsevat erillisen
+  varmuuskopion.
 
 ## Seuraavaksi
 
-1. Committaa v1.23–v1.29 koodi + testit (työpuu) ja varmistaa 60 testiä.
-2. Päättää soittotapa/refinger: asemaprofiilit, playability-score,
+1. Päättää soittotapa/refinger: asemaprofiilit, playability-score,
    turhien nuottien karsinta, per-tahti/fraasiasema.
-3. Vasta sitten Phase 3 / Spotify: PKCE, haku/metadata, SDK/Connect,
+2. Vasta sitten Phase 3 / Spotify: PKCE, haku/metadata, SDK/Connect,
    tokenit `oauth_tokens`-tauluun ja mockatut API-testit.
-4. Phase 4: remote-kaukosäädin.
+3. Phase 4: remote-kaukosäädin.
