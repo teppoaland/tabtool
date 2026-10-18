@@ -1,8 +1,10 @@
 # 📍 Aktiivinen konteksti – AI TABTOOL
 
 > **Versio:** `v1.37` (18.10.2026)
-> **Git:** uusin koodicommit `b438e7b` (v1.37), docs `5db60ae`;
-> `origin/main` = `69c2e39`; paikallinen `main` on edellä (ei pushattu)
+> **Git:** uusin koodicommit `b438e7b` (v1.37); docs-commitit sen päällä
+> (`346af7c`), ei pushattu. `origin/main` = `69c2e39`; paikallinen `main`
+> on edellä 29 committia. Docs-commit siirtää HEADia, joten älä pinnaa
+> HEAD-hashia tähän tiedostoon.
 > **Push:** ei pushata julkiseen GitHubiin — vain lokaalit commitit
 > **Repo:** https://github.com/teppoaland/tabtool
 
