@@ -1,14 +1,16 @@
 # 📍 Aktiivinen konteksti – AI TABTOOL
 
 > **Versio:** `v1.37` (18.10.2026)
-> **Git:** koodi `d07c7de`, tagi `v1.29` = `bb704e8`, `origin/main` = `69c2e39`
+> **Git:** uusin koodicommit `b438e7b` (v1.37), docs `5db60ae`;
+> `origin/main` = `69c2e39`; paikallinen `main` on edellä (ei pushattu)
 > **Push:** ei pushata julkiseen GitHubiin — vain lokaalit commitit
 > **Repo:** https://github.com/teppoaland/tabtool
 
 ## Nyt
 
-- Phase 0/1/2 valmiit; Phase 2:n päälle on tehty v1.23–v1.29:
-  katselu, aikajana, tuonti/audio, BPM/Nopeus ja pätkägenerointi.
+- Phase 0/1/2 valmiit; Phase 2:n päälle on tehty v1.23–v1.37:
+  katselu, aikajana, tuonti/audio, BPM/Nopeus, SYNC/SIIRTO,
+  pätkägenerointi ja ulkoinen arkisto.
 - Katselu: **tab-only oletus**, Näkymä (`Tab`/`Auto`/`Tab+nuotit`/`Nuotit`),
   raitavalinnat ja tabikohtainen muisti, FULLSCREEN + automaattinen
   fullscreen PLAYssa, cursor + edellinen rivi näkyvissä, dynamiikat piilossa,
@@ -64,21 +66,22 @@
   (−64…+64, 0,25 tahdin askel = 1 isku), tallentuu
   `meta.sync_offset_bars`. Vakiosiirtoon (esim. 6 iskua = 1,5 tahtia)
   ja rakenne-eroon. Ei korvaa SYNCiä (prosentti) eikä BPM:ää.
-- Referenssitabi palautettu **140 BPM**; audio liitetty; AI-tabi 144.
-  BPM/Nopeus-kontrollit jäävät, mutta eivät pakota 144:ään.
+- Referenssitabi: 258 tahtia, BPM 143,5 (GP5 144); AI-tabi 249
+  tahtia, BPM 143,5547. BPM/SYNC/SIIRTO eivät pakota 144:ään.
 - Täydet kappaleet ovat oletus; pätkägenerointi (`TEE TAB TÄSTÄ`) on
   poikkeus.
 - Soittotapa/refinger (asemaprofiilit, helpoin-arvio, turhien nuottien
   karsinta, per-tahti-asema) on suunniteltu mutta **ei toteutettu**;
-  jäissä. Koodi on committoitu (`d07c7de`); tagi `v1.29` = `bb704e8`;
-  vain lokaalit commitit, ei pushia.
+  jäissä. Koodi on committoitu (`b438e7b`, v1.37); vain lokaalit
+  commitit, ei pushia.
 - Spotify ei ole vielä mukana (Phase 3).
 
 ## Seuraava vaihe
 
-1. Seek & Destroy -GP5:n hienosäätö: aja kohtaan ~60–70 tahti, säädä
-   SYNC kohdalleen (tallentuu tabille); jos heitto kasvaa edelleen,
-   tarkista GP5:n BPM/tahtirakenne TAB BPM:llä ja Guitar Prolla.
+1. Seek & Destroy: lataa sivu (v1.37), nollaa SIIRTO ja tarkista BPM
+   143,5/143,55 (TALLENNA). Testaa bar 37 ja 84–85 ilman raahausta;
+   jos heitto on vakio → SIIRTO 0,25 tahdin askelin, jos kasvaa →
+   SYNC, jos hyppää → GP5:n rakenne.
 2. Päätä soittotapa/refinger-toteutus: asemaprofiilit, playability-score,
    turhien nuottien karsinta, per-tahti/fraasiasema.
 3. Vasta sitten Phase 3 / Spotify: PKCE, haku/metadata, SDK/Connect,
@@ -104,7 +107,7 @@ Putki:
 
 ## Tuoreimmat validointitulokset
 
-- `pytest -q` → **64 passed**; `compileall` ja `node --check` OK.
+- `pytest -q` → **75 passed**; `compileall` ja `node --check` OK.
 - Headless-Chrome: SYNC `+3.50 %` → `sync_drift 0.035` kantaan ja
   `meta.json`iin; reload palautti arvon; Nopeus 50–150 %.
 - v1.31 headless: TALLENNA-nappi, punainen dirty-tila
@@ -113,7 +116,7 @@ Putki:
 - v1.32: 69 pytest-testiä; backfill arkistoi 5 tiedostoa
   (`D:\tabtool_files`), `fsutil hardlink list` vahvisti hard linkin
   (`yt-62c1293b02.wav` ↔ `Metallica - Seek & Destroy.wav`).
-- Live-palvelin 8000: **v1.33**, 8 tabia `D:\AI\tabtool\data`:sta.
+- Live-palvelin 8000: **v1.37**, 8 tabia `D:\AI\tabtool\data`:sta.
 - v1.33: seek-testi 30/10/50/20/55/5 s → tahdit 16/6/26/11/28/3
   (odotetut); MP3 `Metallica` 414,7 s / 9,8 MB, `KISS` 20,0 s
   (alkuperäinen audio on 20 s klippi); 72 testiä.
@@ -125,12 +128,12 @@ Putki:
   tallentui desimaalina; live v1.36.
 - v1.37: raahaus → `.at-selection` 0×0, seek 10 s → tahti 6,
   pause säilytti tahtilukeman; live v1.37.
-- Referenssitabi **140 BPM**, audio 414,72 s, PLAY + aikajana + cursor;
-  5 raitaa, oletus Guitar 1 + Guitar 2.
-- AI-tabi 144 BPM / 249 tahtia; referenssi 140 BPM / 258 tahtia.
+- Referenssitabi: 258 tahtia, BPM 143,5 (GP5 144); AI-tabi 249 tahtia,
+  BPM 143,5547. Audio 414,72 s, PLAY + aikajana + cursor; 5 raitaa.
 - GP5/MusicXML-tuonti ja `LIITÄ AUDIO` validoitu headless-selaimessa.
-- 144 BPM -kokeilu peruutettu; referenssi palautettu 140:een käyttäjän
-  toiveesta. BPM/Nopeus-kontrollit jäivät paikoilleen.
+- Seek & Destroy -audion mitattu tempo 143,555 BPM; desimaali-BPM ja
+  SIIRTO käytössä. Referenssitabissa ~9 tahtia enemmän kuin
+  levytyksessä → rakenne-ero vaatii GP5-korjauksen tai SIIRTOn.
 
 ## Avoimet / myöhemmin
 

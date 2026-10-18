@@ -1,6 +1,6 @@
 # 🎯 Projektin lyhyt kuvaus – AI TABTOOL
 
-> **Versio:** `v1.29` (18.10.2026)
+> **Versio:** `v1.37` (18.10.2026)
 > **Repo:** https://github.com/teppoaland/tabtool
 > **Paikallinen:** `D:\AI\tabtool`
 
@@ -31,12 +31,13 @@ Lokaali web-palvelu, jossa voi:
   voidaan liittää tuotuun tabiin. Tabin BPM korjattavissa desimaalilla
   (GP5 tallentaa kokonaisluvun; desimaali on toiston korjaus), `Nopeus`
   50–150 % harjoitteluun, `SYNC` ±10 % hienosäätöön ja `SIIRTO`
-  −64…+64 tahtia rakenne-eroon; kaikki tallentuvat tabille.
+  tahdeittain (0,25 tahdin askel = 1 isku) rakenne-eroon tai
+  vakiosiirtoon; kaikki tallentuvat tabille.
 - **Ei pakollista Guitar Prota.** TuxGuitar on ilmainen apuväline
   tarvittaessa; appi tuo GP5/MusicXML:n.
 - **All rights reserved** (GameHubin käytäntö). Kolmannen osapuolen
   lisenssit `THIRD_PARTY_NOTICES.md`:ssä.
-- **Versiosarja `1.x`**, aloitus `v1.00`; nyt `v1.29`.
+- **Versiosarja `1.x`**, aloitus `v1.00`; nyt `v1.37`.
 - **Ei julkista julkaisua:** koodi pidetään lokaalina. Commitit tehdään
   paikalliseen repoon palautuspisteiksi (revert); push GitHubiin vain
   erillisestä pyynnöstä.
@@ -46,7 +47,7 @@ Lokaali web-palvelu, jossa voi:
   levyllä, joten tiedostot löytyvät myös muuhun käyttöön ilman
   tuplalevytilaa. YouTube-latauksista tehdään lisäksi MP3
   `audio/mp3/<Artisti>/`-kansioon omaan kuunteluun.
-- **Tuotenimi `AI TabTool`** (v1.22–v1.29). Repo/hakemisto `tabtool`,
+- **Tuotenimi `AI TabTool`** (v1.22–v1.37). Repo/hakemisto `tabtool`,
   `TABTOOL_*`-ympäristömuuttujat ja `data/tabtool.sqlite3` ovat teknisiä
   nimiä. Ei sidoksissa tabtool GmbH:hen eikä SEYDEL TabTooliin.
 - UI-tekstit ovat toistaiseksi suomeksi; pelaajalle näkyvät ydintekstit
@@ -73,6 +74,6 @@ Sano Cline:lle **`lue membank`**. Sääntö on
 - `app/pipeline/` – audio-to-tab-putki
 - `app/tab_import.py` – GP5/MusicXML-tuonti
 - `scripts/pipeline_smoke.py` – CLI-proof
-- `tests/` – 64 pytest-testiä
+- `tests/` – 75 pytest-testiä
 - `data/` – GITIGNORED: audio, stemmit, tabit, tokenit
 - `docs/` – GITIGNORED: henkilökohtainen suunnitelma

@@ -165,11 +165,12 @@
 
 ## Testitilanne
 
-- `pytest -q` → **64 passed**
+- `pytest -q` → **75 passed**
 - `compileall` → OK
 - `node --check app.js` / `remote.js` → OK
 - Headless-Chrome: alphaTab-render, cursor, fullscreen, GP5/MusicXML-
-  tuonti, audio attach, BPM 140/144, aikajana, SYNC-tallennus
+  tuonti, audio attach, BPM/desimaalitempo, SIIRTO, SYNC-tallennus,
+  playback range -nollaus
 
 ## Tunnetut rajoitukset
 
@@ -182,7 +183,7 @@
 - Soittotapa/refinger (asemaprofiilit, nuottien karsinta) puuttuu.
 - Referenssitabilla on 258 tahtia vs. AI 249; rakenne voi poiketa.
 - Rummut vaativat oman mallin; Spotify Phase 3; remote Phase 4.
-- Koodi v1.23–v1.29 on committoitu `d07c7de`; tagi `v1.29` =
+- Koodi v1.23–v1.37 on committoitu (`b438e7b`); tagi `v1.29` =
   `bb704e8`. Repoa ei pushatta julkiseen GitHubiin:
   lokaalit commitit toimivat palautuspisteinä.
   `data/` ja `docs/` eivät ole gitissä, joten ne tarvitsevat erillisen

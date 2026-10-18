@@ -9,7 +9,7 @@
 - **Ei GPU:ta** (`nvidia-smi` tyhjä) → CPU-only
 - D: levytilaa ~147 GB vapaana
 
-## Python-paketit (v1.29)
+## Python-paketit (v1.37)
 
 Core:
 
@@ -56,7 +56,7 @@ python -m venv .venv
 ## Testit
 
 ```powershell
-.venv\Scripts\python.exe -m pytest -q          # 73 passed
+.venv\Scripts\python.exe -m pytest -q          # 75 passed
 .venv\Scripts\python.exe -m compileall -q app scripts tests
 node --check app\static\app.js
 node --check app\static\remote.js
@@ -80,11 +80,10 @@ Hyödylliset valinnat: `--model htdemucs_6s`, `--stem guitar`, `--tuning`,
 - **Vain lokaalit commitit.** Projektia ei julkaista eikä pushatta
   julkiseen GitHubiin toistaiseksi. Commitit ovat palautuspisteitä
   (revert), jos koodi hajoaa. Push vaatii aina erillisen pyynnön.
-- Pysyvät ankkurit (tarkista aina `git --no-pager log --oneline`):
-  koodicommit `d07c7de` (v1.29), tagi `v1.29` = `bb704e8`,
-  `origin/main` = `69c2e39`.
-- Paikallinen `main` on `origin/main`:ia edellä vain docs-committeilla
-  (memory bank); `git status -sb` näyttää ajantasaisen ahead-määrän.
+- Ankkurit: uusin koodicommit `b438e7b` (v1.37), docs `5db60ae`,
+  tagi `v1.29` = `bb704e8`, `origin/main` = `69c2e39`.
+- Paikallinen `main` on `origin/main`:ia edellä (v1.23–v1.37 koodi +
+  memory bank -docs); **ei pushattu**. `git status -sb` näyttää määrän.
 - Älä kirjaa tähän HEAD-hashia: docs-commit siirtää HEADin joka kerta.
 - Työpuu clean committien jälkeen.
 - Git ei versioi `data/`- eikä `docs/`-hakemistoa; tag/commit palauttaa
@@ -99,7 +98,8 @@ Hyödylliset valinnat: `--model htdemucs_6s`, `--stem guitar`, `--tuning`,
 - `data/audio/` – uploadit, YouTube-normalisoinnit ja pätkäklipit
 - `data/stems/` – Demucs-stemmat
 - `data/tabs/<id>/` – `tab.gp5`, `tab.musicxml`, `tab.mid`, `meta.json`
-  (mm. `files`, `audio_path`, `bpm`, `sync_drift`)
+  (mm. `files`, `audio_path`, `bpm`, `gp5_tempo`, `sync_drift`,
+  `sync_offset_bars`)
 - `D:\tabtool_files\` (gitin ulkopuolella) – ulkoisen sisällön arkisto:
   `audio/Artist - Title.wav`, `audio/mp3/<Artisti>/Artist - Title.mp3`,
   `tabs/Artist - Title.gp5|.musicxml`.
