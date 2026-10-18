@@ -23,6 +23,7 @@ def data_dir(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
     root = tmp_path / "data"
     root.mkdir(parents=True, exist_ok=True)
     monkeypatch.setattr(config, "DATA_DIR", root)
+    monkeypatch.setattr(config, "EXTERNAL_DIR", root / "external")
     return root
 
 

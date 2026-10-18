@@ -2,6 +2,23 @@
 
 > AI TabTool käyttää `1.x`-versiosarjaa. Aloitus `v1.00`.
 
+## v1.32 – 18.10.2026
+
+- **Ulkoinen arkisto:** YouTube-lataukset ja tuodut GP5/MusicXML-tabit
+  mirroroidaan luettavalla nimellä (`Artist - Title.ext`) hakemistoon
+  `D:\tabtool_files\audio` ja `D:\tabtool_files\tabs`
+  (`TABTOOL_EXTERNAL_DIR`). Samalla levyasemalla käytetään hard linkiä,
+  joten levytilaa ei kulu ylimääräistä; muuten tehdään kopio.
+  Arkistointivirhe ei kaada jobia. Pätkäklipit jätetään arkistoimatta.
+- `scripts/backfill_external.py` arkistoi olemassa olevan kirjaston
+  kertaalleen.
+- `tests/test_external_store.py` ja tuontitestin arkistovarmistus;
+  testit käyttävät temp-hakemistoa, eivät `D:\tabtool_files`ia.
+- Muistutus: `TABTOOL_DATA_DIR`-ympäristömuuttuja periytyy
+  `Start-Process`ille. Jos se osoittaa testihakemistoon, UI näyttää
+  tyhjän kirjaston vaikka `data/` olisi ehjä – käynnistä palvelin
+  oikealla data-juurella.
+
 ## v1.31 – 18.10.2026
 
 - **TALLENNA** (entinen `ASETA`): TAB BPM tallentuu vain napista.

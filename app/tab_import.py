@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import Any
 
 from app import config, db
+from app.external_store import archive_external
 
 MAX_IMPORT_BYTES = 20 * 1024 * 1024
 GP_SUFFIXES = {".gp5"}
@@ -242,4 +243,13 @@ def import_tab_bytes(data: bytes, filename: str) -> dict[str, Any]:
     if tab is None:
         shutil.rmtree(final, ignore_errors=True)
         raise TabParseError("Tabia ei saatu rekisteröityä.")
+    try:
+        archive_external(
+            final / stored_name,
+            "tabs",
+            str(meta.get("artist") or ""),
+            str(meta.get("title") or ""),
+        )
+    except Exception:  # noqa: BLE001 - archive must not break the import
+        pass
     return tab

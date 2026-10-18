@@ -205,6 +205,33 @@ Sama audio + samat asetukset palauttaa cachesta saman tabin; vain
 
 ---
 
+## Ulkoinen arkisto (`D:\tabtool_files`)
+
+Ulkoinen sisältö mirroroidaan luettavalla nimellä, jotta samat tiedostot
+löytyvät helposti muuhunkin käyttöön:
+
+- `D:\tabtool_files\audio\` – YouTube-lataukset (`Artist - Title.wav`)
+- `D:\tabtool_files\tabs\` – tuodut tabit (`Artist - Title.gp5`/`.musicxml`)
+
+Samalla levyasemalla käytetään **hard linkiä**, joten tiedosto ei vie
+ylimääräistä levytilaa ja näkyy molemmissa hakemistoissa. `data/` pysyy
+totuuden lähteenä; arkistointi ei koskaan kaada jobia. Pätkägeneroinnin
+klipit jätetään arkistoimatta (nimi ei kuvaisi koko kappaletta).
+
+Polun voi vaihtaa `.env`-tiedostossa:
+
+```env
+TABTOOL_EXTERNAL_DIR=D:\tabtool_files
+```
+
+Olemassa olevan kirjaston voi arkistoida kertaalleen:
+
+```powershell
+.venv\Scripts\python.exe scripts\backfill_external.py
+```
+
+---
+
 ## Spotify-asetukset (Phase 3)
 
 1. Luo Spotify Developer Dashboardissa app nimeltä `AI TabTool`.
@@ -263,6 +290,7 @@ app/
 ├─ config.py        polut ja ympäristömuuttujat
 ├─ db.py            SQLite: tracks, jobs, tabs, settings
 ├─ jobs.py          job-jono, worker, cache, SSE-eventit
+├─ external_store.py  YouTube-audion ja tuotujen tabien arkistointi
 ├─ static/          TV- ja remote-näkymät
 │  └─ vendor/alphaTab/   alphaTab 1.8.4 + Bravura (MPL-2.0 / OFL)
 ├─ pipeline/        audio_source, separate, transcribe, tempo,
@@ -292,7 +320,8 @@ docs/               GITIGNORED
 - **v1.29** ✅ – TAB BPM -korjaus ja tarkempi Nopeus-hienosäätö
 - **v1.30** ✅ – manuaalinen SYNC-kohdistus (tallentuu tabille), Nopeus 50–150 %
 - **v1.31** ✅ – TALLENNA-nappi ja punainen muistutus tallentamattomasta BPM:stä
-- **v1.32** – Spotify-haku, OAuth, SDK/Connect-synkka
+- **v1.32** ✅ – ulkoinen arkisto `D:\tabtool_files` (YouTube-audio + tuodut tabit)
+- **v1.33** – Spotify-haku, OAuth, SDK/Connect-synkka
 - **v1.40** – remote-kaukosäädin
 - **1.x** – basso, laulu, rummut, bending
 

@@ -4,6 +4,7 @@ from pathlib import Path
 
 from fastapi.testclient import TestClient
 
+from app import config
 from app.pipeline.build import build_document
 from app.pipeline.export_gp5 import export_gp5
 from app.pipeline.model import STANDARD_TUNING, TabNote
@@ -45,6 +46,10 @@ def test_import_gp5(client: TestClient, tmp_path: Path) -> None:
     score = client.get(f"/api/tabs/{summary['id']}/score/gp5")
     assert score.status_code == 200
     assert score.content == data
+
+    archived = config.EXTERNAL_DIR / "tabs" / "Imported Band - Imported Song.gp5"
+    assert archived.is_file()
+    assert archived.read_bytes() == data
 
 
 def test_import_rejects_unsupported_extension(client: TestClient) -> None:

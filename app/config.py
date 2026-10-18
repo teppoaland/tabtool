@@ -47,6 +47,10 @@ BASE_PATH = BASE_DIR
 STATIC_DIR = BASE_DIR / "app" / "static"
 DOCS_DIR = BASE_DIR / "docs"
 DATA_DIR = _path_from_env("TABTOOL_DATA_DIR", BASE_DIR / "data")
+# Human-readable archive for externally sourced files (YouTube audio,
+# imported GP5/MusicXML). Kept outside DATA_DIR so the files are easy to
+# find and reuse; hard links are used when the volume allows it.
+EXTERNAL_DIR = _path_from_env("TABTOOL_EXTERNAL_DIR", Path("D:/tabtool_files"))
 
 DATA_SUBDIRS = ("audio", "stems", "tabs", "cache", "logs", "models")
 

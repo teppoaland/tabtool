@@ -19,6 +19,7 @@ from typing import Any, BinaryIO, Callable, Mapping
 
 import app.config as config
 from app import db
+from app.external_store import archive_external
 from app.pipeline.model import get_tuning, parse_time_signature
 
 LOGGER = logging.getLogger("tabtool.jobs")
@@ -499,6 +500,18 @@ def run_pipeline(
             title=document_title,
             artist=document_artist,
         )
+
+    # External content (YouTube) is mirrored to the readable archive dir.
+    # Clips are skipped: their name would not describe the full song.
+    if audio.source_type == "youtube" and not (
+        options.clip_seconds or options.start_seconds
+    ):
+        try:
+            archive_external(
+                audio.path, "audio", document_artist, document_title
+            )
+        except Exception:  # noqa: BLE001 - archive must not break the job
+            LOGGER.warning("external archive failed", exc_info=True)
 
     tuning = get_tuning(options.tuning)
     stems: dict[str, Path] = {}
