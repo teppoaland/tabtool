@@ -1,5 +1,16 @@
 # 📊 Projektin edistyminen – AI TABTOOL
 
+## v1.46 – Kohdistusavustin (18.10.2026)
+
+- Kuljetuspalkkiin live-offset-näyttö (`#sync-offset-readout`): ero
+  `api.tickPosition` vs. `audio.currentTime × BPM × 960 / 60000`
+  tahteina; `Kohdallaan` kun |ero| < 0,05 tahtia.
+- **KOHDISTA**-nappi: pysäytä → klikkaa nuottia → laskee
+  `beat.absolutePlaybackStart − api.tickPosition` ja tallentaa SIIRTO-
+  arvoksi. `enableUserInteraction` väliaikaisesti pois, jotta alphaTabin
+  click-to-seek ei sekoita kohdistusta.
+- Ei backend-muutoksia; 93 pytest-testiä.
+
 ## v1.45 – Partituurin kesto master bar -tikeistä (18.10.2026)
 
 - `scoreEndTimeMs()` laskee nyt keston suoraan master bar -tikeistä:
