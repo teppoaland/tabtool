@@ -2,3 +2,7 @@
 *.bat text eol=crlf
 *.sh text eol=lf
 *.ps1 text eol=crlf
+
+# Vendored third-party files must stay byte-identical (no EOL rewriting).
+app/static/vendor/** -text
+

@@ -32,6 +32,8 @@ def test_public_config_has_no_secrets() -> None:
     assert payload["app"] == "TabTool"
     assert payload["version"] == __version__
     assert isinstance(payload["spotify_configured"], bool)
+    assert isinstance(payload["max_upload_mb"], int)
+    assert isinstance(payload["pipeline_version"], str)
     assert "spotify_client_id" not in payload
     assert "spotify_redirect_uri" not in payload
 
@@ -41,7 +43,7 @@ def test_display_shell() -> None:
     assert response.status_code == 200
     assert response.headers["content-type"].startswith("text/html")
     assert "TABTOOL" in response.text
-    assert "v1.11" in response.text
+    assert f"v{__version__}" in response.text
 
 
 def test_display_alias() -> None:
@@ -54,7 +56,7 @@ def test_remote_shell() -> None:
     response = client.get("/remote")
     assert response.status_code == 200
     assert "Remote" in response.text
-    assert "v1.11" in response.text
+    assert f"v{__version__}" in response.text
 
 
 def test_static_assets() -> None:

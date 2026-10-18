@@ -2,6 +2,42 @@
 
 > TabTool käyttää `1.x`-versiosarjaa. Aloitus `v1.00`.
 
+## v1.20 – 18.10.2026
+
+Phase 2 – web-käyttöliittymä, job-jono, cache, alphaTab ja paikallinen toisto.
+
+### Muutokset
+
+- `app/db.py`: SQLite-skeema (`tracks`, `jobs`, `tabs`, `oauth_tokens`,
+  `settings`), cache-avain, `data/`-juureen sidotut polkuapurit ja
+  CLI-tabien tuonti (`data/tabs/<nimi>/meta.json`).
+- `app/jobs.py`: yhden workerin job-jono, vaihekohtainen progress
+  (queued → downloading → separating → transcribing → building → ready),
+  SSE-tilaukset, cache-osuma ilman uutta ajoa, `regenerate`-tuki.
+- `app/main.py`: `POST /api/jobs` (upload / YouTube / local path),
+  `GET /api/jobs`, `GET /api/jobs/{id}`, `GET /api/jobs/{id}/events`,
+  `GET /api/tabs`, `GET /api/tabs/{id}`, inline `score/{fmt}`,
+  attachment `export/{fmt}` ja Range-tuettu `audio`.
+- UI: upload/YouTube-lomake, viritys/grid/nopea tila, status-rivi,
+  kirjasto, alphaTab-katselin, `PLAY`/`PAUSE` ja `EXPORT`.
+- alphaTab 1.8.4 vendoroituna (`app/static/vendor/alphaTab/`,
+  MPL-2.0 + Bravura OFL), ulkoinen media `IExternalMediaHandler`illa ja
+  50 ms positiosynkka.
+- Tabit kirjoitetaan temp-hakemistoon ja `os.replace`lla; cache-avain =
+  audion sormenjälki + pipeline-versio + asetukset.
+- 45 pytest-testiä; API-, cache-, validointi- ja polkuturvatestit
+  mockatulla putkella.
+
+### Validointi
+
+- Oikea putki nopeassa tilassa 20 s klipillä: 12 tahtia, 58 nuottia,
+  GP5 luettu takaisin (78 nuottimerkintää), MusicXML jäsentyy.
+- 137 tahdin KISS-tabi renderöityy alphaTabilla headless-Chromessa
+  (30 254 px korkea sivu, nuottimerkinnät piirtyvät).
+- 46 MB WAV striimautuu Range-pyynnöllä (206, `bytes 0-99/...`).
+- Korjaukset browser-validoinnissa: fonttipolun trailing slash,
+  `PlayerState`-enumin puuttuminen UMD-globalista, `useWorkers: false`.
+
 ## v1.11 – 18.10.2026
 
 Tie-korjaus ja validointi.

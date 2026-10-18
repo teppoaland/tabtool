@@ -37,8 +37,10 @@ repository.
 |---|---|---|---|
 | alphaTab | Tab rendering and playback | MPL-2.0 | https://www.alphatab.net/ |
 
-alphaTab will be vendored unmodified under `app/static/vendor/alphaTab/`
-in Phase 2. Its license file must be kept with the distribution.
+alphaTab 1.8.4 is vendored unmodified under `app/static/vendor/alphaTab/`
+(`alphaTab.min.js`, the Bravura font and the upstream `LICENSE`). The
+Bravura music font is licensed under the SIL Open Font License 1.1; its
+license text is kept next to the font files.
 
 ## External services
 

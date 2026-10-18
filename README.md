@@ -5,7 +5,7 @@ Hae kappale Spotifysta tai käytä omaa MP3/YouTube-audioita, anna tekoälyn
 tehdä ensimmäinen tablatuuriluonnos ja katsele sitä alphaTabilla TV:stä
 tai tietokoneelta. Puhelin toimii kaukosäätimenä.
 
-**Versio:** `v1.11` (Phase 1 – putki)
+**Versio:** `v1.20` (Phase 2 – web-UI, alphaTab ja paikallinen toisto)
 
 ## Session aloitus
 
@@ -142,6 +142,40 @@ Jos YouTube estää latauksen, käytetään paikallista MP3:aa.
 
 ---
 
+## Web-käyttö (Phase 2)
+
+1. Käynnistä `start.bat` ja avaa <http://127.0.0.1:8000>.
+2. Valitse oma MP3/WAV tai liitä YouTube-linkki.
+3. Valitse viritys ja grid. **Nopea tila** ohittaa Demucsin (nopea,
+   heikompi laatu). **Generoi uudelleen** ohittaa cachetuloksen.
+4. Status-rivi näyttää vaiheet: `Queued` → `Downloading audio…` →
+   `Separating stems…` → `Transcribing guitar…` → `Building tab…` →
+   `Ready` (tai `Failed` + virhe).
+5. Valmis tabi renderöityy alphaTabilla. `PLAY`/`PAUSE` soittaa samaa
+   paikallista audiota ja kursori seuraa tahtia 50 ms synkalla.
+6. `EXPORT` lataa GP5-, MusicXML- ja MIDI-tiedostot.
+7. Kirjasto listaa aiemmat tabit; myös CLI:llä tehdyt
+   `data/tabs/<nimi>/`-tabit (joissa on `meta.json`) rekisteröityvät
+   automaattisesti. Suora linkki: `/?tab=<tab_id>`.
+
+Jobit, cache ja tabimetadata ovat SQLitessä (`data/tabtool.sqlite3`).
+Sama audio + samat asetukset palauttaa cachesta saman tabin; vain
+`regenerate`-pyyntö kirjoittaa uuden.
+
+### API
+
+| Reitti | Kuvaus |
+|---|---|
+| `POST /api/jobs` | multipart: `file` tai `youtube_url` (+ `options` JSON) |
+| `GET /api/jobs`, `GET /api/jobs/{id}` | job-lista ja tila |
+| `GET /api/jobs/{id}/events` | SSE-progress |
+| `GET /api/tabs`, `GET /api/tabs/{id}` | kirjasto ja tab-metadata |
+| `GET /api/tabs/{id}/score/{gp5\|musicxml\|midi}` | inline score alphaTabille |
+| `GET /api/tabs/{id}/export/{gp5\|musicxml\|midi}` | lataus (attachment) |
+| `GET /api/tabs/{id}/audio` | WAV-stream Range-tuella |
+
+---
+
 ## Spotify-asetukset (Phase 3)
 
 1. Luo Spotify Developer Dashboardissa app nimeltä `TabTool`.
@@ -185,7 +219,10 @@ kautta.
 app/
 ├─ main.py          FastAPI, reitit, static
 ├─ config.py        polut ja ympäristömuuttujat
+├─ db.py            SQLite: tracks, jobs, tabs, settings
+├─ jobs.py          job-jono, worker, cache, SSE-eventit
 ├─ static/          TV- ja remote-näkymät
+│  └─ vendor/alphaTab/   alphaTab 1.8.4 + Bravura (MPL-2.0 / OFL)
 ├─ pipeline/        audio_source, separate, transcribe, tempo,
 │                   quantize, fretboard, export_gp5/musicxml/midi
 └─ ...
@@ -202,10 +239,10 @@ docs/               GITIGNORED
 
 - **v1.00** ✅ – repo, säännöt, FastAPI-runko, testit
 - **v1.10** ✅ – putki: Demucs + Basic Pitch + fretboard + GP5/MusicXML/MIDI
-- **v1.20** – web-UI + alphaTab + paikallinen toisto
+- **v1.20** ✅ – web-UI: upload/YouTube → job → alphaTab + paikallinen toisto
 - **v1.30** – Spotify-haku, OAuth, SDK/Connect-synkka
 - **v1.40** – remote-kaukosäädin
-- **1.x** – basso, laulu, rummut, kirjasto/import, bending
+- **1.x** – basso, laulu, rummut, bending
 
 ---
 
