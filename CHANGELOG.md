@@ -2,6 +2,19 @@
 
 > TabTool käyttää `1.x`-versiosarjaa. Aloitus `v1.00`.
 
+## v1.11 – 18.10.2026
+
+Tie-korjaus ja validointi.
+
+- GP5- ja MusicXML-viennissä tie-tila on nyt nuottikohtainen. Aiemmin
+  saman segmentin uudet ja edellisestä tahdista jatkuvat nuotit saivat
+  saman tie-tilan (255 sekasegmenttiä KISS-testissä).
+- Uusi testi `test_tie_state_is_per_note`.
+- 30 pytest-testiä.
+- Koko YouTube-testikohde (KISS – I’m A Legend Tonight, 4:00) ajettu
+  läpi: 137 tahtia, 1410 tab-nuottia, GP5 validi, ei rikkinäisiä
+  tahtikestoja eikä päällekkäisiä kieliä.
+
 ## v1.10 – 18.10.2026
 
 Phase 1 – audio-to-tab -putki.

@@ -5,7 +5,7 @@ Hae kappale Spotifysta tai käytä omaa MP3/YouTube-audioita, anna tekoälyn
 tehdä ensimmäinen tablatuuriluonnos ja katsele sitä alphaTabilla TV:stä
 tai tietokoneelta. Puhelin toimii kaukosäätimenä.
 
-**Versio:** `v1.10` (Phase 1 – putki)
+**Versio:** `v1.11` (Phase 1 – putki)
 
 ---
 

@@ -41,7 +41,7 @@ def test_display_shell() -> None:
     assert response.status_code == 200
     assert response.headers["content-type"].startswith("text/html")
     assert "TABTOOL" in response.text
-    assert "v1.10" in response.text
+    assert "v1.11" in response.text
 
 
 def test_display_alias() -> None:
@@ -54,7 +54,7 @@ def test_remote_shell() -> None:
     response = client.get("/remote")
     assert response.status_code == 200
     assert "Remote" in response.text
-    assert "v1.10" in response.text
+    assert "v1.11" in response.text
 
 
 def test_static_assets() -> None:

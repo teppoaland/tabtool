@@ -116,9 +116,6 @@ def export_musicxml(document: TabDocument, path: str | Path) -> Path:
             chunks = split_duration(segment.duration_ticks)
             for chunk_index, chunk in enumerate(chunks):
                 tie_start = chunk_index < len(chunks) - 1
-                tie_stop = chunk_index > 0 or bool(
-                    segment.notes and segment.notes[0].tie
-                )
                 if segment.notes:
                     for note_index, note in enumerate(segment.notes):
                         _add_note(
@@ -129,7 +126,7 @@ def export_musicxml(document: TabDocument, path: str | Path) -> Path:
                             ticks=chunk,
                             chord=note_index > 0,
                             tie_start=tie_start,
-                            tie_stop=tie_stop,
+                            tie_stop=chunk_index > 0 or note.tie,
                         )
                 else:
                     _add_note(

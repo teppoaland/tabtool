@@ -14,7 +14,7 @@ def _make_beat(
     start_tick: int,
     duration_ticks: int,
     notes: tuple[TabNote, ...],
-    tie: bool,
+    force_tie: bool,
 ):
     duration = guitarpro.Duration.fromTime(duration_ticks)
     if notes:
@@ -24,8 +24,12 @@ def _make_beat(
             status=guitarpro.BeatStatus.normal,
         )
         beat.start = start_tick
-        note_type = guitarpro.NoteType.tie if tie else guitarpro.NoteType.normal
         for note in notes:
+            note_type = (
+                guitarpro.NoteType.tie
+                if force_tie or note.tie
+                else guitarpro.NoteType.normal
+            )
             beat.notes.append(
                 guitarpro.Note(
                     beat=beat,
@@ -90,16 +94,13 @@ def export_gp5(document: TabDocument, path: str | Path) -> Path:
             offset = 0
             chunks = split_duration(segment.duration_ticks)
             for index, chunk in enumerate(chunks):
-                tie = segment.notes[0].tie if segment.notes else False
-                if index > 0:
-                    tie = True
                 beat = _make_beat(
                     guitarpro,
                     voice,
                     segment.start_tick + offset,
                     chunk,
                     segment.notes,
-                    tie,
+                    force_tie=index > 0,
                 )
                 voice.beats.append(beat)
                 offset += chunk

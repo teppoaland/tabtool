@@ -79,3 +79,36 @@ def test_export_midi(tmp_path: Path) -> None:
     assert path.exists() and path.stat().st_size > 0
     midi = pretty_midi.PrettyMIDI(str(path))
     assert sum(len(instrument.notes) for instrument in midi.instruments) > 0
+
+
+def test_tie_state_is_per_note(tmp_path: Path) -> None:
+    import guitarpro
+
+    notes = [
+        TabNote(45, 5, 0, 0, 3840),
+        TabNote(45, 5, 0, 3840, 960, tie=True),
+        TabNote(52, 4, 2, 3840, 960, tie=False),
+    ]
+    document = build_document(
+        title="Tie Test",
+        artist="TabTool",
+        bpm=120,
+        time_signature="4/4",
+        tuning=STANDARD_TUNING,
+        tab_notes=notes,
+        measure_count=2,
+    )
+
+    gp5_path = export_gp5(document, tmp_path / "tie.gp5")
+    song = guitarpro.parse(str(gp5_path))
+    measure_two = song.tracks[0].measures[1]
+    beat = measure_two.voices[0].beats[0]
+    types = {note.string: note.type for note in beat.notes}
+    assert types[5] == guitarpro.NoteType.tie
+    assert types[4] == guitarpro.NoteType.normal
+
+    xml_path = export_musicxml(document, tmp_path / "tie.musicxml")
+    root = ET.parse(xml_path).getroot()
+    measure_two_xml = root.findall(".//part/measure")[1]
+    stop_ties = measure_two_xml.findall(".//tie[@type='stop']")
+    assert len(stop_ties) == 1
