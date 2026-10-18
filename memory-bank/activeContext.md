@@ -208,6 +208,13 @@ Putki:
   vain lineaarisen heiton; ylimääräinen/puuttuva tahti vaatii GP5-korjauksen.
 - Spotify Phase 3, remote Phase 4, LAN-PIN, retention, bass/laulu,
   rummut (ADTOF/Omnizart), manuaalinen editori.
+- **Seek & Destroy -rakenne-ero tahdissa 73** (18.10.): referenssitabi
+  (258 tahtia) ja äänite erkanevat tahdissa 73 (tahdit 1–72 osuvat, sitten
+  karkaa). Songsterrin tabi vastaa referenssitabia → äänite on todennäköisesti
+  eri versio/otto. **Korjausehdotus:** `SIIRTO alkaen tahdista X`
+  (breakpoint-offset), jolla tabi siirtyy vain valitun tahdin jälkeen;
+  offset mitataan kuljetuspalkin offset-näytöstä (`Osoitin +X tahtia
+  edellä`, X×4 = puuttuvat iskut). Ei vielä toteutettu.
 
 ## Uuden session aloitus
 
