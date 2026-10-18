@@ -1,5 +1,15 @@
 # 📊 Projektin edistyminen – AI TABTOOL
 
+## v1.42 – Testiyhteenveto ja sessioalustuksen tulosteet (18.10.2026)
+
+- `pytest.ini`:stä poistettiin `addopts = -q`. Memory bankin ohje
+  `pytest -q` oli siten `-qq`, mikä piilotti yhteenvedon kokonaan
+  (vain pisteet). Nyt `pytest -q` tulostaa `93 passed`.
+- `lue membank` -protokollan komennot putkitetaan
+  `Out-String -Width 200`:lla; agentin kuori on 12×16 merkkiä ja
+  shell integration saattoi pudottaa tulosteen.
+- Ei toiminnallisia muutoksia; 93 testiä.
+
 ## v1.41 – GP3/GP4-tuonti ja audiopolun rescan-korjaus (18.10.2026)
 
 - `POST /api/tabs/import` ja `import-url` hyväksyvät `.gp3`/`.gp4`;

@@ -1,6 +1,6 @@
 # 📍 Aktiivinen konteksti – AI TABTOOL
 
-> **Versio:** `v1.41` (18.10.2026)
+> **Versio:** `v1.42` (18.10.2026)
 > **Git:** uusin koodicommit v1.41 (GP3/GP4-tuonti); docs-commitit sen
 > päällä, ei pushattu. `origin/main` = `69c2e39`; paikallinen `main` on
 > edellä (`git status -sb` näyttää määrän). Docs-commit siirtää HEADia,
@@ -10,6 +10,11 @@
 
 ## Nyt
 
+- **v1.42**: `pytest.ini`:n `addopts = -q` poistettu, joten `pytest -q`
+  tulostaa taas yhteenvedon (`93 passed`); memory bank -protokollan
+  tarkistuskomennot putkitetaan `Out-String -Width 200`:lla, koska
+  agentin kuori voi olla ~12 merkkiä leveä ja shell integration voi
+  pudottaa tulosteen. Ei toiminnallisia muutoksia.
 - Phase 0/1/2 valmiit; v1.23–v1.37 katselu, aikajana, tuonti/audio,
   BPM/Nopeus, SYNC/SIIRTO ja ulkoinen arkisto. v1.38–v1.40 toivat
   **SEARCH-modaalin**, GP5-linkin/-tiedoston + YT-audion yhdellä

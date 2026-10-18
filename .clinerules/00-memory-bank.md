@@ -18,10 +18,19 @@ lisäkysymyksiä, ellei jokin tiedosto puutu.
 ## 2. Tarkista tila
 
 ```powershell
-git --no-pager status -sb
-git --no-pager log -1 --oneline
-.venv\Scripts\python.exe -m pytest -q
+git --no-pager status -sb 2>&1 | Out-String -Width 200
+git --no-pager log -1 --oneline 2>&1 | Out-String -Width 200
+.venv\Scripts\python.exe -m pytest -q 2>&1 |
+  Select-Object -Last 3 | Out-String -Width 200
 ```
+
+Agentin kuori voi olla hyvin kapea (esim. 12 merkkiä) ja VS Code
+shell integration voi pudottaa raa'an tulosteen. Siksi tuloste
+putkitetaan `Out-String -Width 200`:lla. `pytest.ini`:ssä ei ole
+`addopts = -q`, joten `pytest -q` tulostaa yhteenvedon
+(esim. `93 passed`); älä anna pytestille kahta `-q`:ta. Jos tuloste
+katoaa, aja komento uudelleen tai ohjaa se tiedostoon
+(`> tulos.txt 2>&1`).
 
 Älä aja Demucsia, Basic Pitchiä, yt-dlp:tä tai mallien latausta session
 alustuksessa. Älä lue koko repoa tai vanhaa keskusteluhistoriaa.
