@@ -5,7 +5,7 @@ Hae kappale Spotifysta tai käytä omaa MP3/YouTube-audioita, anna tekoälyn
 tehdä ensimmäinen tablatuuriluonnos ja katsele sitä alphaTabilla TV:stä
 tai tietokoneelta. Puhelin toimii kaukosäätimenä.
 
-**Versio:** `v1.20` (Phase 2 – web-UI, alphaTab ja paikallinen toisto)
+**Versio:** `v1.21` (Phase 2 – web-UI, alphaTab ja paikallinen toisto)
 
 ## Session aloitus
 
@@ -57,7 +57,12 @@ setup.bat
 start.bat
 ```
 
-Avaa selaimessa:
+`start.bat` käynnistää palvelimen ja avaa oletusselaimen automaattisesti,
+kun `/api/health` vastaa (ei kiinteää viivettä). Sulje ikkuna tai paina
+`Ctrl+C` lopettaaksesi. Automaattiavauksen voi ohittaa asettamalla
+`TABTOOL_NO_BROWSER=1`.
+
+Avaa tarvittaessa käsin:
 
 - TV/näkymä: <http://127.0.0.1:8000>
 - Kaukosäädin: <http://127.0.0.1:8000/remote>

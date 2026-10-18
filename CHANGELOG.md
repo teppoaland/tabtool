@@ -2,6 +2,13 @@
 
 > TabTool käyttää `1.x`-versiosarjaa. Aloitus `v1.00`.
 
+## v1.21 – 18.10.2026
+
+- `start.bat` avaa oletusselaimen automaattisesti vasta kun palvelin
+  vastaa `/api/health` (uusi `scripts/open_browser.ps1`, 30 s timeout).
+- `TABTOOL_NO_BROWSER=1` ohittaa automaattiavauksen (automaatio/testit).
+- Ei muita toiminnallisia muutoksia.
+
 ## v1.20 – 18.10.2026
 
 Phase 2 – web-käyttöliittymä, job-jono, cache, alphaTab ja paikallinen toisto.
