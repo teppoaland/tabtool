@@ -383,6 +383,39 @@ def update_tab_tempo(
     return get_tab(tab_id)
 
 
+def update_tab_sync(
+    tab_id: str,
+    drift: float,
+    meta: dict[str, Any] | None = None,
+) -> dict[str, Any] | None:
+    """Store a manual tab/audio alignment factor (fraction of playback time)."""
+    tab = get_tab(tab_id)
+    if tab is None:
+        return None
+    if meta is None:
+        meta = dict(tab.get("meta") or {})
+    meta["sync_drift"] = float(drift)
+    init_db()
+    with connection() as conn:
+        conn.execute(
+            "UPDATE tabs SET meta_json = ? WHERE id = ?",
+            (json.dumps(meta, ensure_ascii=False), tab_id),
+        )
+    try:
+        directory = resolve_under_data(str(tab["directory"]))
+        meta_path = directory / "meta.json"
+        if meta_path.is_file():
+            temporary = meta_path.with_name(meta_path.name + ".tmp")
+            temporary.write_text(
+                json.dumps(meta, indent=2, ensure_ascii=False),
+                encoding="utf-8",
+            )
+            temporary.replace(meta_path)
+    except (OSError, ValueError):
+        pass
+    return get_tab(tab_id)
+
+
 def delete_tab(tab_id: str) -> dict[str, Any] | None:
     """Remove a tab row (used when an explicit regenerate supersedes it)."""
     tab = get_tab(tab_id)

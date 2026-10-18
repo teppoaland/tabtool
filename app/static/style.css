@@ -595,6 +595,31 @@ a:focus-visible {
   accent-color: var(--accent);
 }
 
+.sync-field {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: var(--muted);
+  font-size: 0.72rem;
+}
+
+.sync-field > span:first-child {
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.sync-field input {
+  width: 6.5rem;
+  accent-color: var(--accent);
+}
+
+.sync-status {
+  min-width: 5.5rem;
+  color: var(--muted);
+}
+
 .bpm-field {
   display: flex;
   align-items: center;

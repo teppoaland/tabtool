@@ -6,14 +6,14 @@
   <meta name="color-scheme" content="dark">
   <title>AI TabTool</title>
   <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="/static/style.css?v=1.29">
+  <link rel="stylesheet" href="/static/style.css?v=1.30">
 </head>
 <body>
   <header class="topbar">
     <div class="brand">
       <span class="brand-mark" aria-hidden="true">AT</span>
       <span class="brand-name">AI TABTOOL</span>
-      <span id="version-tag" class="version">v1.29</span>
+      <span id="version-tag" class="version">v1.30</span>
     </div>
     <nav class="nav" aria-label="Päävalikko">
       <a href="/remote">REMOTE</a>
@@ -158,11 +158,19 @@
         </select>
         <span id="section-status" class="section-status" aria-live="polite"></span>
         <label class="rate-field"
-               title="Audion nopeus. Säädä, kunnes tabi ja kappale kulkevat samassa tahdissa.">
+               title="Audion nopeus harjoittelua varten (50–150 %). Tabi seuraa mukana; kohdistus tehdään SYNC-säätimellä.">
           <span>Nopeus</span>
           <input id="rate-slider" type="range"
-                 min="0.95" max="1.05" step="0.001" value="1">
+                 min="0.5" max="1.5" step="0.001" value="1">
           <span id="rate-readout">100.0%</span>
+        </label>
+        <label class="sync-field"
+               title="Tabin kohdistus: + siirtää tabia eteenpäin, - taaksepäin. Arvo tallennetaan tälle tabille.">
+          <span>SYNC</span>
+          <input id="sync-slider" type="range"
+                 min="-10" max="10" step="0.05" value="0">
+          <span id="sync-readout">+0.00%</span>
+          <span id="sync-status" class="sync-status" aria-live="polite"></span>
         </label>
         <label class="bpm-field"
                title="Tabin nuottitempo. Aseta kappaleen todellinen BPM, niin tabi ja audio kulkevat samaan tahtiin.">
@@ -189,8 +197,8 @@
     <span>Local-first · <a href="/remote">Remote</a></span>
   </footer>
 
-  <script src="/static/vendor/alphaTab/alphaTab.min.js?v=1.29"></script>
-  <script src="/static/app.js?v=1.29" defer></script>
+  <script src="/static/vendor/alphaTab/alphaTab.min.js?v=1.30"></script>
+  <script src="/static/app.js?v=1.30" defer></script>
 </body>
 </html>
 

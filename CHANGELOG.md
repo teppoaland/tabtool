@@ -2,6 +2,20 @@
 
 > AI TabTool käyttää `1.x`-versiosarjaa. Aloitus `v1.00`.
 
+## v1.30 – 18.10.2026
+
+- **SYNC**-säädin: tabin kohdistus audion aikajanalle ±10 % (askel
+  0,05 %). `+` siirtää tabia eteenpäin, `-` taaksepäin, joten pitkän
+  kappaleen loppupään kertynyt heitto korjataan yhdellä säädöllä.
+  Korjaus tallennetaan tabin `meta.json`iin (`sync_drift`) ja
+  tietokantaan (`POST /api/tabs/{id}/sync`), joten se on automaattisesti
+  mukana, kun tabi avataan uudelleen. GP5- ja audiotiedostoja ei muuteta.
+- **Nopeus**-säätimen alue laajennettu 50–150 %:iin (aiempi 95–105 %).
+  Nopeus on harjoittelusäädin: tabi seuraa audiota samassa suhteessa,
+  joten kohdistus tehdään SYNC-säätimellä.
+- Uudet testit: `tests/test_tab_sync.py` (tallennus, rajat, virheellinen
+  arvo, tuntematon tabi).
+
 ## v1.29 – 18.10.2026
 
 - **TAB BPM** -korjaus: katselimen transportissa voi asettaa GP5-tabin

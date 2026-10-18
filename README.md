@@ -168,8 +168,13 @@ paina **IMPORT TAB**. Tabi avautuu suoraan katselimeen. Jos samannimisestä
 kappaleesta on AI-tabi, paina **LIITÄ AUDIO**: tabi saa audion, PLAYn,
 aikajanan ja cursorin. **TAB BPM** -kenttään asetetaan kappaleen
 todellinen tempo (esim. 144); se päivittää GP5:n tempon ja pitää audion
-100 %:ssa. **Nopeus**-säätimellä (95–105 %, 0,1 % askel) voi hienosäätää
-esim. 143,55 BPM audion 144 BPM tabiin.
+100 %:ssa. **Nopeus**-säätimellä (50–150 %) hidastetaan tai nopeutetaan
+toistoa harjoittelua varten; tabi seuraa mukana.
+
+**SYNC**-säätimellä (±10 %, askel 0,05 %) kohdistetaan tabi kappaleeseen:
+`+` siirtää tabia eteenpäin ja `-` taaksepäin. Arvo tallennetaan tabin
+`meta.json`iin (`sync_drift`), joten kerran tehty korjaus on mukana aina
+tabia avattaessa. SYNC ei muuta GP5-tiedostoa eikä audiota.
 
 Pätkägenerointi: siirry katselimessa kohtaan, valitse **30/60/120 s** ja
 paina **TEE TAB TÄSTÄ**. Ohjelma tekee uuden tabin vain siitä pätkästä
@@ -190,6 +195,7 @@ Sama audio + samat asetukset palauttaa cachesta saman tabin; vain
 | `POST /api/tabs/{id}/section` | pätkäjobin luonti tabin audiosta |
 | `POST /api/tabs/{id}/attach-audio` | samannimisen tabin audion liitys |
 | `POST /api/tabs/{id}/tempo` | GP5-tabin BPM:n korjaus |
+| `POST /api/tabs/{id}/sync` | manuaalinen tabin kohdistus (`sync_drift`) |
 | `GET /api/tabs`, `GET /api/tabs/{id}` | kirjasto ja tab-metadata |
 | `GET /api/tabs/{id}/score/{gp5\|musicxml\|midi}` | inline score alphaTabille |
 | `GET /api/tabs/{id}/export/{gp5\|musicxml\|midi}` | lataus (attachment) |
@@ -282,7 +288,8 @@ docs/               GITIGNORED
 - **v1.27** ✅ – pätkägenerointi: TEE TAB TÄSTÄ ja aikaväli tabin nimessä
 - **v1.28** ✅ – referenssitabin audio, PLAY ja Nopeus-synkka
 - **v1.29** ✅ – TAB BPM -korjaus ja tarkempi Nopeus-hienosäätö
-- **v1.30** – Spotify-haku, OAuth, SDK/Connect-synkka
+- **v1.30** ✅ – manuaalinen SYNC-kohdistus (tallentuu tabille), Nopeus 50–150 %
+- **v1.31** – Spotify-haku, OAuth, SDK/Connect-synkka
 - **v1.40** – remote-kaukosäädin
 - **1.x** – basso, laulu, rummut, bending
 
@@ -296,7 +303,8 @@ docs/               GITIGNORED
 - Rummut vaativat oman transkriptiomallin (ei vielä).
 - Tempo- tai tahtilajimuutokset voivat vaatia manuaalista BPM/offset-
   säätöä. Beat trackerin half/double-time tulkinta normalisoidaan
-  70–180 BPM -alueelle.
+  70–180 BPM -alueelle. SYNC-korjaus vaikuttaa vain katseluun; vietävä
+  GP5 säilyttää alkuperäisen tempon.
 - Kielikohtainen monofonia varmistetaan: päällekkäinen nuotti siirretään
   vapaalle kielelle tai edellistä nuottia lyhennetään.
 - Standard E -viritykseen kuulumattomat nuotit pudotetaan varoituksella.

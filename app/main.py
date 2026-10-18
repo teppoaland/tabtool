@@ -498,6 +498,27 @@ def tab_tempo(tab_id: str, bpm: float = Form(...)) -> dict[str, object]:
     return _tab_summary(updated)
 
 
+@app.post("/api/tabs/{tab_id}/sync", tags=["tabs"])
+def tab_sync(tab_id: str, drift: float = Form(...)) -> dict[str, object]:
+    """Store a manual tab alignment factor (fraction of playback time)."""
+    tab = _load_tab(tab_id)
+    if tab is None:
+        raise HTTPException(status_code=404, detail="Unknown tab")
+    value = float(drift)
+    if not -0.1 <= value <= 0.1:
+        raise HTTPException(
+            status_code=422,
+            detail="SYNC must be between -10 and 10 percent",
+        )
+    meta = dict(tab.get("meta") or {})
+    updated = db.update_tab_sync(tab_id, value, meta)
+    if updated is None:
+        raise HTTPException(status_code=404, detail="Unknown tab")
+    summary = _tab_summary(updated)
+    summary["meta"] = updated.get("meta") or {}
+    return summary
+
+
 @app.get("/api/tabs/{tab_id}/audio", tags=["tabs"])
 def tab_audio(tab_id: str) -> FileResponse:
     """Stream the normalized WAV. FileResponse handles Range requests."""

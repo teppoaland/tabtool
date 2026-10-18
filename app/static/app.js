@@ -21,6 +21,7 @@
   };
   const STAVE_STORAGE_KEY = "tabtool:staveProfile";
   const TRACK_STORAGE_PREFIX = "tabtool:tracks:";
+  const SYNC_LIMIT = 0.1;
 
   const form = document.getElementById("source-form");
   const fileInput = document.getElementById("file-input");
@@ -57,6 +58,9 @@
   const attachStatus = document.getElementById("attach-status");
   const rateSlider = document.getElementById("rate-slider");
   const rateReadout = document.getElementById("rate-readout");
+  const syncSlider = document.getElementById("sync-slider");
+  const syncReadout = document.getElementById("sync-readout");
+  const syncStatus = document.getElementById("sync-status");
   const bpmInput = document.getElementById("bpm-input");
   const bpmButton = document.getElementById("bpm-button");
   const bpmStatus = document.getElementById("bpm-status");
@@ -76,6 +80,8 @@
   let visibleTrackIndexes = new Set();
   let sliderSeeking = false;
   let staveProfile = readStaveProfile();
+  let syncDrift = 0;
+  let syncSaveTimer = null;
 
   function setPlayLabel(playing) {
     if (!playButton) return;
@@ -99,8 +105,12 @@
     if (bpmStatus) bpmStatus.textContent = text;
   }
 
+  function setSyncStatus(text) {
+    if (syncStatus) syncStatus.textContent = text;
+  }
+
   function setPlaybackRate(value) {
-    const rate = Math.min(1.05, Math.max(0.95, Number(value) || 1));
+    const rate = Math.min(1.5, Math.max(0.5, Number(value) || 1));
     audio.playbackRate = rate;
     try {
       audio.preservesPitch = true;
@@ -112,6 +122,69 @@
     }
     if (rateReadout) {
       rateReadout.textContent = `${(rate * 100).toFixed(1)}%`;
+    }
+  }
+
+  function normalizeSyncDrift(value) {
+    const number = Number(value);
+    if (!Number.isFinite(number)) return 0;
+    return Math.min(SYNC_LIMIT, Math.max(-SYNC_LIMIT, number));
+  }
+
+  function setSyncDrift(value, options) {
+    const settings = options || {};
+    syncDrift = normalizeSyncDrift(value);
+    const percent = syncDrift * 100;
+    if (syncSlider && Math.abs(Number(syncSlider.value) - percent) > 0.001) {
+      syncSlider.value = percent.toFixed(2);
+    }
+    if (syncReadout) {
+      syncReadout.textContent = `${percent >= 0 ? "+" : ""}${percent.toFixed(2)}%`;
+    }
+    if (settings.sync !== false) syncPosition();
+  }
+
+  // Manual tab alignment: shift the tab timeline relative to the audio so a
+  // hand-tuned correction stays in effect for the whole song.
+  function syncTimeMs() {
+    const current = Number(audio.currentTime) || 0;
+    const duration = Number.isFinite(audio.duration) ? audio.duration : 0;
+    const position = Math.max(0, current * 1000 * (1 + syncDrift));
+    return duration > 0 ? Math.min(position, duration * 1000) : position;
+  }
+
+  async function persistSyncDrift() {
+    if (!activeTab || !activeTab.id) return;
+    const tabId = activeTab.id;
+    if (syncSaveTimer) {
+      window.clearTimeout(syncSaveTimer);
+      syncSaveTimer = null;
+    }
+    const data = new FormData();
+    data.append("drift", syncDrift.toFixed(4));
+    setSyncStatus("Tallennetaan…");
+    try {
+      const response = await fetch(`/api/tabs/${tabId}/sync`, {
+        method: "POST",
+        body: data,
+      });
+      if (!activeTab || activeTab.id !== tabId) return;
+      if (!response.ok) {
+        setSyncStatus(await readError(response));
+        return;
+      }
+      const tab = await response.json();
+      if (tab && tab.meta && typeof tab.meta === "object") {
+        activeTab.meta = Object.assign({}, activeTab.meta, tab.meta);
+      }
+      setSyncStatus("Tallennettu");
+      window.setTimeout(() => {
+        if (syncStatus && syncStatus.textContent === "Tallennettu") {
+          setSyncStatus("");
+        }
+      }, 1500);
+    } catch (error) {
+      setSyncStatus(error instanceof Error ? error.message : String(error));
     }
   }
 
@@ -153,7 +226,7 @@
     }
     const bpm = Number(activeTab && activeTab.bpm) || 0;
     if (bpm > 0) {
-      return Math.floor((Number(audio.currentTime) || 0) / (240 / bpm)) + 1;
+      return Math.floor(syncTimeMs() / 1000 / (240 / bpm)) + 1;
     }
     return null;
   }
@@ -558,7 +631,7 @@
     if (!api || !api.player || !Number.isFinite(audio.currentTime)) return;
     const output = api.player.output;
     if (output && typeof output.updatePosition === "function") {
-      output.updatePosition(audio.currentTime * 1000);
+      output.updatePosition(syncTimeMs());
     }
   }
 
@@ -721,6 +794,11 @@
       }
       if (bpmStatus) bpmStatus.textContent = "";
       setPlaybackRate(1);
+      const storedSync = Number(tab.meta && tab.meta.sync_drift);
+      setSyncDrift(Number.isFinite(storedSync) ? storedSync : 0, {
+        sync: false,
+      });
+      setSyncStatus("");
       try {
         localStorage.setItem("tabtool:lastTab", tab.id);
       } catch (error) {
@@ -1075,6 +1153,14 @@
     rateSlider.addEventListener("input", () =>
       setPlaybackRate(rateSlider.value)
     );
+  }
+  if (syncSlider) {
+    syncSlider.addEventListener("input", () => {
+      setSyncDrift(Number(syncSlider.value) / 100);
+      if (syncSaveTimer) window.clearTimeout(syncSaveTimer);
+      syncSaveTimer = window.setTimeout(persistSyncDrift, 700);
+    });
+    syncSlider.addEventListener("change", persistSyncDrift);
   }
   if (bpmButton) {
     bpmButton.addEventListener("click", applyTempo);
