@@ -1,11 +1,22 @@
 # 📊 Projektin edistyminen – AI TABTOOL
 
+## v1.45 – Partituurin kesto master bar -tikeistä (18.10.2026)
+
+- `scoreEndTimeMs()` laskee nyt keston suoraan master bar -tikeistä:
+  `(viimeisen tahdin start + calculateDuration()) × 60000 / (tempo × 960)`.
+  `api.endTime` oli alphaTabin *live* `currentPosition` (= 0 ennen
+  ensimmäistä toistotikkia), joten v1.44-putoaminen ääniraidan kestoon
+  jätti venytyksen voimaan. Nyt kesto on oikea heti ensimmäisestä
+  kursoritikistä (Seek & Destroy → 430 000 ms).
+
 ## v1.44 – scoreEndTimeMs käyttää api.endTimeä (18.10.2026)
 
 - `app/static/app.js`: `scoreEndTimeMs()` lukee suoraan `api.endTime`
   (= sekvensserin `currentEndTime`, sama arvo kuin alphaTabin
   backing track -kaavassa). Aiempi `api.tickCache.endTime`-haara
   poistettiin: tick lookup -objektilla ei ole `endTime`-kenttää.
+  (Korvattu v1.45:ssä master bar -laskennalla, koska `api.endTime` on
+  0 ennen toistoa.)
 - Toiminta ei muuttunut; korjaus on selainpuolinen → aktivoituu
   Ctrl+F5:llä ilman palvelimen uudelleenkäynnistystä.
 

@@ -132,7 +132,7 @@ resolvoitui työhakemistosta ja tabi menetti audionsa.
   (Bravura-fontti `font/`, `core.useWorkers = false`).
 - `PlayerMode.EnabledExternalMedia` + `IExternalMediaHandler`;
   positio 50 ms välein `api.player.output.updatePosition(ms)`.
-  `backingTrackDuration` = partituurin kesto (v1.43), jotta alphaTabin
+  `backingTrackDuration` = partituurin kesto (v1.45), jotta alphaTabin
   backing track -venytys ei siirrä kursoria.
 - Paikallinen audio: `<audio>` + Range (`FileResponse` 206).
 - Oletus: **tab-only** (StaveProfile.Tab), Näkymä-valinta, raitavalinnat

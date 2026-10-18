@@ -1,6 +1,6 @@
 # 📍 Aktiivinen konteksti – AI TABTOOL
 
-> **Versio:** `v1.44` (18.10.2026)
+> **Versio:** `v1.45` (18.10.2026)
 > **Git:** uusin koodicommit v1.41 (GP3/GP4-tuonti); docs-commitit sen
 > päällä, ei pushattu. `origin/main` = `69c2e39`; paikallinen `main` on
 > edellä (`git status -sb` näyttää määrän). Docs-commit siirtää HEADia,
@@ -10,6 +10,10 @@
 
 ## Nyt
 
+- **v1.45**: `scoreEndTimeMs()` laskee partituurin keston master bar
+  -tikeistä (`(start + calculateDuration()) × 60000 / (tempo × 960)`).
+  `api.endTime` on live `currentPosition` ja oli 0 ennen toistoa, joten
+  aiempi korjaus putosi ääniraidan kestoon ja venytys jäi.
 - **v1.44**: `scoreEndTimeMs()` käyttää suoraan `api.endTime`ä (tick
   lookup -objektilla ei ole `endTime`-kenttää). Korjaus on selainpuolinen,
   joten se aktivoituu Ctrl+F5:llä myös ilman palvelimen uudelleenkäynnistystä.
