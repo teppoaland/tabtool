@@ -29,8 +29,10 @@ Putki (app/pipeline/)
 - Job-kerros importtaa putken vasta ajon aikana (kevyt käynnistys).
 - Frontend ei käsittele Spotify-client-secretiä (PKCE).
 - Kaikki polut `app/config.py`:stä. `data/` on yksityinen juuri.
-- `app/tab_import.py` hoitaa GP5/MusicXML-tuonnin ja metatiedot
-  (PyGuitarPro/music21) ilman ML-putkea.
+- `app/tab_import.py` hoitaa GP3/GP4/GP5- ja MusicXML-tuonnin sekä
+  metatiedot (PyGuitarPro/music21) ilman ML-putkea. GP3/GP4 kirjoitetaan
+  tuonnissa aidoksi GP5:ksi, jotta alphaTab ja GP5-export toimivat
+  samalla formaatilla.
 - `app/tab_download.py` hakee GP5/MusicXML-linkin palvelimella: vain
   julkinen http(s) (ei localhost/yksityisverkko), max 20 MB, redirectit
   validoitu. gprotab.netin HTML-sivu → automaattinen `?download`-retry.
@@ -118,6 +120,10 @@ GP5/MusicXML-tabit `EXTERNAL_DIR`iin (oletus `D:\tabtool_files`,
 `Artist - Title.ext`). Samalla levyllä käytetään hard linkiä; virhe ei
 kaada jobia. `archive_mp3` koodaa YouTube-WAV:t
 `audio/mp3/<Artisti>/`-kansioon (ffmpeg, VBR ~190 kbps).
+
+Levyltä luettaessa (`import_tabs_from_disk`) suhteellinen
+`meta.audio_path` resolvoidaan `DATA_DIR`-juuresta (v1.41); aiemmin se
+resolvoitui työhakemistosta ja tabi menetti audionsa.
 
 ## UI
 

@@ -9,7 +9,7 @@
 - **Ei GPU:ta** (`nvidia-smi` tyhjä) → CPU-only
 - D: levytilaa ~147 GB vapaana
 
-## Python-paketit (v1.40)
+## Python-paketit (v1.41)
 
 Core:
 
@@ -56,7 +56,7 @@ python -m venv .venv
 ## Testit
 
 ```powershell
-.venv\Scripts\python.exe -m pytest -q          # 91 passed
+.venv\Scripts\python.exe -m pytest -q          # 93 passed
 .venv\Scripts\python.exe -m compileall -q app scripts tests
 node --check app\static\app.js
 node --check app\static\remote.js
@@ -80,8 +80,9 @@ Hyödylliset valinnat: `--model htdemucs_6s`, `--stem guitar`, `--tuning`,
 - **Vain lokaalit commitit.** Projektia ei julkaista eikä pushatta
   julkiseen GitHubiin toistaiseksi. Commitit ovat palautuspisteitä
   (revert), jos koodi hajoaa. Push vaatii aina erillisen pyynnön.
-- Ankkurit: v1.38 `c74ccdd`, v1.39 `8237876`, v1.40 `30e2c0e`;
-  tagi `v1.29` = `bb704e8`, `origin/main` = `69c2e39`.
+- Ankkurit: v1.38 `c74ccdd`, v1.39 `8237876`, v1.40 `30e2c0e`,
+  v1.41 = GP3/GP4-tuonti; tagi `v1.29` = `bb704e8`,
+  `origin/main` = `69c2e39`.
 - Paikallinen `main` on `origin/main`:ia edellä (v1.23–v1.40 koodi +
   memory bank -docs); **ei pushattu**. `git status -sb` näyttää määrän.
 - Älä kirjaa tähän HEAD-hashia: docs-commit siirtää HEADin joka kerta.

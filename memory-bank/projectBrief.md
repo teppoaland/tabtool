@@ -1,6 +1,6 @@
 # 🎯 Projektin lyhyt kuvaus – AI TABTOOL
 
-> **Versio:** `v1.40` (18.10.2026)
+> **Versio:** `v1.41` (18.10.2026)
 > **Repo:** https://github.com/teppoaland/tabtool
 > **Paikallinen:** `D:\AI\tabtool`
 
@@ -29,8 +29,9 @@ Lokaali web-palvelu, jossa voi:
 - **Kitara ensin.** Basso, laulu ja rummut myöhemmin; rummut vaativat
   oman transkriptiomallin.
 - **Täydet kappaleet ovat oletus.** Pätkägenerointi on poikkeus.
-- **Valmiin tabin tuonti** GP5/MusicXML joko linkistä (palvelin lataa
-  tiedoston) tai koneelta. GP5-lähde ohittaa AI-generoinnin; YouTube-
+- **Valmiin tabin tuonti** GP3/GP4/GP5/MusicXML joko linkistä (palvelin
+  lataa tiedoston) tai koneelta. GP3/GP4 muunnetaan GP5:ksi. GP5-lähde
+  ohittaa AI-generoinnin; YouTube-
   linkin kanssa audio liitetään samalla kertaa yhdellä jobilla. Ilman
   GP5-lähdettä tabi generoidaan AI:lla. Samannimisen AI-tabin audio
   voidaan myös liittää tuotuun tabiin. Tabin BPM korjattavissa
@@ -88,6 +89,6 @@ Sano Cline:lle **`lue membank`**. Sääntö on
 - `app/tab_download.py` – GP5/MusicXML-linkin palvelinlataus
 - `app/library.py` – kappaleen poisto (tab/audio/stemmit, MP3 jää)
 - `scripts/pipeline_smoke.py` – CLI-proof
-- `tests/` – 91 pytest-testiä
+- `tests/` – 93 pytest-testiä
 - `data/` – GITIGNORED: audio, stemmit, tabit, tokenit
 - `docs/` – GITIGNORED: henkilökohtainen suunnitelma

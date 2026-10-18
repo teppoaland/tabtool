@@ -1,5 +1,18 @@
 # 📊 Projektin edistyminen – AI TABTOOL
 
+## v1.41 – GP3/GP4-tuonti ja audiopolun rescan-korjaus (18.10.2026)
+
+- `POST /api/tabs/import` ja `import-url` hyväksyvät `.gp3`/`.gp4`;
+  PyGuitarPro lukee ja vanha versio kirjoitetaan aidoksi GP5:ksi
+  (`tab.gp5`). Testattu GP4 → GP5: notet, tahdit ja tempo säilyivät.
+- `db.import_tabs_from_disk` resolvoi nyt relatiivisen
+  `meta.audio_path`-arvon `DATA_DIR`-juuresta; aiemmin levyrekisteröinti
+  pudotti `audio/…wav`-polun ja tabi menetti audion (404).
+- UI: tiedostovalitsin `.gp3/.gp4/.gp5`, GP-tekstit ja vihje
+  "GP4 muunnetaan GP5:ksi".
+- Kirjastoon tuotu 5 kappaletta YT-audiolla; ks. `activeContext.md`.
+- 93 pytest-testiä.
+
 ## v1.40 – GP5-tiedosto + YT-linkki yhdellä toiminnolla (18.10.2026)
 
 - SEARCH-modaaliin tuli `GP5-linkki`-kentän rinnalle `tai GP5-tiedosto`.
@@ -47,7 +60,7 @@
 
 ## Testitilanne
 
-- `pytest -q` → **91 passed**
+- `pytest -q` → **93 passed**
 - `compileall` → OK
 - `node --check app.js` / `remote.js` → OK
 - Headless-Edge/Chrome: alphaTab-render, cursor, fullscreen, GP5/MusicXML-
@@ -69,9 +82,14 @@
 - GP5 + oma audiotiedosto ei yhdisty yhdellä toiminnolla (audion lähde
   on YouTube-linkki); GP5-linkin lataus vaatii julkisen http(s)-osoitteen
   eikä tue kirjautumista/evästeitä vaativia sivustoja.
+- **Ikärajoitettu YouTube-video ei lataudu ilman evästeitä.** yt-dlp
+  vaatii `--cookies-from-browser`in, mutta Chrome/Edge lukitsevat
+  cookie-DB:n ollessaan auki. Kierto: käytä ei-ikärajoitettua
+  studioversiota (esim. virallinen kanava) tai sulje selain / anna
+  cookie-tiedosto.
 - Poisto ei poista MP3-kuunteluversiota eikä toisen tabin jakamaa audiota.
-- Koodi v1.23–v1.40 on committoitu (`30e2c0e`); tagi `v1.29` =
-  `bb704e8`. Repoa ei pushatta julkiseen GitHubiin:
+- Koodi v1.23–v1.41 on committoitu (v1.41 = GP3/GP4-tuonti); tagi
+  `v1.29` = `bb704e8`. Repoa ei pushatta julkiseen GitHubiin:
   lokaalit commitit toimivat palautuspisteinä.
   `data/` ja `docs/` eivät ole gitissä, joten ne tarvitsevat erillisen
   varmuuskopion.

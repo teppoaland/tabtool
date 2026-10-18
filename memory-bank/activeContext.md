@@ -1,10 +1,10 @@
 # 📍 Aktiivinen konteksti – AI TABTOOL
 
-> **Versio:** `v1.40` (18.10.2026)
-> **Git:** uusin koodicommit `30e2c0e` (v1.40); docs-commitit sen päällä,
-> ei pushattu. `origin/main` = `69c2e39`; paikallinen `main` on edellä
-> (`git status -sb` näyttää määrän). Docs-commit siirtää HEADia, joten
-> älä pinnaa HEAD-hashia tähän tiedostoon.
+> **Versio:** `v1.41` (18.10.2026)
+> **Git:** uusin koodicommit v1.41 (GP3/GP4-tuonti); docs-commitit sen
+> päällä, ei pushattu. `origin/main` = `69c2e39`; paikallinen `main` on
+> edellä (`git status -sb` näyttää määrän). Docs-commit siirtää HEADia,
+> joten älä pinnaa HEAD-hashia tähän tiedostoon.
 > **Push:** ei pushata julkiseen GitHubiin — vain lokaalit commitit
 > **Repo:** https://github.com/teppoaland/tabtool
 
@@ -13,7 +13,9 @@
 - Phase 0/1/2 valmiit; v1.23–v1.37 katselu, aikajana, tuonti/audio,
   BPM/Nopeus, SYNC/SIIRTO ja ulkoinen arkisto. v1.38–v1.40 toivat
   **SEARCH-modaalin**, GP5-linkin/-tiedoston + YT-audion yhdellä
-  toiminnolla ja kappaleen poiston.
+  toiminnolla ja kappaleen poiston. **v1.41** lisäsi GP3/GP4-tuonnin
+  (konversio aidoksi GP5:ksi) ja korjasi audiopolun katoamisen
+  levyrekisteröinnissä.
 - **SEARCH-modaali** (v1.38): YouTube-linkki, GP5-linkki tai
   GP5-tiedosto, MP3-valinta, GENERATE TAB sekä kirjasto, josta kappale
   valitaan soittoon. TV-näkymä on soittoa varten.
@@ -59,10 +61,13 @@
   (`TABTOOL_EXTERNAL_DIR`), nimi `Artist - Title.ext`. Samalla levyllä
   hard link (ei tuplalevytilaa), muuten kopio. `data/` on edelleen
   totuuden lähde; pätkäklipit jätetään arkistoimatta.
-- **Kirjasto tyhjänä?** Tarkista `TABTOOL_DATA_DIR`. Jos ympäristömuuttuja
-  osoittaa testihakemistoon (esim. aiemman `Start-Process`in perintö),
-  UI näyttää tyhjän kirjaston vaikka `D:\AI\tabtool\data` olisi ehjä.
-  Käynnistä palvelin eksplisiittisellä `TABTOOL_DATA_DIR`illa.
+- **Kirjasto tyhjänä?** Tarkista `TABTOOL_DATA_DIR` ja
+  `TABTOOL_EXTERNAL_DIR`. Jos IDE:n perimä ympäristö osoittaa
+  testihakemistoon (esim. vanha `tabtool_ui5` Tempissä), UI näyttää
+  väärän kirjaston. Käynnistä palvelin ilman näitä muuttujia
+  (`Remove-Item Env:TABTOOL_DATA_DIR`) → oletukset `data/` ja
+  `D:\tabtool_files`. v1.41 korjasi myös sen, että levyltä luettu
+  relatiivinen `meta.audio_path` säilyy tabilla.
 - **MP3-kuunteluversiot** (v1.33): YouTube-latauksista syntyy
   `D:\tabtool_files\audio\mp3\<Artisti>\Artist - Title.mp3`
   (ffmpeg VBR ~190 kbps; vain jos WAV on uudempi). Pätkäklipit ja
@@ -90,8 +95,8 @@
   poikkeus.
 - Soittotapa/refinger (asemaprofiilit, helpoin-arvio, turhien nuottien
   karsinta, per-tahti-asema) on suunniteltu mutta **ei toteutettu**;
-  jäissä. Koodi on committoitu (`30e2c0e`, v1.40); vain lokaalit
-  commitit, ei pushia.
+  jäissä. Koodi on committoitu (v1.41); vain lokaalit commitit,
+  ei pushia.
 - Spotify ei ole vielä mukana (Phase 3).
 
 ## Seuraava vaihe
@@ -122,7 +127,12 @@ Putki:
 
 ## Tuoreimmat validointitulokset
 
-- `pytest -q` → **91 passed**; `compileall` ja `node --check` OK.
+- `pytest -q` → **93 passed**; `compileall` ja `node --check` OK.
+- v1.41: 5 kappaletta tuotu kirjastoon (Animal, Whiplash, Tush,
+  Dr. Feelgood, I Only Wanna Be With You). GP4/GP3 → GP5 -konversio
+  tarkistettu (0 nuottieroa); audio 206 Range, MP3:t
+  `D:\tabtool_files\audio\mp3`, tabit `D:\tabtool_files\tabs`.
+  Mitatut tempot: 143,55 / 161,5 / 143,55 / 112,35 / 136,0 BPM.
 - Headless-Chrome: SYNC `+3.50 %` → `sync_drift 0.035` kantaan ja
   `meta.json`iin; reload palautti arvon; Nopeus 50–150 %.
 - v1.31 headless: TALLENNA-nappi, punainen dirty-tila
@@ -131,7 +141,7 @@ Putki:
 - v1.32: 69 pytest-testiä; backfill arkistoi 5 tiedostoa
   (`D:\tabtool_files`), `fsutil hardlink list` vahvisti hard linkin
   (`yt-62c1293b02.wav` ↔ `Metallica - Seek & Destroy.wav`).
-- Live-palvelin 8000: viimeksi v1.37; käynnistä uudelleen v1.40:een.
+- Live-palvelin 8000: v1.41 (käynnistetty ilman temp-ympäristömuuttujia).
 - v1.33: seek-testi 30/10/50/20/55/5 s → tahdit 16/6/26/11/28/3
   (odotetut); MP3 `Metallica` 414,7 s / 9,8 MB, `KISS` 20,0 s
   (alkuperäinen audio on 20 s klippi); 72 testiä.
