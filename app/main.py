@@ -152,6 +152,29 @@ def _download_tab(url: str) -> dict[str, object]:
     return _import_tab_payload(raw, filename)
 
 
+def _queue_audio_job(
+    tab: dict[str, object],
+    youtube_url: str,
+    options: jobs.JobOptions,
+) -> dict[str, object]:
+    """Download YouTube audio and attach it to an already imported tab."""
+    audio_options = replace(
+        options, audio_only=True, attach_tab_id=str(tab["id"])
+    )
+    job = jobs.submit_job(
+        source_type="youtube",
+        source_ref=youtube_url,
+        title=str(tab.get("title") or ""),
+        artist=str(tab.get("artist") or ""),
+        fingerprint=jobs.youtube_fingerprint(youtube_url),
+        audio_path=None,
+        options=audio_options,
+        tab_id=str(tab["id"]),
+    )
+    job["tab"] = _tab_summary(tab)
+    return job
+
+
 def _sse(payload: object) -> bytes:
     return f"data: {json.dumps(payload)}\n\n".encode("utf-8")
 
@@ -193,21 +216,7 @@ async def create_job(
                 status_code=422, detail="youtube_url must be a YouTube link"
             )
         tab = _download_tab(gp5_url)
-        audio_options = replace(
-            parsed, audio_only=True, attach_tab_id=str(tab["id"])
-        )
-        job = jobs.submit_job(
-            source_type="youtube",
-            source_ref=youtube_url,
-            title=str(tab.get("title") or ""),
-            artist=str(tab.get("artist") or ""),
-            fingerprint=jobs.youtube_fingerprint(youtube_url),
-            audio_path=None,
-            options=audio_options,
-            tab_id=str(tab["id"]),
-        )
-        job["tab"] = _tab_summary(tab)
-        return job
+        return _queue_audio_job(tab, youtube_url, parsed)
 
     has_file = bool(file is not None and file.filename)
     provided = sum((has_file, bool(youtube_url), bool(local_path)))
@@ -350,10 +359,27 @@ def list_tabs(limit: int = Query(default=20, ge=1, le=200)) -> list[dict[str, ob
 
 
 @app.post("/api/tabs/import", tags=["tabs"])
-async def import_tab(file: UploadFile = File(...)) -> dict[str, object]:
-    """Import a ready-made GP5 or MusicXML tab into the private library."""
+async def import_tab(
+    file: UploadFile = File(...),
+    youtube_url: str = Form(default=""),
+    options: str = Form(default="{}"),
+) -> dict[str, object]:
+    """Import a GP5/MusicXML tab and optionally attach YouTube audio.
+
+    Without ``youtube_url`` the tab is imported alone (no audio). With it,
+    the response is the audio job (``status``/``stage``/``tab_id``) and the
+    audio is attached when the job finishes.
+    """
+    youtube_url = youtube_url.strip()
+    parsed = _parse_options(options)
+    if youtube_url and not _is_youtube_url(youtube_url):
+        raise HTTPException(
+            status_code=422, detail="youtube_url must be a YouTube link"
+        )
     raw = await file.read()
     tab = _import_tab_payload(raw, file.filename or "tab.gp5")
+    if youtube_url:
+        return _queue_audio_job(tab, youtube_url, parsed)
     return _tab_summary(tab)
 
 

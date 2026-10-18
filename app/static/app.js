@@ -67,10 +67,8 @@
   const bpmStatus = document.getElementById("bpm-status");
   const bpmField = bpmInput ? bpmInput.closest(".bpm-field") : null;
   const transport = document.querySelector(".transport");
-  const importInput = document.getElementById("import-input");
-  const importButton = document.getElementById("import-button");
-  const importStatus = document.getElementById("import-status");
   const gp5Input = document.getElementById("gp5-url-input");
+  const gp5FileInput = document.getElementById("gp5-file-input");
   const makeMp3Checkbox = document.getElementById("make-mp3-checkbox");
   const searchModal = document.getElementById("search-modal");
   const openSearchButton = document.getElementById("open-search");
@@ -104,10 +102,6 @@
     if (!playButton) return;
     playButton.textContent = playing ? "PAUSE" : "PLAY";
     playButton.dataset.state = playing ? "playing" : "paused";
-  }
-
-  function setImportStatus(text) {
-    if (importStatus) importStatus.textContent = text;
   }
 
   function setLibraryStatus(text, isError) {
@@ -989,40 +983,42 @@
     }
   }
 
-  async function importTab() {
-    if (!importInput || !importButton) return;
-    const file = importInput.files && importInput.files[0];
-    if (!file) {
-      setImportStatus("Valitse GP5- tai MusicXML-tiedosto.");
-      return;
-    }
+  async function importTabFile(file, youtubeUrl) {
     const data = new FormData();
     data.append("file", file);
-    importButton.disabled = true;
-    setImportStatus("Tuodaan tabia…");
-    try {
-      const response = await fetch("/api/tabs/import", {
-        method: "POST",
-        body: data,
+    if (youtubeUrl) data.append("youtube_url", youtubeUrl);
+    data.append("options", JSON.stringify(collectOptions()));
+    setStatus("queued", "");
+    setProgress(0, false);
+    const response = await fetch("/api/tabs/import", {
+      method: "POST",
+      body: data,
+    });
+    if (!response.ok) {
+      setStatus("failed", await readError(response));
+      setProgress(1, true);
+      return;
+    }
+    const payload = await response.json();
+    if (gp5FileInput) gp5FileInput.value = "";
+    // A YouTube link makes the endpoint return the audio job; without it
+    // the response is a plain tab summary.
+    if (payload && typeof payload.status === "string") {
+      renderJob(payload);
+      if (payload.tab_id) await loadTab(payload.tab_id);
+      subscribe(payload.id, {
+        onDone: (current) => {
+          if (current.status === "ready") closeSearch();
+        },
       });
-      if (!response.ok) {
-        setImportStatus(await readError(response));
-        return;
-      }
-      const tab = await response.json();
-      setImportStatus(`Tuotu: ${tab.title}`);
-      await loadLibrary();
-      await loadTab(tab.id);
-      if (viewerSection) {
-        viewerSection.scrollIntoView({ behavior: "smooth", block: "start" });
-      }
-    } catch (error) {
-      setImportStatus(
-        error instanceof Error ? error.message : String(error)
-      );
-    } finally {
-      importButton.disabled = false;
-      importInput.value = "";
+      return;
+    }
+    await loadTab(payload.id);
+    await loadLibrary();
+    setStatus("ready", "");
+    closeSearch();
+    if (viewerSection) {
+      viewerSection.scrollIntoView({ behavior: "smooth", block: "start" });
     }
   }
 
@@ -1230,15 +1226,27 @@
     const file = fileInput && fileInput.files ? fileInput.files[0] : null;
     const url = urlInput ? urlInput.value.trim() : "";
     const gp5Url = gp5Input ? gp5Input.value.trim() : "";
+    const gp5File =
+      gp5FileInput && gp5FileInput.files ? gp5FileInput.files[0] : null;
 
-    if (!file && !url && !gp5Url) {
-      setStatus("failed", "Valitse tiedosto tai liitä YouTube-linkki.");
-      return;
-    }
-    if (gp5Url && file) {
+    if (!file && !url && !gp5Url && !gp5File) {
       setStatus(
         "failed",
-        "Käytä joko omaa audiota tai GP5-linkkiä, ei molempia."
+        "Valitse audio, liitä YouTube-linkki tai valitse GP5-linkki/-tiedosto."
+      );
+      return;
+    }
+    if (gp5Url && gp5File) {
+      setStatus(
+        "failed",
+        "Valitse GP5-linkki tai GP5-tiedosto, ei molempia."
+      );
+      return;
+    }
+    if ((gp5Url || gp5File) && file) {
+      setStatus(
+        "failed",
+        "GP5-lähteen kanssa käytä YouTube-linkkiä, ei omaa audiotiedostoa."
       );
       return;
     }
@@ -1249,6 +1257,10 @@
     setProgress(0, false);
 
     try {
+      if (gp5File) {
+        await importTabFile(gp5File, url);
+        return;
+      }
       if (gp5Url && !url) {
         await importTabFromUrl(gp5Url);
         return;
@@ -1472,7 +1484,6 @@
     });
   }
   if (playButton) playButton.addEventListener("click", togglePlayback);
-  if (importButton) importButton.addEventListener("click", importTab);
   if (staveSelect) {
     staveSelect.value = staveProfile;
     staveSelect.addEventListener("change", () =>

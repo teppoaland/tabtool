@@ -2,6 +2,26 @@
 
 > AI TabTool käyttää `1.x`-versiosarjaa. Aloitus `v1.00`.
 
+## v1.40 – 18.10.2026
+
+- **Yksi toiminto kaikille GP5-lähteille:** SEARCH-modaalissa on nyt
+  `GP5-linkki (valinnainen)` ja `tai GP5-tiedosto`. Molemmat käyttävät
+  samaa GENERATE TAB -toimintoa, joten paikallinen GP5/MusicXML-tiedosto
+  + YouTube-linkki onnistuu yhdellä painalluksella.
+- `POST /api/tabs/import` hyväksyy nyt `youtube_url`- ja
+  `options`-kentät: ilman YouTube-linkkiä vastaus on tab-yhteenveto,
+  linkin kanssa vastaus on audio-job, joka liittää audion tuotuun
+  tabiin valmistuttuaan. Sama `_queue_audio_job`-polku kuin
+  GP5-linkilla.
+- Erillinen `IMPORT TAB` -rivi poistettu modaalista; GP5/MusicXML-tuonti
+  tapahtuu samasta lomakkeesta. GP5-linkki ja GP5-tiedosto ovat
+  vaihtoehtoisia (ei molempia), eikä GP5-lähteen kanssa voi käyttää
+  omaa audiotiedostoa – audio tulee YouTube-linkistä.
+- 91 pytest-testiä (uudet: GP5-tiedosto + YT liittää audion,
+  ei-YouTube-URL hylätään). Headless-selaimessa validoitu koko
+  kombinaatio: tiedosto + YT → tabi tuotu, audio liitetty, modaali
+  sulkeutui, viewer avautui.
+
 ## v1.39 – 18.10.2026
 
 - **Korjaus: alphaTabin cursor näkyi SEARCH-modaalin päällä.** alphaTab

@@ -44,6 +44,28 @@ def wait_for_job(client, job_id: str, timeout: float = 15.0) -> dict[str, Any]:
     raise AssertionError(f"job did not finish: {job}")
 
 
+def fake_audio_job(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Replace the YouTube download with a local fake WAV."""
+
+    def run(job, options, report=None):  # noqa: ANN001
+        if report is not None:
+            report(jobs.STAGE_DOWNLOADING)
+        path = Path(config.DATA_DIR) / "audio" / "fake-youtube.wav"
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(b"RIFF-fake")
+        audio = AudioSource(
+            path=path,
+            duration=200.0,
+            source_type="youtube",
+            source_ref=job["source_ref"],
+            title="YouTube title",
+            artist="YouTube artist",
+        )
+        return audio, "YouTube title", "YouTube artist"
+
+    monkeypatch.setattr(jobs, "run_audio_job", run)
+
+
 def test_import_tab_from_url(
     client, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -76,23 +98,7 @@ def test_job_with_gp5_imports_tab_and_attaches_audio(
         lambda url: (data, "imported.gp5"),
     )
 
-    def fake_run_audio_job(job, options, report=None):  # noqa: ANN001
-        if report is not None:
-            report(jobs.STAGE_DOWNLOADING)
-        path = Path(config.DATA_DIR) / "audio" / "fake-youtube.wav"
-        path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_bytes(b"RIFF-fake")
-        audio = AudioSource(
-            path=path,
-            duration=200.0,
-            source_type="youtube",
-            source_ref=job["source_ref"],
-            title="YouTube title",
-            artist="YouTube artist",
-        )
-        return audio, "YouTube title", "YouTube artist"
-
-    monkeypatch.setattr(jobs, "run_audio_job", fake_run_audio_job)
+    fake_audio_job(monkeypatch)
 
     response = client.post(
         "/api/jobs",
@@ -122,6 +128,50 @@ def test_job_with_gp5_imports_tab_and_attaches_audio(
     audio = client.get(f"/api/tabs/{queued['tab_id']}/audio")
     assert audio.status_code == 200
     assert audio.content == b"RIFF-fake"
+
+
+def test_import_file_with_youtube_attaches_audio(
+    client, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Local GP5 file + YouTube link is one operation, like GP5 link + YT."""
+    data = _gp5_bytes(tmp_path)
+    fake_audio_job(monkeypatch)
+
+    response = client.post(
+        "/api/tabs/import",
+        files={"file": ("imported.gp5", data, "application/octet-stream")},
+        data={
+            "youtube_url": "https://youtu.be/beWvPkYHaic",
+            "options": '{"archive_mp3": false}',
+        },
+    )
+    assert response.status_code == 200, response.text
+    queued = response.json()
+    assert queued["tab_id"] == queued["tab"]["id"]
+    assert queued["tab"]["title"] == "Imported Song"
+    assert queued["options"]["audio_only"] is True
+
+    job = wait_for_job(client, queued["id"])
+    assert job["status"] == "ready", job.get("error")
+    assert job["tab_id"] == queued["tab_id"]
+
+    tab = client.get(f"/api/tabs/{queued['tab_id']}").json()
+    assert tab["title"] == "Imported Song"
+    assert tab["audio_path"] == "audio/fake-youtube.wav"
+    assert tab["meta"]["duration_seconds"] == 200.0
+    assert tab["meta"]["mp3_created"] is False
+
+
+def test_import_file_rejects_non_youtube_url(
+    client, tmp_path: Path
+) -> None:
+    data = _gp5_bytes(tmp_path)
+    response = client.post(
+        "/api/tabs/import",
+        files={"file": ("imported.gp5", data, "application/octet-stream")},
+        data={"youtube_url": "https://example.com/watch?v=1"},
+    )
+    assert response.status_code == 422
 
 
 def test_gp5_job_requires_youtube_link(client) -> None:
