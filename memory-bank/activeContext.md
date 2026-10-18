@@ -1,6 +1,6 @@
 # 📍 Aktiivinen konteksti – AI TABTOOL
 
-> **Versio:** `v1.33` (18.10.2026)
+> **Versio:** `v1.34` (18.10.2026)
 > **Git:** koodi `d07c7de`, tagi `v1.29` = `bb704e8`, `origin/main` = `69c2e39`
 > **Push:** ei pushata julkiseen GitHubiin — vain lokaalit commitit
 > **Repo:** https://github.com/teppoaland/tabtool
@@ -50,6 +50,11 @@
 - **Seek-synkki** tutkittu: siirto sliderilla ei riko aikasynkkiä
   (tahtilukema osui 30→10→50→20→55→5 s kaikissa). `audio.seeking`
   estää välipositiot ja slider vapautetaan `pointerup`/`blur`illa.
+- **Desimaali-TAB BPM** (v1.34): kenttä hyväksyy 0,1 askeleen
+  (`143,55`). GP5 tallentaa kokonaisluvun (`int(bpm+0,5)`), desimaali
+  toteutuu toiston korjauksena `bpm/score.tempo - 1`, joka summataan
+  SYNC-arvoon. Ratkaisee "143 jää jälkeen / 144 edistää" -ongelman.
+  Seek & Destroy -audion mitattu tempo **143,555 BPM** (librosa).
 - Referenssitabi palautettu **140 BPM**; audio liitetty; AI-tabi 144.
   BPM/Nopeus-kontrollit jäävät, mutta eivät pakota 144:ään.
 - Täydet kappaleet ovat oletus; pätkägenerointi (`TEE TAB TÄSTÄ`) on
@@ -103,6 +108,8 @@ Putki:
 - v1.33: seek-testi 30/10/50/20/55/5 s → tahdit 16/6/26/11/28/3
   (odotetut); MP3 `Metallica` 414,7 s / 9,8 MB, `KISS` 20,0 s
   (alkuperäinen audio on 20 s klippi); 72 testiä.
+- v1.34: desimaali-BPM 119,5 → GP5 120, 58 s → tahti 29 (ilman
+  korjausta 30); Seek & Destroy 143,555 BPM; live v1.34, 8 tabia.
 - Referenssitabi **140 BPM**, audio 414,72 s, PLAY + aikajana + cursor;
   5 raitaa, oletus Guitar 1 + Guitar 2.
 - AI-tabi 144 BPM / 249 tahtia; referenssi 140 BPM / 258 tahtia.

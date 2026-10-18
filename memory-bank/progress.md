@@ -1,5 +1,16 @@
 # 📊 Projektin edistyminen – AI TABTOOL
 
+## v1.34 – Desimaali-TAB BPM (18.10.2026)
+
+- TAB BPM hyväksyy 0,1 askeleen (`143,55`). GP5 kirjoitetaan
+  kokonaislukuna (`int(bpm+0,5)`); `meta.gp5_tempo` tallentaa sen.
+- Toiston korjaus `bpmDrift = bpm / nuottitempo - 1` summataan
+  SYNC-arvoon; nuottitempo luetaan alphaTabin `score.tempo`sta.
+- Seek & Destroy -audion mitattu tempo **143,555 BPM**
+  (librosa, 420 beatia, mediaanibeat 0,41796 s).
+- BPM näytetään desimaalilla, kun arvo ei ole kokonaisluku.
+- 73 pytest-testiä; headless: 119,5 → GP5 120, tahti 29 @ 58 s.
+
 ## v1.33 – MP3-kuunteluversiot ja seek-synkki (18.10.2026)
 
 - YouTube-latauksista tehdään MP3 `audio/mp3/<Artisti>/`-kansioon

@@ -28,7 +28,8 @@ Lokaali web-palvelu, jossa voi:
   oman transkriptiomallin.
 - **Täydet kappaleet ovat oletus.** Pätkägenerointi on poikkeus.
 - **Valmiin tabin tuonti** GP5/MusicXML; samannimisen AI-tabin audio
-  voidaan liittää tuotuun tabiin. Tabin BPM korjattavissa, `Nopeus`
+  voidaan liittää tuotuun tabiin. Tabin BPM korjattavissa desimaalilla
+  (GP5 tallentaa kokonaisluvun; desimaali on toiston korjaus), `Nopeus`
   50–150 % harjoitteluun ja `SYNC` ±10 % kohdistukseen (tallentuu
   tabille); kappaleen tempo ratkaisee.
 - **Ei pakollista Guitar Prota.** TuxGuitar on ilmainen apuväline

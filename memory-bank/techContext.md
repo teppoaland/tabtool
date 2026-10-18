@@ -56,7 +56,7 @@ python -m venv .venv
 ## Testit
 
 ```powershell
-.venv\Scripts\python.exe -m pytest -q          # 72 passed
+.venv\Scripts\python.exe -m pytest -q          # 73 passed
 .venv\Scripts\python.exe -m compileall -q app scripts tests
 node --check app\static\app.js
 node --check app\static\remote.js
@@ -132,6 +132,8 @@ DB-tiedosto); vain tuotenimi on `AI TabTool`.
 - Seek: `audio.seeking` estää välipositiot; `seekTo()`/`seeked`
   pakottavat synkan (`force`). Seek-slider vapautetaan `change`-,
   `pointerup`-, dokumentin `pointerup`- ja `blur`-tapahtumissa.
+- Desimaali-TAB BPM: `bpmDrift = bpm / score.tempo - 1` summataan
+  `syncDrift`iin; GP5 säilyttää kokonaislukutempon.
 - `TALLENNA` (v1.31): BPM tallentuu vain napista; tallentamaton arvo
   värjää `.bpm-field`-kentän punaiseksi. Status-tekstit
   (`bpm-status`, `sync-status`) saavat `.is-error`-luokan virheestä.
