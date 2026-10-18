@@ -9,7 +9,7 @@
 - **Ei GPU:ta** (`nvidia-smi` tyhjä) → CPU-only
 - D: levytilaa ~147 GB vapaana
 
-## Python-paketit (v1.11)
+## Python-paketit (v1.20)
 
 Core:
 
@@ -56,7 +56,7 @@ python -m venv .venv
 ## Testit
 
 ```powershell
-.venv\Scripts\python.exe -m pytest -q          # 30 passed
+.venv\Scripts\python.exe -m pytest -q          # 45 passed
 .venv\Scripts\python.exe -m compileall -q app scripts tests
 node --check app\static\app.js
 node --check app\static\remote.js
@@ -77,7 +77,20 @@ Hyödylliset valinnat: `--model htdemucs_6s`, `--stem guitar`, `--tuning`,
 ## Git
 
 - `origin` = `https://github.com/teppoaland/tabtool.git`
-- `main` = `origin/main` = **6bd647c** (v1.11)
+- `main` = **5315f32** (v1.20), `ahead 1` vs. `origin/main` (ei pushattu)
 - Commit author: `Azure Notepad Pipeline <azure-pipeline@notepad-automation.com>`
-- `.gitattributes`: `*.bat eol=crlf`
+- `.gitattributes`: `*.bat eol=crlf`, `app/static/vendor/** -text`
 - `.gitignore`: `docs/`, `data/`, `.venv`, audio/tabit, tokenit, mallit
+
+## Data
+
+- `data/tabtool.sqlite3` (WAL) – tracks/jobs/tabs/oauth_tokens/settings
+- `data/audio/` – uploadit ja normalisoitu WAV
+- `data/tabs/<id>/` – `tab.gp5`, `tab.musicxml`, `tab.mid`, `meta.json`
+
+## Frontend
+
+- alphaTab 1.8.4 vendoroituna `app/static/vendor/alphaTab/`
+  (`alphaTab.min.js`, `font/Bravura.woff2`, `LICENSE`).
+- Ei npm-riippuvuuksia eikä buildia; `core.useWorkers = false` pitää
+  renderöinnin deterministisenä.

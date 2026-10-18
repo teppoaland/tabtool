@@ -10,6 +10,30 @@
   seuraavasta vaiheesta.
 - Memory bank -muutokset `docs:`-commitilla, ei versiobumppia.
 
+## v1.20 – Phase 2: web-UI, job-jono ja alphaTab (18.10.2026)
+
+### Muutokset
+
+- `app/db.py`: SQLite (`tracks`, `jobs`, `tabs`, `oauth_tokens`,
+  `settings`), `data/`-juureen sidotut polkuapurit, CLI-tabien import.
+- `app/jobs.py`: yksi worker, stage-progress, SSE-tilaukset, cache ja
+  `regenerate`; tabit kirjoitetaan temp-hakemistoon ja `os.replace`lla.
+- `app/main.py`: `POST /api/jobs` (upload / YouTube / local path),
+  job- ja tab-reitit, inline score, attachment-export, Range-audio.
+- UI: lomake, status-rivi, kirjasto, alphaTab-katselin, `PLAY`/`PAUSE`,
+  `EXPORT`, `?tab=<id>`-syvälinkki.
+- alphaTab 1.8.4 vendoroituna (`app/static/vendor/alphaTab/`), Bravura
+  fontti, `IExternalMediaHandler` + 50 ms positiosynkka.
+- 45 pytest-testiä (API, cache, validoinnit, polkuturva, import).
+
+### Validointi
+
+- Oikea putki nopeassa tilassa: 12 tahtia, 58 nuottia; GP5 takaisinluettu
+  (78 merkintää); MusicXML jäsentyy; Range-audio 206.
+- 137 tahdin tabi renderöityi headless-Chromessa (30 254 px, ink OK).
+- Browser-validoinnissa korjattiin: fonttipolun trailing slash,
+  `PlayerState`-enumin puuttuminen UMD-globalista, `useWorkers: false`.
+
 ## v1.11 – Tie-korjaus ja validointi (18.10.2026)
 
 ### Muutokset
@@ -59,7 +83,7 @@
 
 ## Testitilanne
 
-- `pytest -q` → **30 passed**
+- `pytest -q` → **45 passed**
 - `compileall` → OK
 - `node --check app.js` / `remote.js` → OK
 - `test.bat` → exit 0
@@ -70,11 +94,13 @@
 - Standard E -alueen ulkopuoliset nuotit pudotetaan varoituksella.
 - Tempo voi olla half/double-time; normalisoidaan 70–180 BPM.
 - Ei manuaalista editoria; GP5 korjataan Guitar Prossa/TuxGuitarissa.
-- Web-UI ei vielä näytä tabia; alphaTab tulee Phase 2:ssa.
-- Spotify-integraatio puuttuu; Phase 3.
+- Toisto on testattu handler-tasolla; käyttäjän kuuntelutesti puuttuu.
 - Rummut vaativat oman mallin.
+- Spotify-integraatio puuttuu; Phase 3.
+- Remote-näkymä on yhä pelkkä shell; Phase 4.
 
 ## Seuraavaksi
 
-Phase 2 / v1.20: SQLite + job-jono + cache + alphaTab + paikallinen
-toisto + API-testit. Tämän jälkeen Phase 3: Spotify.
+Phase 3 / v1.30: Spotify PKCE + haku/metadata, Web Playback SDK tai
+Connect-laite, tokenit `oauth_tokens`-tauluun ja mockatut API-testit.
+Tämän jälkeen Phase 4: remote-kaukosäädin.

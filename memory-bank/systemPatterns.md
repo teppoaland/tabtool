@@ -5,11 +5,15 @@
 ```
 FastAPI (app/main.py)
   ├─ /api/health, /api/version, /api/config
-  ├─ /, /display, /remote  → app/static/
-  └─ (Phase 2+) /api/jobs, /api/tabs, /ws
+  ├─ /api/jobs, /api/jobs/{id}, /api/jobs/{id}/events (SSE)
+  ├─ /api/tabs, /api/tabs/{id}, score/export/audio
+  └─ /, /display, /remote  → app/static/
         │
         ▼
-Job-kerros (Phase 2: app/jobs.py)
+Job-kerros (app/jobs.py: jono + worker + cache + eventit)
+        │
+        ▼
+SQLite (app/db.py: tracks, jobs, tabs, oauth_tokens, settings)
         │
         ▼
 Putki (app/pipeline/)
@@ -19,6 +23,7 @@ Putki (app/pipeline/)
 
 - Reitit eivät kutsu Demucsia/Basic Pitchiä suoraan; ne luovat jobin.
 - Putki ei importtaa FastAPIä eikä kirjoita HTTP-vastauksia.
+- Job-kerros importtaa putken vasta ajon aikana (kevyt käynnistys).
 - Frontend ei käsittele Spotify-client-secretiä (PKCE).
 - Kaikki polut `app/config.py`:stä. `data/` on yksityinen juuri.
 
@@ -48,30 +53,37 @@ Putki (app/pipeline/)
 - **MIDI** pretty_midi, tempo = BPM, program 25.
 - Tie-tila on nuottikohtainen (v1.11).
 
-## Cache / DB (Phase 2)
+## Cache / DB
 
-Suunniteltu SQLite:
+Toteutettu SQLite (`app/db.py`, WAL, `data/tabtool.sqlite3`):
 
-- `tracks` – Spotify/local/YouTube-metadata
-- `jobs` – status, stage, progress, options, error
-- `tabs` – `cache_key = sha256(track_id + pipeline_version + options)`
-- `oauth_tokens` – Spotify PKCE -tokenit
+- `tracks` – title, artist, source_type, source_ref, fingerprint, audio
+- `jobs` – status, stage, progress, options, warnings, error, tab_id
+- `tabs` – `cache_key`, directory, metadata, `meta_json`
+- `oauth_tokens` – Spotify PKCE -tokenit (Phase 3)
 - `settings`
+
+`cache_key = sha256(fingerprint + PIPELINE_VERSION + options)`.
+Fingerprint: uploadin sisältöhash, YouTube-URL tai local path + koko +
+mtime. Polut tallennetaan suhteessa `DATA_DIR`:iin.
 
 Invariantit:
 
 1. Sama audio + asetukset → sama tulos.
-2. Valmis tab cachetetaan; ei ylikirjoitusta ilman regeneratea.
-3. Atomiset kirjoitukset: temp + `os.replace`.
+2. Valmis tab cachetetaan; `regenerate` korvaa vanhan tabin ja
+   hakemiston vasta onnistuneen viennin jälkeen.
+3. Atomiset kirjoitukset: temp-hakemisto + `os.replace`.
 4. Path traversal -suojaus; `data/` ei koskaan static-mounttiin.
 5. Jobin metadataan malli, versio, parametrit ja varoitukset.
 
-## UI (Phase 2)
+## UI
 
-- `/` ja `/display` = TV-näkymä, `/remote` = puhelin.
-- alphaTab 1.8.4 vendoroituna `app/static/vendor/alphaTab/`.
-- `PlayerMode.EnabledExternalMedia` + `IExternalMediaHandler`.
-- Paikallinen audio: `<audio>` + Range; positio 50 ms välein
-  `api.player.output.updatePosition(pos + offset)`.
-- Spotify (Phase 3): Web Playback SDK tai Spotify Connect -laite.
+- `/` ja `/display` = TV-näkymä, `/remote` = puhelin (Phase 4).
+- alphaTab 1.8.4 vendoroituna `app/static/vendor/alphaTab/`
+  (Bravura-fontti `font/`, `core.useWorkers = false`).
+- `PlayerMode.EnabledExternalMedia` + `IExternalMediaHandler`;
+  positio 50 ms välein `api.player.output.updatePosition(ms)`.
+- Paikallinen audio: `<audio>` + Range (`FileResponse` 206).
+- UI: upload/YouTube-lomake, status-rivi + progress, kirjasto,
+  EXPORT-linkit, `?tab=<id>`-syvälinkki.
 - Ei uusia modaaleja/toasteja; status inline.
