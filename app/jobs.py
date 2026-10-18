@@ -19,7 +19,7 @@ from typing import Any, BinaryIO, Callable, Mapping
 
 import app.config as config
 from app import db
-from app.external_store import archive_external
+from app.external_store import archive_external, archive_mp3
 from app.pipeline.model import get_tuning, parse_time_signature
 
 LOGGER = logging.getLogger("tabtool.jobs")
@@ -510,6 +510,7 @@ def run_pipeline(
             archive_external(
                 audio.path, "audio", document_artist, document_title
             )
+            archive_mp3(audio.path, document_artist, document_title)
         except Exception:  # noqa: BLE001 - archive must not break the job
             LOGGER.warning("external archive failed", exc_info=True)
 

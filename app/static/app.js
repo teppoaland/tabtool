@@ -290,7 +290,7 @@
       audio.duration
     );
     audio.currentTime = target;
-    syncPosition();
+    syncPosition(true);
     updateTransport();
     window.setTimeout(scrollScoreToCursor, 80);
   }
@@ -646,8 +646,11 @@
     },
   };
 
-  function syncPosition() {
+  function syncPosition(force) {
     if (!api || !api.player || !Number.isFinite(audio.currentTime)) return;
+    // While the browser is seeking, currentTime can still report the old
+    // position. Feeding it to alphaTab would make the cursor jump back.
+    if (!force && audio.seeking) return;
     const output = api.player.output;
     if (output && typeof output.updatePosition === "function") {
       output.updatePosition(syncTimeMs());
@@ -1161,6 +1164,8 @@
     seekSlider.addEventListener("change", finishSeeking);
     seekSlider.addEventListener("pointerup", finishSeeking);
     seekSlider.addEventListener("keyup", finishSeeking);
+    document.addEventListener("pointerup", finishSeeking);
+    window.addEventListener("blur", finishSeeking);
   }
   if (seekBack) seekBack.addEventListener("click", () => seekBy(-5));
   if (seekForward) seekForward.addEventListener("click", () => seekBy(5));
@@ -1255,7 +1260,7 @@
     audio.addEventListener("durationchange", updateTransport);
     audio.addEventListener("timeupdate", updateTransport);
     audio.addEventListener("seeked", () => {
-      syncPosition();
+      syncPosition(true);
       updateTransport();
     });
     audio.addEventListener("ended", () => {
@@ -1263,7 +1268,7 @@
       updateTransport();
     });
     window.setInterval(() => {
-      if (!audio.paused) syncPosition();
+      if (!audio.paused && !audio.seeking) syncPosition();
     }, 50);
   }
   setFullscreenButtonState();

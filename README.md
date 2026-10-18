@@ -211,7 +211,13 @@ Ulkoinen sisältö mirroroidaan luettavalla nimellä, jotta samat tiedostot
 löytyvät helposti muuhunkin käyttöön:
 
 - `D:\tabtool_files\audio\` – YouTube-lataukset (`Artist - Title.wav`)
+- `D:\tabtool_files\audio\mp3\<Artisti>\` – kuunteluversiot
+  (`Artist - Title.mp3`, ffmpeg + libmp3lame VBR ~190 kbps)
 - `D:\tabtool_files\tabs\` – tuodut tabit (`Artist - Title.gp5`/`.musicxml`)
+
+MP3 tehdään YouTube-latauksista (ei pätkäklipistä eikä omasta uploadista),
+joten bändin biisit löytyvät artistikansioista esim. autoon tai
+harjoituksiin.
 
 Samalla levyasemalla käytetään **hard linkiä**, joten tiedosto ei vie
 ylimääräistä levytilaa ja näkyy molemmissa hakemistoissa. `data/` pysyy
@@ -321,7 +327,8 @@ docs/               GITIGNORED
 - **v1.30** ✅ – manuaalinen SYNC-kohdistus (tallentuu tabille), Nopeus 50–150 %
 - **v1.31** ✅ – TALLENNA-nappi ja punainen muistutus tallentamattomasta BPM:stä
 - **v1.32** ✅ – ulkoinen arkisto `D:\tabtool_files` (YouTube-audio + tuodut tabit)
-- **v1.33** – Spotify-haku, OAuth, SDK/Connect-synkka
+- **v1.33** ✅ – MP3-kuunteluversiot artistikansioihin + seek-synkin vakaunnus
+- **v1.34** – Spotify-haku, OAuth, SDK/Connect-synkka
 - **v1.40** – remote-kaukosäädin
 - **1.x** – basso, laulu, rummut, bending
 

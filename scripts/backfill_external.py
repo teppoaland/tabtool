@@ -8,7 +8,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from app import config, db  # noqa: E402
-from app.external_store import archive_external  # noqa: E402
+from app.external_store import archive_external, archive_mp3  # noqa: E402
 
 
 def _archive_audio(tab: dict[str, object]) -> Path | None:
@@ -50,12 +50,40 @@ def _archive_tab(tab: dict[str, object]) -> Path | None:
     )
 
 
+def _archive_mp3(tab: dict[str, object], seen: set[str]) -> Path | None:
+    meta = tab.get("meta") if isinstance(tab.get("meta"), dict) else {}
+    if str(meta.get("source_type") or "") != "youtube":
+        return None
+    audio = str(tab.get("audio_path") or "")
+    if not audio:
+        return None
+    try:
+        path = db.resolve_under_data(audio)
+    except ValueError:
+        return None
+    if not path.is_file():
+        return None
+    key = str(path.resolve())
+    if key in seen:
+        return None
+    seen.add(key)
+    return archive_mp3(
+        path, str(tab.get("artist") or ""), str(tab.get("title") or "")
+    )
+
+
 def main() -> int:
     db.import_tabs_from_disk()
     tabs = db.list_tabs(500)
     archived = 0
+    seen_mp3: set[str] = set()
     for tab in tabs:
-        for result in (_archive_audio(tab), _archive_tab(tab)):
+        results = (
+            _archive_audio(tab),
+            _archive_tab(tab),
+            _archive_mp3(tab, seen_mp3),
+        )
+        for result in results:
             if result is not None:
                 archived += 1
                 print(result)

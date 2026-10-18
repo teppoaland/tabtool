@@ -2,6 +2,23 @@
 
 > AI TabTool käyttää `1.x`-versiosarjaa. Aloitus `v1.00`.
 
+## v1.33 – 18.10.2026
+
+- **MP3-kuunteluversiot:** YouTube-latauksista tehdään WAV:n rinnalle
+  MP3 `D:\tabtool_files\audio\mp3\<Artisti>\Artist - Title.mp3`
+  (ffmpeg, libmp3lame VBR ~190 kbps). Artistikansiot syntyvät
+  automaattisesti; tuntematon artisti → `Unknown Artist`.
+  MP3 uudelleen­koodataan vain, jos WAV on uudempi. Pätkäklipit ja omat
+  uploadit ohitetaan.
+- `scripts/backfill_external.py` tekee myös MP3:t olemassa oleville
+  YouTube-audioille (sama audio koodataan vain kerran).
+- **Seek-synkki:** tutkittu headless-selaimessa (30 tahtia, 120 BPM,
+  sliderilla 30→10→50→20→55→5 s). Tahtilukema osui joka kerta
+  odotettuun tahtiin, joten siirto ei riko aikasynkkiä. Vakaunnukset:
+  seekin aikana positiota ei syötetä alphaTabille (`audio.seeking`),
+  `seekTo`/`seeked` pakottavat synkan, slider vapautetaan myös
+  dokumentin `pointerup`/ikkunan `blur`-tapahtumissa.
+
 ## v1.32 – 18.10.2026
 
 - **Ulkoinen arkisto:** YouTube-lataukset ja tuodut GP5/MusicXML-tabit
