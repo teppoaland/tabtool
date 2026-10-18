@@ -43,7 +43,8 @@ Lokaali web-palvelu, jossa voi:
   (`TABTOOL_EXTERNAL_DIR`): YouTube-audiot ja tuodut GP5/MusicXML
   luettavalla nimellä. `data/` on totuuden lähde; hard link samalla
   levyllä, joten tiedostot löytyvät myös muuhun käyttöön ilman
-  tuplalevytilaa.
+  tuplalevytilaa. YouTube-latauksista tehdään lisäksi MP3
+  `audio/mp3/<Artisti>/`-kansioon omaan kuunteluun.
 - **Tuotenimi `AI TabTool`** (v1.22–v1.29). Repo/hakemisto `tabtool`,
   `TABTOOL_*`-ympäristömuuttujat ja `data/tabtool.sqlite3` ovat teknisiä
   nimiä. Ei sidoksissa tabtool GmbH:hen eikä SEYDEL TabTooliin.

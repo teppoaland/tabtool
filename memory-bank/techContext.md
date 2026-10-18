@@ -56,7 +56,7 @@ python -m venv .venv
 ## Testit
 
 ```powershell
-.venv\Scripts\python.exe -m pytest -q          # 69 passed
+.venv\Scripts\python.exe -m pytest -q          # 72 passed
 .venv\Scripts\python.exe -m compileall -q app scripts tests
 node --check app\static\app.js
 node --check app\static\remote.js
@@ -101,8 +101,9 @@ Hyödylliset valinnat: `--model htdemucs_6s`, `--stem guitar`, `--tuning`,
 - `data/tabs/<id>/` – `tab.gp5`, `tab.musicxml`, `tab.mid`, `meta.json`
   (mm. `files`, `audio_path`, `bpm`, `sync_drift`)
 - `D:\tabtool_files\` (gitin ulkopuolella) – ulkoisen sisällön arkisto:
-  `audio/Artist - Title.wav`, `tabs/Artist - Title.gp5|.musicxml`.
-  Polku `TABTOOL_EXTERNAL_DIR`; hard link samalla levyllä.
+  `audio/Artist - Title.wav`, `audio/mp3/<Artisti>/Artist - Title.mp3`,
+  `tabs/Artist - Title.gp5|.musicxml`.
+  Polku `TABTOOL_EXTERNAL_DIR`; WAV hard link samalla levyllä.
 - Tuodut tabit: GP5/MusicXML + `meta.json`; `source_type=import`
 - Audio attach: tuotu tabi voi osoittaa samannimisen AI-tabin audioon;
   audioita ei kopioida. Pätkäjobi käyttää tabin audiota ja optionsia.
@@ -128,6 +129,9 @@ DB-tiedosto); vain tuotenimi on `AI TabTool`.
   `syncPosition()` antaa alphaTabille `audio.currentTime * (1 + drift)`
   (clamped audion kestoon). Arvo tallentuu `meta.sync_drift`iin ja
   palautuu `loadTab`issa; GP5/audio eivät muutu.
+- Seek: `audio.seeking` estää välipositiot; `seekTo()`/`seeked`
+  pakottavat synkan (`force`). Seek-slider vapautetaan `change`-,
+  `pointerup`-, dokumentin `pointerup`- ja `blur`-tapahtumissa.
 - `TALLENNA` (v1.31): BPM tallentuu vain napista; tallentamaton arvo
   värjää `.bpm-field`-kentän punaiseksi. Status-tekstit
   (`bpm-status`, `sync-status`) saavat `.is-error`-luokan virheestä.

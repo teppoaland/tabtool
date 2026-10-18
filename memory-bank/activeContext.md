@@ -1,6 +1,6 @@
 # 📍 Aktiivinen konteksti – AI TABTOOL
 
-> **Versio:** `v1.32` (18.10.2026)
+> **Versio:** `v1.33` (18.10.2026)
 > **Git:** koodi `d07c7de`, tagi `v1.29` = `bb704e8`, `origin/main` = `69c2e39`
 > **Push:** ei pushata julkiseen GitHubiin — vain lokaalit commitit
 > **Repo:** https://github.com/teppoaland/tabtool
@@ -43,6 +43,13 @@
   osoittaa testihakemistoon (esim. aiemman `Start-Process`in perintö),
   UI näyttää tyhjän kirjaston vaikka `D:\AI\tabtool\data` olisi ehjä.
   Käynnistä palvelin eksplisiittisellä `TABTOOL_DATA_DIR`illa.
+- **MP3-kuunteluversiot** (v1.33): YouTube-latauksista syntyy
+  `D:\tabtool_files\audio\mp3\<Artisti>\Artist - Title.mp3`
+  (ffmpeg VBR ~190 kbps; vain jos WAV on uudempi). Pätkäklipit ja
+  omat uploadit ohitetaan.
+- **Seek-synkki** tutkittu: siirto sliderilla ei riko aikasynkkiä
+  (tahtilukema osui 30→10→50→20→55→5 s kaikissa). `audio.seeking`
+  estää välipositiot ja slider vapautetaan `pointerup`/`blur`illa.
 - Referenssitabi palautettu **140 BPM**; audio liitetty; AI-tabi 144.
   BPM/Nopeus-kontrollit jäävät, mutta eivät pakota 144:ään.
 - Täydet kappaleet ovat oletus; pätkägenerointi (`TEE TAB TÄSTÄ`) on
@@ -92,7 +99,10 @@ Putki:
 - v1.32: 69 pytest-testiä; backfill arkistoi 5 tiedostoa
   (`D:\tabtool_files`), `fsutil hardlink list` vahvisti hard linkin
   (`yt-62c1293b02.wav` ↔ `Metallica - Seek & Destroy.wav`).
-- Live-palvelin 8000: **v1.32**, 8 tabia `D:\AI\tabtool\data`:sta.
+- Live-palvelin 8000: **v1.33**, 8 tabia `D:\AI\tabtool\data`:sta.
+- v1.33: seek-testi 30/10/50/20/55/5 s → tahdit 16/6/26/11/28/3
+  (odotetut); MP3 `Metallica` 414,7 s / 9,8 MB, `KISS` 20,0 s
+  (alkuperäinen audio on 20 s klippi); 72 testiä.
 - Referenssitabi **140 BPM**, audio 414,72 s, PLAY + aikajana + cursor;
   5 raitaa, oletus Guitar 1 + Guitar 2.
 - AI-tabi 144 BPM / 249 tahtia; referenssi 140 BPM / 258 tahtia.

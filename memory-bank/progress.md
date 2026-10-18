@@ -1,5 +1,18 @@
 # 📊 Projektin edistyminen – AI TABTOOL
 
+## v1.33 – MP3-kuunteluversiot ja seek-synkki (18.10.2026)
+
+- YouTube-latauksista tehdään MP3 `audio/mp3/<Artisti>/`-kansioon
+  (ffmpeg libmp3lame VBR ~190 kbps); uudelleenkoodaus vain jos WAV on
+  uudempi. Pätkäklipit ja omat uploadit ohitetaan.
+- Backfill tekee MP3:t myös vanhoille YouTube-audioille.
+- Seek-synkki tutkittu headless-selaimessa (30 tahtia / 120 BPM,
+  siirrot 30→10→50→20→55→5 s): tahtilukema osui aina odotettuun,
+  joten siirto ei riko aikasynkkiä. Vakaunnus: `audio.seeking`
+  estää välipositiot, `seekTo`/`seeked` pakottavat synkan, slider
+  vapautuu myös `pointerup`/`blur`illa.
+- 72 pytest-testiä.
+
 ## v1.32 – Ulkoinen arkisto D:\tabtool_files (18.10.2026)
 
 - `app/external_store.py`: `archive_external()` mirroroi tiedoston
@@ -56,34 +69,12 @@
   seuraavasta vaiheesta.
 - Memory bank -muutokset `docs:`-commitilla, ei versiobumppia.
 
-## v1.29 – TAB BPM ja Nopeus (18.10.2026)
+## v1.26–v1.29 – Tuonti, pätkä, audio, BPM (18.10.2026)
 
-- `TAB BPM` -kontrolli ja `POST /api/tabs/{id}/tempo`: GP5:n
-  `song.tempo`, `tabs.bpm` ja `meta.json` päivittyvät; audio 100 %.
-- `Nopeus` 95–105 %, askel 0,1 %, yhden desimaalin näyttö;
-  `mediaHandler.playbackRate` seuraa audio-ratea.
-- Referenssitabi 140 → 144 → **takaisin 140** käyttäjän toiveesta;
-  audio pysyi liitettynä, AI-tabi 144. BPM/Nopeus-kontrollit jäivät.
-- Soittotapa/refinger (asemaprofiilit, helpoin-arvio, turhien nuottien
-  karsinta) suunniteltu, **ei toteutettu**; jäissä.
-- 60 pytest-testiä.
-- Committoitu `d07c7de` (v1.29; 18 tiedostoa, 2442 lisäystä);
-  tagi `v1.29` = `bb704e8` (docs); ei pushia.
-
-## v1.28 – Referenssitabin audio (18.10.2026)
-
-- `LIITÄ AUDIO` + `POST /api/tabs/{id}/attach-audio`: samannimisen
-  AI-tabin audio liitetään tuotuun tabiin; PLAY/aikajana/cursor.
-- Moniraitaisen tuonnin oletus Guitar 1 + Guitar 2.
-- `Nopeus`-säädin; `meta.json` päivittyy audiolinkityksellä.
-- 58 pytest-testiä.
-
-## v1.27 – Pätkägenerointi (18.10.2026)
-
-- `TEE TAB TÄSTÄ`, 30/60/120 s, `POST /api/tabs/{id}/section`.
-- Uusi tabi nimellä `[start +kesto]`; audio/options lähtötabista.
-- Tuodut tabit merkitään `Lähde: tuotu tabi`; oletus Guitar 1/2.
-- 56 pytest-testiä.
+- v1.26: GP5/MusicXML-tuonti (`app/tab_import.py`, PyGuitarPro/music21).
+- v1.27: pätkägenerointi (`TEE TAB TÄSTÄ`, 30/60/120 s).
+- v1.28: `LIITÄ AUDIO` ja Nopeus-säädin; `meta.json` päivittyy.
+- v1.29: TAB BPM kirjoittaa GP5:n `song.tempo`n; 60 testiä.
 
 ## v1.26 – GP5/MusicXML-tuonti (18.10.2026)
 

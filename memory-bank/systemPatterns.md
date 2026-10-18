@@ -98,7 +98,8 @@ Invariantit:
 `external_store.archive_external` mirroroi YouTube-audion ja tuodut
 GP5/MusicXML-tabit `EXTERNAL_DIR`iin (oletus `D:\tabtool_files`,
 `Artist - Title.ext`). Samalla levyllä käytetään hard linkiä; virhe ei
-kaada jobia.
+kaada jobia. `archive_mp3` koodaa YouTube-WAV:t
+`audio/mp3/<Artisti>/`-kansioon (ffmpeg, VBR ~190 kbps).
 
 ## UI
 
