@@ -1,6 +1,8 @@
 # Audio / ML pipeline (Phase 1+)
 # TensorFlow requires numpy<2; keep this pin until Basic Pitch updates.
 numpy<2
+# Basic Pitch (via resampy) still imports pkg_resources.
+setuptools<81
 demucs==4.1.0
 basic-pitch==0.4.0
 librosa==0.11.0

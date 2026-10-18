@@ -11,9 +11,11 @@ audio → stemmit → transkriptio → tempo/kvantisointi → otelauta → expor
 - `app/pipeline/audio_source.py` – upload, local path, yt-dlp
 - `app/pipeline/separate.py` – Demucs `htdemucs_6s`
 - `app/pipeline/transcribe.py` – Basic Pitch
-- `app/pipeline/tempo.py` – librosa beat/tempo
+- `app/pipeline/tempo.py` – librosa beat/tempo + 70–180 BPM -normalisointi
 - `app/pipeline/quantize.py` – grid, tahdit, restit, tie
-- `app/pipeline/fretboard.py` – kieli/ote-dynamic programming
+- `app/pipeline/fretboard.py` – kieli/ote-DP + kielikohtainen monofonia
+- `app/pipeline/segments.py` – nuotti/restisegmentit
+- `app/pipeline/build.py` – TabDocumentin kokoaminen
 - `app/pipeline/export_*.py` – GP5, MusicXML, MIDI
 
 ## Invariantit
@@ -32,6 +34,12 @@ audio → stemmit → transkriptio → tempo/kvantisointi → otelauta → expor
 8. Demucs-oletus on `htdemucs_6s` (guitar/bass/drums/vocals/other/piano).
    4-stem `htdemucs` on fallback.
 9. Basic Pitch ei tue rumpuja; rummut vaativat oman mallin (esim. ADTOF).
+10. Yhdellä kielellä ei saa olla kahta päällekkäistä nuottia. Uusi nuotti
+    siirretään vapaalle kielelle tai edellistä nuottia lyhennetään.
+11. Beat trackerin half/double-time-tulkinta normalisoidaan 70–180 BPM
+    -alueelle ennen kvantisointia.
+12. GP5 on ensisijainen tab-formaatti ja se validoidaan lukemalla tiedosto
+    takaisin: tahtikestot täsmäävät eikä duplicate string -nuotteja ole.
 
 ## Testit
 

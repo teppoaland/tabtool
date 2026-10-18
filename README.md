@@ -5,7 +5,7 @@ Hae kappale Spotifysta tai käytä omaa MP3/YouTube-audioita, anna tekoälyn
 tehdä ensimmäinen tablatuuriluonnos ja katsele sitä alphaTabilla TV:stä
 tai tietokoneelta. Puhelin toimii kaukosäätimenä.
 
-**Versio:** `v1.00` (Phase 0 – runko)
+**Versio:** `v1.10` (Phase 1 – putki)
 
 ---
 
@@ -94,15 +94,45 @@ node --check app\static\remote.js
 
 ---
 
-## Testikappaleet (Phase 1)
+## Putki CLI (Phase 1)
+
+```powershell
+# Paikallinen tiedosto
+.venv\Scripts\python.exe scripts\pipeline_smoke.py "C:\Music\song.mp3" --title "Song" --artist "Artist"
+
+# YouTube (lataa audiostreamin, ei mainoksia)
+.venv\Scripts\python.exe scripts\pipeline_smoke.py "https://youtu.be/..." --clip-seconds 30
+
+# Nopea savutesti ilman stem-erottelua
+.venv\Scripts\python.exe scripts\pipeline_smoke.py song.mp3 --no-separation --clip-seconds 20
+```
+
+Tulosteet: `data/tabs/<nimi>/tab.gp5`, `tab.musicxml`, `tab.mid` ja
+`meta.json`. Hyödylliset valinnat: `--model htdemucs_6s`, `--stem guitar`,
+`--tuning standard`, `--bpm 136`, `--start-seconds 60`, `--clip-seconds 30`,
+`--no-separation`.
+
+**Phase 1 -validointi (18.10.2026):**
+- Paikallinen 3:10 MP3: Demucs 6s + Basic Pitch + fretboard + export
+  ~67 sekunnissa CPU:lla.
+- 108 tahtia, 884 tab-nuottia; GP5 luettiin uudelleen ilman virheitä.
+- YouTube 20 s klipit toimivat; mainokset eivät tule mukaan.
+
+---
+
+## Testikappaleet
 
 1. **YouTube:** KISS – *I’m A Legend Tonight*
    <https://www.youtube.com/watch?v=lHvfqaDp0zA>
 2. **Paikallinen fallback:**
    `C:\Music_mp3\Diablo\Diablo - Mimic47-2006\05 - Mimic 47.mp3`
 
-YouTube-lataus on käyttäjän vastuulla. Jos YouTube estää latauksen,
-käytetään paikallista MP3:aa.
+Molemmat on validoitu Phase 1:ssä. YouTube-lataus on käyttäjän vastuulla.
+Jos YouTube estää latauksen, käytetään paikallista MP3:aa.
+
+```powershell
+.venv\Scripts\python.exe scripts\pipeline_smoke.py "C:\Music_mp3\Diablo\Diablo - Mimic47-2006\05 - Mimic 47.mp3" --title "Mimic 47" --artist "Diablo"
+```
 
 ---
 
@@ -150,7 +180,8 @@ app/
 ├─ main.py          FastAPI, reitit, static
 ├─ config.py        polut ja ympäristömuuttujat
 ├─ static/          TV- ja remote-näkymät
-├─ pipeline/        Demucs → Basic Pitch → tab (Phase 1)
+├─ pipeline/        audio_source, separate, transcribe, tempo,
+│                   quantize, fretboard, export_gp5/musicxml/midi
 └─ ...
 tests/              pytest
 scripts/            CLI-työkalut
@@ -163,8 +194,8 @@ docs/               GITIGNORED
 
 ## Tiekartta
 
-- **v1.00** – repo, säännöt, FastAPI-runko, testit
-- **v1.10** – putki: Demucs + Basic Pitch + fretboard + GP5/MusicXML
+- **v1.00** ✅ – repo, säännöt, FastAPI-runko, testit
+- **v1.10** ✅ – putki: Demucs + Basic Pitch + fretboard + GP5/MusicXML/MIDI
 - **v1.20** – web-UI + alphaTab + paikallinen toisto
 - **v1.30** – Spotify-haku, OAuth, SDK/Connect-synkka
 - **v1.40** – remote-kaukosäädin
@@ -177,9 +208,13 @@ docs/               GITIGNORED
 - AI-transkriptio on luonnos: akordit, särö, päällekkäiset kitarat ja
   nopeat soolot tuottavat virheitä.
 - CPU-only: kappaleen käsittely voi kestää useita minuutteja.
-- Rummut vaativat oman transkriptiomallin (ei v1.0:ssa).
+- Rummut vaativat oman transkriptiomallin (ei vielä).
 - Tempo- tai tahtilajimuutokset voivat vaatia manuaalista BPM/offset-
-  säätöä.
+  säätöä. Beat trackerin half/double-time tulkinta normalisoidaan
+  70–180 BPM -alueelle.
+- Kielikohtainen monofonia varmistetaan: päällekkäinen nuotti siirretään
+  vapaalle kielelle tai edellistä nuottia lyhennetään.
+- Standard E -viritykseen kuulumattomat nuotit pudotetaan varoituksella.
 - Spotify-toisto ei ole synkronin oletuslähde; käytä paikallista audiota.
 
 ---
