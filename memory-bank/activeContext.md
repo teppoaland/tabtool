@@ -1,6 +1,6 @@
 # 📍 Aktiivinen konteksti – AI TABTOOL
 
-> **Versio:** `v1.42` (18.10.2026)
+> **Versio:** `v1.43` (18.10.2026)
 > **Git:** uusin koodicommit v1.41 (GP3/GP4-tuonti); docs-commitit sen
 > päällä, ei pushattu. `origin/main` = `69c2e39`; paikallinen `main` on
 > edellä (`git status -sb` näyttää määrän). Docs-commit siirtää HEADia,
@@ -10,6 +10,14 @@
 
 ## Nyt
 
+- **v1.43**: kursorin synkka korjattu. alphaTabin ulkoisen median kello
+  venytti backing trackin ajan partituurin pituuteen suhteella
+  `partituurin kesto / backingTrackDuration`; `backingTrackDuration`
+  palautti ääniraidan keston, joten pidempi tabi (Seek & Destroy 258
+  tahtia vs. audio ~249) sai kursorin kulkemaan ääntä edellä. Nyt se
+  palauttaa partituurin keston (`api.tickCache.endTime`) → kellotus 1:1,
+  ja TAB BPM/SYNC/SIIRTO toimivat yksin. Tab BPM 143,5 (GP5 144)
+  kohdistaa tahdin 41 viimeisen nuotin.
 - **v1.42**: `pytest.ini`:n `addopts = -q` poistettu, joten `pytest -q`
   tulostaa taas yhteenvedon (`93 passed`); memory bank -protokollan
   tarkistuskomennot putkitetaan `Out-String -Width 200`:lla, koska

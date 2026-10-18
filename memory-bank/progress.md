@@ -1,5 +1,20 @@
 # 📊 Projektin edistyminen – AI TABTOOL
 
+## v1.43 – Kursorin synkka: backing track -venytys pois (18.10.2026)
+
+- alphaTabin `EnabledExternalMedia`-kello skaalaa backing trackin ajan
+  koko partituurin pituuteen (`mainTimePositionFromBackingTrack`):
+  suhde `scoreEnd / backingTrackDuration`. `backingTrackDuration`
+  palautti ääniraidan keston, joten pidempi partituuri (Seek & Destroy
+  referenssi 258 tahtia / 430 s vs. audio 414,72 s) venytti jokaisen
+  `audio.currentTime`-syötteen 1,0368× ja kursori kulki ääntä edellä
+  (esim. tahti 41 viimeinen nuotti → kursori tahdissa 42).
+- Korjaus `app/static/app.js`: `backingTrackDuration` palauttaa nyt
+  partituurin keston (`api.tickCache.endTime`, fallback `api.endTime`),
+  jolloin kellotus on 1:1 ja vain TAB BPM/SYNC/SIIRTO vaikuttavat.
+  Seek & Destroy: BPM 143,5 (GP5 144) kohdistaa tahdin 41 oikein.
+- Ei backend-muutoksia; 93 pytest-testiä.
+
 ## v1.42 – Testiyhteenveto ja sessioalustuksen tulosteet (18.10.2026)
 
 - `pytest.ini`:stä poistettiin `addopts = -q`. Memory bankin ohje

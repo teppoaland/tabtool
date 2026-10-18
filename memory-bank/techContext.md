@@ -9,7 +9,7 @@
 - **Ei GPU:ta** (`nvidia-smi` tyhjä) → CPU-only
 - D: levytilaa ~147 GB vapaana
 
-## Python-paketit (v1.42)
+## Python-paketit (v1.43)
 
 Core:
 
@@ -135,6 +135,12 @@ DB-tiedosto); vain tuotenimi on `AI TabTool`.
 - `mediaHandler.playbackRate` seuraa `audio.playbackRate`-arvoa
   (`Nopeus` 50–150 %); `preservesPitch = true`. BPM-korjaus kirjoittaa
   GP5:n ja lataa tabin.
+- `mediaHandler.backingTrackDuration` palauttaa **partituurin keston**
+  (`api.tickCache.endTime`), ei ääniraidan kestoa (v1.43). alphaTabin
+  ulkoisen median kello skaalaa backing trackin ajan suhteella
+  `scoreEnd / backingTrackDuration`; ääniraidan kestolla pidempi tabi
+  venytti kursorin ääntä edelle. Nyt kellotus on 1:1 ja vain BPM/SYNC/
+  SIIRTO vaikuttavat.
 - `SYNC` (±10 %, 0,05 %) kertoo tabin aikajanan siirrosta:
   `syncPosition()` antaa alphaTabille `audio.currentTime * (1 + drift)`
   (clamped audion kestoon). Arvo tallentuu `meta.sync_drift`iin ja
@@ -156,7 +162,7 @@ DB-tiedosto); vain tuotenimi on `AI TabTool`.
   (`bpm-status`, `sync-status`) saavat `.is-error`-luokan virheestä.
 - Uvicorn ajetaan ilman `--reload`ia: koodimuutoksen jälkeen palvelin
   on käynnistettävä uudelleen, muuten uudet reitit palauttavat 404.
-  Staattisten tiedostojen `?v=1.42`-leimat pakottavat tuoreen CSS/JS:n;
+  Staattisten tiedostojen `?v=1.43`-leimat pakottavat tuoreen CSS/JS:n;
   selaimessa voi silti tarvita Ctrl+F5:n.
 - Modaalin pino: alphaTabin `.at-cursors` on `z-index: 1000`; modaali
   `2000`, dialogi `2100`, viewer `isolation: isolate`, cursor piiloon
