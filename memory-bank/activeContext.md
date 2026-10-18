@@ -1,6 +1,6 @@
 # 📍 Aktiivinen konteksti – AI TABTOOL
 
-> **Versio:** `v1.29` (18.10.2026)
+> **Versio:** `v1.30` (18.10.2026)
 > **Git:** koodi `d07c7de`, tagi `v1.29` = `bb704e8`, `origin/main` = `69c2e39`
 > **Push:** ei pushata julkiseen GitHubiin — vain lokaalit commitit
 > **Repo:** https://github.com/teppoaland/tabtool
@@ -23,7 +23,11 @@
   PLAY/aikajana/cursor tulevat käyttöön. Moniraitaisesta tuonnista
   oletuksena Guitar 1 + Guitar 2.
 - **TAB BPM/Nopeus**: GP5-tempo korjattavissa, audio 100 %; Nopeus
-  95–105 %/0,1 % hienosäätö. AI-BPM on arvio, ei totuus.
+  50–150 % harjoitteluun. AI-BPM on arvio, ei totuus.
+- **SYNC** (v1.30): tabin kohdistus ±10 %/0,05 %, `+` eteen ja `-`
+  taakse; tallentuu tabin `meta.json`iin (`sync_drift`) ja palautuu
+  aina tabia avattaessa. GP5/audio eivät muutu. Syy: pitkässä
+  GP5-tabissa heitto kertyy (esim. Seek & Destroy ~60–70 tahti).
 - Referenssitabi palautettu **140 BPM**; audio liitetty; AI-tabi 144.
   BPM/Nopeus-kontrollit jäävät, mutta eivät pakota 144:ään.
 - Täydet kappaleet ovat oletus; pätkägenerointi (`TEE TAB TÄSTÄ`) on
@@ -36,9 +40,12 @@
 
 ## Seuraava vaihe
 
-1. Päätä soittotapa/refinger-toteutus: asemaprofiilit, playability-score,
+1. Seek & Destroy -GP5:n hienosäätö: aja kohtaan ~60–70 tahti, säädä
+   SYNC kohdalleen (tallentuu tabille); jos heitto kasvaa edelleen,
+   tarkista GP5:n BPM/tahtirakenne TAB BPM:llä ja Guitar Prolla.
+2. Päätä soittotapa/refinger-toteutus: asemaprofiilit, playability-score,
    turhien nuottien karsinta, per-tahti/fraasiasema.
-2. Vasta sitten Phase 3 / Spotify: PKCE, haku/metadata, SDK/Connect,
+3. Vasta sitten Phase 3 / Spotify: PKCE, haku/metadata, SDK/Connect,
    tokenit `oauth_tokens`-tauluun ja mockatut API-testit.
 
 
@@ -61,7 +68,9 @@ Putki:
 
 ## Tuoreimmat validointitulokset
 
-- `pytest -q` → **60 passed**; `compileall` ja `node --check` OK.
+- `pytest -q` → **64 passed**; `compileall` ja `node --check` OK.
+- Headless-Chrome: SYNC `+3.50 %` → `sync_drift 0.035` kantaan ja
+  `meta.json`iin; reload palautti arvon; Nopeus 50–150 %.
 - Referenssitabi **140 BPM**, audio 414,72 s, PLAY + aikajana + cursor;
   5 raitaa, oletus Guitar 1 + Guitar 2.
 - AI-tabi 144 BPM / 249 tahtia; referenssi 140 BPM / 258 tahtia.
@@ -77,7 +86,8 @@ Putki:
 - AI-transkription tarkkuus (Basic Pitch); referenssitabit ja ilmainen
   TuxGuitar apuna, ei Guitar Pro -pakkoa.
 - KISSin kaltaiset kappaleet ilman valmista tabia: AI-tabi + korjaus.
-- Referenssitabin rakenne vs. audio (258 vs. 249 tahtia).
+- Referenssitabin rakenne vs. audio (258 vs. 249 tahtia). SYNC korjaa
+  vain lineaarisen heiton; ylimääräinen/puuttuva tahti vaatii GP5-korjauksen.
 - Spotify Phase 3, remote Phase 4, LAN-PIN, retention, bass/laulu,
   rummut (ADTOF/Omnizart), manuaalinen editori.
 

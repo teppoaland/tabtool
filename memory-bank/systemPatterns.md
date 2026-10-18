@@ -7,7 +7,7 @@ FastAPI (app/main.py)
   ├─ /api/health, /api/version, /api/config
   ├─ /api/jobs, /api/jobs/{id}, /api/jobs/{id}/events (SSE)
   ├─ /api/tabs, /api/tabs/{id}, /api/tabs/import
-  ├─ /api/tabs/{id}/section, /attach-audio, /tempo
+  ├─ /api/tabs/{id}/section, /attach-audio, /tempo, /sync
   ├─ score/export/audio
   └─ /, /display, /remote  → app/static/
         │
@@ -112,7 +112,9 @@ Invariantit:
   valitaan `meta.files`:stä (gp5/musicxml). Tuotu tabi ilman audiota:
   PLAY ja aikajana piilotetaan, `LIITÄ AUDIO` hakee samannimisen AI-tabin
   audion.
-- `TAB BPM` kirjoittaa GP5-tempon; `Nopeus` (95–105 %, 0,1 %) hienosäätää
-  audion tabin tempoon. AI-BPM on arvio.
-- Ei uusia modaaleja/toasteja; status/import/attach/BPM inline.
+- `TAB BPM` kirjoittaa GP5-tempon; `Nopeus` (50–150 %, 0,1 %) on
+  harjoittelusäädin. `SYNC` (±10 %, 0,05 %) siirtää tabin aikajanaa
+  audioon nähden ja tallentuu `meta.sync_drift`iin
+  (`POST /api/tabs/{id}/sync`); AI-BPM on arvio.
+- Ei uusia modaaleja/toasteja; status/import/attach/BPM/SYNC inline.
 - Ei committoituja modeleita/audioita `static/`-hakemistoon.

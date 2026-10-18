@@ -56,7 +56,7 @@ python -m venv .venv
 ## Testit
 
 ```powershell
-.venv\Scripts\python.exe -m pytest -q          # 60 passed
+.venv\Scripts\python.exe -m pytest -q          # 64 passed
 .venv\Scripts\python.exe -m compileall -q app scripts tests
 node --check app\static\app.js
 node --check app\static\remote.js
@@ -99,6 +99,7 @@ Hyödylliset valinnat: `--model htdemucs_6s`, `--stem guitar`, `--tuning`,
 - `data/audio/` – uploadit, YouTube-normalisoinnit ja pätkäklipit
 - `data/stems/` – Demucs-stemmat
 - `data/tabs/<id>/` – `tab.gp5`, `tab.musicxml`, `tab.mid`, `meta.json`
+  (mm. `files`, `audio_path`, `bpm`, `sync_drift`)
 - Tuodut tabit: GP5/MusicXML + `meta.json`; `source_type=import`
 - Audio attach: tuotu tabi voi osoittaa samannimisen AI-tabin audioon;
   audioita ei kopioida. Pätkäjobi käyttää tabin audiota ja optionsia.
@@ -117,7 +118,12 @@ DB-tiedosto); vain tuotenimi on `AI TabTool`.
   aikajana/tahtilukema, tuonti, LIITÄ AUDIO, TAB BPM ja Nopeus.
 - Score-format valitaan `meta.files`:stä (gp5 ensin, muuten musicxml);
   tuotu tabi ilman audiota piilottaa PLAYn ja transportin.
-- `mediaHandler.playbackRate` seuraa `audio.playbackRate`-arvoa;
-  `preservesPitch = true`. BPM-korjaus kirjoittaa GP5:n ja lataa tabin.
+- `mediaHandler.playbackRate` seuraa `audio.playbackRate`-arvoa
+  (`Nopeus` 50–150 %); `preservesPitch = true`. BPM-korjaus kirjoittaa
+  GP5:n ja lataa tabin.
+- `SYNC` (±10 %, 0,05 %) kertoo tabin aikajanan siirrosta:
+  `syncPosition()` antaa alphaTabille `audio.currentTime * (1 + drift)`
+  (clamped audion kestoon). Arvo tallentuu `meta.sync_drift`iin ja
+  palautuu `loadTab`issa; GP5/audio eivät muutu.
 - Headless-Chrome-validoinnit: alphaTab-render, cursor, fullscreen,
   GP5/MusicXML-tuonti, audio attach, BPM 140/144, aikajana.

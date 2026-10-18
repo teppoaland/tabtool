@@ -1,5 +1,18 @@
 # 📊 Projektin edistyminen – AI TABTOOL
 
+## v1.30 – SYNC-kohdistus ja Nopeus 50–150 % (18.10.2026)
+
+- **SYNC**-säädin (±10 %, askel 0,05 %): tabin aikajanaa siirretään
+  audioon nähden (`+` eteen, `-` taakse) `syncPosition()`issa.
+- Korjaus tallentuu tabin `meta.json`iin (`sync_drift`) ja kantaan
+  `POST /api/tabs/{id}/sync`illa; `loadTab` palauttaa arvon, joten
+  kerran säädetty kohdistus on aina mukana. GP5/audio ennallaan.
+- **Nopeus** 50–150 % (aiempi 95–105 %); `mediaHandler.playbackRate`
+  seuraa audiota eli tabi pysyy samassa suhteessa.
+- 64 pytest-testiä (`tests/test_tab_sync.py`).
+- Headless-Chrome: `SYNC +3.50 %` → `sync_drift 0.035` kantaan ja
+  `meta.json`iin, reload palautti `+3.50 %`; ei JS-virheitä.
+
 ## Session päätökset (18.10.2026)
 
 - Memory bankin HEAD-viittaukset korjattu pysyviin ankkureihin:
@@ -117,60 +130,21 @@
 - Browser-validoinnissa korjattiin: fonttipolun trailing slash,
   `PlayerState`-enumin puuttuminen UMD-globalista, `useWorkers: false`.
 
-## v1.11 – Tie-korjaus ja validointi (18.10.2026)
+## Varhaiset versiot (v1.00–v1.11, 18.10.2026)
 
-### Muutokset
-
-- GP5/MusicXML: tie-tila nuottikohtainen; uudet ja jatkuvat nuotit
-  samassa segmentissä saavat oikean tilan.
-- Uusi testi `test_tie_state_is_per_note`.
-- 30 pytest-testiä.
-
-### Validointi
-
-- KISS – I’m A Legend Tonight (YouTube, 4:00): 137 tahtia,
-  1413 tab-nuottia, GP5 validi, 0 rikkinäistä tahtikestoa,
-  0 duplicate string -beatiä.
-- MusicXML: 137 tahtia, 3050 tab-nuottimerkintää.
-- MIDI: 1413 nuottia.
-
-## v1.10 – Audio-to-tab-putki (18.10.2026)
-
-### Muutokset
-
-- `app/pipeline/`: audio_source, separate, transcribe, tempo, quantize,
-  fretboard, segments, build, export_gp5, export_musicxml, export_midi.
-- `scripts/pipeline_smoke.py`.
-- Demucs `htdemucs_6s`, 4-stem fallback, `--no-separation`.
-- Tempo 70–180 BPM -normalisointi.
-- Kielikohtainen monofonia.
-- Fretboard-Viterbi ja virityspresetit.
-- GP5/MusicXML/MIDI-export.
-- 29 pytest-testiä.
-
-### Validointi
-
-- Diablo – Mimic 47 (3:10 MP3): 108 tahtia, 884 tab-nuottia,
-  GP5 validi, ~67 s CPU:lla.
-- KISS 20 s YouTube-klipit: putki toimii; mainokset eivät tule mukaan.
-- Demucs 6s erottaa guitar/bass/drums/vocals/other/piano.
-
-## v1.00 – Runko (18.10.2026)
-
-- git init + origin, `.gitignore`, `.clinerules/` (6 sääntöä),
-  README/CHANGELOG/LICENSE/THIRD_PARTY_NOTICES.
-- FastAPI: `/`, `/display`, `/remote`, `/api/health`, `/api/version`,
-  `/api/config`.
-- setup.bat, install-ml.bat, start.bat, test.bat.
-- Ensimmäiset testit.
+- v1.00: repo, `.clinerules`, FastAPI-runko, `start.bat`/`test.bat`.
+- v1.10: audio-to-tab-putki (Demucs `htdemucs_6s`, Basic Pitch,
+  fretboard-Viterbi, GP5/MusicXML/MIDI); KISS 4 min → 137 tahtia.
+- v1.11: tie-tila nuottikohtainen; GP5 validointi (ei duplicate
+  string -beateja); 30 testiä.
 
 ## Testitilanne
 
-- `pytest -q` → **60 passed**
+- `pytest -q` → **64 passed**
 - `compileall` → OK
 - `node --check app.js` / `remote.js` → OK
 - Headless-Chrome: alphaTab-render, cursor, fullscreen, GP5/MusicXML-
-  tuonti, audio attach, BPM 140/144, aikajana
+  tuonti, audio attach, BPM 140/144, aikajana, SYNC-tallennus
 
 ## Tunnetut rajoitukset
 

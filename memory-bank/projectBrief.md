@@ -28,8 +28,9 @@ Lokaali web-palvelu, jossa voi:
   oman transkriptiomallin.
 - **Täydet kappaleet ovat oletus.** Pätkägenerointi on poikkeus.
 - **Valmiin tabin tuonti** GP5/MusicXML; samannimisen AI-tabin audio
-  voidaan liittää tuotuun tabiin. Tabin BPM korjattavissa, Nopeus
-  95–105 % hienosäätöön; kappaleen tempo ratkaisee.
+  voidaan liittää tuotuun tabiin. Tabin BPM korjattavissa, `Nopeus`
+  50–150 % harjoitteluun ja `SYNC` ±10 % kohdistukseen (tallentuu
+  tabille); kappaleen tempo ratkaisee.
 - **Ei pakollista Guitar Prota.** TuxGuitar on ilmainen apuväline
   tarvittaessa; appi tuo GP5/MusicXML:n.
 - **All rights reserved** (GameHubin käytäntö). Kolmannen osapuolen
@@ -65,6 +66,6 @@ Sano Cline:lle **`lue membank`**. Sääntö on
 - `app/pipeline/` – audio-to-tab-putki
 - `app/tab_import.py` – GP5/MusicXML-tuonti
 - `scripts/pipeline_smoke.py` – CLI-proof
-- `tests/` – 60 pytest-testiä
+- `tests/` – 64 pytest-testiä
 - `data/` – GITIGNORED: audio, stemmit, tabit, tokenit
 - `docs/` – GITIGNORED: henkilökohtainen suunnitelma
