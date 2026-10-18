@@ -1,4 +1,4 @@
-# 🛠️ Tekninen ympäristö – TABTOOL
+# 🛠️ Tekninen ympäristö – AI TABTOOL
 
 ## Kone
 
@@ -9,7 +9,7 @@
 - **Ei GPU:ta** (`nvidia-smi` tyhjä) → CPU-only
 - D: levytilaa ~147 GB vapaana
 
-## Python-paketit (v1.20)
+## Python-paketit (v1.22)
 
 Core:
 
@@ -77,7 +77,7 @@ Hyödylliset valinnat: `--model htdemucs_6s`, `--stem guitar`, `--tuning`,
 ## Git
 
 - `origin` = `https://github.com/teppoaland/tabtool.git`
-- `main` = **a2abc74** (v1.21), ei pushattu (`origin/main` = v1.11)
+- `main` = **2d4fe02** (v1.22), ei pushattu (`origin/main` = v1.11)
 - Commit author: `Azure Notepad Pipeline <azure-pipeline@notepad-automation.com>`
 - `.gitattributes`: `*.bat eol=crlf`, `app/static/vendor/** -text`
 - `.gitignore`: `docs/`, `data/`, `.venv`, audio/tabit, tokenit, mallit
@@ -87,6 +87,9 @@ Hyödylliset valinnat: `--model htdemucs_6s`, `--stem guitar`, `--tuning`,
 - `data/tabtool.sqlite3` (WAL) – tracks/jobs/tabs/oauth_tokens/settings
 - `data/audio/` – uploadit ja normalisoitu WAV
 - `data/tabs/<id>/` – `tab.gp5`, `tab.musicxml`, `tab.mid`, `meta.json`
+
+Sisäiset nimet säilyttävät `tabtool`-etuliitteen (repo, `TABTOOL_*`,
+DB-tiedosto); vain tuotenimi on `AI TabTool`.
 
 ## Frontend
 

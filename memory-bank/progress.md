@@ -1,4 +1,4 @@
-# 📊 Projektin edistyminen – TABTOOL
+# 📊 Projektin edistyminen – AI TABTOOL
 
 ## Memory bank -protokolla (18.10.2026)
 
@@ -9,6 +9,14 @@
   `pytest -q`, raportoi 3–6 riviä ja jatkaa `activeContext.md`:n
   seuraavasta vaiheesta.
 - Memory bank -muutokset `docs:`-commitilla, ei versiobumppia.
+
+## v1.22 – Tuotenimi AI TabTool (18.10.2026)
+
+- `APP_NAME` = "AI TabTool"; wordmark `AI TABTOOL`, brand-mark `AT`.
+- HTML-otsikot, footer, `start.bat` ja `open_browser.ps1` päivitetty.
+- Sisäiset tunnisteet ennallaan: repo `tabtool`, `TABTOOL_*`,
+  `data/tabtool.sqlite3`.
+- Testit päivitetty uuteen nimeen; 45 passed.
 
 ## v1.21 – Käynnistyksen automaatio (18.10.2026)
 

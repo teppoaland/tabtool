@@ -1,6 +1,6 @@
-# 🎯 Projektin lyhyt kuvaus – TABTOOL
+# 🎯 Projektin lyhyt kuvaus – AI TABTOOL
 
-> **Versio:** `v1.21` (18.10.2026)
+> **Versio:** `v1.22` (18.10.2026)
 > **Repo:** https://github.com/teppoaland/tabtool
 > **Paikallinen:** `D:\AI\tabtool`
 
@@ -26,7 +26,10 @@ Lokaali web-palvelu, jossa voi:
   oman transkriptiomallin.
 - **All rights reserved** (GameHubin käytäntö). Kolmannen osapuolen
   lisenssit `THIRD_PARTY_NOTICES.md`:ssä.
-- **Versiosarja `1.x`**, aloitus `v1.00`; nyt `v1.21`.
+- **Versiosarja `1.x`**, aloitus `v1.00`; nyt `v1.22`.
+- **Tuotenimi `AI TabTool`** (v1.22). Repo/hakemisto `tabtool`,
+  `TABTOOL_*`-ympäristömuuttujat ja `data/tabtool.sqlite3` ovat teknisiä
+  nimiä. Ei sidoksissa tabtool GmbH:hen eikä SEYDEL TabTooliin.
 - UI-tekstit ovat toistaiseksi suomeksi; pelaajalle näkyvät ydintekstit
   ovat englanniksi (SEARCH, GENERATE TAB, PLAY, PAUSE, EXPORT, REMOTE).
 

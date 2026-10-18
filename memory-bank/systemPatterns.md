@@ -1,4 +1,4 @@
-# 🧩 Järjestelmän arkkitehtuuri – TABTOOL
+# 🧩 Järjestelmän arkkitehtuuri – AI TABTOOL
 
 ## Kerrokset
 

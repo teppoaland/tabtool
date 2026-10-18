@@ -1,7 +1,7 @@
-# 📍 Aktiivinen konteksti – TABTOOL
+# 📍 Aktiivinen konteksti – AI TABTOOL
 
-> **Versio:** `v1.21` (18.10.2026)
-> **Git:** viimeisin koodicommit `a2abc74` (v1.21), ei pushattu
+> **Versio:** `v1.22` (18.10.2026)
+> **Git:** viimeisin koodicommit `2d4fe02` (v1.22), ei pushattu
 > **Repo:** https://github.com/teppoaland/tabtool
 
 ## Nyt
@@ -20,6 +20,9 @@
 - **v1.21:** `start.bat` avaa oletusselaimen automaattisesti, kun
   `/api/health` vastaa (`scripts/open_browser.ps1`); `TABTOOL_NO_BROWSER=1`
   ohittaa avauksen.
+- **v1.22:** tuotenimi **AI TabTool** (wordmark `AI TABTOOL`, markki `AT`).
+  Repo, `TABTOOL_*`-muuttujat ja `data/tabtool.sqlite3` säilyvät
+  teknisinä niminä. Ei toiminnallisia muutoksia.
 - **Spotify ei ole vielä mukana.** Haku/OAuth/SDK/Connect tulevat
   Phase 3:ssa. Client ID ja Premium eivät ole vielä tarpeen.
 
