@@ -9,7 +9,7 @@
 - **Ei GPU:ta** (`nvidia-smi` tyhjä) → CPU-only
 - D: levytilaa ~147 GB vapaana
 
-## Python-paketit (v1.37)
+## Python-paketit (v1.40)
 
 Core:
 
@@ -56,7 +56,7 @@ python -m venv .venv
 ## Testit
 
 ```powershell
-.venv\Scripts\python.exe -m pytest -q          # 75 passed
+.venv\Scripts\python.exe -m pytest -q          # 91 passed
 .venv\Scripts\python.exe -m compileall -q app scripts tests
 node --check app\static\app.js
 node --check app\static\remote.js
@@ -80,9 +80,9 @@ Hyödylliset valinnat: `--model htdemucs_6s`, `--stem guitar`, `--tuning`,
 - **Vain lokaalit commitit.** Projektia ei julkaista eikä pushatta
   julkiseen GitHubiin toistaiseksi. Commitit ovat palautuspisteitä
   (revert), jos koodi hajoaa. Push vaatii aina erillisen pyynnön.
-- Ankkurit: uusin koodicommit `b438e7b` (v1.37), docs `5db60ae`,
+- Ankkurit: v1.38 `c74ccdd`, v1.39 `8237876`, v1.40 `30e2c0e`;
   tagi `v1.29` = `bb704e8`, `origin/main` = `69c2e39`.
-- Paikallinen `main` on `origin/main`:ia edellä (v1.23–v1.37 koodi +
+- Paikallinen `main` on `origin/main`:ia edellä (v1.23–v1.40 koodi +
   memory bank -docs); **ei pushattu**. `git status -sb` näyttää määrän.
 - Älä kirjaa tähän HEAD-hashia: docs-commit siirtää HEADin joka kerta.
 - Työpuu clean committien jälkeen.
@@ -104,6 +104,8 @@ Hyödylliset valinnat: `--model htdemucs_6s`, `--stem guitar`, `--tuning`,
   `audio/Artist - Title.wav`, `audio/mp3/<Artisti>/Artist - Title.mp3`,
   `tabs/Artist - Title.gp5|.musicxml`.
   Polku `TABTOOL_EXTERNAL_DIR`; WAV hard link samalla levyllä.
+  MP3 syntyy vain kun `archive_mp3` on päällä (oletus); tabin poisto
+  jättää MP3:n ja jakamaansa audiota ei poisteta.
 - Tuodut tabit: GP5/MusicXML + `meta.json`; `source_type=import`
 - Audio attach: tuotu tabi voi osoittaa samannimisen AI-tabin audioon;
   audioita ei kopioida. Pätkäjobi käyttää tabin audiota ja optionsia.
@@ -119,7 +121,8 @@ DB-tiedosto); vain tuotenimi on `AI TabTool`.
 - Ei npm-riippuvuuksia eikä buildia; `core.useWorkers = false` pitää
   renderöinnin deterministisenä.
 - Oletus tab-only; Näkymä, raitavalinnat, FULLSCREEN, cursor/scroll,
-  aikajana/tahtilukema, tuonti, LIITÄ AUDIO, TAB BPM ja Nopeus.
+  aikajana/tahtilukema, **SEARCH-modaali** (YouTube + GP5-linkki/-tiedosto,
+  MP3-valinta, kirjasto ja poisto), LIITÄ AUDIO, TAB BPM ja Nopeus.
 - Score-format valitaan `meta.files`:stä (gp5 ensin, muuten musicxml);
   tuotu tabi ilman audiota piilottaa PLAYn ja transportin.
 - `mediaHandler.playbackRate` seuraa `audio.playbackRate`-arvoa
@@ -146,5 +149,11 @@ DB-tiedosto); vain tuotenimi on `AI TabTool`.
   (`bpm-status`, `sync-status`) saavat `.is-error`-luokan virheestä.
 - Uvicorn ajetaan ilman `--reload`ia: koodimuutoksen jälkeen palvelin
   on käynnistettävä uudelleen, muuten uudet reitit palauttavat 404.
-- Headless-Chrome-validoinnit: alphaTab-render, cursor, fullscreen,
-  GP5/MusicXML-tuonti, audio attach, BPM 140/144, aikajana.
+  Staattisten tiedostojen `?v=1.40`-leimat pakottavat tuoreen CSS/JS:n;
+  selaimessa voi silti tarvita Ctrl+F5:n.
+- Modaalin pino: alphaTabin `.at-cursors` on `z-index: 1000`; modaali
+  `2000`, dialogi `2100`, viewer `isolation: isolate`, cursor piiloon
+  `body.modal-open`-tilassa. Modaalin tausta on peittävä.
+- Headless-Edge/Chrome-validoinnit: alphaTab-render, cursor, fullscreen,
+  GP5/MusicXML-tuonti (linkki + tiedosto), audio attach, BPM 140/144,
+  aikajana, SEARCH-modaali, poisto, playback range -nollaus.

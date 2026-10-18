@@ -29,5 +29,11 @@ ydintekstit:
 - `Queued` / `Downloading audio…` / `Separating stems…` /
   `Transcribing guitar…` / `Building tab…` / `Ready` / `Failed`
 - `CONNECT SPOTIFY` / `Spotify Premium required` / `Spotify not configured`
+- `SULJE` / `POISTA` / `PERUUTA` / `MP3-kuunteluversio` /
+  `GP5-linkki` / `GP5-tiedosto`
+
+Hyväksytyt poikkeukset: SEARCH-modaali ja kappaleen poiston
+varoitusdialogi (v1.38) ovat sallittuja. Muita uusia modaaleja,
+popupeita tai toasteja ei lisätä ilman pyyntöä.
 
 Näitä saa korjata, mutta uusia viestejä ei lisätä kysymättä.

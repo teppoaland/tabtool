@@ -40,6 +40,10 @@ audio → stemmit → transkriptio → tempo/kvantisointi → otelauta → expor
     -alueelle ennen kvantisointia.
 12. GP5 on ensisijainen tab-formaatti ja se validoidaan lukemalla tiedosto
     takaisin: tahtikestot täsmäävät eikä duplicate string -nuotteja ole.
+13. GP5-lähde (linkki tai tiedosto) ohittaa AI-transkription. YouTube-
+    linkin kanssa audio liitetään audio-only-jobilla samaan tuotuun tabiin.
+14. Kappaleen poisto poistaa tabin, hakemiston, stemmit ja job/track-rivit,
+    mutta ei MP3-kuunteluversiota eikä toisen tabin jakamaa audiota.
 
 ## Testit
 

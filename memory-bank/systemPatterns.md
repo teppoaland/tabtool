@@ -6,7 +6,8 @@
 FastAPI (app/main.py)
   ├─ /api/health, /api/version, /api/config
   ├─ /api/jobs, /api/jobs/{id}, /api/jobs/{id}/events (SSE)
-  ├─ /api/tabs, /api/tabs/{id}, /api/tabs/import
+  ├─ /api/tabs, /api/tabs/{id} (GET/DELETE)
+  ├─ /api/tabs/import, /api/tabs/import-url
   ├─ /api/tabs/{id}/section, /attach-audio, /tempo, /sync
   ├─ score/export/audio
   └─ /, /display, /remote  → app/static/
@@ -30,6 +31,16 @@ Putki (app/pipeline/)
 - Kaikki polut `app/config.py`:stä. `data/` on yksityinen juuri.
 - `app/tab_import.py` hoitaa GP5/MusicXML-tuonnin ja metatiedot
   (PyGuitarPro/music21) ilman ML-putkea.
+- `app/tab_download.py` hakee GP5/MusicXML-linkin palvelimella: vain
+  julkinen http(s) (ei localhost/yksityisverkko), max 20 MB, redirectit
+  validoitu. gprotab.netin HTML-sivu → automaattinen `?download`-retry.
+- `app/library.py` hoitaa poiston: tab-hakemisto, stemmit sekä job/track-
+  rivit. Jaettu audio säilyy, jos toinen tabi käyttää sitä; MP3 jää
+  `EXTERNAL_DIR`iin. Poisto ei koske `data/`-juuren ulkopuolisiin polkuihin.
+- GP5 + YouTube -yhdistelmä: `jobs.submit_job` luo audio-only-jobin
+  (`options.audio_only`, `attach_tab_id`), joka lataa audion ja liittää
+  sen valmiiksi tuotuun tabiin ilman transkriptiota. Sama polku
+  GP5-linkille ja paikalliselle GP5-tiedostolle.
 - YouTube-metadata haetaan `audio_source.fetch_youtube_metadata`illa;
   `jobs.effective_track_metadata` valitsee oikean nimen/artistin.
 - Pätkäjobi luodaan tabin omasta audiopolusta (`/section`); BPM-korjaus
@@ -86,6 +97,11 @@ oletus; pätkäjobi käyttää samaa audio-/options-lähdettä.
 Fingerprint: uploadin sisältöhash, YouTube-URL tai local path + koko +
 mtime. Polut tallennetaan suhteessa `DATA_DIR`:iin.
 
+Reititys- ja arkistovalinnat (`audio_only`, `attach_tab_id`,
+`archive_mp3`) eivät kuulu cache-avaimeen (`JobOptions.as_cache_dict`),
+joten MP3-valinnan vaihtaminen ei invalidoi aiempia tabeja. `audio_only`
+ohittaa aina cache-haun.
+
 Invariantit:
 
 1. Sama audio + asetukset → sama tulos.
@@ -94,6 +110,8 @@ Invariantit:
 3. Atomiset kirjoitukset: temp-hakemisto + `os.replace`.
 4. Path traversal -suojaus; `data/` ei koskaan static-mounttiin.
 5. Jobin metadataan malli, versio, parametrit ja varoitukset.
+6. Poisto poistaa tabin datan, mutta ei MP3-kuunteluversiota eikä
+   toisen tabin jakamaa audiota.
 
 `external_store.archive_external` mirroroi YouTube-audion ja tuodut
 GP5/MusicXML-tabit `EXTERNAL_DIR`iin (oletus `D:\tabtool_files`,
@@ -114,10 +132,15 @@ kaada jobia. `archive_mp3` koodaa YouTube-WAV:t
   rivi, dynamiikat piilossa, vaakascrollbar pois.
 - Aikajana: aika/kesto, tahtilukema, ±5 s, Space/nuolet, seek vierittää
   cursorin kohdalle; `TEE TAB TÄSTÄ` tekee pätkäjobin.
-- Tuonti: GP5/MusicXML-tiedostovalinta, `IMPORT TAB`; score-format
-  valitaan `meta.files`:stä (gp5/musicxml). Tuotu tabi ilman audiota:
-  PLAY ja aikajana piilotetaan, `LIITÄ AUDIO` hakee samannimisen AI-tabin
-  audion.
+- **SEARCH-modaali** (v1.38): YouTube-linkki, GP5-linkki tai
+  GP5-tiedosto, MP3-valinta, GENERATE TAB, kirjasto ja kappaleen
+  valinta/poisto samassa ikkunassa. TV-näkymä jää soittoa varten.
+  GP5-lähde ohittaa AI-generoinnin; YT-audio liitetään samalla jobilla.
+  Score-format valitaan `meta.files`:stä (gp5/musicxml). Tuotu tabi ilman
+  audiota: PLAY ja aikajana piilotetaan, `LIITÄ AUDIO` hakee samannimisen
+  AI-tabin audion.
+- Kirjastorivi: `POISTA` avaa varoitusdialogin; poisto päivittää listan ja
+  piilottaa viewerin, jos poistettu tabi oli auki. MP3 jää arkistoon.
 - `TAB BPM` kirjoittaa GP5-tempon **TALLENNA**-napista; desimaalit
   sallitaan (0,1 askel) ja desimaaliosa toteutuu toiston korjauksena.
   Tallentamaton arvo näkyy punaisena. `Nopeus` (50–150 %, 0,1 %) on
@@ -126,7 +149,11 @@ kaada jobia. `archive_mp3` koodaa YouTube-WAV:t
   vakiosiirron tai rakenne-eron; molemmat tallentuvat metaan
   (`sync_drift`, `sync_offset_bars`,
   `POST /api/tabs/{id}/sync`); AI-BPM on arvio.
-- Ei uusia modaaleja/toasteja; status/import/attach/BPM/SYNC inline.
+- SEARCH-modaali ja poiston varoitusdialogi ovat hyväksytyt; muita
+  modaaleja/toasteja ei lisätä ilman pyyntöä.
+- Modaalin pino: alphaTabin `.at-cursors` käyttää `z-index: 1000`, joten
+  modaali on `2000`, dialogi `2100`, `.viewer-section` on `isolation:
+  isolate` ja cursor piilotetaan `body.modal-open`-tilassa.
 - Aluevalinta: alphaTabin raahaus ei jää loopiksi – `playbackRange`
   nollataan heti. Pause palauttaa cursorin audion aikaan.
 - Ei committoituja modeleita/audioita `static/`-hakemistoon.

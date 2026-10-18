@@ -1,6 +1,6 @@
 # 🎯 Projektin lyhyt kuvaus – AI TABTOOL
 
-> **Versio:** `v1.37` (18.10.2026)
+> **Versio:** `v1.40` (18.10.2026)
 > **Repo:** https://github.com/teppoaland/tabtool
 > **Paikallinen:** `D:\AI\tabtool`
 
@@ -10,11 +10,13 @@ Lokaali web-palvelu, jossa voi:
 
 1. hakea kappaleita Spotifysta (haku/metadata),
 2. generoida kitaratablatuuri omasta MP3:sta tai YouTube-audiosta,
-3. tuoda valmiita GP5/MusicXML-tabeja ja liittää niihin audio,
+3. tuoda GP5/MusicXML-tabeja **linkistä tai koneelta** ja liittää niihin
+   YouTube-audio yhdellä toiminnolla,
 4. katsoa tablatuuria alphaTabilla TV:stä/tietokoneelta (aikajana,
    cursor, fullscreen, raitavalinnat, BPM/Nopeus),
-5. käyttää puhelinta kaukosäätimenä,
-6. viedä tabin GP5/MusicXML/MIDI-muodossa.
+5. valita ja poistaa kappaleita SEARCH-modaalin kirjastosta,
+6. käyttää puhelinta kaukosäätimenä,
+7. viedä tabin GP5/MusicXML/MIDI-muodossa.
 
 ## Lukitut päätökset
 
@@ -27,17 +29,26 @@ Lokaali web-palvelu, jossa voi:
 - **Kitara ensin.** Basso, laulu ja rummut myöhemmin; rummut vaativat
   oman transkriptiomallin.
 - **Täydet kappaleet ovat oletus.** Pätkägenerointi on poikkeus.
-- **Valmiin tabin tuonti** GP5/MusicXML; samannimisen AI-tabin audio
-  voidaan liittää tuotuun tabiin. Tabin BPM korjattavissa desimaalilla
-  (GP5 tallentaa kokonaisluvun; desimaali on toiston korjaus), `Nopeus`
-  50–150 % harjoitteluun, `SYNC` ±10 % hienosäätöön ja `SIIRTO`
-  tahdeittain (0,25 tahdin askel = 1 isku) rakenne-eroon tai
-  vakiosiirtoon; kaikki tallentuvat tabille.
+- **Valmiin tabin tuonti** GP5/MusicXML joko linkistä (palvelin lataa
+  tiedoston) tai koneelta. GP5-lähde ohittaa AI-generoinnin; YouTube-
+  linkin kanssa audio liitetään samalla kertaa yhdellä jobilla. Ilman
+  GP5-lähdettä tabi generoidaan AI:lla. Samannimisen AI-tabin audio
+  voidaan myös liittää tuotuun tabiin. Tabin BPM korjattavissa
+  desimaalilla (GP5 tallentaa kokonaisluvun; desimaali on toiston
+  korjaus), `Nopeus` 50–150 % harjoitteluun, `SYNC` ±10 % hienosäätöön
+  ja `SIIRTO` tahdeittain (0,25 tahdin askel = 1 isku) rakenne-eroon
+  tai vakiosiirtoon; kaikki tallentuvat tabille.
 - **Ei pakollista Guitar Prota.** TuxGuitar on ilmainen apuväline
   tarvittaessa; appi tuo GP5/MusicXML:n.
 - **All rights reserved** (GameHubin käytäntö). Kolmannen osapuolen
   lisenssit `THIRD_PARTY_NOTICES.md`:ssä.
-- **Versiosarja `1.x`**, aloitus `v1.00`; nyt `v1.37`.
+- **Kappaleen poisto** (v1.38): poistaa tabin, hakemiston, stemmit sekä
+  job/track-rivit. Jaettu audio säilyy, jos toinen tabi käyttää samaa
+  tiedostoa. MP3-kuunteluversio jää tarkoituksella arkistoon.
+- **SEARCH-modaali** (v1.38): haku, GP5-linkki/-tiedosto, MP3-valinta,
+  kirjasto ja kappaleen valinta samassa ikkunassa; TV-näkymä on soittoa
+  varten. Poistolla on oma varoitusdialogi.
+- **Versiosarja `1.x`**, aloitus `v1.00`; nyt `v1.40`.
 - **Ei julkista julkaisua:** koodi pidetään lokaalina. Commitit tehdään
   paikalliseen repoon palautuspisteiksi (revert); push GitHubiin vain
   erillisestä pyynnöstä.
@@ -46,8 +57,9 @@ Lokaali web-palvelu, jossa voi:
   luettavalla nimellä. `data/` on totuuden lähde; hard link samalla
   levyllä, joten tiedostot löytyvät myös muuhun käyttöön ilman
   tuplalevytilaa. YouTube-latauksista tehdään lisäksi MP3
-  `audio/mp3/<Artisti>/`-kansioon omaan kuunteluun.
-- **Tuotenimi `AI TabTool`** (v1.22–v1.37). Repo/hakemisto `tabtool`,
+  `audio/mp3/<Artisti>/`-kansioon omaan kuunteluun; MP3-valinta on
+  oletuksena päällä, ja kappaleen poisto jättää MP3:n hakemistoon.
+- **Tuotenimi `AI TabTool`** (v1.22–v1.40). Repo/hakemisto `tabtool`,
   `TABTOOL_*`-ympäristömuuttujat ja `data/tabtool.sqlite3` ovat teknisiä
   nimiä. Ei sidoksissa tabtool GmbH:hen eikä SEYDEL TabTooliin.
 - UI-tekstit ovat toistaiseksi suomeksi; pelaajalle näkyvät ydintekstit
@@ -73,7 +85,9 @@ Sano Cline:lle **`lue membank`**. Sääntö on
 - `.clinerules/` – 7 projektisääntöä
 - `app/pipeline/` – audio-to-tab-putki
 - `app/tab_import.py` – GP5/MusicXML-tuonti
+- `app/tab_download.py` – GP5/MusicXML-linkin palvelinlataus
+- `app/library.py` – kappaleen poisto (tab/audio/stemmit, MP3 jää)
 - `scripts/pipeline_smoke.py` – CLI-proof
-- `tests/` – 75 pytest-testiä
+- `tests/` – 91 pytest-testiä
 - `data/` – GITIGNORED: audio, stemmit, tabit, tokenit
 - `docs/` – GITIGNORED: henkilökohtainen suunnitelma

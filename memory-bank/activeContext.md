@@ -1,18 +1,34 @@
 # 📍 Aktiivinen konteksti – AI TABTOOL
 
-> **Versio:** `v1.37` (18.10.2026)
-> **Git:** uusin koodicommit `b438e7b` (v1.37); docs-commitit sen päällä
-> (`346af7c`), ei pushattu. `origin/main` = `69c2e39`; paikallinen `main`
-> on edellä 29 committia. Docs-commit siirtää HEADia, joten älä pinnaa
-> HEAD-hashia tähän tiedostoon.
+> **Versio:** `v1.40` (18.10.2026)
+> **Git:** uusin koodicommit `30e2c0e` (v1.40); docs-commitit sen päällä,
+> ei pushattu. `origin/main` = `69c2e39`; paikallinen `main` on edellä
+> (`git status -sb` näyttää määrän). Docs-commit siirtää HEADia, joten
+> älä pinnaa HEAD-hashia tähän tiedostoon.
 > **Push:** ei pushata julkiseen GitHubiin — vain lokaalit commitit
 > **Repo:** https://github.com/teppoaland/tabtool
 
 ## Nyt
 
-- Phase 0/1/2 valmiit; Phase 2:n päälle on tehty v1.23–v1.37:
-  katselu, aikajana, tuonti/audio, BPM/Nopeus, SYNC/SIIRTO,
-  pätkägenerointi ja ulkoinen arkisto.
+- Phase 0/1/2 valmiit; v1.23–v1.37 katselu, aikajana, tuonti/audio,
+  BPM/Nopeus, SYNC/SIIRTO ja ulkoinen arkisto. v1.38–v1.40 toivat
+  **SEARCH-modaalin**, GP5-linkin/-tiedoston + YT-audion yhdellä
+  toiminnolla ja kappaleen poiston.
+- **SEARCH-modaali** (v1.38): YouTube-linkki, GP5-linkki tai
+  GP5-tiedosto, MP3-valinta, GENERATE TAB sekä kirjasto, josta kappale
+  valitaan soittoon. TV-näkymä on soittoa varten.
+- **GP5 + YT yhdellä toiminnolla** (v1.40): `GP5-linkki` tai
+  `GP5-tiedosto` ohittaa AI-generoinnin. YouTube-linkin kanssa tabi
+  tuodaan ja audio liitetään samalla jobilla; ilman GP5-lähdettä tabi
+  generoidaan AI:lla. GP5 + oma audiotiedosto on estetty.
+- **Poisto** (v1.38): kirjastorivin `POISTA` avaa varoitusdialogin.
+  Tab, hakemisto, stemmit ja job/track-rivit poistetaan; jaettu audio
+  säilyy ja MP3-kuunteluversio jää arkistoon.
+- **MP3-valinta** (v1.38): `MP3-kuunteluversio` on oletuksena päällä;
+  valinta ei vaikuta tabin cache-avaimeen.
+- **Modaalin pino** (v1.39): alphaTabin cursor (`z-index: 1000`) ei enää
+  näy modaalin päällä; modaali `2000`, dialogi `2100`, viewer
+  `isolation: isolate`, cursor piiloon `body.modal-open`-tilassa.
 - Katselu: **tab-only oletus**, Näkymä (`Tab`/`Auto`/`Tab+nuotit`/`Nuotit`),
   raitavalinnat ja tabikohtainen muisti, FULLSCREEN + automaattinen
   fullscreen PLAYssa, cursor + edellinen rivi näkyvissä, dynamiikat piilossa,
@@ -74,20 +90,17 @@
   poikkeus.
 - Soittotapa/refinger (asemaprofiilit, helpoin-arvio, turhien nuottien
   karsinta, per-tahti-asema) on suunniteltu mutta **ei toteutettu**;
-  jäissä. Koodi on committoitu (`b438e7b`, v1.37); vain lokaalit
+  jäissä. Koodi on committoitu (`30e2c0e`, v1.40); vain lokaalit
   commitit, ei pushia.
 - Spotify ei ole vielä mukana (Phase 3).
 
 ## Seuraava vaihe
 
-1. Seek & Destroy: lataa sivu (v1.37), nollaa SIIRTO ja tarkista BPM
-   143,5/143,55 (TALLENNA). Testaa bar 37 ja 84–85 ilman raahausta;
-   jos heitto on vakio → SIIRTO 0,25 tahdin askelin, jos kasvaa →
-   SYNC, jos hyppää → GP5:n rakenne.
-2. Päätä soittotapa/refinger-toteutus: asemaprofiilit, playability-score,
+1. Päätä soittotapa/refinger-toteutus: asemaprofiilit, playability-score,
    turhien nuottien karsinta, per-tahti/fraasiasema.
-3. Vasta sitten Phase 3 / Spotify: PKCE, haku/metadata, SDK/Connect,
+2. Vasta sitten Phase 3 / Spotify: PKCE, haku/metadata, SDK/Connect,
    tokenit `oauth_tokens`-tauluun ja mockatut API-testit.
+3. Phase 4: remote-kaukosäädin.
 
 
 ## Tärkeät komennot
@@ -109,7 +122,7 @@ Putki:
 
 ## Tuoreimmat validointitulokset
 
-- `pytest -q` → **75 passed**; `compileall` ja `node --check` OK.
+- `pytest -q` → **91 passed**; `compileall` ja `node --check` OK.
 - Headless-Chrome: SYNC `+3.50 %` → `sync_drift 0.035` kantaan ja
   `meta.json`iin; reload palautti arvon; Nopeus 50–150 %.
 - v1.31 headless: TALLENNA-nappi, punainen dirty-tila
@@ -118,7 +131,7 @@ Putki:
 - v1.32: 69 pytest-testiä; backfill arkistoi 5 tiedostoa
   (`D:\tabtool_files`), `fsutil hardlink list` vahvisti hard linkin
   (`yt-62c1293b02.wav` ↔ `Metallica - Seek & Destroy.wav`).
-- Live-palvelin 8000: **v1.37**, 8 tabia `D:\AI\tabtool\data`:sta.
+- Live-palvelin 8000: viimeksi v1.37; käynnistä uudelleen v1.40:een.
 - v1.33: seek-testi 30/10/50/20/55/5 s → tahdit 16/6/26/11/28/3
   (odotetut); MP3 `Metallica` 414,7 s / 9,8 MB, `KISS` 20,0 s
   (alkuperäinen audio on 20 s klippi); 72 testiä.
@@ -130,6 +143,14 @@ Putki:
   tallentui desimaalina; live v1.36.
 - v1.37: raahaus → `.at-selection` 0×0, seek 10 s → tahti 6,
   pause säilytti tahtilukeman; live v1.37.
+- v1.38: SEARCH-modaali, GP5-linkki (gprotab-sivu → `?download`-retry),
+  poisto; headless: modaalin avaus, kappaleen valinta, poistodialogi ja
+  GP5-render. 89 testiä.
+- v1.39: `#search-modal` z-index 2000, cursor `display: none` modaalin
+  auki ollessa; selainkuvalla varmistettu, ei läpikuultoa.
+- v1.40: GP5-tiedosto + YT-linkki yhdellä GENERATE TABilla → tabi
+  tuotu, audio liitetty (`/api/tabs/<id>/audio`), modaali sulkeutui;
+  91 testiä.
 - Referenssitabi: 258 tahtia, BPM 143,5 (GP5 144); AI-tabi 249 tahtia,
   BPM 143,5547. Audio 414,72 s, PLAY + aikajana + cursor; 5 raitaa.
 - GP5/MusicXML-tuonti ja `LIITÄ AUDIO` validoitu headless-selaimessa.

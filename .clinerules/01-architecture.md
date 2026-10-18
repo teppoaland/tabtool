@@ -16,6 +16,9 @@ pyörii käyttäjän omalla koneella; ei pilveä, ei monikäyttäjätilejä.
 - `app/db.py` – SQLite-skeema ja kyselyt
 - `app/spotify.py` – OAuth PKCE, token refresh, Spotify Web API
 - `app/jobs.py` – job-jono, worker, SSE-eventit
+- `app/tab_import.py` – GP5/MusicXML-tuonti
+- `app/tab_download.py` – GP5/MusicXML-linkin palvelinlataus
+- `app/library.py` – kappaleen poisto (MP3 jää)
 - `app/pipeline/*` – äänilähde, Demucs, Basic Pitch, tempo, fretboard, export
 - `app/static/app.js` – TV-näkymän logiikka
 - `app/static/vendor/alphaTab/*` – kolmannen osapuolen alphaTab (MPL-2.0)
