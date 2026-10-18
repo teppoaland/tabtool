@@ -2,6 +2,15 @@
 
 > AI TabTool käyttää `1.x`-versiosarjaa. Aloitus `v1.00`.
 
+## v1.36 – 18.10.2026
+
+- **SIIRTO neljännes tahdin tarkkuudella:** 0,25 tahdin askel = 1 isku
+  4/4:ssä, joten 6–7 iskun vakiosiirto korjataan suoraan
+  (esim. −1,5 tai −1,75). Arvo pyöristetään lähimpään 0,25:een ja
+  tallentuu `meta.sync_offset_bars`iin.
+- Rajaus ±64 tahtia; backend hyväksyy edelleen desimaalit.
+- Testit: siirto tallentuu desimaalina (−1.5); 75 pytest-testiä.
+
 ## v1.35 – 18.10.2026
 
 - **SIIRTO (tahtia)** -kenttä: siirtää tabia kokonaisilla tahdeilla

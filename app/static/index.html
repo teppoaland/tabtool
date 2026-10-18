@@ -6,14 +6,14 @@
   <meta name="color-scheme" content="dark">
   <title>AI TabTool</title>
   <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="/static/style.css?v=1.35">
+  <link rel="stylesheet" href="/static/style.css?v=1.36">
 </head>
 <body>
   <header class="topbar">
     <div class="brand">
       <span class="brand-mark" aria-hidden="true">AT</span>
       <span class="brand-name">AI TABTOOL</span>
-      <span id="version-tag" class="version">v1.35</span>
+      <span id="version-tag" class="version">v1.36</span>
     </div>
     <nav class="nav" aria-label="Päävalikko">
       <a href="/remote">REMOTE</a>
@@ -173,10 +173,10 @@
           <span id="sync-status" class="sync-status" aria-live="polite"></span>
         </label>
         <label class="shift-field"
-               title="Siirrä tabia kokonaisilla tahdeilla: -8 = tabi on 8 tahtia edellä, +8 = jäljessä. Arvo tallennetaan tabille.">
+               title="Siirrä tabia tahdeilla (1 = 4 iskua, 0,25 = 1 isku): -1,5 = tabi 6 iskua edellä, +1,5 = jäljessä. Arvo tallennetaan tabille.">
           <span>SIIRTO</span>
           <input id="shift-input" type="number"
-                 min="-64" max="64" step="1" value="0">
+                 min="-64" max="64" step="0.25" value="0">
           <span class="shift-unit">tahtia</span>
         </label>
         <label class="bpm-field"
@@ -205,8 +205,8 @@
     <span>Local-first · <a href="/remote">Remote</a></span>
   </footer>
 
-  <script src="/static/vendor/alphaTab/alphaTab.min.js?v=1.35"></script>
-  <script src="/static/app.js?v=1.35" defer></script>
+  <script src="/static/vendor/alphaTab/alphaTab.min.js?v=1.36"></script>
+  <script src="/static/app.js?v=1.36" defer></script>
 </body>
 </html>
 

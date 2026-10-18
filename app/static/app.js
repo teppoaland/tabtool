@@ -208,8 +208,9 @@
   function setSyncOffsetBars(value, options) {
     const settings = options || {};
     const number = Number(value);
+    // Quarter-bar steps (= one beat in 4/4); keeps the value human-sized.
     syncOffsetBars = Number.isFinite(number)
-      ? Math.min(64, Math.max(-64, Math.round(number)))
+      ? Math.min(64, Math.max(-64, Math.round(number * 4) / 4))
       : 0;
     if (shiftInput && Number(shiftInput.value) !== syncOffsetBars) {
       shiftInput.value = String(syncOffsetBars);

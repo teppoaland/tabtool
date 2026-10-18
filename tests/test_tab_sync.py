@@ -105,17 +105,17 @@ def test_set_tab_sync_persists_bar_shift(
     tab_dir = _make_tab(data_dir, "sync-shift")
     response = client.post(
         "/api/tabs/sync-shift/sync",
-        data={"drift": "0.002", "offset_bars": "-8"},
+        data={"drift": "0.002", "offset_bars": "-1.5"},
     )
     assert response.status_code == 200, response.text
-    assert response.json()["meta"]["sync_offset_bars"] == -8.0
+    assert response.json()["meta"]["sync_offset_bars"] == -1.5
 
     tab = client.get("/api/tabs/sync-shift").json()
     assert tab["meta"]["sync_drift"] == 0.002
-    assert tab["meta"]["sync_offset_bars"] == -8.0
+    assert tab["meta"]["sync_offset_bars"] == -1.5
 
     stored = json.loads((tab_dir / "meta.json").read_text(encoding="utf-8"))
-    assert stored["sync_offset_bars"] == -8.0
+    assert stored["sync_offset_bars"] == -1.5
 
 
 def test_set_tab_sync_rejects_large_bar_shift(

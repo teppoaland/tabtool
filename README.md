@@ -184,11 +184,12 @@ mukana.
 `meta.json`iin (`sync_drift`), joten kerran tehty korjaus on mukana aina
 tabia avattaessa. SYNC ei muuta GP5-tiedostoa eikä audiota.
 
-**SIIRTO (tahtia)** siirtää tabia kokonaisilla tahdeilla (−64…+64).
-Käytä sitä, kun tabissa on eri määrä tahteja kuin levytyksessä:
-esim. `-8`, jos tabi on 8 tahtia edellä. Prosenttisäätö ei voi korjata
-tällaista rakenne-eroa. Arvo tallentuu tabille (`sync_offset_bars`)
-ja pysyy mukana.
+**SIIRTO (tahtia)** siirtää tabia tahdeilla (−64…+64, 0,25 tahdin
+askel = 1 isku 4/4:ssä). Käytä sitä, kun tabi ja kappale ovat
+vakiomäärän iskuja eri kohdassa: esim. `-1,5` = tabi on 6 iskua edellä,
+`+1,5` = 6 iskua jäljessä. Prosenttisäätö ei korjaa tällaista
+vakiosiirtoa. Arvo tallentuu tabille (`sync_offset_bars`) ja pysyy
+mukana.
 
 Pätkägenerointi: siirry katselimessa kohtaan, valitse **30/60/120 s** ja
 paina **TEE TAB TÄSTÄ**. Ohjelma tekee uuden tabin vain siitä pätkästä
