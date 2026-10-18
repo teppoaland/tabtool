@@ -7,6 +7,12 @@ tai tietokoneelta. Puhelin toimii kaukosäätimenä.
 
 **Versio:** `v1.11` (Phase 1 – putki)
 
+## Session aloitus
+
+Sano Cline:lle **`lue membank`**. Se lukee `memory-bank/*.md`- ja
+`.clinerules/*`-tiedostot, tarkistaa git-tilan ja ajaa testit. Sen
+jälkeen voit antaa tehtävän suoraan.
+
 ---
 
 ## Mikä tämä on

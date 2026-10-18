@@ -67,8 +67,14 @@ Putki:
 
 ## Uuden session aloitus
 
-1. Lue `memory-bank/projectBrief.md`, `systemPatterns.md`,
+**Sano Cline:lle: `lue membank`.**
+
+Se tekee automaattisesti:
+
+1. Lukee `memory-bank/projectBrief.md`, `systemPatterns.md`,
    `techContext.md`, `activeContext.md` ja `progress.md`.
-2. Aja `git status -sb` ja `pytest -q`.
-3. Jatka `Phase 2` -listasta; älä riko `.clinerules/`-sääntöjä.
-4. `docs/` ja `data/` ovat yksityisiä eivätkä kuulu gitiin.
+2. Lukee `.clinerules/*.md`.
+3. Ajaa `git --no-pager status -sb`, `git --no-pager log -1 --oneline`
+   ja `pytest -q`.
+4. Jatkaa `Phase 2` -listasta; ei riko `.clinerules/`-sääntöjä.
+5. `docs/` ja `data/` ovat yksityisiä eivätkä kuulu gitiin.

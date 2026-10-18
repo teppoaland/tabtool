@@ -1,5 +1,15 @@
 # 📊 Projektin edistyminen – TABTOOL
 
+## Memory bank -protokolla (18.10.2026)
+
+- `.clinerules/00-memory-bank.md` lisätty.
+- Trigger: **`lue membank`** / `lue memory bank` / `alusta sessio` /
+  `aloita uusi sessio`.
+- Lukee 5 memory-bank-tiedostoa + `.clinerules/*`, ajaa git-tilan ja
+  `pytest -q`, raportoi 3–6 riviä ja jatkaa `activeContext.md`:n
+  seuraavasta vaiheesta.
+- Memory bank -muutokset `docs:`-commitilla, ei versiobumppia.
+
 ## v1.11 – Tie-korjaus ja validointi (18.10.2026)
 
 ### Muutokset

@@ -38,6 +38,11 @@ Lokaali web-palvelu, jossa voi:
   `10.x`-versiointia
 - ei npm-riippuvuuksia eikä build-vaihetta frontendiin
 
+## Session aloitus
+
+Sano Cline:lle **`lue membank`**. Sääntö on
+`.clinerules/00-memory-bank.md`:ssä.
+
 ## Tärkeät tiedostot
 
 - `README.md` – käyttöohje ja tila
