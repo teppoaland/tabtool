@@ -2,6 +2,19 @@
 
 > AI TabTool käyttää `1.x`-versiosarjaa. Aloitus `v1.00`.
 
+## v1.39 – 18.10.2026
+
+- **Korjaus: alphaTabin cursor näkyi SEARCH-modaalin päällä.** alphaTab
+  antaa cursor-kontilleen `z-index: 1000`, joten vihreä
+  valinta-/cursor-kehys piirtyi modaalin yli (modaali oli `60`).
+  Modaalin pino nostettiin (`2000`, varoitusdialogi `2100`),
+  `.viewer-section` eristettiin omaksi pinoksi (`isolation: isolate`)
+  ja cursor-elementit piilotetaan modaalin ollessa auki
+  (`body.modal-open .at-cursors`).
+- Modaalin tausta muutettiin täysin peittäväksi, jotta taustan sisältö
+  ei näy läpi.
+- Ei toiminnallisia backend-muutoksia; 89 testiä ennallaan.
+
 ## v1.38 – 18.10.2026
 
 - **SEARCH-modaali:** kappaleen haku, GP5-tuonti, kirjasto ja kappaleen
