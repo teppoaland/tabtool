@@ -167,9 +167,11 @@ Valmis referenssitabi: valitse **Tuo valmis tabi (GP5 / MusicXML)** ja
 paina **IMPORT TAB**. Tabi avautuu suoraan katselimeen. Jos samannimisestä
 kappaleesta on AI-tabi, paina **LIITÄ AUDIO**: tabi saa audion, PLAYn,
 aikajanan ja cursorin. **TAB BPM** -kenttään asetetaan kappaleen
-todellinen tempo (esim. 144); se päivittää GP5:n tempon ja pitää audion
-100 %:ssa. **Nopeus**-säätimellä (50–150 %) hidastetaan tai nopeutetaan
-toistoa harjoittelua varten; tabi seuraa mukana.
+todellinen tempo (esim. 144) ja painetaan **TALLENNA** – pelkkä kirjoitus
+ei tallennu. Kenttä, syöte ja nappi muuttuvat punaisiksi, kun arvo on
+tallentamatta. TALLENNA päivittää GP5:n tempon ja pitää audion 100 %:ssa.
+**Nopeus**-säätimellä (50–150 %) hidastetaan tai nopeutetaan toistoa
+harjoittelua varten; tabi seuraa mukana.
 
 **SYNC**-säätimellä (±10 %, askel 0,05 %) kohdistetaan tabi kappaleeseen:
 `+` siirtää tabia eteenpäin ja `-` taaksepäin. Arvo tallennetaan tabin
@@ -289,7 +291,8 @@ docs/               GITIGNORED
 - **v1.28** ✅ – referenssitabin audio, PLAY ja Nopeus-synkka
 - **v1.29** ✅ – TAB BPM -korjaus ja tarkempi Nopeus-hienosäätö
 - **v1.30** ✅ – manuaalinen SYNC-kohdistus (tallentuu tabille), Nopeus 50–150 %
-- **v1.31** – Spotify-haku, OAuth, SDK/Connect-synkka
+- **v1.31** ✅ – TALLENNA-nappi ja punainen muistutus tallentamattomasta BPM:stä
+- **v1.32** – Spotify-haku, OAuth, SDK/Connect-synkka
 - **v1.40** – remote-kaukosäädin
 - **1.x** – basso, laulu, rummut, bending
 

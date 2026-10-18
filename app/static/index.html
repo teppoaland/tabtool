@@ -6,14 +6,14 @@
   <meta name="color-scheme" content="dark">
   <title>AI TabTool</title>
   <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="/static/style.css?v=1.30">
+  <link rel="stylesheet" href="/static/style.css?v=1.31">
 </head>
 <body>
   <header class="topbar">
     <div class="brand">
       <span class="brand-mark" aria-hidden="true">AT</span>
       <span class="brand-name">AI TABTOOL</span>
-      <span id="version-tag" class="version">v1.30</span>
+      <span id="version-tag" class="version">v1.31</span>
     </div>
     <nav class="nav" aria-label="Päävalikko">
       <a href="/remote">REMOTE</a>
@@ -177,7 +177,8 @@
           <span>TAB BPM</span>
           <input id="bpm-input" type="number"
                  min="20" max="400" step="1" placeholder="140">
-          <button id="bpm-button" type="button" class="ghost small">ASETA</button>
+          <button id="bpm-button" type="button" class="ghost small"
+                  title="Tallenna BPM tabiin (GP5).">TALLENNA</button>
           <span id="bpm-status" class="bpm-status" aria-live="polite"></span>
         </label>
       </div>
@@ -197,8 +198,8 @@
     <span>Local-first · <a href="/remote">Remote</a></span>
   </footer>
 
-  <script src="/static/vendor/alphaTab/alphaTab.min.js?v=1.30"></script>
-  <script src="/static/app.js?v=1.30" defer></script>
+  <script src="/static/vendor/alphaTab/alphaTab.min.js?v=1.31"></script>
+  <script src="/static/app.js?v=1.31" defer></script>
 </body>
 </html>
 

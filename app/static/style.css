@@ -650,6 +650,19 @@ a:focus-visible {
   color: var(--muted);
 }
 
+/* Unsaved TAB BPM: red label/input/button until TALLENNA is pressed. */
+.bpm-field.is-dirty > span:first-child,
+.bpm-field.is-dirty input,
+.bpm-field.is-dirty button {
+  color: var(--error);
+  border-color: var(--error);
+}
+
+.bpm-status.is-error,
+.sync-status.is-error {
+  color: var(--error);
+}
+
 .seek-slider {
   flex: 1 1 auto;
   min-width: 8rem;

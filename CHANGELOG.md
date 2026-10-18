@@ -2,6 +2,19 @@
 
 > AI TabTool käyttää `1.x`-versiosarjaa. Aloitus `v1.00`.
 
+## v1.31 – 18.10.2026
+
+- **TALLENNA** (entinen `ASETA`): TAB BPM tallentuu vain napista.
+  Kun kenttään kirjoittaa eri arvon kuin tabissa on, kenttä, syöte ja
+  nappi muuttuvat punaisiksi, kunnes arvo on tallennettu; virheet
+  (`BPM 20–400`, tallennusvirhe) näytetään punaisella.
+- SYNC-tallennuksen virheet näytetään punaisella; onnistunut
+  tallennus kuittaa tilan.
+- `Not found` -virhe johtui vanhasta käynnissä olleesta
+  palvelinprosessista (v1.22), jonka reiteissä ei ollut `/tempo`- eikä
+  `/sync`-päätepistettä. Korjaus: käynnistä palvelin uudelleen
+  (`start.bat`) koodimuutosten jälkeen.
+
 ## v1.30 – 18.10.2026
 
 - **SYNC**-säädin: tabin kohdistus audion aikajanalle ±10 % (askel

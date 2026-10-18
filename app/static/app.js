@@ -64,6 +64,7 @@
   const bpmInput = document.getElementById("bpm-input");
   const bpmButton = document.getElementById("bpm-button");
   const bpmStatus = document.getElementById("bpm-status");
+  const bpmField = bpmInput ? bpmInput.closest(".bpm-field") : null;
   const transport = document.querySelector(".transport");
   const importInput = document.getElementById("import-input");
   const importButton = document.getElementById("import-button");
@@ -101,12 +102,30 @@
     if (attachStatus) attachStatus.textContent = text;
   }
 
-  function setBpmStatus(text) {
-    if (bpmStatus) bpmStatus.textContent = text;
+  function setBpmStatus(text, isError) {
+    if (!bpmStatus) return;
+    bpmStatus.textContent = text;
+    bpmStatus.classList.toggle("is-error", Boolean(isError));
   }
 
-  function setSyncStatus(text) {
-    if (syncStatus) syncStatus.textContent = text;
+  function setSyncStatus(text, isError) {
+    if (!syncStatus) return;
+    syncStatus.textContent = text;
+    syncStatus.classList.toggle("is-error", Boolean(isError));
+  }
+
+  function bpmIsDirty() {
+    if (!bpmInput || !activeTab) return false;
+    const typed = Number(bpmInput.value);
+    if (!Number.isFinite(typed) || typed <= 0) return false;
+    const saved = Math.round(Number(activeTab.bpm) || 0);
+    return Math.abs(typed - saved) > 0.01;
+  }
+
+  // Red hint on the TAB BPM field until the typed value is saved.
+  function updateBpmDirtyState() {
+    if (!bpmField) return;
+    bpmField.classList.toggle("is-dirty", bpmIsDirty());
   }
 
   function setPlaybackRate(value) {
@@ -170,7 +189,7 @@
       });
       if (!activeTab || activeTab.id !== tabId) return;
       if (!response.ok) {
-        setSyncStatus(await readError(response));
+        setSyncStatus(await readError(response), true);
         return;
       }
       const tab = await response.json();
@@ -184,7 +203,7 @@
         }
       }, 1500);
     } catch (error) {
-      setSyncStatus(error instanceof Error ? error.message : String(error));
+      setSyncStatus(error instanceof Error ? error.message : String(error), true);
     }
   }
 
@@ -793,6 +812,7 @@
           : "";
       }
       if (bpmStatus) bpmStatus.textContent = "";
+      updateBpmDirtyState();
       setPlaybackRate(1);
       const storedSync = Number(tab.meta && tab.meta.sync_drift);
       setSyncDrift(Number.isFinite(storedSync) ? storedSync : 0, {
@@ -996,16 +1016,16 @@
 
   async function applyTempo() {
     if (!activeTab || !activeTab.id) {
-      setBpmStatus("Avaa tabi ensin.");
+      setBpmStatus("Avaa tabi ensin.", true);
       return;
     }
     const bpm = Number(bpmInput && bpmInput.value);
     if (!Number.isFinite(bpm) || bpm < 20 || bpm > 400) {
-      setBpmStatus("Anna BPM 20–400.");
+      setBpmStatus("Anna BPM 20–400.", true);
       return;
     }
     if (bpmButton) bpmButton.disabled = true;
-    setBpmStatus("Asetetaan…");
+    setBpmStatus("Tallennetaan…");
     try {
       const data = new FormData();
       data.append("bpm", String(bpm));
@@ -1014,16 +1034,17 @@
         { method: "POST", body: data }
       );
       if (!response.ok) {
-        setBpmStatus(await readError(response));
+        setBpmStatus(await readError(response), true);
         return;
       }
       const tabId = activeTab.id;
       await loadTab(tabId);
       await loadLibrary();
-      setBpmStatus("Tempo asetettu.");
+      setBpmStatus("Tallennettu.");
     } catch (error) {
       setBpmStatus(
-        error instanceof Error ? error.message : String(error)
+        error instanceof Error ? error.message : String(error),
+        true
       );
     } finally {
       if (bpmButton) bpmButton.disabled = false;
@@ -1156,6 +1177,7 @@
   }
   if (syncSlider) {
     syncSlider.addEventListener("input", () => {
+      setSyncStatus("");
       setSyncDrift(Number(syncSlider.value) / 100);
       if (syncSaveTimer) window.clearTimeout(syncSaveTimer);
       syncSaveTimer = window.setTimeout(persistSyncDrift, 700);
@@ -1164,6 +1186,12 @@
   }
   if (bpmButton) {
     bpmButton.addEventListener("click", applyTempo);
+  }
+  if (bpmInput) {
+    bpmInput.addEventListener("input", () => {
+      setBpmStatus("");
+      updateBpmDirtyState();
+    });
   }
   if (bpmInput) {
     bpmInput.addEventListener("keydown", (event) => {
