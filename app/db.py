@@ -426,6 +426,57 @@ def delete_tab(tab_id: str) -> dict[str, Any] | None:
     return tab
 
 
+def audio_reference_count(audio_path: str) -> int:
+    """Count tabs and tracks that still point at ``audio_path``."""
+    if not audio_path:
+        return 0
+    init_db()
+    with connection() as conn:
+        tabs = conn.execute(
+            "SELECT COUNT(*) FROM tabs WHERE audio_path = ?", (audio_path,)
+        ).fetchone()[0]
+        tracks = conn.execute(
+            "SELECT COUNT(*) FROM tracks WHERE audio_path = ?", (audio_path,)
+        ).fetchone()[0]
+    return int(tabs) + int(tracks)
+
+
+def delete_tab_records(tab_id: str) -> dict[str, Any]:
+    """Delete a tab, its jobs and any track rows left without references."""
+    tab = get_tab(tab_id)
+    if tab is None:
+        return {"deleted": False, "track_ids": []}
+    track_id = int(tab["track_id"])
+    with connection() as conn:
+        rows = conn.execute(
+            "SELECT DISTINCT track_id FROM jobs WHERE tab_id = ? OR track_id = ?",
+            (tab_id, track_id),
+        ).fetchall()
+        track_ids = {int(row["track_id"]) for row in rows}
+        track_ids.add(track_id)
+        conn.execute(
+            "DELETE FROM jobs WHERE tab_id = ? OR track_id = ?",
+            (tab_id, track_id),
+        )
+        conn.execute("DELETE FROM tabs WHERE id = ?", (tab_id,))
+        removed: list[int] = []
+        for candidate in sorted(track_ids):
+            tab_count = int(
+                conn.execute(
+                    "SELECT COUNT(*) FROM tabs WHERE track_id = ?", (candidate,)
+                ).fetchone()[0]
+            )
+            job_count = int(
+                conn.execute(
+                    "SELECT COUNT(*) FROM jobs WHERE track_id = ?", (candidate,)
+                ).fetchone()[0]
+            )
+            if tab_count == 0 and job_count == 0:
+                conn.execute("DELETE FROM tracks WHERE id = ?", (candidate,))
+                removed.append(candidate)
+    return {"deleted": True, "track_ids": removed}
+
+
 def _time_signature_text(value: Any) -> str:
     if isinstance(value, (list, tuple)) and len(value) == 2:
         return f"{int(value[0])}/{int(value[1])}"

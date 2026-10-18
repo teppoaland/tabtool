@@ -10,6 +10,7 @@ from __future__ import annotations
 import asyncio
 import json
 import queue
+from dataclasses import replace
 from pathlib import Path
 from typing import AsyncIterator
 from urllib.parse import urlparse
@@ -18,7 +19,7 @@ from fastapi import FastAPI, File, Form, HTTPException, Query, Request, UploadFi
 from fastapi.responses import FileResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 
-from app import __version__, db, jobs, tab_import
+from app import __version__, db, jobs, library, tab_download, tab_import
 from app.config import (
     APP_NAME,
     HOST,
@@ -124,6 +125,33 @@ def _is_youtube_url(url: str) -> bool:
     return host.endswith(("youtube.com", "youtu.be", "youtube-nocookie.com"))
 
 
+def _import_tab_payload(raw: bytes, filename: str) -> dict[str, object]:
+    """Map tab import failures to HTTP errors."""
+    try:
+        return tab_import.import_tab_bytes(raw, filename)
+    except tab_import.TabTooLarge as exc:
+        raise HTTPException(status_code=413, detail=str(exc)) from exc
+    except tab_import.UnsupportedTab as exc:
+        raise HTTPException(status_code=415, detail=str(exc)) from exc
+    except tab_import.TabParseError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    except Exception as exc:  # noqa: BLE001 - reported to the user
+        raise HTTPException(
+            status_code=422, detail=f"Tab import failed: {exc}"
+        ) from exc
+
+
+def _download_tab(url: str) -> dict[str, object]:
+    """Fetch a GP5/MusicXML link on the server and import it."""
+    try:
+        raw, filename = tab_download.download_tab_bytes(url)
+    except tab_download.TabDownloadTooLarge as exc:
+        raise HTTPException(status_code=413, detail=str(exc)) from exc
+    except tab_download.TabDownloadError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    return _import_tab_payload(raw, filename)
+
+
 def _sse(payload: object) -> bytes:
     return f"data: {json.dumps(payload)}\n\n".encode("utf-8")
 
@@ -134,6 +162,7 @@ async def create_job(
     file: UploadFile | None = File(default=None),
     youtube_url: str = Form(default=""),
     local_path: str = Form(default=""),
+    gp5_url: str = Form(default=""),
     title: str = Form(default=""),
     artist: str = Form(default=""),
     regenerate: bool = Form(default=False),
@@ -143,6 +172,43 @@ async def create_job(
     parsed = _parse_options(options)
     youtube_url = youtube_url.strip()
     local_path = local_path.strip()
+    gp5_url = gp5_url.strip()
+
+    if gp5_url:
+        # A ready-made GP5 wins over AI transcription: import it and only
+        # download/attach the YouTube audio (and optional MP3 copy).
+        has_upload = bool(file is not None and file.filename)
+        if has_upload or local_path:
+            raise HTTPException(
+                status_code=422,
+                detail="GP5-linkki toimii vain YouTube-linkin kanssa.",
+            )
+        if not youtube_url:
+            raise HTTPException(
+                status_code=422,
+                detail="Liitä YouTube-linkki, jotta GP5-tabiin saadaan audio.",
+            )
+        if not _is_youtube_url(youtube_url):
+            raise HTTPException(
+                status_code=422, detail="youtube_url must be a YouTube link"
+            )
+        tab = _download_tab(gp5_url)
+        audio_options = replace(
+            parsed, audio_only=True, attach_tab_id=str(tab["id"])
+        )
+        job = jobs.submit_job(
+            source_type="youtube",
+            source_ref=youtube_url,
+            title=str(tab.get("title") or ""),
+            artist=str(tab.get("artist") or ""),
+            fingerprint=jobs.youtube_fingerprint(youtube_url),
+            audio_path=None,
+            options=audio_options,
+            tab_id=str(tab["id"]),
+        )
+        job["tab"] = _tab_summary(tab)
+        return job
+
     has_file = bool(file is not None and file.filename)
     provided = sum((has_file, bool(youtube_url), bool(local_path)))
     if provided != 1:
@@ -239,6 +305,8 @@ async def job_events(job_id: str) -> StreamingResponse:
                 except queue.Empty:
                     yield b": keep-alive\n\n"
                     continue
+                if payload is None:
+                    return
                 yield _sse(payload)
                 if payload is not None and payload["status"] in {"ready", "failed"}:
                     return
@@ -285,19 +353,24 @@ def list_tabs(limit: int = Query(default=20, ge=1, le=200)) -> list[dict[str, ob
 async def import_tab(file: UploadFile = File(...)) -> dict[str, object]:
     """Import a ready-made GP5 or MusicXML tab into the private library."""
     raw = await file.read()
-    try:
-        tab = tab_import.import_tab_bytes(raw, file.filename or "tab.gp5")
-    except tab_import.TabTooLarge as exc:
-        raise HTTPException(status_code=413, detail=str(exc)) from exc
-    except tab_import.UnsupportedTab as exc:
-        raise HTTPException(status_code=415, detail=str(exc)) from exc
-    except tab_import.TabParseError as exc:
-        raise HTTPException(status_code=422, detail=str(exc)) from exc
-    except Exception as exc:  # noqa: BLE001 - reported to the user
-        raise HTTPException(
-            status_code=422, detail=f"Tab import failed: {exc}"
-        ) from exc
+    tab = _import_tab_payload(raw, file.filename or "tab.gp5")
     return _tab_summary(tab)
+
+
+@app.post("/api/tabs/import-url", tags=["tabs"])
+def import_tab_from_url(url: str = Form(...)) -> dict[str, object]:
+    """Download a GP5/MusicXML link on the server and import it."""
+    tab = _download_tab(url)
+    return _tab_summary(tab)
+
+
+@app.delete("/api/tabs/{tab_id}", tags=["tabs"])
+def delete_tab(tab_id: str) -> dict[str, object]:
+    """Delete a tab with its audio and stems; the MP3 copy is kept."""
+    try:
+        return library.delete_tab_data(tab_id)
+    except LookupError as exc:
+        raise HTTPException(status_code=404, detail="Unknown tab") from exc
 
 
 @app.get("/api/tabs/{tab_id}", tags=["tabs"])

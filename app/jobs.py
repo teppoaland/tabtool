@@ -115,9 +115,18 @@ class JobOptions:
     min_note_length_ms: float = 58.0
     min_frequency: float = 80.0
     max_frequency: float = 1200.0
+    archive_mp3: bool = True
+    # Internal job routing; never read from client-supplied options.
+    audio_only: bool = False
+    attach_tab_id: str = ""
 
     @classmethod
-    def from_mapping(cls, values: Mapping[str, Any] | None) -> "JobOptions":
+    def from_mapping(
+        cls,
+        values: Mapping[str, Any] | None,
+        *,
+        allow_internal: bool = False,
+    ) -> "JobOptions":
         raw = dict(values or {})
         separate = _as_bool(raw.get("separate"), True)
         model = str(raw.get("model") or "htdemucs_6s").strip()
@@ -177,6 +186,11 @@ class JobOptions:
             raise ValueError("min_frequency must be positive")
         if max_frequency is None or max_frequency <= min_frequency:
             raise ValueError("max_frequency must be greater than min_frequency")
+        archive_mp3 = _as_bool(raw.get("archive_mp3"), True)
+        audio_only = _as_bool(raw.get("audio_only"), False) if allow_internal else False
+        attach_tab_id = (
+            str(raw.get("attach_tab_id") or "").strip() if allow_internal else ""
+        )
 
         return cls(
             separate=separate,
@@ -196,6 +210,9 @@ class JobOptions:
             min_note_length_ms=min_note_length_ms,
             min_frequency=min_frequency,
             max_frequency=max_frequency,
+            archive_mp3=archive_mp3,
+            audio_only=audio_only,
+            attach_tab_id=attach_tab_id,
         )
 
     def as_dict(self) -> dict[str, Any]:
@@ -217,7 +234,17 @@ class JobOptions:
             "min_note_length_ms": self.min_note_length_ms,
             "min_frequency": self.min_frequency,
             "max_frequency": self.max_frequency,
+            "archive_mp3": self.archive_mp3,
+            "audio_only": self.audio_only,
+            "attach_tab_id": self.attach_tab_id,
         }
+
+    def as_cache_dict(self) -> dict[str, Any]:
+        """Pipeline-affecting options only (routing flags are excluded)."""
+        values = self.as_dict()
+        for key in ("archive_mp3", "audio_only", "attach_tab_id"):
+            values.pop(key, None)
+        return values
 
 
 def save_upload(
@@ -309,6 +336,7 @@ def submit_job(
     duration_seconds: float | None = None,
     options: JobOptions,
     regenerate: bool = False,
+    tab_id: str | None = None,
 ) -> dict[str, Any]:
     """Create a track + job row and queue it (unless the cache already has it)."""
     if source_type not in SOURCE_TYPES:
@@ -324,8 +352,12 @@ def submit_job(
         audio_path=db.to_data_relative(audio_path) if audio_path else None,
         duration_seconds=duration_seconds,
     )
-    key = cache_key(fingerprint, options_dict)
-    cached_tab = None if regenerate else db.find_cached_tab(key)
+    key = cache_key(fingerprint, options.as_cache_dict())
+    cached_tab = (
+        None
+        if regenerate or options.audio_only
+        else db.find_cached_tab(key)
+    )
     job_id = db.new_id()
     if cached_tab is not None:
         return db.create_job(
@@ -347,6 +379,7 @@ def submit_job(
         stage=STAGE_QUEUED,
         progress=0.0,
         cache_key=key,
+        tab_id=tab_id,
     )
     get_manager().submit(job_id)
     return job
@@ -393,6 +426,8 @@ class JobManager:
 
     def publish(self, job_id: str) -> None:
         snapshot = db.get_job(job_id)
+        if snapshot is None:
+            return
         with self._lock:
             subscribers = list(self._subscribers.get(job_id, []))
         for subscription in subscribers:
@@ -510,7 +545,8 @@ def run_pipeline(
             archive_external(
                 audio.path, "audio", document_artist, document_title
             )
-            archive_mp3(audio.path, document_artist, document_title)
+            if options.archive_mp3:
+                archive_mp3(audio.path, document_artist, document_title)
         except Exception:  # noqa: BLE001 - archive must not break the job
             LOGGER.warning("external archive failed", exc_info=True)
 
@@ -612,6 +648,85 @@ def _progress(job_id: str, stage: str) -> None:
     publish(job_id)
 
 
+def run_audio_job(
+    job: dict[str, Any],
+    options: JobOptions,
+    report: Callable[[str], None] | None = None,
+) -> tuple[Any, str, str]:
+    """Download/normalize audio only; used with an imported GP5 tab."""
+    from app.pipeline.audio_source import prepare_audio
+
+    notify = report or (lambda stage: None)
+    notify(STAGE_DOWNLOADING)
+    audio = prepare_audio(
+        str(job["source_ref"]),
+        Path(config.DATA_DIR) / "audio",
+        title=job["title"] or None,
+    )
+    title, artist = effective_track_metadata(
+        str(job.get("title") or ""),
+        str(job.get("artist") or ""),
+        audio.title,
+        audio.artist,
+    )
+    if job.get("track_id"):
+        db.update_track(int(job["track_id"]), title=title, artist=artist)
+    if audio.source_type == "youtube":
+        try:
+            archive_external(audio.path, "audio", artist, title)
+            if options.archive_mp3:
+                archive_mp3(audio.path, artist, title)
+        except Exception:  # noqa: BLE001 - archive must not break the job
+            LOGGER.warning("external archive failed", exc_info=True)
+    return audio, title, artist
+
+
+def _process_audio_job(job: dict[str, Any], options: JobOptions) -> None:
+    """Attach downloaded audio to an imported tab (no transcription)."""
+    job_id = str(job["id"])
+    try:
+        audio, _title, _artist = run_audio_job(
+            job, options, lambda stage: _progress(job_id, stage)
+        )
+        tab_id = options.attach_tab_id
+        tab = db.get_tab(tab_id) if tab_id else None
+        if tab is None:
+            raise RuntimeError("Liitettyä tabia ei löytynyt.")
+        audio_relative = db.to_data_relative(audio.path)
+        meta = dict(tab.get("meta") or {})
+        meta["audio_path"] = audio_relative
+        meta["duration_seconds"] = audio.duration
+        meta["mp3_created"] = bool(options.archive_mp3)
+        updated = db.update_tab_audio(tab_id, audio_relative, meta)
+        if updated is None:
+            raise RuntimeError("Audion liittäminen tabiin epäonnistui.")
+        if job.get("track_id"):
+            db.update_track(
+                int(job["track_id"]),
+                audio_path=audio_relative,
+                duration_seconds=audio.duration,
+            )
+        db.update_job(
+            job_id,
+            status=STAGE_READY,
+            stage=STAGE_READY,
+            progress=1.0,
+            tab_id=tab_id,
+            error=None,
+        )
+        publish(job_id)
+    except Exception as exc:  # noqa: BLE001 - reported through the job row
+        LOGGER.exception("Audio job %s failed", job_id)
+        message = str(exc).strip() or exc.__class__.__name__
+        db.update_job(
+            job_id,
+            status=STAGE_FAILED,
+            stage=STAGE_FAILED,
+            error=message[:2000],
+        )
+        publish(job_id)
+
+
 def process_job(job_id: str) -> None:
     """Worker entry point: run the pipeline and store the tab atomically."""
     job = db.get_job(job_id)
@@ -620,7 +735,10 @@ def process_job(job_id: str) -> None:
 
     pending_dir = Path(config.DATA_DIR) / "tabs" / f".pending-{job_id}"
     try:
-        options = JobOptions.from_mapping(job["options"])
+        options = JobOptions.from_mapping(job["options"], allow_internal=True)
+        if options.audio_only:
+            _process_audio_job(job, options)
+            return
         result = run_pipeline(job, options, lambda stage: _progress(job_id, stage))
 
         audio = result["audio"]

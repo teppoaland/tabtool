@@ -2,6 +2,37 @@
 
 > AI TabTool käyttää `1.x`-versiosarjaa. Aloitus `v1.00`.
 
+## v1.38 – 18.10.2026
+
+- **SEARCH-modaali:** kappaleen haku, GP5-tuonti, kirjasto ja kappaleen
+  valinta ovat nyt omassa tilavassa ikkunassaan. TV-näkymä jää soittoa
+  varten; `SEARCH` avaa modaalin yläpalkista ja etusivulta, `SULJE`/Esc
+  sulkee sen.
+- **YouTube + GP5-linkki:** jos GP5-linkki annetaan, tablatuuria ei
+  generoida AI:lla. Palvelin hakee GP5/MusicXML-tiedoston suoraan
+  linkistä (`app/tab_download.py`), importtaa sen ja liittää
+  YouTube-audiosta ladatun audion tabiin. Ilman GP5-linkkiä toiminta on
+  ennallaan (AI-generointi).
+- **gprotab.net:** tavallinen tabisivu palauttaa HTML:n; lataus osaa
+  retryttää `?download`-parametrilla. Vain julkiset http(s)-osoitteet
+  sallitaan (ei localhost/yksityisverkko), koko enintään 20 MB.
+- **MP3-valinta:** `MP3-kuunteluversio` on oletuksena päällä ja
+  tallentaa YouTube-audiosta MP3:n `D:\tabtool_files\audio\mp3\`-
+  hakemistoon. Valinta ei vaikuta tabin cache-avaimeen.
+- **Kappaleen poisto:** kirjastoriviltä `POISTA` avaa
+  varoitusdialogin. Poisto siirtää tabin, sen audion, stemmit sekä
+  niihin liittyvät job/track-rivit pois; MP3-kuunteluversio jää
+  hakemistoon. Jaettu audio säilyy, jos toinen tabi käyttää samaa
+  tiedostoa.
+- **Uudet reitit:** `POST /api/tabs/import-url`, `DELETE /api/tabs/{id}`;
+  `POST /api/jobs` hyväksyy `gp5_url`-kentän. Audio-only-job (malli
+  tallentuu `options`-kenttään) liittää audion tuotuun tabiin ilman
+  transkriptiota.
+- 89 pytest-testiä (uudet: download, delete, GP5+YT-job, optioiden
+  erottelu). Headless-selaimessa validoitu modaalin avaus, kappaleen
+  valinta, poistodialogi ja GP5-linkin tuonti (W.A.S.P. — Animal
+  (Fuck Like A Beast), 111 tahtia, 3471 nuottia).
+
 ## v1.37 – 18.10.2026
 
 - **Korjaus: vahingossa syntyvä playback range (loop).** alphaTab luo

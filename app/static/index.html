@@ -6,16 +6,18 @@
   <meta name="color-scheme" content="dark">
   <title>AI TabTool</title>
   <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="/static/style.css?v=1.37">
+  <link rel="stylesheet" href="/static/style.css?v=1.38">
 </head>
 <body>
   <header class="topbar">
     <div class="brand">
       <span class="brand-mark" aria-hidden="true">AT</span>
       <span class="brand-name">AI TABTOOL</span>
-      <span id="version-tag" class="version">v1.37</span>
+      <span id="version-tag" class="version">v1.38</span>
     </div>
     <nav class="nav" aria-label="Päävalikko">
+      <button id="open-search-top" type="button" class="ghost small nav-search"
+              title="Avaa haku ja kirjasto.">SEARCH</button>
       <a href="/remote">REMOTE</a>
       <a href="/docs">API</a>
     </nav>
@@ -26,83 +28,14 @@
       <p class="kicker">PHASE 2 · GENERAATTORI</p>
       <h1>Kitaratablatuurit<br>lokaalisti.</h1>
       <p class="lede">
-        Valitse oma audio tai liitä YouTube-linkki. Tab generoidaan
-        paikallisesti, näytetään alphaTabilla ja soitetaan samasta audiolähteestä.
+        Hae kappale SEARCH-ikkunasta: liitä YouTube-linkki ja valinnainen
+        GP5-linkki. Tab generoidaan paikallisesti tai tuodaan valmiina,
+        näytetään alphaTabilla ja soitetaan samasta audiolähteestä.
       </p>
-    </section>
-
-    <section class="studio" aria-label="Generaattori">
-      <form id="source-form" class="card studio-form">
-        <div class="field-row">
-          <label class="field">
-            <span>Oma audio</span>
-            <input id="file-input" type="file"
-                   accept=".mp3,.wav,.flac,.m4a,.aac,.ogg,.opus,.aiff,.aif,.webm"
-                   title="Valitse paikallinen MP3, WAV, FLAC tai muu audiotiedosto.">
-          </label>
-          <label class="field">
-            <span>tai YouTube-linkki</span>
-            <input id="url-input" type="url" inputmode="url"
-                   placeholder="https://youtu.be/…" autocomplete="off"
-                   title="Liitä YouTube-linkki. Audio ladataan yt-dlp:llä eikä mainoksia tule mukaan.">
-          </label>
-        </div>
-
-        <div class="field-row compact">
-          <label class="field small">
-            <span>Viritys</span>
-            <select id="tuning-select"
-                    title="Kitaran viritys. Vaikuttaa otelautaan ja GP5-exportiin.">
-              <option value="standard" selected>Standard E</option>
-              <option value="drop_d">Drop D</option>
-              <option value="eb_standard">Eb Standard</option>
-              <option value="d_standard">D Standard</option>
-              <option value="open_g">Open G</option>
-            </select>
-          </label>
-          <label class="field small">
-            <span>Grid</span>
-            <select id="grid-select"
-                    title="Kvantisointitarkkuus: 1/16 = kuudestoistaosat, 1/32 = kolmaskymmeneskahdesosat.">
-              <option value="8">1/8</option>
-              <option value="16" selected>1/16</option>
-              <option value="32">1/32</option>
-            </select>
-          </label>
-          <label class="field checkbox"
-                 title="Ohittaa Demucsin stemmaerottelun. Nopeampi, mutta transkriptio voi olla epätarkempi.">
-            <input id="quick-checkbox" type="checkbox">
-            <span>Nopea tila (ei stemmoja)</span>
-          </label>
-          <label class="field checkbox"
-                 title="Ohittaa välimuistin ja generoi tabin uudelleen samoilla asetuksilla.">
-            <input id="regenerate-checkbox" type="checkbox">
-            <span>Generoi uudelleen</span>
-          </label>
-        </div>
-
-        <div class="actions">
-          <button id="generate-button" type="submit" class="primary"
-                  title="Luo tab valitusta audiolähteestä.">GENERATE TAB</button>
-          <p id="job-status" class="job-status" aria-live="polite"></p>
-          <progress id="job-progress" class="job-progress" max="1" value="0" hidden></progress>
-        </div>
-        <p id="job-detail" class="muted job-detail"></p>
-      </form>
-
-      <div class="import-bar">
-        <label class="field small"
-               title="Tuo Guitar Pro 5- tai MusicXML-tabi. Tabi näytetään ilman AI-generointia ja ilman audiota.">
-          <span>Tuo valmis tabi (GP5 / MusicXML)</span>
-          <input id="import-input" type="file" accept=".gp5,.musicxml,.xml">
-        </label>
-        <button id="import-button" type="button" class="ghost"
-                title="Tallenna valittu tabi kirjastoon ja avaa se.">IMPORT TAB</button>
-        <p id="import-status" class="muted import-status" aria-live="polite"></p>
+      <div class="hero-actions">
+        <button id="open-search" type="button" class="primary"
+                title="Avaa haku: YouTube-linkki, GP5-linkki ja kirjasto.">SEARCH</button>
       </div>
-
-      <div id="library" class="library" aria-label="Tab-kirjasto" hidden
-           title="Viimeisimmät tabit. Vie hiiri napin päälle: tahtimäärä, nuotit, BPM, luontiaika ja ID erottavat samannimiset versiot."></div>
     </section>
 
     <section id="viewer-section" class="viewer-section" hidden>
@@ -200,13 +133,150 @@
     </section>
   </main>
 
+  <div id="search-modal" class="modal-backdrop" hidden>
+    <div class="modal-panel" role="dialog" aria-modal="true"
+         aria-labelledby="search-title">
+      <header class="modal-head">
+        <div>
+          <p class="kicker">LIBRARY · GENERAATTORI</p>
+          <h2 id="search-title">SEARCH</h2>
+        </div>
+        <button id="close-search" type="button" class="ghost small"
+                title="Sulje haku (Esc).">SULJE</button>
+      </header>
+
+      <div class="modal-body">
+        <div class="modal-column">
+          <form id="source-form" class="card studio-form">
+            <div class="field-row">
+              <label class="field">
+                <span>Oma audio</span>
+                <input id="file-input" type="file"
+                       accept=".mp3,.wav,.flac,.m4a,.aac,.ogg,.opus,.aiff,.aif,.webm"
+                       title="Valitse paikallinen MP3, WAV, FLAC tai muu audiotiedosto.">
+              </label>
+              <label class="field">
+                <span>tai YouTube-linkki</span>
+                <input id="url-input" type="url" inputmode="url"
+                       placeholder="https://youtu.be/…" autocomplete="off"
+                       title="Liitä YouTube-linkki. Audio ladataan yt-dlp:llä eikä mainoksia tule mukaan.">
+              </label>
+            </div>
+
+            <div class="field-row">
+              <label class="field">
+                <span>GP5-linkki (valinnainen)</span>
+                <input id="gp5-url-input" type="url" inputmode="url"
+                       placeholder="https://gprotab.net/…"
+                       autocomplete="off"
+                       title="Liitä GP5- tai MusicXML-latauslinkki. Palvelin hakee tiedoston. Ilman linkkiä tab generoidaan AI:lla.">
+              </label>
+            </div>
+
+            <p class="muted modal-hint">
+              GP5-linkin kanssa tablatuuria ei generoida: tabi tuodaan ja
+              YouTube-audio liitetään siihen. Ilman GP5-linkkiä tabi
+              generoidaan AI:lla.
+            </p>
+
+            <div class="field-row compact">
+              <label class="field small">
+                <span>Viritys</span>
+                <select id="tuning-select"
+                        title="Kitaran viritys. Vaikuttaa otelautaan ja GP5-exportiin.">
+                  <option value="standard" selected>Standard E</option>
+                  <option value="drop_d">Drop D</option>
+                  <option value="eb_standard">Eb Standard</option>
+                  <option value="d_standard">D Standard</option>
+                  <option value="open_g">Open G</option>
+                </select>
+              </label>
+              <label class="field small">
+                <span>Grid</span>
+                <select id="grid-select"
+                        title="Kvantisointitarkkuus: 1/16 = kuudestoistaosat, 1/32 = kolmaskymmeneskahdesosat.">
+                  <option value="8">1/8</option>
+                  <option value="16" selected>1/16</option>
+                  <option value="32">1/32</option>
+                </select>
+              </label>
+              <label class="field checkbox"
+                     title="Ohittaa Demucsin stemmaerottelun. Nopeampi, mutta transkriptio voi olla epätarkempi.">
+                <input id="quick-checkbox" type="checkbox">
+                <span>Nopea tila (ei stemmoja)</span>
+              </label>
+              <label class="field checkbox"
+                     title="Ohittaa välimuistin ja generoi tabin uudelleen samoilla asetuksilla.">
+                <input id="regenerate-checkbox" type="checkbox">
+                <span>Generoi uudelleen</span>
+              </label>
+              <label class="field checkbox"
+                     title="Tallentaa YouTube-audiosta MP3-kuunteluversion D:\tabtool_files\audio\mp3-kansioon.">
+                <input id="make-mp3-checkbox" type="checkbox" checked>
+                <span>MP3-kuunteluversio</span>
+              </label>
+            </div>
+
+
+            <div class="actions">
+              <button id="generate-button" type="submit" class="primary"
+                      title="Luo tab valitusta audiolähteestä tai tuo GP5-linkki.">GENERATE TAB</button>
+              <p id="job-status" class="job-status" aria-live="polite"></p>
+              <progress id="job-progress" class="job-progress" max="1" value="0" hidden></progress>
+            </div>
+            <p id="job-detail" class="muted job-detail"></p>
+          </form>
+
+          <div class="import-bar">
+            <label class="field small"
+                   title="Tuo Guitar Pro 5- tai MusicXML-tabi. Tabi näytetään ilman AI-generointia ja ilman audiota.">
+              <span>Tuo valmis tabi (GP5 / MusicXML)</span>
+              <input id="import-input" type="file" accept=".gp5,.musicxml,.xml">
+            </label>
+            <button id="import-button" type="button" class="ghost"
+                    title="Tallenna valittu tabi kirjastoon ja avaa se.">IMPORT TAB</button>
+            <p id="import-status" class="muted import-status" aria-live="polite"></p>
+          </div>
+        </div>
+
+        <div class="modal-column modal-library-column">
+          <div class="modal-library-head">
+            <h3>Kirjasto</h3>
+            <span id="library-count" class="muted"></span>
+          </div>
+          <div id="library" class="library" aria-label="Tab-kirjasto" hidden
+               title="Valitse kappale soittoon tai poista se. Tahtimäärä, nuotit, BPM ja luontiaika erottavat samannimiset versiot."></div>
+          <p id="library-status" class="muted library-status" aria-live="polite"></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="delete-dialog" class="modal-backdrop modal-nested" hidden>
+    <div class="modal-panel modal-small" role="alertdialog" aria-modal="true"
+         aria-labelledby="delete-title">
+      <h2 id="delete-title">Poistetaanko kappale?</h2>
+      <p id="delete-detail" class="delete-detail"></p>
+      <p class="muted">
+        Tab ja sen stemmit poistetaan. Audio poistetaan, jos toinen tabi ei
+        käytä samaa tiedostoa. MP3-kuunteluversio jää hakemistoon.
+      </p>
+      <p id="delete-status" class="bpm-status" aria-live="polite"></p>
+      <div class="actions">
+        <button id="delete-confirm" type="button" class="primary">POISTA</button>
+        <button id="delete-cancel" type="button" class="ghost">PERUUTA</button>
+      </div>
+    </div>
+  </div>
+
+
   <footer class="footer">
-    <span>AI TabTool v1.29</span>
+    <span>AI TabTool v1.38</span>
     <span>Local-first · <a href="/remote">Remote</a></span>
   </footer>
 
-  <script src="/static/vendor/alphaTab/alphaTab.min.js?v=1.37"></script>
-  <script src="/static/app.js?v=1.37" defer></script>
+  <script src="/static/vendor/alphaTab/alphaTab.min.js?v=1.38"></script>
+  <script src="/static/app.js?v=1.38" defer></script>
 </body>
 </html>
 

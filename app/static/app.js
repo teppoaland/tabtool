@@ -70,6 +70,19 @@
   const importInput = document.getElementById("import-input");
   const importButton = document.getElementById("import-button");
   const importStatus = document.getElementById("import-status");
+  const gp5Input = document.getElementById("gp5-url-input");
+  const makeMp3Checkbox = document.getElementById("make-mp3-checkbox");
+  const searchModal = document.getElementById("search-modal");
+  const openSearchButton = document.getElementById("open-search");
+  const openSearchTopButton = document.getElementById("open-search-top");
+  const closeSearchButton = document.getElementById("close-search");
+  const libraryStatus = document.getElementById("library-status");
+  const libraryCount = document.getElementById("library-count");
+  const deleteDialog = document.getElementById("delete-dialog");
+  const deleteDetail = document.getElementById("delete-detail");
+  const deleteStatus = document.getElementById("delete-status");
+  const deleteConfirm = document.getElementById("delete-confirm");
+  const deleteCancel = document.getElementById("delete-cancel");
   const exportLinks = Array.from(
     document.querySelectorAll(".viewer-foot a[data-format]")
   );
@@ -85,6 +98,7 @@
   let syncDrift = 0;
   let syncOffsetBars = 0;
   let syncSaveTimer = null;
+  let pendingDelete = null;
 
   function setPlayLabel(playing) {
     if (!playButton) return;
@@ -94,6 +108,18 @@
 
   function setImportStatus(text) {
     if (importStatus) importStatus.textContent = text;
+  }
+
+  function setLibraryStatus(text, isError) {
+    if (!libraryStatus) return;
+    libraryStatus.textContent = text;
+    libraryStatus.classList.toggle("is-error", Boolean(isError));
+  }
+
+  function setDeleteStatus(text, isError) {
+    if (!deleteStatus) return;
+    deleteStatus.textContent = text;
+    deleteStatus.classList.toggle("is-error", Boolean(isError));
   }
 
   function setSectionStatus(text) {
@@ -1000,29 +1026,168 @@
     }
   }
 
+  function libraryItemLabel(tab) {
+    return tab.artist
+      ? `${tab.artist} — ${tab.title}`
+      : String(tab.title || tab.id);
+  }
+
+  function libraryItemMeta(tab) {
+    const parts = [];
+    const bpm = formatBpm(tab.bpm);
+    if (bpm) parts.push(`${bpm} BPM`);
+    parts.push(`${Number(tab.measure_count) || 0} tahtia`);
+    parts.push(`${Number(tab.note_count) || 0} nuottia`);
+    if (tab.source_type === "import") parts.push("tuotu tabi");
+    const created = formatTimestamp(tab.created_at);
+    if (created) parts.push(created);
+    return parts.join(" · ");
+  }
+
+  function renderLibrary(tabs) {
+    if (!libraryEl) return;
+    libraryEl.textContent = "";
+    if (libraryCount) {
+      libraryCount.textContent = `${tabs.length} kappaletta`;
+    }
+    for (const tab of tabs) {
+      const row = document.createElement("div");
+      row.className = "library-item";
+      row.dataset.tabId = tab.id;
+      if (activeTab && activeTab.id === tab.id) row.classList.add("is-active");
+
+      const open = document.createElement("button");
+      open.type = "button";
+      open.className = "library-open";
+      open.title = libraryTooltip(tab);
+      open.setAttribute("aria-label", open.title.replace(/\n/g, ", "));
+      const name = document.createElement("span");
+      name.className = "library-title";
+      name.textContent = libraryItemLabel(tab);
+      const meta = document.createElement("span");
+      meta.className = "library-meta";
+      meta.textContent = libraryItemMeta(tab);
+      open.append(name, meta);
+      open.addEventListener("click", () => selectTab(tab.id));
+
+      const remove = document.createElement("button");
+      remove.type = "button";
+      remove.className = "ghost small library-delete";
+      remove.textContent = "POISTA";
+      remove.title = `Poista ${libraryItemLabel(tab)} kirjastosta.`;
+      remove.addEventListener("click", () => requestDelete(tab));
+
+      row.append(open, remove);
+      libraryEl.append(row);
+    }
+    libraryEl.hidden = tabs.length === 0;
+  }
+
+  async function selectTab(tabId) {
+    await loadTab(tabId);
+    closeSearch();
+    if (viewerSection) {
+      viewerSection.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }
+
   async function loadLibrary() {
     if (!libraryEl) return;
     try {
-      const response = await fetch("/api/tabs", { cache: "no-store" });
+      const response = await fetch("/api/tabs?limit=200", { cache: "no-store" });
       if (!response.ok) return;
       const tabs = await response.json();
-      libraryEl.textContent = "";
-      for (const tab of tabs.slice(0, 8)) {
-        const button = document.createElement("button");
-        button.type = "button";
-        button.className = "library-item";
-        button.textContent = tab.artist
-          ? `${tab.artist} — ${tab.title}`
-          : tab.title;
-        const tooltip = libraryTooltip(tab);
-        button.title = tooltip;
-        button.setAttribute("aria-label", tooltip.replace(/\n/g, ", "));
-        button.addEventListener("click", () => loadTab(tab.id));
-        libraryEl.append(button);
-      }
-      libraryEl.hidden = tabs.length === 0;
+      renderLibrary(tabs);
     } catch (error) {
       console.error(error);
+    }
+  }
+
+  function openSearch() {
+    if (!searchModal) return;
+    searchModal.hidden = false;
+    document.body.classList.add("modal-open");
+    setLibraryStatus("");
+    loadLibrary();
+    if (urlInput) urlInput.focus();
+  }
+
+  function closeSearch() {
+    if (!searchModal) return;
+    searchModal.hidden = true;
+    if (deleteDialog) deleteDialog.hidden = true;
+    pendingDelete = null;
+    document.body.classList.remove("modal-open");
+  }
+
+  function requestDelete(tab) {
+    pendingDelete = tab;
+    if (deleteDetail) {
+      deleteDetail.textContent = `${libraryItemLabel(tab)} poistetaan kirjastosta.`;
+    }
+    setDeleteStatus("");
+    if (deleteDialog) deleteDialog.hidden = false;
+  }
+
+  function cancelDelete() {
+    if (deleteDialog) deleteDialog.hidden = true;
+    pendingDelete = null;
+    setDeleteStatus("");
+  }
+
+  function clearViewer() {
+    activeTab = null;
+    allTracks = [];
+    visibleTrackIndexes = new Set();
+    if (api) {
+      try {
+        api.stop();
+      } catch (error) {
+        /* ignore a stopped player */
+      }
+    }
+    audio.pause();
+    audio.removeAttribute("src");
+    audio.load();
+    if (viewerSection) viewerSection.hidden = true;
+    if (titleEl) titleEl.textContent = "";
+    if (metaEl) metaEl.textContent = "";
+    if (trackToggles) trackToggles.textContent = "";
+    if (barReadout) barReadout.textContent = "Tahti –";
+    setPlayLabel(false);
+    try {
+      localStorage.removeItem("tabtool:lastTab");
+    } catch (error) {
+      /* storage disabled */
+    }
+  }
+
+  async function confirmDelete() {
+    if (!pendingDelete) return;
+    const tab = pendingDelete;
+    if (deleteConfirm) deleteConfirm.disabled = true;
+    setDeleteStatus("Poistetaan…");
+    try {
+      const response = await fetch(`/api/tabs/${tab.id}`, { method: "DELETE" });
+      if (!response.ok) {
+        setDeleteStatus(await readError(response), true);
+        return;
+      }
+      const result = await response.json();
+      if (deleteDialog) deleteDialog.hidden = true;
+      pendingDelete = null;
+      if (activeTab && activeTab.id === tab.id) clearViewer();
+      await loadLibrary();
+      setLibraryStatus(
+        result.mp3_kept ? "Poistettu. MP3 jäi hakemistoon." : "Poistettu."
+      );
+    } catch (error) {
+      setDeleteStatus(
+        error instanceof Error ? error.message : String(error),
+        true
+      );
+    } finally {
+      if (deleteConfirm) deleteConfirm.disabled = false;
     }
   }
 
@@ -1031,7 +1196,31 @@
     if (tuningSelect) options.tuning = tuningSelect.value;
     if (gridSelect) options.grid = Number(gridSelect.value);
     if (quickCheckbox && quickCheckbox.checked) options.separate = false;
+    if (makeMp3Checkbox) options.archive_mp3 = makeMp3Checkbox.checked;
     return options;
+  }
+
+  async function importTabFromUrl(url) {
+    const data = new FormData();
+    data.append("url", url);
+    setStatus("queued", "Haetaan tabia…");
+    const response = await fetch("/api/tabs/import-url", {
+      method: "POST",
+      body: data,
+    });
+    if (!response.ok) {
+      setStatus("failed", await readError(response));
+      setProgress(1, true);
+      return;
+    }
+    const tab = await response.json();
+    await loadTab(tab.id);
+    await loadLibrary();
+    setStatus("ready", "");
+    closeSearch();
+    if (viewerSection) {
+      viewerSection.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
   }
 
   async function submitJob(event) {
@@ -1040,17 +1229,18 @@
 
     const file = fileInput && fileInput.files ? fileInput.files[0] : null;
     const url = urlInput ? urlInput.value.trim() : "";
-    if (!file && !url) {
+    const gp5Url = gp5Input ? gp5Input.value.trim() : "";
+
+    if (!file && !url && !gp5Url) {
       setStatus("failed", "Valitse tiedosto tai liitä YouTube-linkki.");
       return;
     }
-
-    const data = new FormData();
-    if (file) data.append("file", file);
-    if (url) data.append("youtube_url", url);
-    data.append("options", JSON.stringify(collectOptions()));
-    if (regenerateCheckbox && regenerateCheckbox.checked) {
-      data.append("regenerate", "true");
+    if (gp5Url && file) {
+      setStatus(
+        "failed",
+        "Käytä joko omaa audiota tai GP5-linkkiä, ei molempia."
+      );
+      return;
     }
 
     submitting = true;
@@ -1059,6 +1249,20 @@
     setProgress(0, false);
 
     try {
+      if (gp5Url && !url) {
+        await importTabFromUrl(gp5Url);
+        return;
+      }
+
+      const data = new FormData();
+      if (file) data.append("file", file);
+      if (url) data.append("youtube_url", url);
+      if (gp5Url) data.append("gp5_url", gp5Url);
+      data.append("options", JSON.stringify(collectOptions()));
+      if (regenerateCheckbox && regenerateCheckbox.checked) {
+        data.append("regenerate", "true");
+      }
+
       const response = await fetch("/api/jobs", { method: "POST", body: data });
       if (!response.ok) {
         setStatus("failed", await readError(response));
@@ -1067,11 +1271,20 @@
       }
       const job = await response.json();
       renderJob(job);
-      if (job.status === "ready" && job.tab_id) {
+      if (job.tab_id) {
+        // GP5 jobs already have a tab; show the score while audio downloads.
         await loadTab(job.tab_id);
-        loadLibrary();
+      }
+      if (job.status === "ready" && job.tab_id) {
+        await loadLibrary();
+        setStatus("ready", "");
+        closeSearch();
       } else {
-        subscribe(job.id);
+        subscribe(job.id, {
+          onDone: (current) => {
+            if (current.status === "ready") closeSearch();
+          },
+        });
       }
     } catch (error) {
       setStatus("failed", error instanceof Error ? error.message : String(error));
@@ -1220,6 +1433,7 @@
       } catch (error) {
         return;
       }
+      if (!job) return;
       renderJob(job);
       if (typeof hooks.onJob === "function") hooks.onJob(job);
       if (job.status === "ready" || job.status === "failed") {
@@ -1238,6 +1452,25 @@
   }
 
   if (form) form.addEventListener("submit", submitJob);
+  if (openSearchButton) openSearchButton.addEventListener("click", openSearch);
+  if (openSearchTopButton) {
+    openSearchTopButton.addEventListener("click", openSearch);
+  }
+  if (closeSearchButton) {
+    closeSearchButton.addEventListener("click", closeSearch);
+  }
+  if (searchModal) {
+    searchModal.addEventListener("click", (event) => {
+      if (event.target === searchModal) closeSearch();
+    });
+  }
+  if (deleteCancel) deleteCancel.addEventListener("click", cancelDelete);
+  if (deleteConfirm) deleteConfirm.addEventListener("click", confirmDelete);
+  if (deleteDialog) {
+    deleteDialog.addEventListener("click", (event) => {
+      if (event.target === deleteDialog) cancelDelete();
+    });
+  }
   if (playButton) playButton.addEventListener("click", togglePlayback);
   if (importButton) importButton.addEventListener("click", importTab);
   if (staveSelect) {
@@ -1324,6 +1557,14 @@
     applyDisplayScale();
   });
   document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && searchModal && !searchModal.hidden) {
+      if (deleteDialog && !deleteDialog.hidden) {
+        cancelDelete();
+      } else {
+        closeSearch();
+      }
+      return;
+    }
     const tag = event.target && event.target.tagName;
     const interactive = ["INPUT", "SELECT", "TEXTAREA", "BUTTON"].includes(
       tag
