@@ -27,6 +27,7 @@ LOGGER = logging.getLogger("tabtool.jobs")
 PIPELINE_VERSION = "1"
 
 SOURCE_TYPES = ("upload", "local", "youtube")
+PLACEHOLDER_TITLES = {"", "youtube audio", "youtube-audio"}
 AUDIO_EXTENSIONS = {
     ".mp3",
     ".wav",
@@ -437,6 +438,21 @@ def publish(job_id: str) -> None:
     get_manager().publish(job_id)
 
 
+def effective_track_metadata(
+    job_title: str,
+    job_artist: str,
+    audio_title: str,
+    audio_artist: str,
+) -> tuple[str, str]:
+    """Prefer real metadata over the generic YouTube placeholder title."""
+    title = str(job_title or "").strip()
+    audio_title = str(audio_title or "").strip()
+    if title.lower() in PLACEHOLDER_TITLES:
+        title = audio_title or title or "Untitled"
+    artist = str(job_artist or "").strip() or str(audio_artist or "").strip()
+    return title, artist
+
+
 def run_pipeline(
     job: dict[str, Any],
     options: JobOptions,
@@ -466,6 +482,23 @@ def run_pipeline(
         start_seconds=options.start_seconds,
         title=job["title"] or None,
     )
+
+    job_title = str(job.get("title") or "").strip()
+    job_artist = str(job.get("artist") or "").strip()
+    document_title, document_artist = effective_track_metadata(
+        job_title,
+        job_artist,
+        audio.title,
+        audio.artist,
+    )
+    if (document_title != job_title or document_artist != job_artist) and job.get(
+        "track_id"
+    ):
+        db.update_track(
+            int(job["track_id"]),
+            title=document_title,
+            artist=document_artist,
+        )
 
     tuning = get_tuning(options.tuning)
     stems: dict[str, Path] = {}
@@ -523,8 +556,8 @@ def run_pipeline(
     )
     warnings = list(quantized.warnings) + list(fret_warnings)
     document = build_document(
-        title=job["title"] or audio.title,
-        artist=job["artist"],
+        title=document_title,
+        artist=document_artist,
         bpm=bpm,
         time_signature=options.time_signature,
         tuning=tuning,
@@ -594,6 +627,7 @@ def process_job(job_id: str) -> None:
             "artist": document.artist,
             "source": audio.source_ref,
             "source_type": audio.source_type,
+            "audio_path": db.to_data_relative(audio.path),
             "duration_seconds": audio.duration,
             "bpm": result["bpm"],
             "raw_bpm": result["raw_bpm"],

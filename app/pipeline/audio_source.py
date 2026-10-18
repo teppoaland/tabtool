@@ -18,6 +18,25 @@ class AudioSource:
     source_type: str
     source_ref: str
     title: str
+    artist: str = ""
+
+
+_YOUTUBE_SUFFIX = re.compile(
+    r"\s*[\(\[]\s*(?:official\s*(?:music\s*)?video|official\s*audio|"
+    r"lyrics?|remaster(?:ed)?|hd|hq|4k|visualizer|audio)\s*[\)\]]\s*$",
+    re.IGNORECASE,
+)
+
+
+def clean_youtube_title(value: str) -> str:
+    """Drop common parenthesised YouTube suffixes, e.g. ``(Remastered)``."""
+    original = str(value or "").strip()
+    text = " ".join(original.split())
+    previous = None
+    while text and text != previous:
+        previous = text
+        text = _YOUTUBE_SUFFIX.sub("", text).strip(" -–—")
+    return text or original
 
 
 def slugify(value: str, fallback: str = "audio") -> str:
@@ -71,6 +90,34 @@ def probe_duration(path: str | Path) -> float:
         return float(result.stdout.strip().splitlines()[0])
     except (ValueError, IndexError) as exc:
         raise RuntimeError(f"Could not read duration from {path}") from exc
+
+
+def fetch_youtube_metadata(url: str) -> tuple[str, str]:
+    """Return a cleaned video title and artist/uploader without downloading."""
+    result = _run(
+        [
+            sys.executable,
+            "-m",
+            "yt_dlp",
+            "--skip-download",
+            "--no-playlist",
+            "--print",
+            "%(title)s",
+            "--print",
+            "%(artist)s",
+            "--print",
+            "%(uploader)s",
+            url,
+        ]
+    )
+    lines = [line.strip() for line in result.stdout.splitlines() if line.strip()]
+    title = clean_youtube_title(lines[0]) if lines else ""
+    artist = ""
+    for line in lines[1:]:
+        if line and line.upper() != "NA":
+            artist = line
+            break
+    return title, artist
 
 
 def normalize_audio(
@@ -171,6 +218,13 @@ def prepare_audio(
     directory.mkdir(parents=True, exist_ok=True)
     source = source.strip()
     if source.startswith(("http://", "https://")):
+        metadata_title = ""
+        metadata_artist = ""
+        try:
+            metadata_title, metadata_artist = fetch_youtube_metadata(source)
+        except Exception:
+            metadata_title = ""
+            metadata_artist = ""
         downloaded = download_youtube(
             source,
             directory,
@@ -192,7 +246,8 @@ def prepare_audio(
             duration=duration,
             source_type="youtube",
             source_ref=source,
-            title=title or "YouTube audio",
+            title=title or metadata_title or "YouTube audio",
+            artist=metadata_artist,
         )
 
     input_path = Path(source).expanduser()

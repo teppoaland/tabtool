@@ -18,7 +18,7 @@ from fastapi import FastAPI, File, Form, HTTPException, Query, Request, UploadFi
 from fastapi.responses import FileResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 
-from app import __version__, db, jobs
+from app import __version__, db, jobs, tab_import
 from app.config import (
     APP_NAME,
     HOST,
@@ -254,7 +254,17 @@ async def job_events(job_id: str) -> StreamingResponse:
 
 def _tab_summary(tab: dict[str, object]) -> dict[str, object]:
     keys = ("id", "title", "artist", "bpm", "measure_count", "note_count", "created_at")
-    return {key: tab.get(key) for key in keys}
+    summary = {key: tab.get(key) for key in keys}
+    meta = tab.get("meta")
+    summary["source_type"] = (
+        meta.get("source_type") if isinstance(meta, dict) else ""
+    )
+    return summary
+
+
+def _format_seconds(value: float) -> str:
+    total = max(0, int(round(float(value))))
+    return f"{total // 60}:{total % 60:02d}"
 
 
 def _load_tab(tab_id: str) -> dict[str, object] | None:
@@ -269,6 +279,25 @@ def _load_tab(tab_id: str) -> dict[str, object] | None:
 def list_tabs(limit: int = Query(default=20, ge=1, le=200)) -> list[dict[str, object]]:
     db.import_tabs_from_disk()
     return [_tab_summary(tab) for tab in db.list_tabs(limit)]
+
+
+@app.post("/api/tabs/import", tags=["tabs"])
+async def import_tab(file: UploadFile = File(...)) -> dict[str, object]:
+    """Import a ready-made GP5 or MusicXML tab into the private library."""
+    raw = await file.read()
+    try:
+        tab = tab_import.import_tab_bytes(raw, file.filename or "tab.gp5")
+    except tab_import.TabTooLarge as exc:
+        raise HTTPException(status_code=413, detail=str(exc)) from exc
+    except tab_import.UnsupportedTab as exc:
+        raise HTTPException(status_code=415, detail=str(exc)) from exc
+    except tab_import.TabParseError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    except Exception as exc:  # noqa: BLE001 - reported to the user
+        raise HTTPException(
+            status_code=422, detail=f"Tab import failed: {exc}"
+        ) from exc
+    return _tab_summary(tab)
 
 
 @app.get("/api/tabs/{tab_id}", tags=["tabs"])
@@ -320,6 +349,153 @@ def tab_export(tab_id: str, fmt: str) -> FileResponse:
         filename=name,
         headers={"Cache-Control": "no-store"},
     )
+
+
+@app.post("/api/tabs/{tab_id}/section", tags=["tabs"])
+def tab_section(
+    tab_id: str,
+    start_seconds: float = Form(...),
+    clip_seconds: float = Form(...),
+) -> dict[str, object]:
+    """Create a new tab job for one section of an existing tab's audio."""
+    tab = _load_tab(tab_id)
+    if tab is None:
+        raise HTTPException(status_code=404, detail="Unknown tab")
+    if not tab.get("audio_path"):
+        raise HTTPException(status_code=422, detail="Tab has no audio")
+    try:
+        path = db.resolve_under_data(str(tab["audio_path"]))
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail="Audio not found") from exc
+    if not path.is_file():
+        raise HTTPException(status_code=404, detail="Audio not found")
+
+    meta = tab.get("meta") if isinstance(tab.get("meta"), dict) else {}
+    payload = dict(meta.get("options") or {})
+    payload["start_seconds"] = max(0.0, float(start_seconds))
+    payload["clip_seconds"] = max(1.0, min(900.0, float(clip_seconds)))
+    try:
+        options = jobs.JobOptions.from_mapping(payload)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+    start = float(options.start_seconds or 0.0)
+    length = int(round(float(options.clip_seconds or 0.0)))
+    title = f"{tab['title']} [{_format_seconds(start)} +{length}s]"
+    return jobs.submit_job(
+        source_type="local",
+        source_ref=str(path.resolve()),
+        title=jobs.clean_title(title, str(tab.get("title") or "Tab")),
+        artist=str(tab.get("artist") or ""),
+        fingerprint=jobs.local_fingerprint(path),
+        audio_path=path,
+        options=options,
+    )
+
+
+@app.post("/api/tabs/{tab_id}/attach-audio", tags=["tabs"])
+def tab_attach_audio(tab_id: str) -> dict[str, object]:
+    """Attach the audio of a same-named tab to a tab that has no audio."""
+    target = _load_tab(tab_id)
+    if target is None:
+        raise HTTPException(status_code=404, detail="Unknown tab")
+    if target.get("audio_path"):
+        return _tab_summary(target)
+
+    title = str(target.get("title") or "").strip().lower()
+    artist = str(target.get("artist") or "").strip().lower()
+    candidates = [
+        tab
+        for tab in db.list_tabs(200)
+        if tab.get("id") != tab_id and tab.get("audio_path")
+    ]
+    matches = [
+        tab
+        for tab in candidates
+        if str(tab.get("title") or "").strip().lower() == title
+    ]
+    if artist:
+        artist_matches = [
+            tab
+            for tab in matches
+            if str(tab.get("artist") or "").strip().lower() == artist
+        ]
+        if artist_matches:
+            matches = artist_matches
+    source = matches[0] if matches else None
+    if source is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Samannimistä audiota ei löytynyt. Tuo AI-tabi samasta kappaleesta ensin.",
+        )
+
+    source_audio = str(source["audio_path"])
+    try:
+        source_path = db.resolve_under_data(source_audio)
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail="Audio not found") from exc
+    if not source_path.is_file():
+        raise HTTPException(status_code=404, detail="Audio not found")
+
+    meta = dict(target.get("meta") or {})
+    meta["audio_path"] = source_audio
+    source_meta = source.get("meta") or {}
+    if isinstance(source_meta, dict) and source_meta.get("duration_seconds"):
+        meta["duration_seconds"] = source_meta["duration_seconds"]
+    meta["audio_source_tab"] = source.get("id")
+
+    updated = db.update_tab_audio(tab_id, source_audio, meta)
+    if updated is None:
+        raise HTTPException(status_code=404, detail="Unknown tab")
+    summary = _tab_summary(updated)
+    summary["source_bpm"] = source.get("bpm")
+    summary["source_id"] = source.get("id")
+    return summary
+
+
+@app.post("/api/tabs/{tab_id}/tempo", tags=["tabs"])
+def tab_tempo(tab_id: str, bpm: float = Form(...)) -> dict[str, object]:
+    """Rewrite a GP5 tab tempo so the tab matches the song's real BPM."""
+    tab = _load_tab(tab_id)
+    if tab is None:
+        raise HTTPException(status_code=404, detail="Unknown tab")
+    if not 20.0 <= float(bpm) <= 400.0:
+        raise HTTPException(status_code=422, detail="BPM must be between 20 and 400")
+    meta = dict(tab.get("meta") or {})
+    files = meta.get("files") if isinstance(meta.get("files"), dict) else {}
+    gp5_name = files.get("gp5") if files else None
+    if not gp5_name:
+        raise HTTPException(
+            status_code=422,
+            detail="Tempo voidaan asettaa vain GP5-tabille.",
+        )
+    try:
+        directory = db.resolve_under_data(str(tab["directory"]))
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail="Tab file not found") from exc
+    path = directory / Path(str(gp5_name)).name
+    if not path.is_file():
+        raise HTTPException(status_code=404, detail="Tab file not found")
+
+    try:
+        import guitarpro
+
+        song = guitarpro.parse(str(path))
+        song.tempo = int(round(float(bpm)))
+        temporary = path.with_name(path.name + ".tmp")
+        guitarpro.write(song, str(temporary))
+        temporary.replace(path)
+    except Exception as exc:  # noqa: BLE001 - reported to the user
+        raise HTTPException(
+            status_code=422, detail=f"Tempon asetus epäonnistui: {exc}"
+        ) from exc
+
+    meta["bpm"] = float(bpm)
+    meta["tempo_override"] = float(bpm)
+    updated = db.update_tab_tempo(tab_id, float(bpm), meta)
+    if updated is None:
+        raise HTTPException(status_code=404, detail="Unknown tab")
+    return _tab_summary(updated)
 
 
 @app.get("/api/tabs/{tab_id}/audio", tags=["tabs"])

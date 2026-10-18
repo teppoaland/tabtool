@@ -2,6 +2,112 @@
 
 > AI TabTool käyttää `1.x`-versiosarjaa. Aloitus `v1.00`.
 
+## v1.29 – 18.10.2026
+
+- **TAB BPM** -korjaus: katselimen transportissa voi asettaa GP5-tabin
+  todellisen tempon. Backend päivittää GP5:n `song.tempo`-arvon,
+  tietokannan ja `meta.json`in (`POST /api/tabs/{id}/tempo`).
+  Näin tabi saadaan kappaleen nopeuteen: esim. Seek & Destroy
+  -referenssitabi 140 → 144 BPM, audio 100 %:ssa. Tahti 62 osuu tällöin
+  kohtaan 1:42 (101.7 s).
+- **Nopeus**-säädin tarkentui: 95–105 %, askel 0,1 % ja yhden
+  desimaalin näyttö. Sillä hienosäädetään esim. 143,55 BPM audio
+  vastaamaan 144 BPM tabia.
+- AI-BPM on jatkossa merkitty arvioksi (`AI-arvio`), ei absoluuttiseksi
+  totuudeksi; kappaleen tempo ratkaisee.
+
+## v1.28 – 18.10.2026
+
+- Tuodun referenssitabin audio: `LIITÄ AUDIO` etsii samannimisen tabin,
+  jolla on audio (esim. AI-tabi), ja liittää sen audiopolun tuotuun
+  tabiin (`POST /api/tabs/{id}/attach-audio`). Tämän jälkeen myös tuotu
+  tabi soi, vierittyy ja toimii fullscreenissä koko kappaleen ajan.
+- Katselimeen lisätty **Nopeus**-säädin (85–115 %). Sillä voi hienosäätää
+  audion nopeuden tabin tempoon, esim. 140 BPM tabi + 144 BPM audio.
+  `preservesPitch` pitää sävelkorkeuden normaalina.
+- `LIITÄ AUDIO` näkyy vain tabilla, jolla ei ole audiota; liittämisen
+  jälkeen PLAY, aikajana, cursor ja Nopeus tulevat näkyviin. Tuodun tabin
+  `meta.json` päivitetään samalla, jotta audiolinkitys säilyy.
+- Täydet kappaleet ovat oletus; pätkägenerointi on edelleen poikkeus.
+
+## v1.27 – 18.10.2026
+
+- Pätkägenerointi: katselimessa voi siirtyä kohtaan, valita 30/60/120 s ja
+  painaa `TEE TAB TÄSTÄ`. Backend luo uuden jobin nykyisen tabin audiosta
+  ja asetuksista (`POST /api/tabs/{id}/section`), leikkaa audiosta pätkän
+  ja tekee tabin vain siitä. Uusi tabi avautuu automaattisesti ja sen
+  nimessä on aikaväli, esim. `Seek & Destroy [0:28 +60s]`.
+- Tuodut tabit merkitään kirjaston tooltipissa (`Lähde: tuotu tabi`).
+  Moniraitaisesta GP5/MusicXML-tabista näytetään oletuksena kaksi
+  ensimmäistä kitaraa (Guitar 1 + Guitar 2); loput raidat saa valittua
+  raitanapeista.
+- Pätkägenerointi käyttää samaa audiota ja samoja asetuksia kuin
+  lähtötabi, joten se toimii myös YouTube-lähteille ilman uutta latausta.
+
+## v1.26 – 18.10.2026
+
+- Valmiin tabin tuonti: GP5 ja MusicXML (`POST /api/tabs/import`).
+  Tuotu tabi tallennetaan `data/tabs/`-hakemistoon ja rekisteröidään
+  kirjastoon; metatiedot (nimi, artisti, BPM, tahtimäärä) luetaan
+  tiedostosta (PyGuitarPro / music21).
+- UI: `Tuo valmis tabi (GP5 / MusicXML)` -tiedostovalinta ja
+  `IMPORT TAB` -nappi. Tuotu tabi avautuu suoraan katselimeen.
+- Tuodulla tabilla ei ole audiota, joten PLAY ja aikajana piilotetaan;
+  tabi, raitavalinnat, näkymävalinta ja export toimivat. Export-linkit
+  näytetään vain niille formaateille, jotka tabissa on.
+- Tämä on suositeltu polku, kun halutaan juuri opeteltu standarditabi
+  (esim. Songsterr/Guitar Pro) AI-luonnoksen sijaan.
+
+## v1.25 – 18.10.2026
+
+- YouTube-jobien nimi ja artisti haetaan nyt yt-dlp:n metadatasta ja
+  puhdistetaan (esim. `(Remastered)` pois). `YouTube audio` jää vain
+  fallbackiksi, jos metadata ei ole saatavilla.
+- `meta.json` sisältää nyt `audio_path`-kentän myös web-jobille, joten
+  tabi voidaan tuoda uudelleen ilman audion katoamista.
+- Katseluun lisätty aikajana: nykyinen aika, kokonaiskesto, tahtilukema,
+  −5 s/+5 s -siirtymät sekä Space- ja nuolinäppäimet. Tahtilukema auttaa
+  hyppäämään intron jälkeen alkavaan riffiin.
+- Olemassa oleva Seek & Destroy -tabi nimettiin uudelleen
+  (`Metallica — Seek & Destroy`) tietokantaan, `meta.json`iin, GP5:een ja
+  MusicXML:ään.
+
+## v1.24 – 18.10.2026
+
+Soittonäkymän seurattavuus ja siisteys.
+
+- Cursor ei enää karkaa ruudun yläosaan rivinvaihdossa. Käytössä on
+  alphaTabin `Smooth`-scroll ja negatiivinen `scrollOffsetY`, joka
+  skaalautuu näkymän korkeuden mukaan. Edellinen järjestelmä jää näkyviin
+  nykyisen yläpuolelle, joten etenemistä ja jo soitettua kohtaa on helppo
+  seurata.
+- Dynamiikkamerkinnät (`p`, `mp`, `mf`, `f`, …) piilotettu. Ne syntyivät
+  Basic Pitchin velocity-arvoista eivätkä tuo tablatuuriin lisäarvoa.
+  Piilotus tehdään `NotationElement.EffectDynamics` -asetuksella, joten
+  se koskee myös vanhoja tabeja ilman uudelleengenerointia.
+
+## v1.23 – 18.10.2026
+
+Katselunäkymän parannukset Phase 2:n päälle.
+
+- Oletusnäkymä on pelkkä tablatuuri. `Näkymä`-valinnalla voi vaihtaa
+  tab + nuotit, nuotit tai Auto (kitarat tablatuurina, muut nuotteina);
+  valinta muistetaan selaimessa.
+- Raitavalitsin: tabin raidat voi näyttää ja piilottaa. Valinta
+  muistetaan tabikohtaisesti. Nykyiset generoidut tabit sisältävät
+  yhden `Guitar`-raidan.
+- `FULLSCREEN` ja automaattinen koko näyttö PLAY:ta painettaessa; Esc
+  palauttaa. Koko näytössä tabit skaalautuvat ruudun mukaan.
+- Soittocursor: vihreä tahtikorostus ja beat-viiva seuraavat paikallista
+  audiota. alphaTabin cursor-CSS lisätty, koska vendor-bundlessa ei ole
+  tyylejä.
+- Vaakascrollbar poistettu tablatuurin alta; pitkä tabi vierittyy
+  pystysuunnassa.
+- Kirjaston napeissa tooltip (tahtimäärä, nuotit, BPM, luontiaika ja ID),
+  joten samannimiset versiot erottuvat. Myös lomakkeen valikoissa tooltipit.
+- `EXPORT` siirretty pois pääkontrolliriviltä; tilalla näkymä- ja
+  raitavalinnat.
+
 ## v1.22 – 18.10.2026
 
 Tuotenimi vaihdettu: **AI TabTool**.

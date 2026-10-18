@@ -5,7 +5,7 @@ ja katseluun. Hae kappale Spotifysta tai käytä omaa MP3/YouTube-audioita,
 anna tekoälyn tehdä ensimmäinen tablatuuriluonnos ja katsele sitä
 alphaTabilla TV:stä tai tietokoneelta. Puhelin toimii kaukosäätimenä.
 
-**Versio:** `v1.22` (Phase 2 – web-UI, alphaTab ja paikallinen toisto)
+**Versio:** `v1.29` (Phase 2 – web-UI, alphaTab ja paikallinen toisto)
 
 ## Session aloitus
 
@@ -163,6 +163,18 @@ Jos YouTube estää latauksen, käytetään paikallista MP3:aa.
    `data/tabs/<nimi>/`-tabit (joissa on `meta.json`) rekisteröityvät
    automaattisesti. Suora linkki: `/?tab=<tab_id>`.
 
+Valmis referenssitabi: valitse **Tuo valmis tabi (GP5 / MusicXML)** ja
+paina **IMPORT TAB**. Tabi avautuu suoraan katselimeen. Jos samannimisestä
+kappaleesta on AI-tabi, paina **LIITÄ AUDIO**: tabi saa audion, PLAYn,
+aikajanan ja cursorin. **TAB BPM** -kenttään asetetaan kappaleen
+todellinen tempo (esim. 144); se päivittää GP5:n tempon ja pitää audion
+100 %:ssa. **Nopeus**-säätimellä (95–105 %, 0,1 % askel) voi hienosäätää
+esim. 143,55 BPM audion 144 BPM tabiin.
+
+Pätkägenerointi: siirry katselimessa kohtaan, valitse **30/60/120 s** ja
+paina **TEE TAB TÄSTÄ**. Ohjelma tekee uuden tabin vain siitä pätkästä
+samoilla asetuksilla ja avaa sen; nimi sisältää aikavälin.
+
 Jobit, cache ja tabimetadata ovat SQLitessä (`data/tabtool.sqlite3`).
 Sama audio + samat asetukset palauttaa cachesta saman tabin; vain
 `regenerate`-pyyntö kirjoittaa uuden.
@@ -174,6 +186,10 @@ Sama audio + samat asetukset palauttaa cachesta saman tabin; vain
 | `POST /api/jobs` | multipart: `file` tai `youtube_url` (+ `options` JSON) |
 | `GET /api/jobs`, `GET /api/jobs/{id}` | job-lista ja tila |
 | `GET /api/jobs/{id}/events` | SSE-progress |
+| `POST /api/tabs/import` | GP5/MusicXML-tabin tuonti |
+| `POST /api/tabs/{id}/section` | pätkäjobin luonti tabin audiosta |
+| `POST /api/tabs/{id}/attach-audio` | samannimisen tabin audion liitys |
+| `POST /api/tabs/{id}/tempo` | GP5-tabin BPM:n korjaus |
 | `GET /api/tabs`, `GET /api/tabs/{id}` | kirjasto ja tab-metadata |
 | `GET /api/tabs/{id}/score/{gp5\|musicxml\|midi}` | inline score alphaTabille |
 | `GET /api/tabs/{id}/export/{gp5\|musicxml\|midi}` | lataus (attachment) |
@@ -259,6 +275,13 @@ docs/               GITIGNORED
 - **v1.10** ✅ – putki: Demucs + Basic Pitch + fretboard + GP5/MusicXML/MIDI
 - **v1.20** ✅ – web-UI: upload/YouTube → job → alphaTab + paikallinen toisto
 - **v1.22** ✅ – tuotenimi **AI TabTool** (repo pysyy `tabtool`)
+- **v1.23** ✅ – katselu: tab-only-oletus, raitavalinnat, fullscreen, cursor
+- **v1.24** ✅ – seuranta: edellinen rivi näkyy, dynamiikkamerkinnät pois
+- **v1.25** ✅ – metatiedot ja aikajana: oikea nimi, tahti- ja aikasiirtymät
+- **v1.26** ✅ – GP5/MusicXML-referenssitabin tuonti UI:sta
+- **v1.27** ✅ – pätkägenerointi: TEE TAB TÄSTÄ ja aikaväli tabin nimessä
+- **v1.28** ✅ – referenssitabin audio, PLAY ja Nopeus-synkka
+- **v1.29** ✅ – TAB BPM -korjaus ja tarkempi Nopeus-hienosäätö
 - **v1.30** – Spotify-haku, OAuth, SDK/Connect-synkka
 - **v1.40** – remote-kaukosäädin
 - **1.x** – basso, laulu, rummut, bending

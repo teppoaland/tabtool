@@ -301,6 +301,88 @@ def get_tab(tab_id: str) -> dict[str, Any] | None:
     return _tab_row(row) if row else None
 
 
+def update_tab_audio(
+    tab_id: str,
+    audio_path: str,
+    meta: dict[str, Any] | None = None,
+) -> dict[str, Any] | None:
+    """Attach an existing private audio file to a tab."""
+    tab = get_tab(tab_id)
+    if tab is None:
+        return None
+    init_db()
+    with connection() as conn:
+        if meta is not None:
+            conn.execute(
+                "UPDATE tabs SET audio_path = ?, meta_json = ? WHERE id = ?",
+                (
+                    audio_path,
+                    json.dumps(meta, ensure_ascii=False),
+                    tab_id,
+                ),
+            )
+        else:
+            conn.execute(
+                "UPDATE tabs SET audio_path = ? WHERE id = ?",
+                (audio_path, tab_id),
+            )
+        conn.execute(
+            "UPDATE tracks SET audio_path = ? WHERE id = ?",
+            (audio_path, int(tab["track_id"])),
+        )
+    if meta is not None:
+        try:
+            directory = resolve_under_data(str(tab["directory"]))
+            meta_path = directory / "meta.json"
+            if meta_path.is_file():
+                temporary = meta_path.with_name(meta_path.name + ".tmp")
+                temporary.write_text(
+                    json.dumps(meta, indent=2, ensure_ascii=False),
+                    encoding="utf-8",
+                )
+                temporary.replace(meta_path)
+        except (OSError, ValueError):
+            pass
+    return get_tab(tab_id)
+
+
+def update_tab_tempo(
+    tab_id: str,
+    bpm: float,
+    meta: dict[str, Any] | None = None,
+) -> dict[str, Any] | None:
+    """Store a corrected tab tempo and update the cached metadata."""
+    tab = get_tab(tab_id)
+    if tab is None:
+        return None
+    init_db()
+    with connection() as conn:
+        if meta is not None:
+            conn.execute(
+                "UPDATE tabs SET bpm = ?, meta_json = ? WHERE id = ?",
+                (float(bpm), json.dumps(meta, ensure_ascii=False), tab_id),
+            )
+        else:
+            conn.execute(
+                "UPDATE tabs SET bpm = ? WHERE id = ?",
+                (float(bpm), tab_id),
+            )
+    if meta is not None:
+        try:
+            directory = resolve_under_data(str(tab["directory"]))
+            meta_path = directory / "meta.json"
+            if meta_path.is_file():
+                temporary = meta_path.with_name(meta_path.name + ".tmp")
+                temporary.write_text(
+                    json.dumps(meta, indent=2, ensure_ascii=False),
+                    encoding="utf-8",
+                )
+                temporary.replace(meta_path)
+        except (OSError, ValueError):
+            pass
+    return get_tab(tab_id)
+
+
 def delete_tab(tab_id: str) -> dict[str, Any] | None:
     """Remove a tab row (used when an explicit regenerate supersedes it)."""
     tab = get_tab(tab_id)
@@ -501,10 +583,16 @@ def create_track(
 def update_track(
     track_id: int,
     *,
+    title: str | object = _UNSET,
+    artist: str | object = _UNSET,
     audio_path: str | None | object = _UNSET,
     duration_seconds: float | None | object = _UNSET,
 ) -> None:
     fields: dict[str, Any] = {}
+    if title is not _UNSET:
+        fields["title"] = title
+    if artist is not _UNSET:
+        fields["artist"] = artist
     if audio_path is not _UNSET:
         fields["audio_path"] = audio_path
     if duration_seconds is not _UNSET:

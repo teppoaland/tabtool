@@ -1,0 +1,83 @@
+from __future__ import annotations
+
+from pathlib import Path
+
+from fastapi.testclient import TestClient
+
+from app import db
+from app.pipeline.build import build_document
+from app.pipeline.export_gp5 import export_gp5
+from app.pipeline.model import STANDARD_TUNING, TabNote
+
+
+def _make_tab(data_dir: Path, tab_id: str = "tempo-tab") -> None:
+    document = build_document(
+        title="Tempo Song",
+        artist="Tempo Band",
+        bpm=100,
+        time_signature="4/4",
+        tuning=STANDARD_TUNING,
+        tab_notes=[TabNote(40, 6, 0, 0, 960)],
+        measure_count=1,
+    )
+    tab_dir = data_dir / "tabs" / tab_id
+    tab_dir.mkdir(parents=True)
+    export_gp5(document, tab_dir / "tab.gp5")
+    track_id = db.create_track(
+        title="Tempo Song",
+        artist="Tempo Band",
+        source_type="import",
+        source_ref=f"import:{tab_id}",
+        fingerprint=f"tempo:{tab_id}",
+    )
+    db.create_tab(
+        tab_id=tab_id,
+        track_id=track_id,
+        cache_key=f"tempo:{tab_id}",
+        directory=f"tabs/{tab_id}",
+        title="Tempo Song",
+        artist="Tempo Band",
+        bpm=100.0,
+        tuning="standard",
+        time_signature="4/4",
+        measure_count=1,
+        note_count=1,
+        audio_path="",
+        meta={
+            "source_type": "import",
+            "files": {"gp5": "tab.gp5"},
+            "bpm": 100.0,
+        },
+    )
+
+
+def test_set_tab_tempo_rewrites_gp5_and_db(
+    client: TestClient,
+    data_dir: Path,
+) -> None:
+    _make_tab(data_dir, "tempo-tab")
+    response = client.post("/api/tabs/tempo-tab/tempo", data={"bpm": "144"})
+    assert response.status_code == 200, response.text
+    assert response.json()["bpm"] == 144.0
+
+    tab = client.get("/api/tabs/tempo-tab").json()
+    assert tab["bpm"] == 144.0
+    assert tab["meta"]["bpm"] == 144.0
+    assert tab["meta"]["tempo_override"] == 144.0
+
+    import guitarpro
+
+    song = guitarpro.parse(str(data_dir / "tabs" / "tempo-tab" / "tab.gp5"))
+    assert song.tempo == 144
+
+
+def test_set_tab_tempo_rejects_invalid_bpm(
+    client: TestClient,
+    data_dir: Path,
+) -> None:
+    _make_tab(data_dir, "tempo-invalid")
+    response = client.post(
+        "/api/tabs/tempo-invalid/tempo",
+        data={"bpm": "999"},
+    )
+    assert response.status_code == 422
