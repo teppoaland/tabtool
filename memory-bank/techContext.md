@@ -80,12 +80,13 @@ Hyödylliset valinnat: `--model htdemucs_6s`, `--stem guitar`, `--tuning`,
 - **Vain lokaalit commitit.** Projektia ei julkaista eikä pushatta
   julkiseen GitHubiin toistaiseksi. Commitit ovat palautuspisteitä
   (revert), jos koodi hajoaa. Push vaatii aina erillisen pyynnön.
-- HEAD `bb704e8` (docs: v1.29 code + tag); tagi `v1.29` tässä commitissa.
-- Koodicommit `d07c7de` (v1.29; 18 tiedostoa, 2442 lisäystä) on HEADin
-  edellinen commit.
-- `origin/main` = `69c2e39`; paikallinen `main` 9 committia edellä
-  (v1.23–v1.29-koodi + memory-bank docs); **ei pushattu**.
-- Työpuu clean (memory-bank/docs-commitit mukaan lukien).
+- Pysyvät ankkurit (tarkista aina `git --no-pager log --oneline`):
+  koodicommit `d07c7de` (v1.29), tagi `v1.29` = `bb704e8`,
+  `origin/main` = `69c2e39`.
+- Paikallinen `main` on `origin/main`:ia edellä vain docs-committeilla
+  (memory bank); `git status -sb` näyttää ajantasaisen ahead-määrän.
+- Älä kirjaa tähän HEAD-hashia: docs-commit siirtää HEADin joka kerta.
+- Työpuu clean committien jälkeen.
 - Git ei versioi `data/`- eikä `docs/`-hakemistoa; tag/commit palauttaa
   vain koodin, ei audioita/tabeja/tokeneita.
 - Commit author: `Azure Notepad Pipeline <azure-pipeline@notepad-automation.com>`

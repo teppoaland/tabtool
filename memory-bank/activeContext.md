@@ -1,7 +1,7 @@
 # 📍 Aktiivinen konteksti – AI TABTOOL
 
 > **Versio:** `v1.29` (18.10.2026)
-> **Git:** HEAD `bb704e8` (tag `v1.29`); koodi `d07c7de`; työpuu clean
+> **Git:** koodi `d07c7de`, tagi `v1.29` = `bb704e8`, `origin/main` = `69c2e39`
 > **Push:** ei pushata julkiseen GitHubiin — vain lokaalit commitit
 > **Repo:** https://github.com/teppoaland/tabtool
 
@@ -30,8 +30,8 @@
   poikkeus.
 - Soittotapa/refinger (asemaprofiilit, helpoin-arvio, turhien nuottien
   karsinta, per-tahti-asema) on suunniteltu mutta **ei toteutettu**;
-  jäissä. Koodi on committoitu (`d07c7de`); tagi `v1.29` on HEADissä
-  `bb704e8`; vain lokaalit commitit, ei pushia.
+  jäissä. Koodi on committoitu (`d07c7de`); tagi `v1.29` = `bb704e8`;
+  vain lokaalit commitit, ei pushia.
 - Spotify ei ole vielä mukana (Phase 3).
 
 ## Seuraava vaihe
