@@ -348,6 +348,7 @@ docs/               GITIGNORED
 - **v1.33** ✅ – MP3-kuunteluversiot artistikansioihin + seek-synkin vakaunnus
 - **v1.34** ✅ – desimaali-TAB BPM (esim. 143,55) GP5:n kokonaislukutemposta huolimatta
 - **v1.35** ✅ – SIIRTO (tahtia): rakenne-eron korjaus tabille tallentuen
+- **v1.44** ✅ – kursorin synkka: `api.endTime`-lähde, selainpuolinen korjaus (Ctrl+F5)
 - **v1.43** ✅ – kursorin synkka: backing track -venytys pois, osoitin äänen tahdissa
 - **v1.42** ✅ – testiyhteenveto näkyviin (`pytest.ini`), sessioalustuksen tulosteet kapeaan konsoliin
 - **v1.41** ✅ – GP3/GP4-tuonti (konversio GP5:ksi), audiopolun rescan-korjaus

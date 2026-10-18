@@ -2,6 +2,15 @@
 
 > AI TabTool käyttää `1.x`-versiosarjaa. Aloitus `v1.00`.
 
+## v1.44 – 18.10.2026
+
+- `scoreEndTimeMs()` käyttää suoraan `api.endTime`ä (sekvensserin
+  `currentEndTime`, sama arvo kuin alphaTabin backing track -kaavassa).
+  Aiempi `api.tickCache.endTime`-haara poistettiin, koska tick lookup
+  -objektilla ei ole `endTime`-kenttää. Toiminta ei muuttunut; korjaus
+  on täysin selainpuolinen, joten se aktivoituu kovalla uudelleenlatauksella
+  (Ctrl+F5) myös ilman palvelimen uudelleenkäynnistystä.
+
 ## v1.43 – 18.10.2026
 
 - **Korjaus: osoitin kulki ääntä edellä (kursorin synkka).** alphaTabin

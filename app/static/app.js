@@ -254,12 +254,9 @@
   // own end here keeps that mapping 1:1, so only the explicit BPM/SYNC/SIIRTO
   // corrections in syncTimeMs() are applied.
   function scoreEndTimeMs() {
+    // api.endTime is alphaTab's sequencer currentEndTime (the score end in
+    // ms) and the exact value it divides by in mainTimePositionFromBackingTrack.
     if (api) {
-      const cache = api.tickCache;
-      if (cache) {
-        const end = Number(cache.endTime);
-        if (Number.isFinite(end) && end > 0) return end;
-      }
       const end = Number(api.endTime);
       if (Number.isFinite(end) && end > 0) return end;
     }
