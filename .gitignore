@@ -1,0 +1,86 @@
+# ── Yksityiset: suunnitelmat, omat tabit, data ──
+docs/
+data/
+tabs/
+private/
+
+# ── Ääni- ja tab-tiedostot (generoidut / henkilökohtaiset) ──
+*.wav
+*.mp3
+*.flac
+*.m4a
+*.aac
+*.ogg
+*.opus
+*.webm
+*.aiff
+*.gp
+*.gp3
+*.gp4
+*.gp5
+*.gpx
+*.musicxml
+*.mxl
+*.mid
+*.midi
+*.alphatex
+
+# Testifixturet saa committaa
+!tests/fixtures/**
+!tests/fixtures/**/*.gp5
+!tests/fixtures/**/*.musicxml
+!tests/fixtures/**/*.mid
+
+# ── Mallit ja välimuistit ──
+models/
+.cache/
+
+# ── Python ──
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+venv/
+env/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+*.egg-info/
+.eggs/
+
+# ── Node (vain työkaluja varten) ──
+node_modules/
+
+# ── Salaisuudet ──
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# ── Tietokanta / tokenit / lokit ──
+*.sqlite3
+*.sqlite
+*.db
+*.log
+logs/
+
+# ── IDE / OS / temp ──
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+desktop.ini
+dist/
+build/
+tmp/
+temp/
+*.tmp
+*.bak
+*.backup
+*.old

@@ -1,0 +1,4 @@
+# Development / tests
+pytest==9.1.1
+# Starlette 1.8+ uses httpx2 for its TestClient.
+httpx2==2.13.1

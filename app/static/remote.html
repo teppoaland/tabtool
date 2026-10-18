@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="fi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="color-scheme" content="dark">
+  <title>TABTOOL · Remote</title>
+  <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/static/style.css?v=1.00">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">TT</span>
+      <span class="brand-name">TABTOOL</span>
+      <span id="version-tag" class="version">v1.00</span>
+    </div>
+    <nav class="nav" aria-label="Päävalikko">
+      <a href="/">DISPLAY</a>
+      <a href="/docs">API</a>
+    </nav>
+  </header>
+
+  <main class="shell">
+    <section class="hero">
+      <p class="kicker">REMOTE · PHASE 0</p>
+      <h1>Kaukosäädin.</h1>
+      <p class="lede">
+        Puhelin toimii TV-näkymän kaukosäätimenä. Haku, toisto ja
+        tabin generointi tulevat tähän näkymään Phase 4:ssä.
+      </p>
+    </section>
+
+    <section class="grid" aria-label="Tila">
+      <article class="card">
+        <h2>Palvelin</h2>
+        <p class="status-pill" id="api-status" aria-live="polite">Checking…</p>
+        <p class="muted" id="api-detail">/api/health</p>
+      </article>
+
+      <article class="card">
+        <h2>Käyttö</h2>
+        <p>
+          Pidä tämä sivu auki puhelimessa ja TV-näkymä tietokoneella.
+          Molemmat käyttävät samaa lokaalia palvelinta.
+        </p>
+      </article>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <span>TabTool v1.00</span>
+    <span><a href="/">Takaisin näkymään</a></span>
+  </footer>
+
+  <script src="/static/remote.js?v=1.00" defer></script>
+</body>
+</html>

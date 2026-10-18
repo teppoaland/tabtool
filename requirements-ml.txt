@@ -1,0 +1,10 @@
+# Audio / ML pipeline (Phase 1+)
+# TensorFlow requires numpy<2; keep this pin until Basic Pitch updates.
+numpy<2
+demucs==4.1.0
+basic-pitch==0.4.0
+librosa==0.11.0
+soundfile==0.14.0
+music21==10.5.0
+PyGuitarPro==0.11
+yt-dlp==2026.8.19
