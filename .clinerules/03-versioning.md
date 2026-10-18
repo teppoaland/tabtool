@@ -2,12 +2,12 @@
 
 ## Versiosarja
 
-- **TabTool = `1.x`**. Aloitus `v1.00`.
+- **AI TabTool = `1.x`**. Aloitus `v1.00`.
 - Älä käytä GameHubin `10.x`- tai AI CHAOS STREETin `11.x`-numeroita.
 
 ## Nykyinen versio
 
-`v1.11` – `app/__init__.py`:n `__version__`, `app/static/index.html`:n
+`v1.22` – `app/__init__.py`:n `__version__`, `app/static/index.html`:n
 `#version-tag` ja kaikki `?v=`-leimat.
 
 ## Milloin +0.01

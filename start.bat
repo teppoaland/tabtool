@@ -7,7 +7,7 @@ if not exist ".venv\Scripts\python.exe" (
   exit /b 1
 )
 
-echo TabTool starting at http://127.0.0.1:8000
+echo AI TabTool starting at http://127.0.0.1:8000
 echo Remote: http://127.0.0.1:8000/remote
 echo Press Ctrl+C to stop.
 echo.

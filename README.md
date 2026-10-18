@@ -1,11 +1,11 @@
-# 🎸 TABTOOL
+# 🎸 AI TabTool
 
-Lokaali web-palvelu kitaratablatuurien hakuun, generointiin ja katseluun.
-Hae kappale Spotifysta tai käytä omaa MP3/YouTube-audioita, anna tekoälyn
-tehdä ensimmäinen tablatuuriluonnos ja katsele sitä alphaTabilla TV:stä
-tai tietokoneelta. Puhelin toimii kaukosäätimenä.
+AI TabTool on lokaali web-palvelu kitaratablatuurien hakuun, generointiin
+ja katseluun. Hae kappale Spotifysta tai käytä omaa MP3/YouTube-audioita,
+anna tekoälyn tehdä ensimmäinen tablatuuriluonnos ja katsele sitä
+alphaTabilla TV:stä tai tietokoneelta. Puhelin toimii kaukosäätimenä.
 
-**Versio:** `v1.21` (Phase 2 – web-UI, alphaTab ja paikallinen toisto)
+**Versio:** `v1.22` (Phase 2 – web-UI, alphaTab ja paikallinen toisto)
 
 ## Session aloitus
 
@@ -17,7 +17,7 @@ jälkeen voit antaa tehtävän suoraan.
 
 ## Mikä tämä on
 
-TabTool yhdistää:
+AI TabTool yhdistää:
 
 - **Spotify** – haku, metadata ja valinnainen toisto
 - **oma MP3 / YouTube** – tab-generoinnin ja taustatoiston audiolähde
@@ -183,7 +183,7 @@ Sama audio + samat asetukset palauttaa cachesta saman tabin; vain
 
 ## Spotify-asetukset (Phase 3)
 
-1. Luo Spotify Developer Dashboardissa app nimeltä `TabTool`.
+1. Luo Spotify Developer Dashboardissa app nimeltä `AI TabTool`.
 2. Lisää redirect URI **täsmälleen** muodossa:
    `http://127.0.0.1:8000/auth/callback`
    (`localhost` ei kelpaa; käytä loopback-IP:tä.)
@@ -201,6 +201,19 @@ SPOTIFY_REDIRECT_URI=http://127.0.0.1:8000/auth/callback
 Scopes: `streaming`, `user-read-email`, `user-read-private`,
 `user-read-playback-state`, `user-modify-playback-state`,
 `user-read-currently-playing`.
+
+---
+
+## Nimi ja tavaramerkit
+
+**AI TabTool** on tämän projektin tuotenimi. Repo/hakemisto `tabtool` on
+vain tekninen nimi, samoin sisäiset tunnisteet: `TABTOOL_*`-ympäristö-
+muuttujat ja `data/tabtool.sqlite3`.
+
+Projekti ei ole sidoksissa tabtool GmbH:hen (tabtool.de) eikä SEYDEL
+TabTooliin. Nimi on tarkoitettu henkilökohtaiseen, paikalliseen käyttöön;
+ennen laajempaa jakelua tai kaupallistamista nimi kannattaa tarkistaa
+tavaramerkkirekistereistä (PRH, EUIPO, WIPO, USPTO).
 
 ---
 
@@ -245,6 +258,7 @@ docs/               GITIGNORED
 - **v1.00** ✅ – repo, säännöt, FastAPI-runko, testit
 - **v1.10** ✅ – putki: Demucs + Basic Pitch + fretboard + GP5/MusicXML/MIDI
 - **v1.20** ✅ – web-UI: upload/YouTube → job → alphaTab + paikallinen toisto
+- **v1.22** ✅ – tuotenimi **AI TabTool** (repo pysyy `tabtool`)
 - **v1.30** – Spotify-haku, OAuth, SDK/Connect-synkka
 - **v1.40** – remote-kaukosäädin
 - **1.x** – basso, laulu, rummut, bending

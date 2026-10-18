@@ -1,6 +1,18 @@
-# 📜 CHANGELOG – TABTOOL
+# 📜 CHANGELOG – AI TABTOOL
 
-> TabTool käyttää `1.x`-versiosarjaa. Aloitus `v1.00`.
+> AI TabTool käyttää `1.x`-versiosarjaa. Aloitus `v1.00`.
+
+## v1.22 – 18.10.2026
+
+Tuotenimi vaihdettu: **AI TabTool**.
+
+- `APP_NAME` = "AI TabTool"; HTML-otsikot, wordmark `AI TABTOOL` ja
+  brand-mark `AT` (aiempi `TT` muistutti TabToolia).
+- `start.bat` ja `scripts/open_browser.ps1` käyttävät uutta nimeä.
+- Sisäiset tunnisteet ennallaan: `TABTOOL_*`-ympäristömuuttujat,
+  `data/tabtool.sqlite3` ja repo `teppoaland/tabtool`.
+- Testit päivitetty uuteen nimeen; ei toiminnallisia muutoksia.
+- README: nimi- ja tavaramerkkihuomautus.
 
 ## v1.21 – 18.10.2026
 

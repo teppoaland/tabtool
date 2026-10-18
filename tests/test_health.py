@@ -15,7 +15,7 @@ def test_health() -> None:
     assert response.status_code == 200
     payload = response.json()
     assert payload["status"] == "ok"
-    assert payload["app"] == "TabTool"
+    assert payload["app"] == "AI TabTool"
     assert payload["version"] == __version__
 
 
@@ -29,7 +29,7 @@ def test_public_config_has_no_secrets() -> None:
     response = client.get("/api/config")
     assert response.status_code == 200
     payload = response.json()
-    assert payload["app"] == "TabTool"
+    assert payload["app"] == "AI TabTool"
     assert payload["version"] == __version__
     assert isinstance(payload["spotify_configured"], bool)
     assert isinstance(payload["max_upload_mb"], int)
@@ -42,14 +42,14 @@ def test_display_shell() -> None:
     response = client.get("/")
     assert response.status_code == 200
     assert response.headers["content-type"].startswith("text/html")
-    assert "TABTOOL" in response.text
+    assert "AI TABTOOL" in response.text
     assert f"v{__version__}" in response.text
 
 
 def test_display_alias() -> None:
     response = client.get("/display")
     assert response.status_code == 200
-    assert "TABTOOL" in response.text
+    assert "AI TABTOOL" in response.text
 
 
 def test_remote_shell() -> None:

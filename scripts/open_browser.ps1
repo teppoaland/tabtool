@@ -1,7 +1,7 @@
 #!/usr/bin/env powershell
 <#
 .SYNOPSIS
-    Wait until the TabTool server answers /api/health, then open the browser.
+    Wait until the AI TabTool server answers /api/health, then open the browser.
 
 .DESCRIPTION
     start.bat launches this in the background so the default browser opens

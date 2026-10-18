@@ -20,7 +20,7 @@ toast-ilmoitusta ilman käyttäjän erillistä pyyntöä.
 Kun UI on päätetty, sen tekstit lukitaan tähän. Toistaiseksi hyväksytyt
 ydintekstit:
 
-- `TABTOOL`
+- `AI TABTOOL`
 - `SEARCH`
 - `GENERATE TAB`
 - `PLAY` / `PAUSE`

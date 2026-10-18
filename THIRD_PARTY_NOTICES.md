@@ -1,8 +1,8 @@
 # Third-Party Notices
 
-TabTool uses the following open-source libraries, models and tools as
+AI TabTool uses the following open-source libraries, models and tools as
 separate dependencies. They remain under their respective licenses.
-TabTool does not claim ownership of them.
+AI TabTool does not claim ownership of them.
 
 ## Runtime
 
@@ -49,7 +49,7 @@ license text is kept next to the font files.
 | Spotify Web API / Web Playback SDK | Search, metadata, optional playback | Spotify Developer Terms |
 | YouTube | Audio source (via yt-dlp) | YouTube Terms of Service |
 
-Spotify and YouTube are not affiliated with TabTool. The user is
+Spotify and YouTube are not affiliated with AI TabTool. The user is
 responsible for complying with their terms and with copyright law.
 
 ## Models

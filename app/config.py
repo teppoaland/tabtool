@@ -1,4 +1,4 @@
-"""Central configuration and path handling for TabTool.
+"""Central configuration and path handling for AI TabTool.
 
 All filesystem paths must come from this module. Nothing else should
 hard-code absolute paths.
@@ -28,7 +28,7 @@ def _path_from_env(name: str, default: Path) -> Path:
     return value.resolve()
 
 
-APP_NAME = "TabTool"
+APP_NAME = "AI TabTool"
 VERSION = __version__
 
 HOST = os.getenv("TABTOOL_HOST", "127.0.0.1").strip() or "127.0.0.1"

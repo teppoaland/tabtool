@@ -1,4 +1,4 @@
-"""SQLite persistence for TabTool.
+"""SQLite persistence for AI TabTool.
 
 Everything lives inside the private ``data/`` directory. Paths are stored
 relative to ``DATA_DIR`` so the folder can be moved without breaking tabs.

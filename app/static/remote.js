@@ -1,4 +1,4 @@
-/* TabTool remote view – Phase 0 shell. */
+/* AI TabTool remote view – Phase 4 placeholder. */
 (() => {
   "use strict";
 

@@ -1,4 +1,4 @@
-/* TabTool TV view – Phase 2: generate, render and play tabs. */
+/* AI TabTool TV view – Phase 2: generate, render and play tabs. */
 (() => {
   "use strict";
 

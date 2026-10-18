@@ -1,4 +1,4 @@
-"""TabTool FastAPI application.
+"""AI TabTool FastAPI application.
 
 Phase 2 exposes the job API, tab exports and the local audio stream. The
 pipeline runs in a background worker (``app.jobs``), routes never call it
@@ -37,7 +37,7 @@ ensure_data_dirs()
 app = FastAPI(
     title=APP_NAME,
     version=VERSION,
-    description="Local guitar tab generator and viewer.",
+    description="Local AI guitar tab generator and viewer.",
 )
 
 app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")

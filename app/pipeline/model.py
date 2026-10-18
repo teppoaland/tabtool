@@ -1,4 +1,4 @@
-"""Shared data model for the TabTool pipeline."""
+"""Shared data model for the AI TabTool pipeline."""
 
 from __future__ import annotations
 
