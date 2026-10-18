@@ -1,5 +1,13 @@
 # 📊 Projektin edistyminen – AI TABTOOL
 
+## v1.47 – Animoitu beat-kursori pois käytöstä (18.10.2026)
+
+- `enableAnimatedBeatCursor = false`: alphaTabin animoitu kursori
+  ekstrapoloi CSS-siirtymällä seuraavan iskun yli, joten toiston aikana
+  näkymä eteni ääntä edellä ja pysäytyksessä palasi tarkkaan paikkaan
+  (oikea arvo koko ajan). Nyt kursori hyppää suoraan `tickPosition`iin.
+- Ei backend-muutoksia; 93 pytest-testiä.
+
 ## v1.46 – Kohdistusavustin (18.10.2026)
 
 - Kuljetuspalkkiin live-offset-näyttö (`#sync-offset-readout`): ero

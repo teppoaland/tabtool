@@ -1,6 +1,6 @@
 # 🎯 Projektin lyhyt kuvaus – AI TABTOOL
 
-> **Versio:** `v1.46` (18.10.2026)
+> **Versio:** `v1.47` (18.10.2026)
 > **Repo:** https://github.com/teppoaland/tabtool
 > **Paikallinen:** `D:\AI\tabtool`
 
@@ -49,7 +49,7 @@ Lokaali web-palvelu, jossa voi:
 - **SEARCH-modaali** (v1.38): haku, GP5-linkki/-tiedosto, MP3-valinta,
   kirjasto ja kappaleen valinta samassa ikkunassa; TV-näkymä on soittoa
   varten. Poistolla on oma varoitusdialogi.
-- **Versiosarja `1.x`**, aloitus `v1.00`; nyt `v1.46`.
+- **Versiosarja `1.x`**, aloitus `v1.00`; nyt `v1.47`.
 - **Ei julkista julkaisua:** koodi pidetään lokaalina. Commitit tehdään
   paikalliseen repoon palautuspisteiksi (revert); push GitHubiin vain
   erillisestä pyynnöstä.

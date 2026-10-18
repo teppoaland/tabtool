@@ -1,6 +1,6 @@
 # 📍 Aktiivinen konteksti – AI TABTOOL
 
-> **Versio:** `v1.46` (18.10.2026)
+> **Versio:** `v1.47` (18.10.2026)
 > **Git:** uusin koodicommit v1.41 (GP3/GP4-tuonti); docs-commitit sen
 > päällä, ei pushattu. `origin/main` = `69c2e39`; paikallinen `main` on
 > edellä (`git status -sb` näyttää määrän). Docs-commit siirtää HEADia,
@@ -10,6 +10,10 @@
 
 ## Nyt
 
+- **v1.47**: `enableAnimatedBeatCursor = false`. alphaTabin animoitu
+  beat-kursori ekstrapoloi CSS-siirtymällä seuraavan iskun yli, joten
+  toiston aikana näkymä "juoksi" edellä ja pysäytyksessä palasi oikeaan
+  paikkaan. Nyt kursori hyppää suoraan oikeaan `tickPosition`iin.
 - **v1.46**: kohdistusavustin. Kuljetuspalkissa live-offset-näyttö
   (`Osoitin +0,50 tahtia edellä` / `Kohdallaan`); **KOHDISTA**-nappi
   pysäytettynä: klikkaa nuottia → laskee eron ja tallentaa SIIRTO-arvon.
