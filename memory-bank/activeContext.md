@@ -1,6 +1,6 @@
 # 📍 Aktiivinen konteksti – AI TABTOOL
 
-> **Versio:** `v1.31` (18.10.2026)
+> **Versio:** `v1.32` (18.10.2026)
 > **Git:** koodi `d07c7de`, tagi `v1.29` = `bb704e8`, `origin/main` = `69c2e39`
 > **Push:** ei pushata julkiseen GitHubiin — vain lokaalit commitit
 > **Repo:** https://github.com/teppoaland/tabtool
@@ -34,6 +34,15 @@
 - **"Not found" -muistutus:** uvicorn ei käytä `--reload`ia. Jos UI on
   uudempi kuin käynnissä oleva prosessi, `/tempo` ja `/sync` palauttavat
   404 → käynnistä palvelin uudelleen (`start.bat`).
+- **Ulkoinen arkisto** (v1.32): YouTube-audio ja tuodut GP5/MusicXML
+  mirroroidaan hakemistoon `D:\tabtool_files\audio` ja `\tabs`
+  (`TABTOOL_EXTERNAL_DIR`), nimi `Artist - Title.ext`. Samalla levyllä
+  hard link (ei tuplalevytilaa), muuten kopio. `data/` on edelleen
+  totuuden lähde; pätkäklipit jätetään arkistoimatta.
+- **Kirjasto tyhjänä?** Tarkista `TABTOOL_DATA_DIR`. Jos ympäristömuuttuja
+  osoittaa testihakemistoon (esim. aiemman `Start-Process`in perintö),
+  UI näyttää tyhjän kirjaston vaikka `D:\AI\tabtool\data` olisi ehjä.
+  Käynnistä palvelin eksplisiittisellä `TABTOOL_DATA_DIR`illa.
 - Referenssitabi palautettu **140 BPM**; audio liitetty; AI-tabi 144.
   BPM/Nopeus-kontrollit jäävät, mutta eivät pakota 144:ään.
 - Täydet kappaleet ovat oletus; pätkägenerointi (`TEE TAB TÄSTÄ`) on
@@ -80,6 +89,10 @@ Putki:
 - v1.31 headless: TALLENNA-nappi, punainen dirty-tila
   (`rgb(255,123,123)`), BPM 146 → GP5-tempo 146 ja tila tyhjeni;
   SYNC `+2.50 %` → `0.025`, ei virheitä.
+- v1.32: 69 pytest-testiä; backfill arkistoi 5 tiedostoa
+  (`D:\tabtool_files`), `fsutil hardlink list` vahvisti hard linkin
+  (`yt-62c1293b02.wav` ↔ `Metallica - Seek & Destroy.wav`).
+- Live-palvelin 8000: **v1.32**, 8 tabia `D:\AI\tabtool\data`:sta.
 - Referenssitabi **140 BPM**, audio 414,72 s, PLAY + aikajana + cursor;
   5 raitaa, oletus Guitar 1 + Guitar 2.
 - AI-tabi 144 BPM / 249 tahtia; referenssi 140 BPM / 258 tahtia.

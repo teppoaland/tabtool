@@ -95,6 +95,11 @@ Invariantit:
 4. Path traversal -suojaus; `data/` ei koskaan static-mounttiin.
 5. Jobin metadataan malli, versio, parametrit ja varoitukset.
 
+`external_store.archive_external` mirroroi YouTube-audion ja tuodut
+GP5/MusicXML-tabit `EXTERNAL_DIR`iin (oletus `D:\tabtool_files`,
+`Artist - Title.ext`). Samalla levyllä käytetään hard linkiä; virhe ei
+kaada jobia.
+
 ## UI
 
 - `/` ja `/display` = TV-näkymä, `/remote` = puhelin (Phase 4).

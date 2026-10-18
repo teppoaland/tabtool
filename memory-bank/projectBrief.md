@@ -39,6 +39,11 @@ Lokaali web-palvelu, jossa voi:
 - **Ei julkista julkaisua:** koodi pidetään lokaalina. Commitit tehdään
   paikalliseen repoon palautuspisteiksi (revert); push GitHubiin vain
   erillisestä pyynnöstä.
+- **Ulkoinen sisältö arkistoidaan** `D:\tabtool_files\`
+  (`TABTOOL_EXTERNAL_DIR`): YouTube-audiot ja tuodut GP5/MusicXML
+  luettavalla nimellä. `data/` on totuuden lähde; hard link samalla
+  levyllä, joten tiedostot löytyvät myös muuhun käyttöön ilman
+  tuplalevytilaa.
 - **Tuotenimi `AI TabTool`** (v1.22–v1.29). Repo/hakemisto `tabtool`,
   `TABTOOL_*`-ympäristömuuttujat ja `data/tabtool.sqlite3` ovat teknisiä
   nimiä. Ei sidoksissa tabtool GmbH:hen eikä SEYDEL TabTooliin.

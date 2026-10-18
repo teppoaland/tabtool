@@ -1,5 +1,19 @@
 # 📊 Projektin edistyminen – AI TABTOOL
 
+## v1.32 – Ulkoinen arkisto D:\tabtool_files (18.10.2026)
+
+- `app/external_store.py`: `archive_external()` mirroroi tiedoston
+  luettavalla nimellä `Artist - Title.ext`; hard link samalla levyllä,
+  muuten kopio; virhe ei kaada jobia.
+- Kytkennät: YouTube-audio `jobs.run_pipeline`:ssa (ei pätkäklipille) ja
+  tuodut GP5/MusicXML `tab_import.import_tab_bytes`:ssa.
+- `TABTOOL_EXTERNAL_DIR` (oletus `D:\tabtool_files`), `.env.example`.
+- `scripts/backfill_external.py` arkistoi olemassa olevan kirjaston.
+- 69 pytest-testiä (`tests/test_external_store.py` + tuontitesti).
+- Kirjasto näytti tyhjältä, koska palvelin peri testin
+  `TABTOOL_DATA_DIR`in; data oli ehjä (8 tabia). Palvelin käynnistettiin
+  uudelleen oikealla juurella; live v1.32.
+
 ## v1.31 – TALLENNA ja punainen muistutus (18.10.2026)
 
 - `ASETA` → **TALLENNA**; TAB BPM tallentuu vain napista (pelkkä

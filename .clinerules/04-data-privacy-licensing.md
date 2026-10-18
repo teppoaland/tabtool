@@ -6,6 +6,8 @@ Nämä eivät koskaan mene julkiseen gitiin:
 
 - `docs/` – henkilökohtaiset suunnitelmat ja muistiinpanot
 - `data/` – audio, stemmit, tabit, SQLite, Spotify-tokenit, lokit
+- `D:\tabtool_files\` – ulkoisen sisällön arkisto (YouTube-audio,
+  tuodut GP5/MusicXML); `TABTOOL_EXTERNAL_DIR`
 - `.env` ja kaikki `.env.*` (paitsi `.env.example`)
 - `*.wav`, `*.mp3`, `*.flac`, `*.gp5`, `*.musicxml`, `*.mid` jne.
 
