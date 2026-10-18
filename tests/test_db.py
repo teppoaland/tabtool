@@ -159,3 +159,33 @@ def test_import_tabs_from_disk(client, data_dir: Path) -> None:
 
     # Import must be idempotent.
     assert len(client.get("/api/tabs").json()) == 1
+
+
+def test_import_tabs_from_disk_resolves_relative_audio(
+    client, data_dir: Path
+) -> None:
+    """Jobs store ``audio_path`` relative to DATA_DIR; keep it on rescan."""
+    directory = data_dir / "tabs" / "relative-audio"
+    directory.mkdir(parents=True)
+    (directory / "tab.gp5").write_bytes(b"GP5")
+    audio = data_dir / "audio" / "relative.wav"
+    audio.parent.mkdir(parents=True, exist_ok=True)
+    audio.write_bytes(b"RIFF")
+    meta = {
+        "title": "Relative Song",
+        "artist": "Someone",
+        "source_type": "import",
+        "audio_path": "audio/relative.wav",
+        "bpm": 120.0,
+        "measures": 1,
+        "tab_notes": 1,
+        "files": {"gp5": "tab.gp5"},
+    }
+    (directory / "meta.json").write_text(json.dumps(meta), encoding="utf-8")
+
+    library = client.get("/api/tabs").json()
+    assert [entry["id"] for entry in library] == ["relative-audio"]
+
+    tab = client.get("/api/tabs/relative-audio").json()
+    assert tab["audio_path"] == "audio/relative.wav"
+    assert client.get("/api/tabs/relative-audio/audio").status_code == 200

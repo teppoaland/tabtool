@@ -1,4 +1,4 @@
-"""Import a ready-made Guitar Pro 5 or MusicXML tab into the library."""
+"""Import a ready-made Guitar Pro (GP3/GP4/GP5) or MusicXML tab."""
 
 from __future__ import annotations
 
@@ -12,7 +12,7 @@ from app import config, db
 from app.external_store import archive_external
 
 MAX_IMPORT_BYTES = 20 * 1024 * 1024
-GP_SUFFIXES = {".gp5"}
+GP_SUFFIXES = {".gp3", ".gp4", ".gp5"}
 MUSICXML_SUFFIXES = {".musicxml", ".xml"}
 
 
@@ -41,13 +41,42 @@ def _time_signature_from_gp(header: Any) -> list[int]:
     return [numerator, denominator]
 
 
-def _parse_gp5(path: Path, filename: str) -> dict[str, Any]:
+def _normalize_gp5(song: Any, path: Path) -> None:
+    """Rewrite a GP3/GP4 song as a real GP5 file in place.
+
+    alphaTab and the GP5 export expect version 5 data; PyGuitarPro reads all
+    three versions, so a GP4 upload is converted instead of rejected.
+    """
+    version = getattr(song, "versionTuple", (5, 1, 0)) or (5, 1, 0)
+    try:
+        major = int(tuple(version)[0])
+    except (TypeError, ValueError, IndexError):
+        major = 5
+    if major >= 5:
+        return
+
+    import guitarpro
+
+    temporary = path.with_name(path.name + ".tmp")
+    try:
+        guitarpro.write(song, str(temporary), version=(5, 1, 0))
+        os.replace(temporary, path)
+    except Exception as exc:  # noqa: BLE001 - reported to the caller
+        temporary.unlink(missing_ok=True)
+        raise TabParseError(
+            f"GP{max(major, 3)}-tiedoston muunto GP5:ksi epäonnistui: {exc}"
+        ) from exc
+
+
+def _parse_gp(path: Path, filename: str) -> dict[str, Any]:
     import guitarpro
 
     try:
         song = guitarpro.parse(str(path))
     except Exception as exc:  # noqa: BLE001 - reported to the caller
-        raise TabParseError(f"GP5-tiedostoa ei voitu lukea: {exc}") from exc
+        raise TabParseError(f"GP-tiedostoa ei voitu lukea: {exc}") from exc
+
+    _normalize_gp5(song, path)
 
     title = _clean(getattr(song, "title", ""), Path(filename).stem)
     artist = _clean(getattr(song, "artist", ""), "")
@@ -181,7 +210,8 @@ def import_tab_bytes(data: bytes, filename: str) -> dict[str, Any]:
         stored_name = "tab.musicxml"
     else:
         raise UnsupportedTab(
-            "Tuo GP5- tai MusicXML-tiedosto (.gp5, .musicxml, .xml)."
+            "Tuo GP3/GP4/GP5- tai MusicXML-tiedosto "
+            "(.gp3, .gp4, .gp5, .musicxml, .xml)."
         )
     if not data:
         raise TabParseError("Tiedosto on tyhjä.")
@@ -200,7 +230,7 @@ def import_tab_bytes(data: bytes, filename: str) -> dict[str, Any]:
         stored_path = pending / stored_name
         stored_path.write_bytes(data)
         if kind == "gp5":
-            parsed = _parse_gp5(stored_path, filename)
+            parsed = _parse_gp(stored_path, filename)
         else:
             parsed = _parse_musicxml(stored_path, filename)
 

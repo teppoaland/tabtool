@@ -2,6 +2,24 @@
 
 > AI TabTool käyttää `1.x`-versiosarjaa. Aloitus `v1.00`.
 
+## v1.41 – 18.10.2026
+
+- **GP3/GP4-tuki tuonnille:** `POST /api/tabs/import` ja
+  `POST /api/tabs/import-url` hyväksyvät nyt `.gp3`, `.gp4` ja `.gp5`.
+  PyGuitarPro lukee tiedoston ja vanha versio kirjoitetaan aidoksi
+  GP5:ksi (`tab.gp5`), jotta alphaTab ja GP5-export toimivat
+  yhdenmukaisesti. Konversio ei muuta nuotteja (testattu GP4 → GP5:
+  samat tahdit, notet ja tempo).
+- **Korjaus: levyltä uudelleenrekisteröity tabi menetti audionsa.**
+  `db.import_tabs_from_disk` resolvoi `meta.audio_path`-arvon
+  työhakemistosta, vaikka jobit tallentavat sen suhteessa `data/`-juureen.
+  Nyt relatiivinen polku resolvoidaan `DATA_DIR`-juuresta, joten
+  `audio/…wav` säilyy tabilla myös kannan uudelleenluennassa.
+- SEARCH-modaalin tiedostovalitsin hyväksyy `.gp3/.gp4/.gp5` ja
+  virhetekstit puhuvat GP-tiedostosta; GP5-säilyy tallennusformaattina.
+- 93 pytest-testiä (uudet: GP4-tuonti konvertoituu GP5:ksi,
+  relatiivinen audio_path säilyy rescanissa).
+
 ## v1.40 – 18.10.2026
 
 - **Yksi toiminto kaikille GP5-lähteille:** SEARCH-modaalissa on nyt

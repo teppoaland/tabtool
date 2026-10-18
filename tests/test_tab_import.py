@@ -25,6 +25,47 @@ def _gp5_bytes(tmp_path: Path) -> bytes:
     return path.read_bytes()
 
 
+def _gp4_bytes(tmp_path: Path) -> bytes:
+    """A GP4 copy of the same song (legacy tabs are often only GP4)."""
+    import guitarpro
+
+    source = tmp_path / "source.gp5"
+    source.write_bytes(_gp5_bytes(tmp_path))
+    song = guitarpro.parse(str(source))
+    path = tmp_path / "import.gp4"
+    guitarpro.write(song, str(path), version=(4, 0, 6))
+    return path.read_bytes()
+
+
+def test_import_gp4_is_converted_to_gp5(
+    client: TestClient, tmp_path: Path
+) -> None:
+    data = _gp4_bytes(tmp_path)
+    assert b"FICHIER GUITAR PRO v4" in data[:32]
+
+    response = client.post(
+        "/api/tabs/import",
+        files={"file": ("legacy.gp4", data, "application/octet-stream")},
+    )
+    assert response.status_code == 200, response.text
+    summary = response.json()
+    assert summary["title"] == "Imported Song"
+    assert summary["artist"] == "Imported Band"
+    assert summary["measure_count"] == 1
+    assert summary["note_count"] == 1
+
+    tab = client.get(f"/api/tabs/{summary['id']}").json()
+    assert tab["meta"]["files"]["gp5"] == "tab.gp5"
+
+    score = client.get(f"/api/tabs/{summary['id']}/score/gp5")
+    assert score.status_code == 200
+    assert b"FICHIER GUITAR PRO v5" in score.content[:32]
+
+    archived = config.EXTERNAL_DIR / "tabs" / "Imported Band - Imported Song.gp5"
+    assert archived.is_file()
+    assert b"FICHIER GUITAR PRO v5" in archived.read_bytes()[:32]
+
+
 def test_import_gp5(client: TestClient, tmp_path: Path) -> None:
     data = _gp5_bytes(tmp_path)
     response = client.post(

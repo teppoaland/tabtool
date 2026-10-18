@@ -6,14 +6,14 @@
   <meta name="color-scheme" content="dark">
   <title>AI TabTool</title>
   <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="/static/style.css?v=1.40">
+  <link rel="stylesheet" href="/static/style.css?v=1.41">
 </head>
 <body>
   <header class="topbar">
     <div class="brand">
       <span class="brand-mark" aria-hidden="true">AT</span>
       <span class="brand-name">AI TABTOOL</span>
-      <span id="version-tag" class="version">v1.40</span>
+      <span id="version-tag" class="version">v1.41</span>
     </div>
     <nav class="nav" aria-label="Päävalikko">
       <button id="open-search-top" type="button" class="ghost small nav-search"
@@ -169,20 +169,20 @@
                 <input id="gp5-url-input" type="url" inputmode="url"
                        placeholder="https://gprotab.net/…"
                        autocomplete="off"
-                       title="Liitä GP5- tai MusicXML-latauslinkki. Palvelin hakee tiedoston. Ilman linkkiä tab generoidaan AI:lla.">
+                       title="Liitä GP-linkki (GP3/GP4/GP5) tai MusicXML-latauslinkki. Palvelin hakee tiedoston. Ilman linkkiä tab generoidaan AI:lla.">
               </label>
               <label class="field">
-                <span>tai GP5-tiedosto</span>
+                <span>tai GP-tiedosto</span>
                 <input id="gp5-file-input" type="file"
-                       accept=".gp5,.musicxml,.xml"
-                       title="Valitse GP5- tai MusicXML-tiedosto koneelta. YouTube-linkin kanssa tabi tuodaan ja audio liitetään samalla kertaa.">
+                       accept=".gp3,.gp4,.gp5,.musicxml,.xml"
+                       title="Valitse GP3/GP4/GP5- tai MusicXML-tiedosto koneelta. YouTube-linkin kanssa tabi tuodaan ja audio liitetään samalla kertaa.">
               </label>
             </div>
 
             <p class="muted modal-hint">
-              GP5-linkki tai -tiedosto ohittaa AI-generoinnin: tabi tuodaan
-              ja YouTube-audio liitetään siihen. Ilman GP5-lähdettä tabi
-              generoidaan AI:lla.
+              GP-linkki tai -tiedosto ohittaa AI-generoinnin: tabi tuodaan
+              ja YouTube-audio liitetään siihen. GP4 muunnetaan GP5:ksi.
+              Ilman GP-lähdettä tabi generoidaan AI:lla.
             </p>
 
             <div class="field-row compact">
@@ -266,12 +266,12 @@
 
 
   <footer class="footer">
-    <span>AI TabTool v1.40</span>
+    <span>AI TabTool v1.41</span>
     <span>Local-first · <a href="/remote">Remote</a></span>
   </footer>
 
-  <script src="/static/vendor/alphaTab/alphaTab.min.js?v=1.40"></script>
-  <script src="/static/app.js?v=1.40" defer></script>
+  <script src="/static/vendor/alphaTab/alphaTab.min.js?v=1.41"></script>
+  <script src="/static/app.js?v=1.41" defer></script>
 </body>
 </html>
 

@@ -1232,14 +1232,14 @@
     if (!file && !url && !gp5Url && !gp5File) {
       setStatus(
         "failed",
-        "Valitse audio, liitä YouTube-linkki tai valitse GP5-linkki/-tiedosto."
+        "Valitse audio, liitä YouTube-linkki tai valitse GP-linkki/-tiedosto."
       );
       return;
     }
     if (gp5Url && gp5File) {
       setStatus(
         "failed",
-        "Valitse GP5-linkki tai GP5-tiedosto, ei molempia."
+        "Valitse GP-linkki tai GP-tiedosto, ei molempia."
       );
       return;
     }

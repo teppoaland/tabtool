@@ -514,9 +514,16 @@ def import_tabs_from_disk() -> int:
         title = str(meta.get("title") or directory.name)
         artist = str(meta.get("artist") or "")
         audio_path = ""
-        if meta.get("audio_path"):
+        stored_audio = str(meta.get("audio_path") or "").strip()
+        if stored_audio:
+            # Jobs store the path relative to DATA_DIR (e.g. ``audio/x.wav``),
+            # so it must be resolved against the data root instead of the
+            # current working directory.
+            candidate = Path(stored_audio).expanduser()
+            if not candidate.is_absolute():
+                candidate = Path(config.DATA_DIR) / candidate
             try:
-                audio_path = to_data_relative(str(meta["audio_path"]))
+                audio_path = to_data_relative(candidate)
             except ValueError:
                 audio_path = ""
         track_id = create_track(

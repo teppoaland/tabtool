@@ -163,8 +163,9 @@ Jos YouTube estää latauksen, käytetään paikallista MP3:aa.
    `data/tabs/<nimi>/`-tabit (joissa on `meta.json`) rekisteröityvät
    automaattisesti. Suora linkki: `/?tab=<tab_id>`.
 
-Valmis referenssitabi: valitse **Tuo valmis tabi (GP5 / MusicXML)** ja
-paina **IMPORT TAB**. Tabi avautuu suoraan katselimeen. Jos samannimisestä
+Valmis referenssitabi: valitse **SEARCH**-modaalista **GP5-linkki** tai
+**GP-tiedosto** (GP3/GP4/GP5/MusicXML; GP3/GP4 muunnetaan GP5:ksi).
+Tabi avautuu suoraan katselimeen. Jos samannimisestä
 kappaleesta on AI-tabi, paina **LIITÄ AUDIO**: tabi saa audion, PLAYn,
 aikajanan ja cursorin. **TAB BPM** -kenttään asetetaan kappaleen
 todellinen tempo ja painetaan **TALLENNA** – pelkkä kirjoitus ei tallennu.
@@ -210,7 +211,7 @@ Sama audio + samat asetukset palauttaa cachesta saman tabin; vain
 | `POST /api/jobs` | multipart: `file` tai `youtube_url` (+ `options` JSON) |
 | `GET /api/jobs`, `GET /api/jobs/{id}` | job-lista ja tila |
 | `GET /api/jobs/{id}/events` | SSE-progress |
-| `POST /api/tabs/import` | GP5/MusicXML-tabin tuonti |
+| `POST /api/tabs/import` | GP3/GP4/GP5/MusicXML-tabin tuonti (GP3/GP4 → GP5) |
 | `POST /api/tabs/{id}/section` | pätkäjobin luonti tabin audiosta |
 | `POST /api/tabs/{id}/attach-audio` | samannimisen tabin audion liitys |
 | `POST /api/tabs/{id}/tempo` | GP5-tabin BPM:n korjaus |
@@ -347,6 +348,7 @@ docs/               GITIGNORED
 - **v1.33** ✅ – MP3-kuunteluversiot artistikansioihin + seek-synkin vakaunnus
 - **v1.34** ✅ – desimaali-TAB BPM (esim. 143,55) GP5:n kokonaislukutemposta huolimatta
 - **v1.35** ✅ – SIIRTO (tahtia): rakenne-eron korjaus tabille tallentuen
+- **v1.41** ✅ – GP3/GP4-tuonti (konversio GP5:ksi), audiopolun rescan-korjaus
 - **v1.36** – Spotify-haku, OAuth, SDK/Connect-synkka
 - **v1.40** – remote-kaukosäädin
 - **1.x** – basso, laulu, rummut, bending
