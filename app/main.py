@@ -481,7 +481,10 @@ def tab_tempo(tab_id: str, bpm: float = Form(...)) -> dict[str, object]:
         import guitarpro
 
         song = guitarpro.parse(str(path))
-        song.tempo = int(round(float(bpm)))
+        # GP5 stores an integer tempo; the fractional part is kept in the
+        # metadata and applied as a playback correction by the viewer.
+        notated_tempo = int(float(bpm) + 0.5)
+        song.tempo = notated_tempo
         temporary = path.with_name(path.name + ".tmp")
         guitarpro.write(song, str(temporary))
         temporary.replace(path)
@@ -491,6 +494,7 @@ def tab_tempo(tab_id: str, bpm: float = Form(...)) -> dict[str, object]:
         ) from exc
 
     meta["bpm"] = float(bpm)
+    meta["gp5_tempo"] = notated_tempo
     meta["tempo_override"] = float(bpm)
     updated = db.update_tab_tempo(tab_id, float(bpm), meta)
     if updated is None:

@@ -71,6 +71,29 @@ def test_set_tab_tempo_rewrites_gp5_and_db(
     assert song.tempo == 144
 
 
+def test_set_tab_tempo_accepts_fraction(
+    client: TestClient,
+    data_dir: Path,
+) -> None:
+    tab_dir = data_dir / "tabs" / "tempo-fraction"
+    _make_tab(data_dir, "tempo-fraction")
+    response = client.post(
+        "/api/tabs/tempo-fraction/tempo",
+        data={"bpm": "143.5"},
+    )
+    assert response.status_code == 200, response.text
+    assert response.json()["bpm"] == 143.5
+
+    tab = client.get("/api/tabs/tempo-fraction").json()
+    assert tab["meta"]["bpm"] == 143.5
+    assert tab["meta"]["gp5_tempo"] == 144
+
+    import guitarpro
+
+    song = guitarpro.parse(str(tab_dir / "tab.gp5"))
+    assert song.tempo == 144
+
+
 def test_set_tab_tempo_rejects_invalid_bpm(
     client: TestClient,
     data_dir: Path,

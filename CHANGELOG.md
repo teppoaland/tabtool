@@ -2,6 +2,23 @@
 
 > AI TabTool käyttää `1.x`-versiosarjaa. Aloitus `v1.00`.
 
+## v1.34 – 18.10.2026
+
+- **Desimaali-TAB BPM:** kenttä hyväksyy 0,1 askelen (esim. `143,55`).
+  GP5 tallentaa edelleen kokonaisluvun (`int(bpm+0,5)`), mutta
+  desimaaliosa toteutetaan toiston korjauksena
+  (`bpmDrift = bpm / nuottitempo - 1`), joka summataan SYNC-arvoon.
+  Näin 143 → tab jää jälkeen / 144 → edistää -ongelma poistuu ilman
+  GP5:n muokkaamista käsin.
+- `meta.gp5_tempo` tallentaa kirjoitetun kokonaisluvun; frontend lukee
+  ensisijaisesti alphaTabin `score.tempo`n.
+- BPM näytetään kirjastossa ja otsikossa yhdellä desimaalilla, kun arvo
+  ei ole kokonaisluku.
+- Mitattu Seek & Destroy -audion tempo: **143,555 BPM**
+  (librosa, mediaanibeat 0,41796 s; 420 beatia). Suositus: `143,55`.
+- Headless-Chrome: 119,5 BPM → GP5 120, 58 s kohdalla tahti 29
+  (ilman korjausta 30); 73 pytest-testiä.
+
 ## v1.33 – 18.10.2026
 
 - **MP3-kuunteluversiot:** YouTube-latauksista tehdään WAV:n rinnalle

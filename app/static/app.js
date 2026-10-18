@@ -118,8 +118,28 @@
     if (!bpmInput || !activeTab) return false;
     const typed = Number(bpmInput.value);
     if (!Number.isFinite(typed) || typed <= 0) return false;
-    const saved = Math.round(Number(activeTab.bpm) || 0);
-    return Math.abs(typed - saved) > 0.01;
+    const saved = Number(activeTab.bpm) || 0;
+    return Math.abs(typed - saved) > 0.05;
+  }
+
+  // Fractional TAB BPM is applied as a playback correction: the GP5
+  // stores an integer tempo, the decimal part is the real song tempo.
+  function notatedTempo() {
+    if (api && api.score && Number(api.score.tempo) > 0) {
+      return Number(api.score.tempo);
+    }
+    const meta = (activeTab && activeTab.meta) || {};
+    const saved = Number(meta.gp5_tempo);
+    if (saved > 0) return saved;
+    return Math.round(Number(activeTab && activeTab.bpm) || 0);
+  }
+
+  function bpmDrift() {
+    if (!activeTab) return 0;
+    const target = Number(activeTab.bpm) || 0;
+    const notated = notatedTempo();
+    if (target <= 0 || notated <= 0) return 0;
+    return target / notated - 1;
   }
 
   // Red hint on the TAB BPM field until the typed value is saved.
@@ -168,7 +188,7 @@
   function syncTimeMs() {
     const current = Number(audio.currentTime) || 0;
     const duration = Number.isFinite(audio.duration) ? audio.duration : 0;
-    const position = Math.max(0, current * 1000 * (1 + syncDrift));
+    const position = Math.max(0, current * 1000 * (1 + syncDrift + bpmDrift()));
     return duration > 0 ? Math.min(position, duration * 1000) : position;
   }
 
@@ -352,6 +372,12 @@
     }
   }
 
+  function formatBpm(value) {
+    const bpm = Number(value);
+    if (!Number.isFinite(bpm) || bpm <= 0) return "";
+    return Number.isInteger(bpm) ? String(bpm) : bpm.toFixed(1);
+  }
+
   function libraryTooltip(tab) {
     const heading = tab.artist
       ? `${tab.artist} — ${tab.title}`
@@ -360,7 +386,7 @@
       heading,
       `${Number(tab.measure_count) || 0} tahtia · ` +
         `${Number(tab.note_count) || 0} nuottia · ` +
-        `${Math.round(Number(tab.bpm) || 0)} BPM`,
+        `${formatBpm(tab.bpm)} BPM`,
     ];
     const created = formatTimestamp(tab.created_at);
     if (created) parts.push(`Lisätty ${created}`);
@@ -771,7 +797,7 @@
     if (metaEl) {
       const meta = tab.meta || {};
       const parts = [
-        `${Math.round(Number(tab.bpm) || 0)} BPM`,
+        `${formatBpm(tab.bpm)} BPM`,
         `${tab.measure_count} bars`,
         `${tab.note_count} notes`,
       ];
@@ -810,9 +836,13 @@
       if (sectionStatus) sectionStatus.textContent = "";
       if (attachStatus) attachStatus.textContent = "";
       if (bpmInput) {
-        bpmInput.value = Number(tab.bpm)
-          ? String(Math.round(Number(tab.bpm)))
-          : "";
+        const savedBpm = Number(tab.bpm);
+        bpmInput.value =
+          Number.isFinite(savedBpm) && savedBpm > 0
+            ? Number.isInteger(savedBpm)
+              ? String(savedBpm)
+              : savedBpm.toFixed(1)
+            : "";
       }
       if (bpmStatus) bpmStatus.textContent = "";
       updateBpmDirtyState();
