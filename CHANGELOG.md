@@ -2,6 +2,17 @@
 
 > AI TabTool käyttää `1.x`-versiosarjaa. Aloitus `v1.00`.
 
+## v1.45 – 18.10.2026
+
+- **Korjaus: partituurin kesto lasketaan master bar -tikeistä.** Aiempi
+  korjaus käytti `api.endTime`ä, joka on alphaTabin *live* `currentPosition`
+  ja on 0 ennen ensimmäistä toistotikkia — siksi `backingTrackDuration`
+  putosi takaisin ääniraidan kestoon ja alphaTabin venytys jäi voimaan.
+  Nyt kesto = `(viimeisen tahdin start + kesto) × 60000 / (tempo × 960)`,
+  joka on oikea heti ensimmäisestä kursoritikistä. Seek & Destroy
+  (258 tahtia, tempo 144) → 430 000 ms.
+- Ei backend-muutoksia; 93 pytest-testiä.
+
 ## v1.44 – 18.10.2026
 
 - `scoreEndTimeMs()` käyttää suoraan `api.endTime`ä (sekvensserin

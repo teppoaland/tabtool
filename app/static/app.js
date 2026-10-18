@@ -254,11 +254,23 @@
   // own end here keeps that mapping 1:1, so only the explicit BPM/SYNC/SIIRTO
   // corrections in syncTimeMs() are applied.
   function scoreEndTimeMs() {
-    // api.endTime is alphaTab's sequencer currentEndTime (the score end in
-    // ms) and the exact value it divides by in mainTimePositionFromBackingTrack.
-    if (api) {
-      const end = Number(api.endTime);
-      if (Number.isFinite(end) && end > 0) return end;
+    // The score end in ms. alphaTab's api.endTime reflects the live
+    // currentPosition and is 0 until playback starts, so compute it from the
+    // master bars instead: totalTicks * 60000 / (tempo * 960 PPQ). This must
+    // be correct on the very first cursor tick, otherwise alphaTab stretches
+    // the backing-track time onto the score and the cursor runs ahead.
+    if (api && api.score && Array.isArray(api.score.masterBars)) {
+      const bars = api.score.masterBars;
+      if (bars.length) {
+        const last = bars[bars.length - 1];
+        const endTick =
+          (Number(last.start) || 0) +
+          (typeof last.calculateDuration === "function"
+            ? Number(last.calculateDuration()) || 0
+            : 0);
+        const tempo = notatedTempo() || 120;
+        if (endTick > 0) return (endTick * 60000) / (tempo * 960);
+      }
     }
     return 0;
   }
