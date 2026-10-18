@@ -2,6 +2,19 @@
 
 > AI TabTool käyttää `1.x`-versiosarjaa. Aloitus `v1.00`.
 
+## v1.42 – 18.10.2026
+
+- **Testiajon yhteenveto näkyviin:** `pytest.ini`:stä poistettiin
+  `addopts = -q`. Ohjeen `pytest -q` oli aiemmin käytännössä `-qq`,
+  joten pytest tulosti vain pisteet eikä lainkaan riviä `93 passed`.
+  Nyt `pytest -q` (ja `test.bat`) näyttää aina testien määrän.
+- **Sessioalustuksen tulosteet kapeaan konsoliin:** memory bank
+  -protokollan tarkistuskomennot putkitetaan `Out-String -Width 200`
+  -muotoon. PowerShell muotoilee monirivisen tulosteen konsolin
+  leveyden mukaan; kapeassa kuoressa rivit hajosivat ja VS Code
+  shell integration saattoi pudottaa tulosteen kokonaan.
+- Ei muutoksia sovelluksen toimintaan; 93 pytest-testiä.
+
 ## v1.41 – 18.10.2026
 
 - **GP3/GP4-tuki tuonnille:** `POST /api/tabs/import` ja
