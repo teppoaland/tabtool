@@ -77,11 +77,15 @@ Hyödylliset valinnat: `--model htdemucs_6s`, `--stem guitar`, `--tuning`,
 ## Git
 
 - `origin` = `https://github.com/teppoaland/tabtool.git`
-- HEAD `d07c7de` (v1.29 code) + memory-bank docs
+- **Vain lokaalit commitit.** Projektia ei julkaista eikä pushatta
+  julkiseen GitHubiin toistaiseksi. Commitit ovat palautuspisteitä
+  (revert), jos koodi hajoaa. Push vaatii aina erillisen pyynnön.
+- HEAD `bb704e8` (docs: v1.29 code + tag); tagi `v1.29` tässä commitissa.
+- Koodicommit `d07c7de` (v1.29; 18 tiedostoa, 2442 lisäystä) on HEADin
+  edellinen commit.
 - `origin/main` = `69c2e39`; paikallinen `main` 9 committia edellä
-  (sisältää v1.29-koodin ja memory-bank docs); **ei pushattu**
-- **Koodi v1.23–v1.29 on committoitu** `d07c7de` (18 tiedostoa,
-  2442 lisäystä); paikallinen tag `v1.29`; työpuu clean.
+  (v1.23–v1.29-koodi + memory-bank docs); **ei pushattu**.
+- Työpuu clean (memory-bank/docs-commitit mukaan lukien).
 - Git ei versioi `data/`- eikä `docs/`-hakemistoa; tag/commit palauttaa
   vain koodin, ei audioita/tabeja/tokeneita.
 - Commit author: `Azure Notepad Pipeline <azure-pipeline@notepad-automation.com>`

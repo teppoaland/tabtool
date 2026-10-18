@@ -32,8 +32,9 @@ Nosta versiota **aina kun ajettava koodi muuttuu**:
    `?v=`-leimat samaan numeroon.
 3. **Commit = paikallinen tallennus**:
    `git add -A && git commit -m "vNN.NN: …"`.
-4. **Push = julkaisu** GitHubiin. Sallittu, kun työpuu on siisti eikä
-   mitään ole kesken. Push tehdään omana vaiheenaan.
+4. **Push = julkaisu.** Projektia ei vielä julkaista: **älä pushaa**
+   `origin`iin ilman käyttäjän erillistä pyyntöä. Lokaalit commitit
+   riittävät palautuspisteiksi (`git revert`, `git reset`).
 5. Raportoi lyhyesti: mitä muuttui + versionumero.
 
 ## Testit ennen committia

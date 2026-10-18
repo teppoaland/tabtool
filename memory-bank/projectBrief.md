@@ -35,6 +35,9 @@ Lokaali web-palvelu, jossa voi:
 - **All rights reserved** (GameHubin käytäntö). Kolmannen osapuolen
   lisenssit `THIRD_PARTY_NOTICES.md`:ssä.
 - **Versiosarja `1.x`**, aloitus `v1.00`; nyt `v1.29`.
+- **Ei julkista julkaisua:** koodi pidetään lokaalina. Commitit tehdään
+  paikalliseen repoon palautuspisteiksi (revert); push GitHubiin vain
+  erillisestä pyynnöstä.
 - **Tuotenimi `AI TabTool`** (v1.22–v1.29). Repo/hakemisto `tabtool`,
   `TABTOOL_*`-ympäristömuuttujat ja `data/tabtool.sqlite3` ovat teknisiä
   nimiä. Ei sidoksissa tabtool GmbH:hen eikä SEYDEL TabTooliin.

@@ -1,5 +1,13 @@
 # 📊 Projektin edistyminen – AI TABTOOL
 
+## Session päätökset (18.10.2026)
+
+- Memory bankin HEAD-viittaukset korjattu: HEAD `bb704e8`
+  (tagi `v1.29`), koodicommit `d07c7de`, työpuu clean.
+- **Ei pushia julkiseen GitHubiin:** vain lokaalit commitit
+  palautuspisteiksi (revert). Push vaatii erillisen pyynnön;
+  sääntö myös `.clinerules/03-versioning.md`:ssä.
+
 ## Memory bank -protokolla (18.10.2026)
 
 - `.clinerules/00-memory-bank.md` lisätty.
@@ -22,7 +30,7 @@
   karsinta) suunniteltu, **ei toteutettu**; jäissä.
 - 60 pytest-testiä.
 - Committoitu `d07c7de` (v1.29; 18 tiedostoa, 2442 lisäystä);
-  paikallinen tag `v1.29`; ei pushia.
+  tagi `v1.29` HEADissä `bb704e8` (docs); ei pushia.
 
 ## v1.28 – Referenssitabin audio (18.10.2026)
 
@@ -174,7 +182,9 @@
 - Soittotapa/refinger (asemaprofiilit, nuottien karsinta) puuttuu.
 - Referenssitabilla on 258 tahtia vs. AI 249; rakenne voi poiketa.
 - Rummut vaativat oman mallin; Spotify Phase 3; remote Phase 4.
-- Koodi v1.23–v1.29 on committoitu `d07c7de`; tag v1.29 on lokaali.
+- Koodi v1.23–v1.29 on committoitu `d07c7de`; tagi `v1.29` on
+  HEADissä `bb704e8`. Repoa ei pushatta julkiseen GitHubiin:
+  lokaalit commitit toimivat palautuspisteinä.
   `data/` ja `docs/` eivät ole gitissä, joten ne tarvitsevat erillisen
   varmuuskopion.
 
