@@ -163,7 +163,7 @@ Jos YouTube estää latauksen, käytetään paikallista MP3:aa.
    `data/tabs/<nimi>/`-tabit (joissa on `meta.json`) rekisteröityvät
    automaattisesti. Suora linkki: `/?tab=<tab_id>`.
 
-Valmis referenssitabi: valitse **SEARCH**-modaalista **GP5-linkki** tai
+Valmis referenssitabi: valitse **LIBRARY**-modaalista **GP5-linkki** tai
 **GP-tiedosto** (GP3/GP4/GP5/MusicXML; GP3/GP4 muunnetaan GP5:ksi).
 Tabi avautuu suoraan katselimeen. Jos samannimisestä
 kappaleesta on AI-tabi, paina **LIITÄ AUDIO**: tabi saa audion, PLAYn,
@@ -348,6 +348,7 @@ docs/               GITIGNORED
 - **v1.33** ✅ – MP3-kuunteluversiot artistikansioihin + seek-synkin vakaunnus
 - **v1.34** ✅ – desimaali-TAB BPM (esim. 143,55) GP5:n kokonaislukutemposta huolimatta
 - **v1.35** ✅ – SIIRTO (tahtia): rakenne-eron korjaus tabille tallentuen
+- **v1.49** ✅ – tumma tabinäkymä oletuksena, LIBRARY-napit, 5 s count-in ennen toistoa
 - **v1.48** ✅ – klikkaus-seek kohdistaa oikein SIIRTO/SYNC/BPM huomioiden (ei koske toistoa)
 - **v1.47** ✅ – osoitin ei enää "juokse" edellä: animoitu beat-kursori pois käytöstä
 - **v1.46** ✅ – kohdistusavustin: live-offset-näyttö + KOHDISTA-klikkaus (tallentaa SIIRTO-arvon)

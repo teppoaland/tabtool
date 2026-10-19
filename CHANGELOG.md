@@ -2,6 +2,22 @@
 
 > AI TabTool käyttää `1.x`-versiosarjaa. Aloitus `v1.00`.
 
+## v1.49 – 19.10.2026
+
+- **Tumma tabinäkymä oletuksena.** alphaTabin värit asetettiin
+  `display.resources`-asetuksilla vaaleiksi (`mainGlyphColor`,
+  `secondaryGlyphColor`, `staffLineColor`, `barSeparatorColor`,
+  `barNumberColor`, `scoreInfoColor`) ja `.alphatab`-tausta tummaksi
+  (`#0d1117`). Suurella näytöllä tabi ei enää väläytä valkoisena.
+- **SEARCH-napit → LIBRARY.** Yläpalkin ja etusivun nappi avaavat saman
+  ikkunan; modaalista poistettiin iso `SEARCH`-otsikko (jäljellä
+  `LIBRARY · GENERAATTORI`) ja `aria-label` korvaa poistetun otsikon.
+- **Count-in 5 → 0.** PLAY näyttää viiden sekunnin laskennan tabin päällä
+  ennen kuin toisto alkaa; toinen PLAY-painallus peruu laskennan.
+  Kesto on `COUNTDOWN_SECONDS` (`app/static/app.js`), kunnes
+  Settings-näkymä tehdään.
+- Ei backend-muutoksia; 93 pytest-testiä.
+
 ## v1.48 – 19.10.2026
 
 - **Korjaus: klikkaus-seek kohdistaa nyt oikein.** `mediaHandler.seekTo`

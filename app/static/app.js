@@ -22,6 +22,9 @@
   const STAVE_STORAGE_KEY = "tabtool:staveProfile";
   const TRACK_STORAGE_PREFIX = "tabtool:tracks:";
   const SYNC_LIMIT = 0.1;
+  // Count-in before playback (5 → 0). Hard-coded until the Settings view
+  // exists; the overlay itself lives in index.html (#play-countdown).
+  const COUNTDOWN_SECONDS = 5;
 
   const form = document.getElementById("source-form");
   const fileInput = document.getElementById("file-input");
@@ -40,6 +43,8 @@
   const viewerEl = document.getElementById("alphaTab");
   const audio = document.getElementById("audio");
   const playButton = document.getElementById("play-button");
+  const countdownEl = document.getElementById("play-countdown");
+  const countdownValueEl = document.getElementById("play-countdown-value");
   const titleEl = document.getElementById("tab-title");
   const metaEl = document.getElementById("tab-meta");
   const staveSelect = document.getElementById("stave-select");
@@ -100,11 +105,65 @@
   let syncSaveTimer = null;
   let pendingDelete = null;
   let alignArmed = false;
+  let countdownTimer = null;
+  let countdownFinishTimer = null;
+  let countdownPending = false;
 
   function setPlayLabel(playing) {
     if (!playButton) return;
     playButton.textContent = playing ? "PAUSE" : "PLAY";
     playButton.dataset.state = playing ? "playing" : "paused";
+  }
+
+  // Count-in: a visible 5 → 0 overlay before the audio starts, so there is
+  // time to grab the guitar. A second PLAY press cancels the count-in.
+  function showCountdown(seconds) {
+    if (countdownValueEl) countdownValueEl.textContent = String(seconds);
+    if (countdownEl) countdownEl.hidden = false;
+  }
+
+  function hideCountdown() {
+    if (countdownEl) countdownEl.hidden = true;
+  }
+
+  function cancelCountdown() {
+    if (countdownTimer !== null) {
+      window.clearInterval(countdownTimer);
+      countdownTimer = null;
+    }
+    if (countdownFinishTimer !== null) {
+      window.clearTimeout(countdownFinishTimer);
+      countdownFinishTimer = null;
+    }
+    countdownPending = false;
+    hideCountdown();
+    setPlayLabel(false);
+  }
+
+  function startCountdown(done) {
+    if (countdownPending) return;
+    countdownPending = true;
+    // The button shows PAUSE during the count-in so a second press cancels.
+    setPlayLabel(true);
+    let remaining = COUNTDOWN_SECONDS;
+    showCountdown(remaining);
+    countdownTimer = window.setInterval(() => {
+      remaining -= 1;
+      if (remaining > 0) {
+        showCountdown(remaining);
+        return;
+      }
+      window.clearInterval(countdownTimer);
+      countdownTimer = null;
+      showCountdown(0);
+      // Let the final 0 stay visible briefly, then start the audio.
+      countdownFinishTimer = window.setTimeout(() => {
+        countdownFinishTimer = null;
+        countdownPending = false;
+        hideCountdown();
+        done();
+      }, 250);
+    }, 1000);
   }
 
   function setLibraryStatus(text, isError) {
@@ -909,6 +968,16 @@
           scale: 1,
           staveProfile: staveProfileValue(staveProfile),
           layoutMode: alphaTab.LayoutMode ? alphaTab.LayoutMode.Page : 0,
+          // Dark score: light glyphs and muted staff lines on the dark
+          // .alphatab surface (hex strings are parsed by alphaTab's Color).
+          resources: {
+            mainGlyphColor: "#e9edf5",
+            secondaryGlyphColor: "#aab4c4",
+            staffLineColor: "#4a5361",
+            barSeparatorColor: "#6b7482",
+            barNumberColor: "#f0b35a",
+            scoreInfoColor: "#e9edf5",
+          },
         },
         player: {
           playerMode: alphaTab.PlayerMode.EnabledExternalMedia,
@@ -1004,12 +1073,9 @@
     return api;
   }
 
-  function togglePlayback() {
-    if (playButton && playButton.disabled) return;
-    const willPlay = playButton
-      ? playButton.dataset.state !== "playing"
-      : audio.paused;
-    if (willPlay) enterViewerFullscreen();
+  // Starts or pauses playback. The count-in runs before a fresh start, so
+  // this is only called once the 5 → 0 overlay has finished (or for pausing).
+  function beginPlayback() {
     if (api && activeTab) {
       try {
         api.playPause();
@@ -1023,6 +1089,24 @@
     } else {
       audio.pause();
     }
+  }
+
+  function togglePlayback() {
+    if (playButton && playButton.disabled) return;
+    if (countdownPending) {
+      // A second PLAY press during the count-in cancels it.
+      cancelCountdown();
+      return;
+    }
+    const willPlay = playButton
+      ? playButton.dataset.state !== "playing"
+      : audio.paused;
+    if (willPlay) {
+      enterViewerFullscreen();
+      startCountdown(beginPlayback);
+      return;
+    }
+    beginPlayback();
   }
 
   function renderTabMeta(tab) {
@@ -1053,6 +1137,7 @@
   }
 
   async function loadTab(tabId) {
+    if (countdownPending) cancelCountdown();
     try {
       const response = await fetch(`/api/tabs/${tabId}`, { cache: "no-store" });
       if (!response.ok) return;
