@@ -9,7 +9,7 @@
 - **Ei GPU:ta** (`nvidia-smi` tyhjä) → CPU-only
 - D: levytilaa ~147 GB vapaana
 
-## Python-paketit (v1.53)
+## Python-paketit (v1.54)
 
 Core:
 
@@ -40,7 +40,9 @@ ML / audio:
 ```bat
 setup.bat          :: core + dev
 install-ml.bat     :: Demucs + Basic Pitch + export/audio
-start.bat          :: uvicorn 127.0.0.1:8000
+start.bat          :: uvicorn 127.0.0.1:8000 (ei käynnistä toista instanssia)
+stop.bat           :: pysäyttää portin 8000 palvelimen
+status.bat         :: portin tila + /api/version
 test.bat           :: pytest + compileall + node --check
 ```
 
@@ -166,8 +168,11 @@ DB-tiedosto); vain tuotenimi on `AI TabTool`.
   värjää `.bpm-field`-kentän punaiseksi. Status-tekstit
   (`bpm-status`, `sync-status`) saavat `.is-error`-luokan virheestä.
 - Uvicorn ajetaan ilman `--reload`ia: koodimuutoksen jälkeen palvelin
-  on käynnistettävä uudelleen, muuten uudet reitit palauttavat 404.
-  Staattisten tiedostojen `?v=1.53`-leimat pakottavat tuoreen CSS/JS:n;
+  on käynnistettävä uudelleen. **Palvelin on käyttäjän hallinnassa:**
+  `stop.bat` pysäyttää portin 8000 (myös taustalle jääneen) ja
+  `start.bat` käynnistää sen; `status.bat` näyttää tilan ja version.
+  Cline ei käynnistä palvelinta taustalle eikä pysäytä ilman pyyntöä.
+  Staattisten tiedostojen `?v=1.54`-leimat pakottavat tuoreen CSS/JS:n;
   selaimessa voi silti tarvita Ctrl+F5:n.
 - Modaalin pino: alphaTabin `.at-cursors` on `z-index: 1000`; modaali
   `2000`, dialogi `2100`, viewer `isolation: isolate`, cursor piiloon

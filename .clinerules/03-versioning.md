@@ -7,7 +7,7 @@
 
 ## Nykyinen versio
 
-`v1.53` – `app/__init__.py`:n `__version__`, `app/static/index.html`:n
+`v1.54` – `app/__init__.py`:n `__version__`, `app/static/index.html`:n
 `#version-tag` ja kaikki `?v=`-leimat.
 
 ## Milloin +0.01
@@ -35,9 +35,12 @@ Nosta versiota **aina kun ajettava koodi muuttuu**:
 4. **Push = julkaisu.** Projektia ei vielä julkaista: **älä pushaa**
    `origin`iin ilman käyttäjän erillistä pyyntöä. Lokaalit commitit
    riittävät palautuspisteiksi (`git revert`, `git reset`).
-5. **Käynnistä palvelin uudelleen koodimuutoksen jälkeen.** Uvicorn ei
-   käytä `--reload`ia; muuten selain saa uusista reiteistä
-   `404 Not Found` (esim. `/tempo`, `/sync`).
+5. **Palvelin on käyttäjän hallinnassa.** Uvicorn ei käytä `--reload`ia,
+   joten koodimuutoksen jälkeen palvelin pitää käynnistää uudelleen
+   (`stop.bat` + `start.bat`). Älä käynnistä sitä taustalle äläkä pysäytä
+   sitä ilman pyyntöä; kerro käyttäjälle, että uudelleenkäynnistys
+   tarvitaan. `start.bat` kieltäytyy käynnistämästä toista instanssia,
+   jos portti 8000 on varattu.
 6. Raportoi lyhyesti: mitä muuttui + versionumero.
 
 ## Testit ennen committia

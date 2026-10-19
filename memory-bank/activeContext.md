@@ -1,21 +1,22 @@
 # 📍 Aktiivinen konteksti – AI TABTOOL
 
-> **Versio:** `v1.53` (20.10.2026)
-> **Git:** uusin koodicommit v1.53 (count-in poistettu, soitto 1:1);
+> **Versio:** `v1.54` (20.10.2026)
+> **Git:** uusin koodicommit v1.54 (palvelimen hallinta);
 > docs-commitit sen päällä, ei pushattu. `origin/main` = `69c2e39`;
 > paikallinen `main` on edellä (`git status -sb` näyttää määrän).
 > Docs-commit siirtää HEADia, joten älä pinnaa HEAD-hashia tähän tiedostoon.
 > **Push:** ei pushata julkiseen GitHubiin — vain lokaalit commitit
 > **Repo:** https://github.com/teppoaland/tabtool
+> **Palvelin:** käyttäjän hallinnassa (`start.bat` / `stop.bat`); Cline ei
+> käynnistä sitä taustalle eikä pysäytä ilman pyyntöä.
 
 ## Nyt
 
-- **v1.53**: count-in poistettu toistaiseksi **kokonaan** (overlay,
-  `.viewer-stage`, CSS, JS). `togglePlayback` palautettu v1.48:n muotoon:
-  PLAY avaa fullscreenin ja käynnistää toiston heti. Soitto ja tablatuuri
-  ovat 1:1: lataus t = 1,268 s (SIIRTO −0,75), 10 s toiston jälkeen
-  tahti 7 = odotettu. Countdown tehdään myöhemmin eri tavalla, irrallaan
-  soittoketjusta.
+- **v1.54**: palvelimen hallinta siirretty käyttäjälle. `stop.bat`
+  pysäyttää portin 8000 kuuntelijan (uvicornin käynnistin + lapsi),
+  `status.bat` näyttää portin ja `/api/version`in, ja `start.bat`
+  kieltäytyy käynnistämästä toista instanssia varatulla portilla.
+  Ei muutoksia soittoon, sync-asetuksiin, tablatuuriin tai GP5-dataan.
 - **v1.51**: count-in vain tabin **ensimmäisellä** aloituksella
   (`countInDone` nollataan `loadTab`issa); se ei muuta PLAY/PAUSE-nappia
   eikä kutsu alphaTabia/audiota ennen loppua. (SIIRTO-seekin rajaus
@@ -159,7 +160,7 @@ Putki:
   30/10/50/20/55/5 s → tahdit 16/6/26/11/28/3, desimaali-BPM, SIIRTO,
   SEARCH-modaali + poisto, GP5+YT yhdellä jobilla. Yksityiskohdat
   `CHANGELOG.md`:ssä.
-- Live-palvelin 8000: v1.53.
+- Palvelin pysäytetty 20.10.; käyttäjä käynnistää `start.bat`illa (v1.54).
 - v1.49 headless: tumma render, LIBRARY-modaali ilman h2-otsikkoa,
   countdown 4→0.
 - v1.52 headless: count-in vain kerran, lataus t = 1,268 s, 10 s toiston

@@ -1,6 +1,6 @@
 # 🎯 Projektin lyhyt kuvaus – AI TABTOOL
 
-> **Versio:** `v1.53` (20.10.2026)
+> **Versio:** `v1.54` (20.10.2026)
 > **Repo:** https://github.com/teppoaland/tabtool
 > **Paikallinen:** `D:\AI\tabtool`
 
@@ -51,7 +51,7 @@ Lokaali web-palvelu, jossa voi:
   on soittoa varten. Poistolla on oma varoitusdialogi. Tabi on oletuksena
   tummassa teemassa. Count-in on toistaiseksi poistettu (v1.53) ja
   tehdään myöhemmin eri tavalla, irrallaan soittoketjusta.
-- **Versiosarja `1.x`**, aloitus `v1.00`; nyt `v1.53`.
+- **Versiosarja `1.x`**, aloitus `v1.00`; nyt `v1.54`.
 - **Ei julkista julkaisua:** koodi pidetään lokaalina. Commitit tehdään
   paikalliseen repoon palautuspisteiksi (revert); push GitHubiin vain
   erillisestä pyynnöstä.
@@ -91,6 +91,7 @@ Sano Cline:lle **`lue membank`**. Sääntö on
 - `app/tab_download.py` – GP5/MusicXML-linkin palvelinlataus
 - `app/library.py` – kappaleen poisto (tab/audio/stemmit, MP3 jää)
 - `scripts/pipeline_smoke.py` – CLI-proof
+- `stop.bat` / `status.bat` – palvelimen pysäytys ja tilan tarkistus
 - `tests/` – 93 pytest-testiä
 - `data/` – GITIGNORED: audio, stemmit, tabit, tokenit
 - `docs/` – GITIGNORED: henkilökohtainen suunnitelma

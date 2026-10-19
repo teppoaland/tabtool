@@ -1,5 +1,19 @@
 # 📊 Projektin edistyminen – AI TABTOOL
 
+## v1.54 – Palvelimen hallinta käyttäjälle (20.10.2026)
+
+- `stop.bat` + `scripts/stop_server.ps1`: pysäyttää portin 8000
+  kuuntelijan ja sen python/uvicorn-emoprosessin, tulostaa PID:t ja
+  varmistaa, että portti vapautui.
+- `status.bat` + `scripts/server_status.ps1`: portin tila + `/api/version`.
+- `start.bat`: porttitarkistus estää toisen instanssin käynnistämisen.
+- Testattu: stop.bat pysäytti taustalle jääneen uvicornin (7596/17624),
+  start.bat kieltäytyi varatusta portista (exit 1, ei selainta),
+  toistettu stop.bat ilmoitti "not in use", status.bat näytti tilan.
+- Ei muutoksia soittoon, sync-asetuksiin, tablatuuriin tai GP5-dataan.
+- 93 pytest-testiä; palvelin jätetty pysäytetyksi käyttäjän
+  käynnistettäväksi.
+
 ## v1.53 – Count-in poistettu, soitto 1:1 (20.10.2026)
 
 - Countdown poistettu kokonaan: `#play-countdown`-overlay,
@@ -13,32 +27,16 @@
 - Countdown tehdään myöhemmin eri tavalla, irrallaan soittoketjusta.
 - 93 pytest-testiä; live-palvelin v1.53.
 
-## v1.52 – Synkan palautus: SIIRTO-inversio kaikille seekeille (19.10.2026)
+## v1.51–v1.52 – Count-in-yritys ja synkan palautus (19.10.2026)
 
 - v1.51 rajasi SIIRTO-inversion osoitinklikkauksiin (600 ms ikkuna).
   Silloin alphaTabin omat lataus-/play-/pause-seekit jäivät kääntämättä:
   soitonaloitus siirtyi 1,268 s → 0 ja koko biisi oli 0,75 tahtia eri
   kohdassa (SIIRTO −0,75 / BPM 142 -kalibrointi).
-- Korjaus: `mediaHandler.seekTo` kääntää jälleen kaikki `time > 0`
-  -seekit. Count-in-parannukset (vain kerran alussa, ei koske
-  PLAY-nappiin/audioon/kursoriin) säilyivät.
-- Mitattu: lataus t = 1,268 s, count-in ei muuta sitä, 10 s toiston
-  jälkeen tahti 7 = odotettu, tauon jälkeen resume ilman laskentaa.
-- 93 pytest-testiä; live-palvelin v1.52.
-
-## v1.51 – Count-in erilliseksi ja SIIRTO-latausseek pois (19.10.2026)
-
-- `countInDone`-lippu: count-in vain tabin ensimmäisellä aloituksella,
-  nollataan `loadTab`issa; tauon jälkeen resume ilman laskentaa.
-- Count-in ei enää muuta PLAY/PAUSE-nappia eikä kutsu alphaTabia/audiota
-  ennen kuin laskenta päättyy. Mitattu: `audio.currentTime = 0` ja
-  `Tahti 1` koko count-inin ajan.
-- **SIIRTO-latausseek (kumottu v1.52:ssa):** alphaTab kutsuu
-  `seekTo(~0,44 ms)` latauksessa; inversio rajattiin käyttäjän
-  osoitinklikkaukseen (600 ms ikkuna). Tämä siirsi soitonaloituksen
-  1,268 s → 0 ja rikkoi synkan, joten v1.52 palautti inversion kaikille
-  `time > 0` -seekeille.
-- 93 pytest-testiä; live-palvelin v1.51.
+- v1.52 palautti inversion kaikille `time > 0` -seekeille. Count-in ei
+  koskenut PLAY-nappiin, audioon eikä kursoriin, mutta se poistettiin
+  kokonaan v1.53:ssa.
+- 93 pytest-testiä.
 
 ## v1.50 – Tabinäkymän leveyskorjaus (19.10.2026)
 
