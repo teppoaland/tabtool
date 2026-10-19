@@ -612,18 +612,6 @@ body.modal-open {
   isolation: isolate;
 }
 
-/* Positioning context for the count-in overlay: it covers the score only,
-   not the transport controls. min-width: 0 keeps alphaTab's canvas from
-   blowing up the grid track (the canvas reports its content width). */
-.viewer-stage {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  min-width: 0;
-  min-height: 0;
-}
-
 /* Hide the playback cursor while the search modal is open. alphaTab sets
    an inline display, so !important is required. */
 body.modal-open .at-cursors {
@@ -975,33 +963,6 @@ body.modal-open .at-cursors {
   box-shadow: var(--shadow);
 }
 
-/* Count-in before playback (5 → 0). Duration is hard-coded in app.js
-   (COUNTDOWN_SECONDS) until the Settings view exists. */
-.countdown {
-  position: absolute;
-  inset: 0;
-  z-index: 1200;
-  display: grid;
-  place-items: center;
-  pointer-events: none;
-  border-radius: var(--radius);
-  background: rgba(6, 8, 12, 0.55);
-  backdrop-filter: blur(2px);
-}
-
-.countdown[hidden] {
-  display: none;
-}
-
-.countdown span {
-  font-size: clamp(7rem, 22vw, 20rem);
-  font-weight: 900;
-  line-height: 1;
-  color: var(--accent);
-  font-variant-numeric: tabular-nums;
-  text-shadow: 0 0 5rem rgba(240, 179, 90, 0.45);
-}
-
 /* alphaTab draws its cursor elements, but the vendor bundle has no CSS. */
 .at-cursor-bar {
   background: rgba(99, 213, 155, 0.10);
@@ -1041,13 +1002,6 @@ body.modal-open .at-cursors {
   position: fixed;
   inset: 0;
   z-index: 100;
-}
-
-.viewer-section:fullscreen .viewer-stage,
-.viewer-section.is-fullscreen .viewer-stage {
-  flex: 1 1 auto;
-  min-height: 0;
-  width: 100%;
 }
 
 .viewer-section:fullscreen .alphatab,

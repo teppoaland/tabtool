@@ -2,6 +2,17 @@
 
 > AI TabTool käyttää `1.x`-versiosarjaa. Aloitus `v1.00`.
 
+## v1.53 – 20.10.2026
+
+- **Count-in poistettu toistaiseksi kokonaan.** `#play-countdown`-overlay,
+  `.viewer-stage`-kääre, countdown-CSS ja countdown-JS poistettu.
+  `togglePlayback` palautettu v1.48:n muotoon: PLAY avaa fullscreenin ja
+  käynnistää toiston heti (`api.playPause()`).
+- Soitto ja tablatuuri ovat jälleen **1:1** alusta asti: lataus
+  t = 1,268 s (SIIRTO −0,75), 10 s toiston jälkeen tahti 7 = odotettu.
+- Countdown tehdään myöhemmin eri tavalla, irrallaan soittoketjusta.
+- 93 pytest-testiä.
+
 ## v1.52 – 19.10.2026
 
 - **Korjaus: soitto ja tablatuuri pysyvät taas synkissä.** v1.51 rajoitti

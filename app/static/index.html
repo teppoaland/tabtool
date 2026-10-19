@@ -6,14 +6,14 @@
   <meta name="color-scheme" content="dark">
   <title>AI TabTool</title>
   <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="/static/style.css?v=1.52">
+  <link rel="stylesheet" href="/static/style.css?v=1.53">
 </head>
 <body>
   <header class="topbar">
     <div class="brand">
       <span class="brand-mark" aria-hidden="true">AT</span>
       <span class="brand-name">AI TABTOOL</span>
-      <span id="version-tag" class="version">v1.52</span>
+      <span id="version-tag" class="version">v1.53</span>
     </div>
     <nav class="nav" aria-label="Päävalikko">
       <button id="open-search-top" type="button" class="ghost small nav-search"
@@ -132,13 +132,7 @@
         <a data-format="musicxml" href="#" download title="Lataa MusicXML-nuottitiedosto.">MusicXML</a>
         <a data-format="midi" href="#" download title="Lataa MIDI-tiedosto.">MIDI</a>
       </div>
-      <div class="viewer-stage">
-        <div id="alphaTab" class="alphatab" aria-label="Tablatuuri"></div>
-        <div id="play-countdown" class="countdown" role="status"
-             aria-live="polite" hidden>
-          <span id="play-countdown-value">5</span>
-        </div>
-      </div>
+      <div id="alphaTab" class="alphatab" aria-label="Tablatuuri"></div>
       <audio id="audio" preload="metadata"></audio>
     </section>
   </main>
@@ -275,12 +269,12 @@
 
 
   <footer class="footer">
-    <span>AI TabTool v1.52</span>
+    <span>AI TabTool v1.53</span>
     <span>Local-first · <a href="/remote">Remote</a></span>
   </footer>
 
-  <script src="/static/vendor/alphaTab/alphaTab.min.js?v=1.52"></script>
-  <script src="/static/app.js?v=1.52" defer></script>
+  <script src="/static/vendor/alphaTab/alphaTab.min.js?v=1.53"></script>
+  <script src="/static/app.js?v=1.53" defer></script>
 </body>
 </html>
 
