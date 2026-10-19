@@ -1,7 +1,7 @@
 # 📍 Aktiivinen konteksti – AI TABTOOL
 
-> **Versio:** `v1.52` (19.10.2026)
-> **Git:** uusin koodicommit v1.52 (synkan palautus);
+> **Versio:** `v1.53` (20.10.2026)
+> **Git:** uusin koodicommit v1.53 (count-in poistettu, soitto 1:1);
 > docs-commitit sen päällä, ei pushattu. `origin/main` = `69c2e39`;
 > paikallinen `main` on edellä (`git status -sb` näyttää määrän).
 > Docs-commit siirtää HEADia, joten älä pinnaa HEAD-hashia tähän tiedostoon.
@@ -10,21 +10,20 @@
 
 ## Nyt
 
-- **v1.52**: palautettu SIIRTO-inversio **kaikille** `time > 0` -seekeille.
-  v1.51 rajoitti sen osoitinklikkauksiin, jolloin alphaTabin omat
-  lataus-/play-/pause-seekit jäivät kääntämättä: soitonaloitus siirtyi
-  1,268 s → 0 ja koko biisi oli 0,75 tahtia eri kohdassa. Nyt mitattu:
-  lataus t = 1,268 s, 10 s toiston jälkeen tahti 7 = odotettu.
+- **v1.53**: count-in poistettu toistaiseksi **kokonaan** (overlay,
+  `.viewer-stage`, CSS, JS). `togglePlayback` palautettu v1.48:n muotoon:
+  PLAY avaa fullscreenin ja käynnistää toiston heti. Soitto ja tablatuuri
+  ovat 1:1: lataus t = 1,268 s (SIIRTO −0,75), 10 s toiston jälkeen
+  tahti 7 = odotettu. Countdown tehdään myöhemmin eri tavalla, irrallaan
+  soittoketjusta.
 - **v1.51**: count-in vain tabin **ensimmäisellä** aloituksella
   (`countInDone` nollataan `loadTab`issa); se ei muuta PLAY/PAUSE-nappia
   eikä kutsu alphaTabia/audiota ennen loppua. (SIIRTO-seekin rajaus
   kumottu v1.52:ssa.)
 - **v1.49**: tabi näytetään oletuksena **tummassa** teemassa (alphaTabin
   `display.resources`-värit + `.alphatab`-tausta `#0d1117`); SEARCH-napit
-  nimettiin **LIBRARY**ksi ja modaalin iso SEARCH-otsikko poistettiin;
-  PLAY aloittaa **5 → 0 -count-inin** ennen ääntä (toinen PLAY peruu;
-  v1.51: vain ensimmäisellä aloituksella ja erillään soitosta).
-  Kesto `COUNTDOWN_SECONDS` app.js:ssä, kunnes Settings-näkymä tulee.
+  nimettiin **LIBRARY**ksi ja modaalin iso SEARCH-otsikko poistettiin.
+  Count-in (v1.49–v1.52) on poistettu v1.53:ssa.
 - **Kursorin synkka (v1.43–v1.48)**: `backingTrackDuration` = partituurin
   kesto master bar -tikeistä (`scoreEndTimeMs`), ei ääniraidan kesto;
   `enableAnimatedBeatCursor = false`; klikkaus-seek kääntää
@@ -160,11 +159,13 @@ Putki:
   30/10/50/20/55/5 s → tahdit 16/6/26/11/28/3, desimaali-BPM, SIIRTO,
   SEARCH-modaali + poisto, GP5+YT yhdellä jobilla. Yksityiskohdat
   `CHANGELOG.md`:ssä.
-- Live-palvelin 8000: v1.52.
+- Live-palvelin 8000: v1.53.
 - v1.49 headless: tumma render, LIBRARY-modaali ilman h2-otsikkoa,
   countdown 4→0.
 - v1.52 headless: count-in vain kerran, lataus t = 1,268 s, 10 s toiston
   jälkeen tahti 7 = odotettu (SIIRTO −0,75).
+- v1.53 headless: ei countdown-elementtejä, PLAY aloittaa heti,
+  lataus t = 1,268 s, 10 s → tahti 7 = odotettu, layout 1600/1600 px.
 - Referenssitabi: 258 tahtia, BPM 143,5 (GP5 144); AI-tabi 249 tahtia,
   BPM 143,5547. Audio 414,72 s, PLAY + aikajana + cursor; 5 raitaa.
 - GP5/MusicXML-tuonti ja `LIITÄ AUDIO` validoitu headless-selaimessa.

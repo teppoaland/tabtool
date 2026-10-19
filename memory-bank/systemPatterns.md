@@ -139,16 +139,15 @@ resolvoitui työhakemistosta ja tabi menetti audionsa.
   (tabikohtainen muisti), FULLSCREEN/autofullscreen, cursor + edellinen
   rivi, dynamiikat piilossa, vaakascrollbar pois. Tabi renderöityy
   **tummalle** taustalle (`display.resources`-värit, `.alphatab`
-  `#0d1117`; v1.49). `.viewer-stage`/`.alphatab` tarvitsevat
-  `min-width: 0`:n, muuten alphaTabin canvas kasvattaa grid-radan
-  (~7000 px) ja sivu vierittyy oikealle (v1.50).
+  `#0d1117`; v1.49). `.alphatab` tarvitsee `min-width: 0`:n, muuten
+  alphaTabin canvas voi kasvattaa grid-radan (~7000 px) ja sivu
+  vierittyy oikealle (v1.50).
 - Aikajana: aika/kesto, tahtilukema, ±5 s, Space/nuolet, seek vierittää
   cursorin kohdalle; `TEE TAB TÄSTÄ` tekee pätkäjobin.
-- **Count-in** (v1.49, erillinen v1.51): PLAY näyttää `.viewer-stage`-
-  ankkurissa `#play-countdown`-overlayn 5 → 0 **vain tabin ensimmäisellä
-  aloituksella** (`countInDone`); audio/alphaTab/kursori pysyvät
-  paikallaan, kunnes laskenta päättyy. Toinen PLAY peruu. Kesto
-  `COUNTDOWN_SECONDS` app.js:ssä (Settings myöhemmin).
+- **Count-in poistettu** (v1.53): PLAY käynnistää toiston heti.
+  Aiempi overlay (v1.49–v1.52) poistettiin, koska soiton ja tabin
+  1:1-sync on kriittinen. Countdown tehdään myöhemmin eri tavalla,
+  irrallaan soittoketjusta.
 - **LIBRARY-modaali** (v1.38, entinen SEARCH v1.49): YouTube-linkki,
   GP5-linkki tai GP5-tiedosto, MP3-valinta, GENERATE TAB, kirjasto ja
   kappaleen valinta/poisto samassa ikkunassa. TV-näkymä jää soittoa varten.

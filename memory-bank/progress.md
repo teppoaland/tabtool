@@ -1,5 +1,18 @@
 # 📊 Projektin edistyminen – AI TABTOOL
 
+## v1.53 – Count-in poistettu, soitto 1:1 (20.10.2026)
+
+- Countdown poistettu kokonaan: `#play-countdown`-overlay,
+  `.viewer-stage`-kääre, countdown-CSS/JS ja count-in-tilat.
+  `togglePlayback` palautettu v1.48:n muotoon (fullscreen +
+  `api.playPause()` heti).
+- SIIRTO-inversio säilyi v1.52:n mukaisena kaikille `time > 0` -seekeille.
+- Mitattu: lataus t = 1,268 s (SIIRTO −0,75), PLAY aloittaa heti,
+  10 s toiston jälkeen tahti 7 = odotettu, ei countdown-elementtejä,
+  layout 1600/1600 px.
+- Countdown tehdään myöhemmin eri tavalla, irrallaan soittoketjusta.
+- 93 pytest-testiä; live-palvelin v1.53.
+
 ## v1.52 – Synkan palautus: SIIRTO-inversio kaikille seekeille (19.10.2026)
 
 - v1.51 rajasi SIIRTO-inversion osoitinklikkauksiin (600 ms ikkuna).
