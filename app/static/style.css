@@ -613,11 +613,14 @@ body.modal-open {
 }
 
 /* Positioning context for the count-in overlay: it covers the score only,
-   not the transport controls. */
+   not the transport controls. min-width: 0 keeps alphaTab's canvas from
+   blowing up the grid track (the canvas reports its content width). */
 .viewer-stage {
   position: relative;
   display: flex;
   flex-direction: column;
+  width: 100%;
+  min-width: 0;
   min-height: 0;
 }
 
@@ -959,6 +962,9 @@ body.modal-open .at-cursors {
   border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 0.6rem;
+  min-width: 0;
+  width: 100%;
+  max-width: 100%;
   min-height: 16rem;
   max-height: min(74vh, 56rem);
   overflow-x: hidden;

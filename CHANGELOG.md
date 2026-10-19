@@ -2,6 +2,16 @@
 
 > AI TabTool käyttää `1.x`-versiosarjaa. Aloitus `v1.00`.
 
+## v1.50 – 19.10.2026
+
+- **Korjaus: tabinäkymä levisi oikealle aloitusnäkymässä.** v1.49:n
+  `.viewer-stage`-kääre (count-in-overlayn ankkuri) otti leveytensä
+  alphaTabin canvasin sisältöleveydestä, joten grid-rata kasvoi noin
+  7000 px:iin ja koko sivu vierittyi oikealle. `min-width: 0` kääreelle
+  ja `.alphatab`ille sekä `width/max-width: 100 %` rajaavat näkymän.
+  Testattu 1366/1600/2560 px: `scrollWidth == clientWidth`.
+- Ei muita muutoksia; 93 pytest-testiä.
+
 ## v1.49 – 19.10.2026
 
 - **Tumma tabinäkymä oletuksena.** alphaTabin värit asetettiin
