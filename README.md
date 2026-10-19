@@ -5,7 +5,7 @@ ja katseluun. Hae kappale Spotifysta tai käytä omaa MP3/YouTube-audioita,
 anna tekoälyn tehdä ensimmäinen tablatuuriluonnos ja katsele sitä
 alphaTabilla TV:stä tai tietokoneelta. Puhelin toimii kaukosäätimenä.
 
-**Versio:** `v1.55` (Phase 2 – web-UI, alphaTab, paikallinen toisto ja count-in)
+**Versio:** `v1.56` (Phase 2 – web-UI, alphaTab, paikallinen toisto ja count-in)
 
 ## Session aloitus
 

@@ -110,6 +110,7 @@
   const COUNT_IN_ZERO_MS = 250;
   let countInDone = false;
   let countInActive = false;
+  let countInSkipped = false;
   let countInTimer = null;
   let countInZeroTimer = null;
   let countInValue = COUNT_IN_FROM;
@@ -1065,9 +1066,11 @@
   function shouldRunCountIn() {
     if (!playButton || playButton.disabled) return false;
     if (countInDone) return false;
-    // A position chosen before the first PLAY means the user resumes on
-    // purpose: skip the countdown and start right away (documented choice).
-    return !(Number(audio.currentTime) > 0.05);
+    // alphaTab pre-positions the audio on the first beat while loading
+    // (~0.85 s with SIIRTO −0,75), so audio.currentTime cannot tell a user
+    // seek apart from the engine's own initial seek. Only an explicit UI
+    // seek before the first PLAY skips the countdown (documented choice).
+    return !countInSkipped;
   }
 
   function cancelCountIn() {
@@ -1163,6 +1166,7 @@
     // The count-in is per tab: switching tabs cancels it and re-arms it.
     cancelCountIn();
     countInDone = false;
+    countInSkipped = false;
     try {
       const response = await fetch(`/api/tabs/${tabId}`, { cache: "no-store" });
       if (!response.ok) return;
@@ -1762,6 +1766,7 @@
   if (seekSlider) {
     seekSlider.addEventListener("input", () => {
       sliderSeeking = true;
+      countInSkipped = true;
       seekTo(Number(seekSlider.value));
     });
     const finishSeeking = () => {
@@ -1774,8 +1779,18 @@
     document.addEventListener("pointerup", finishSeeking);
     window.addEventListener("blur", finishSeeking);
   }
-  if (seekBack) seekBack.addEventListener("click", () => seekBy(-5));
-  if (seekForward) seekForward.addEventListener("click", () => seekBy(5));
+  if (seekBack) {
+    seekBack.addEventListener("click", () => {
+      countInSkipped = true;
+      seekBy(-5);
+    });
+  }
+  if (seekForward) {
+    seekForward.addEventListener("click", () => {
+      countInSkipped = true;
+      seekBy(5);
+    });
+  }
   if (sectionButton) {
     sectionButton.addEventListener("click", generateSection);
   }
@@ -1865,11 +1880,13 @@
       }
       if (event.key === "ArrowLeft") {
         event.preventDefault();
+        countInSkipped = true;
         seekBy(-5);
         return;
       }
       if (event.key === "ArrowRight") {
         event.preventDefault();
+        countInSkipped = true;
         seekBy(5);
         return;
       }

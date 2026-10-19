@@ -6,6 +6,7 @@ the count-in may not call the alphaTab API or write to the audio element,
 and the playback-chain functions may not learn about the count-in.
 """
 
+import re
 from pathlib import Path
 
 APP_JS = Path(__file__).resolve().parents[1] / "app" / "static" / "app.js"
@@ -13,6 +14,12 @@ APP_JS = Path(__file__).resolve().parents[1] / "app" / "static" / "app.js"
 
 def _source() -> str:
     return APP_JS.read_text(encoding="utf-8")
+
+
+def _code_only(text: str) -> str:
+    """Drop comments so documentation may name audio/api without failing."""
+    text = re.sub(r"/\*.*?\*/", "", text, flags=re.S)
+    return re.sub(r"//[^\n]*", "", text)
 
 
 def _block(source: str, start: int) -> str:
@@ -60,16 +67,17 @@ COUNT_IN_FUNCTIONS = (
 def test_count_in_never_calls_playback_or_alphatab():
     source = _source()
     for name in COUNT_IN_FUNCTIONS:
-        body = _function_body(source, name)
+        body = _code_only(_function_body(source, name))
         assert "api." not in body, f"{name} must not call the alphaTab API"
-        assert "audio.play" not in body, f"{name} must not play the audio"
-        assert "audio.pause" not in body, f"{name} must not pause the audio"
-        assert (
-            "audio.currentTime =" not in body
-        ), f"{name} must not write audio.currentTime"
+        assert "audio" not in body, f"{name} must not touch the audio element"
         assert (
             "togglePlayback" not in body
         ), f"{name} must not start playback directly"
+
+    # alphaTab pre-positions the audio while loading, so the skip decision
+    # must come from an explicit UI seek, never from audio.currentTime.
+    skip = _code_only(_function_body(source, "shouldRunCountIn"))
+    assert "countInSkipped" in skip
 
 
 def test_count_in_finishes_through_the_unchanged_playback_path():

@@ -2,6 +2,21 @@
 
 > AI TabTool käyttää `1.x`-versiosarjaa. Aloitus `v1.00`.
 
+## v1.56 – 20.10.2026
+
+- **Korjaus: count-in ei käynnistynyt lainkaan.** v1.55 päätteli
+  "käyttäjä on seekannut" ehdosta `audio.currentTime > 0.05`, mutta
+  alphaTab siirtää audion ensimmäiselle iskulle jo **latauksessa**
+  (`mediaHandler.seekTo` → `currentTime ≈ 0,8455 s` SIIRTO −0,75:llä).
+  Ehto oli siis aina tosi ja laskenta ohitettiin.
+- Nyt ohitus perustuu **käyttäjän omaan seekiin**: liukusäädin, ±5 s
+  -napit ja nuolinäppäimet asettavat `countInSkipped`-lipun, joka
+  nollataan `loadTab`issa. Count-in-funktiot eivät enää lue audiota
+  lainkaan.
+- Vartiotesti tiukennettu: count-in-funktioissa ei saa esiintyä `audio`-
+  eikä `api.`-viittauksia.
+- 96 pytest-testiä.
+
 ## v1.55 – 20.10.2026
 
 - **Count-in 5 → 0 ilman kosketusta soittoketjuun.** Overlay
