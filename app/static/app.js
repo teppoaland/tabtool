@@ -848,12 +848,7 @@
     },
     masterVolume: 1,
     seekTo(time) {
-      // alphaTab hands the *score* time here (ms). Convert it back to audio
-      // time by inverting syncTimeMs(); otherwise syncPosition() below would
-      // re-apply the SIIRTO/SYNC/BPM correction and the cursor lands offset.
-      const drift = 1 + syncDrift + bpmDrift();
-      const audioMs = (time - syncOffsetBars * barDurationMs()) / drift;
-      const target = Math.max(0, audioMs / 1000);
+      const target = Math.max(0, time / 1000);
       try {
         audio.currentTime = Number.isFinite(audio.duration)
           ? Math.min(target, audio.duration)
