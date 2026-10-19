@@ -144,9 +144,11 @@ resolvoitui työhakemistosta ja tabi menetti audionsa.
   (~7000 px) ja sivu vierittyy oikealle (v1.50).
 - Aikajana: aika/kesto, tahtilukema, ±5 s, Space/nuolet, seek vierittää
   cursorin kohdalle; `TEE TAB TÄSTÄ` tekee pätkäjobin.
-- **Count-in** (v1.49): PLAY näyttää `.viewer-stage`-ankkurissa
-  `#play-countdown`-overlayn 5 → 0 ja vasta sitten audio alkaa; toinen
-  PLAY peruu. Kesto `COUNTDOWN_SECONDS` app.js:ssä (Settings myöhemmin).
+- **Count-in** (v1.49, erillinen v1.51): PLAY näyttää `.viewer-stage`-
+  ankkurissa `#play-countdown`-overlayn 5 → 0 **vain tabin ensimmäisellä
+  aloituksella** (`countInDone`); audio/alphaTab/kursori pysyvät
+  paikallaan, kunnes laskenta päättyy. Toinen PLAY peruu. Kesto
+  `COUNTDOWN_SECONDS` app.js:ssä (Settings myöhemmin).
 - **LIBRARY-modaali** (v1.38, entinen SEARCH v1.49): YouTube-linkki,
   GP5-linkki tai GP5-tiedosto, MP3-valinta, GENERATE TAB, kirjasto ja
   kappaleen valinta/poisto samassa ikkunassa. TV-näkymä jää soittoa varten.

@@ -1,7 +1,7 @@
 # 📍 Aktiivinen konteksti – AI TABTOOL
 
-> **Versio:** `v1.50` (19.10.2026)
-> **Git:** uusin koodicommit v1.50 (tabinäkymän leveyskorjaus);
+> **Versio:** `v1.51` (19.10.2026)
+> **Git:** uusin koodicommit v1.51 (count-in erilliseksi, SIIRTO-latausseek);
 > docs-commitit sen päällä, ei pushattu. `origin/main` = `69c2e39`;
 > paikallinen `main` on edellä (`git status -sb` näyttää määrän).
 > Docs-commit siirtää HEADia, joten älä pinnaa HEAD-hashia tähän tiedostoon.
@@ -10,15 +10,17 @@
 
 ## Nyt
 
-- **v1.50**: layout-korjaus. `.viewer-stage` ja `.alphatab` saivat
-  `min-width: 0` sekä `width/max-width: 100 %`, joten alphaTabin canvasin
-  sisältöleveys ei enää kasvata grid-rataa (sivu levisi ~7000 px:iin ja
-  vierittyi oikealle). Testattu 1366/1600/2560 px:
-  `scrollWidth == clientWidth`.
+- **v1.51**: count-in vain tabin **ensimmäisellä** aloituksella
+  (`countInDone` nollataan `loadTab`issa); se ei muuta PLAY/PAUSE-nappia
+  eikä kutsu alphaTabia/audiota ennen loppua. Lisäksi SIIRTO-inversio
+  tehdään vain käyttäjän osoitinklikkaukselle (600 ms `pointerdown`-
+  ikkuna), joten alphaTabin lataus-seek (~0,44 ms) ei enää siirrä
+  audiota 1,268 s:iin — toisto alkaa 0:sta.
 - **v1.49**: tabi näytetään oletuksena **tummassa** teemassa (alphaTabin
   `display.resources`-värit + `.alphatab`-tausta `#0d1117`); SEARCH-napit
   nimettiin **LIBRARY**ksi ja modaalin iso SEARCH-otsikko poistettiin;
-  PLAY aloittaa **5 → 0 -count-inin** ennen ääntä (toinen PLAY peruu).
+  PLAY aloittaa **5 → 0 -count-inin** ennen ääntä (toinen PLAY peruu;
+  v1.51: vain ensimmäisellä aloituksella ja erillään soitosta).
   Kesto `COUNTDOWN_SECONDS` app.js:ssä, kunnes Settings-näkymä tulee.
 - **Kursorin synkka (v1.43–v1.48)**: `backingTrackDuration` = partituurin
   kesto master bar -tikeistä (`scoreEndTimeMs`), ei ääniraidan kesto;

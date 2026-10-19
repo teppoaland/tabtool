@@ -9,7 +9,7 @@
 - **Ei GPU:ta** (`nvidia-smi` tyhjä) → CPU-only
 - D: levytilaa ~147 GB vapaana
 
-## Python-paketit (v1.50)
+## Python-paketit (v1.51)
 
 Core:
 
@@ -134,7 +134,10 @@ DB-tiedosto); vain tuotenimi on `AI TabTool`.
   `.alphatab`-tausta `#0d1117`; `#play-countdown` (`.viewer-stage`) näyttää
   5 → 0 -count-inin ennen toistoa (`COUNTDOWN_SECONDS` app.js:ssä).
   `.viewer-stage`/`.alphatab` `min-width: 0` (v1.50) estää canvasin
-  leventämästä grid-rataa.
+  leventämästä grid-rataa. Count-in (v1.51) on vain ensimmäisellä
+  aloituksella ja puhtaasti visuaalinen; SIIRTO-inversio vain
+  osoitinklikkaukselle (600 ms ikkuna), jotta alphaTabin lataus-seek
+  (~0,44 ms) ei siirrä audiota.
 - Score-format valitaan `meta.files`:stä (gp5 ensin, muuten musicxml);
   tuotu tabi ilman audiota piilottaa PLAYn ja transportin.
 - `mediaHandler.playbackRate` seuraa `audio.playbackRate`-arvoa
@@ -167,7 +170,7 @@ DB-tiedosto); vain tuotenimi on `AI TabTool`.
   (`bpm-status`, `sync-status`) saavat `.is-error`-luokan virheestä.
 - Uvicorn ajetaan ilman `--reload`ia: koodimuutoksen jälkeen palvelin
   on käynnistettävä uudelleen, muuten uudet reitit palauttavat 404.
-  Staattisten tiedostojen `?v=1.50`-leimat pakottavat tuoreen CSS/JS:n;
+  Staattisten tiedostojen `?v=1.51`-leimat pakottavat tuoreen CSS/JS:n;
   selaimessa voi silti tarvita Ctrl+F5:n.
 - Modaalin pino: alphaTabin `.at-cursors` on `z-index: 1000`; modaali
   `2000`, dialogi `2100`, viewer `isolation: isolate`, cursor piiloon

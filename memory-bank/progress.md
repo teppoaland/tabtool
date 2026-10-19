@@ -1,5 +1,19 @@
 # 📊 Projektin edistyminen – AI TABTOOL
 
+## v1.51 – Count-in erilliseksi ja SIIRTO-latausseek pois (19.10.2026)
+
+- `countInDone`-lippu: count-in vain tabin ensimmäisellä aloituksella,
+  nollataan `loadTab`issa; tauon jälkeen resume ilman laskentaa.
+- Count-in ei enää muuta PLAY/PAUSE-nappia eikä kutsu alphaTabia/audiota
+  ennen kuin laskenta päättyy. Mitattu: `audio.currentTime = 0` ja
+  `Tahti 1` koko count-inin ajan.
+- **SIIRTO-latausseek korjattu:** alphaTab kutsuu `seekTo(~0,44 ms)`
+  latauksessa; vanha `time > 0` -ehto käänsi sen SIIRTO −0,75:llä
+  1,268 s:iin. Nyt inversio vain käyttäjän osoitinklikkaukselle
+  (600 ms `pointerdown`/`mousedown`-ikkuna). Engine-seekit menevät läpi;
+  toisto alkaa 0:sta ja klikkaus-seek osuu oikeaan tahtiin (testi: bar 3).
+- 93 pytest-testiä; live-palvelin v1.51.
+
 ## v1.50 – Tabinäkymän leveyskorjaus (19.10.2026)
 
 - v1.49:n `.viewer-stage`-kääre otti leveytensä alphaTabin canvasin
@@ -26,67 +40,17 @@
   tumma render, modaali ilman otsikkoa, countdown 5→0, peruutus ja toisto.
 - Ei backend-muutoksia; 93 pytest-testiä; live-palvelin v1.49.
 
-## v1.48 – Klikkaus-seek kohdistaa oikein SIIRTO/SYNC/BPM huomioiden (19.10.2026)
+## v1.43–v1.48 – Kursorin synkka ja klikkaus-seek (18.–19.10.2026)
 
-- `mediaHandler.seekTo` kääntää `syncTimeMs()`-korjauksen, mutta **vain kun
-  `time > 0`** (klikkaus-seek). `time === 0` (pysäytys/nollaus) jää
-  entiselleen, joten toiston aloitus/pysäytys on identtinen aiemman kanssa.
-- Klikkaus osuu nyt oikeaan tahtiin (ennen valitsi edellisen, kun
-  SIIRTO/SYNC/BPM oli nollasta poikkeava). Ei backend-muutoksia;
-  93 pytest-testiä.
-
-## v1.47 – Animoitu beat-kursori pois käytöstä (18.10.2026)
-
-- `enableAnimatedBeatCursor = false`: alphaTabin animoitu kursori
-  ekstrapoloi CSS-siirtymällä seuraavan iskun yli, joten toiston aikana
-  näkymä eteni ääntä edellä ja pysäytyksessä palasi tarkkaan paikkaan
-  (oikea arvo koko ajan). Nyt kursori hyppää suoraan `tickPosition`iin.
-- Ei backend-muutoksia; 93 pytest-testiä.
-
-## v1.46 – Kohdistusavustin (18.10.2026)
-
-- Kuljetuspalkkiin live-offset-näyttö (`#sync-offset-readout`): ero
-  `api.tickPosition` vs. `audio.currentTime × BPM × 960 / 60000`
-  tahteina; `Kohdallaan` kun |ero| < 0,05 tahtia.
-- **KOHDISTA**-nappi: pysäytä → klikkaa nuottia → laskee
-  `beat.absolutePlaybackStart − api.tickPosition` ja tallentaa SIIRTO-
-  arvoksi. `enableUserInteraction` väliaikaisesti pois, jotta alphaTabin
-  click-to-seek ei sekoita kohdistusta.
-- Ei backend-muutoksia; 93 pytest-testiä.
-
-## v1.45 – Partituurin kesto master bar -tikeistä (18.10.2026)
-
-- `scoreEndTimeMs()` laskee nyt keston suoraan master bar -tikeistä:
-  `(viimeisen tahdin start + calculateDuration()) × 60000 / (tempo × 960)`.
-  `api.endTime` oli alphaTabin *live* `currentPosition` (= 0 ennen
-  ensimmäistä toistotikkia), joten v1.44-putoaminen ääniraidan kestoon
-  jätti venytyksen voimaan. Nyt kesto on oikea heti ensimmäisestä
-  kursoritikistä (Seek & Destroy → 430 000 ms).
-
-## v1.44 – scoreEndTimeMs käyttää api.endTimeä (18.10.2026)
-
-- `app/static/app.js`: `scoreEndTimeMs()` lukee suoraan `api.endTime`
-  (= sekvensserin `currentEndTime`, sama arvo kuin alphaTabin
-  backing track -kaavassa). Aiempi `api.tickCache.endTime`-haara
-  poistettiin: tick lookup -objektilla ei ole `endTime`-kenttää.
-  (Korvattu v1.45:ssä master bar -laskennalla, koska `api.endTime` on
-  0 ennen toistoa.)
-- Toiminta ei muuttunut; korjaus on selainpuolinen → aktivoituu
-  Ctrl+F5:llä ilman palvelimen uudelleenkäynnistystä.
-
-## v1.43 – Kursorin synkka: backing track -venytys pois (18.10.2026)
-
-- alphaTabin `EnabledExternalMedia`-kello skaalaa backing trackin ajan
-  koko partituurin pituuteen (`mainTimePositionFromBackingTrack`):
-  suhde `scoreEnd / backingTrackDuration`. `backingTrackDuration`
-  palautti ääniraidan keston, joten pidempi partituuri (Seek & Destroy
-  referenssi 258 tahtia / 430 s vs. audio 414,72 s) venytti jokaisen
-  `audio.currentTime`-syötteen 1,0368× ja kursori kulki ääntä edellä
-  (esim. tahti 41 viimeinen nuotti → kursori tahdissa 42).
-- Korjaus `app/static/app.js`: `backingTrackDuration` palauttaa nyt
-  partituurin keston (`api.endTime`), jolloin kellotus on 1:1 ja vain
-  TAB BPM/SYNC/SIIRTO vaikuttavat.
-  Seek & Destroy: BPM 143,5 (GP5 144) kohdistaa tahdin 41 oikein.
+- v1.43–v1.45: `backingTrackDuration` palauttaa partituurin keston
+  (`scoreEndTimeMs` master bar -tikeistä), joten alphaTabin
+  backing track -venytys poistui ja kello on 1:1. `api.endTime` oli
+  live-arvo (0 ennen toistoa), siksi master bar -laskenta.
+- v1.46–v1.47: KOHDISTA-klikkaus ja live-offset-näyttö; animoitu
+  beat-kursori pois päältä, jotta kursori ei ekstrapoloi ääntä edelle.
+- v1.48: klikkaus-seek kääntää SIIRTO/SYNC/BPM-korjauksen, jotta klikattu
+  nuotti osuu kohdalleen. (v1.51 rajaa inversion vain käyttäjän
+  osoitinklikkaukseen; alphaTabin lataus-seek ~0,44 ms menee läpi.)
 - Ei backend-muutoksia; 93 pytest-testiä.
 
 ## v1.42 – Testiyhteenveto ja sessioalustuksen tulosteet (18.10.2026)
