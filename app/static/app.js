@@ -108,6 +108,16 @@
   let countdownTimer = null;
   let countdownFinishTimer = null;
   let countdownPending = false;
+  // Pre-count runs only on the first playback start after a tab is loaded.
+  let countInDone = false;
+  // User click-to-seek window: alphaTab's own engine seeks (load/play/stop)
+  // must pass through untouched, only a real pointer click is inverted.
+  const USER_SEEK_WINDOW_MS = 600;
+  let userSeekArmedUntil = 0;
+
+  function armUserSeek() {
+    userSeekArmedUntil = performance.now() + USER_SEEK_WINDOW_MS;
+  }
 
   function setPlayLabel(playing) {
     if (!playButton) return;
@@ -115,8 +125,9 @@
     playButton.dataset.state = playing ? "playing" : "paused";
   }
 
-  // Count-in: a visible 5 → 0 overlay before the audio starts, so there is
-  // time to grab the guitar. A second PLAY press cancels the count-in.
+  // Count-in: a visible 5 → 0 overlay before the audio starts. It is a pure
+  // pre-roll: audio.currentTime, alphaTab's player state and the play button
+  // are not touched until the countdown has finished.
   function showCountdown(seconds) {
     if (countdownValueEl) countdownValueEl.textContent = String(seconds);
     if (countdownEl) countdownEl.hidden = false;
@@ -137,14 +148,11 @@
     }
     countdownPending = false;
     hideCountdown();
-    setPlayLabel(false);
   }
 
   function startCountdown(done) {
     if (countdownPending) return;
     countdownPending = true;
-    // The button shows PAUSE during the count-in so a second press cancels.
-    setPlayLabel(true);
     let remaining = COUNTDOWN_SECONDS;
     showCountdown(remaining);
     countdownTimer = window.setInterval(() => {
@@ -907,12 +915,13 @@
     },
     masterVolume: 1,
     seekTo(time) {
-      // alphaTab passes the *score* time (ms). Invert syncTimeMs() so the
-      // cursor lands on the clicked note instead of offset by SIIRTO/SYNC/BPM.
-      // time === 0 (rewind/stop) is left as-is so playback start/stop behaves
-      // exactly as before; only real click-to-seek positions are inverted.
+      // alphaTab passes the *score* time (ms). Only a real pointer click on
+      // the score is inverted (syncTimeMs); engine seeks at load/play/stop
+      // pass through untouched so the audio starts exactly at its position
+      // (alphaTab seeks to ~0.44 ms, not exactly 0, when a score loads).
       let targetMs = time;
-      if (time > 0) {
+      const userSeek = performance.now() <= userSeekArmedUntil;
+      if (userSeek && time > 0) {
         const drift = 1 + syncDrift + bpmDrift();
         targetMs = (time - syncOffsetBars * barDurationMs()) / drift;
       }
@@ -1103,7 +1112,13 @@
       : audio.paused;
     if (willPlay) {
       enterViewerFullscreen();
-      startCountdown(beginPlayback);
+      // The pre-count belongs to the first start of this tab only; pausing
+      // and resuming later starts immediately.
+      if (countInDone) {
+        beginPlayback();
+      } else {
+        startCountdown(beginPlayback);
+      }
       return;
     }
     beginPlayback();
@@ -1138,6 +1153,7 @@
 
   async function loadTab(tabId) {
     if (countdownPending) cancelCountdown();
+    countInDone = false;
     try {
       const response = await fetch(`/api/tabs/${tabId}`, { cache: "no-store" });
       if (!response.ok) return;
@@ -1724,6 +1740,10 @@
     });
   }
   if (playButton) playButton.addEventListener("click", togglePlayback);
+  if (viewerEl) {
+    viewerEl.addEventListener("pointerdown", armUserSeek, { passive: true });
+    viewerEl.addEventListener("mousedown", armUserSeek, { passive: true });
+  }
   if (staveSelect) {
     staveSelect.value = staveProfile;
     staveSelect.addEventListener("change", () =>
@@ -1862,6 +1882,7 @@
   });
   if (audio) {
     audio.addEventListener("play", () => {
+      countInDone = true;
       setPlayLabel(true);
       if (alignArmed) disarmAlign();
     });

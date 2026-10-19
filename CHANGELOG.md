@@ -2,6 +2,24 @@
 
 > AI TabTool käyttää `1.x`-versiosarjaa. Aloitus `v1.00`.
 
+## v1.51 – 19.10.2026
+
+- **Count-in vain kerran kappaleen alussa.** `countInDone` asetetaan
+  ensimmäisen toiston `play`-tapahtumassa ja nollataan `loadTab`issa.
+  Tauon jälkeen jatkaminen alkaa heti ilman laskentaa.
+- **Count-in on nyt täysin erillinen soitosta.** Se ei enää muuta
+  PLAY/PAUSE-napin tilaa eikä kutsu alphaTabia tai audiota ennen kuin
+  laskenta päättyy; `audio.currentTime` ja kursori pysyvät paikallaan
+  (t = 0, Tahti 1). Toinen PLAY-painallus peruu laskennan.
+- **Korjaus: SIIRTO ei enää siirrä audiota latauksessa.** alphaTab kutsuu
+  latauksessa `seekTo(~0,44 ms)`, ja vanha `time > 0` -ehto käänsi sen
+  SIIRTO-arvolla 1,268 sekunniksi. Nyt inversio tehdään vain oikealle
+  osoitinklikkaukselle (600 ms ikkuna `pointerdown`/`mousedown`ista),
+  joten engine-seekit menevät läpi sellaisenaan ja toisto alkaa 0:sta.
+- Validoitu headless-Edgellä: t = 0 latauksessa ja koko count-inin ajan,
+  tauon jälkeen resume ilman laskentaa, klikkaus-seek osuu tahtiin 3.
+- 93 pytest-testiä.
+
 ## v1.50 – 19.10.2026
 
 - **Korjaus: tabinäkymä levisi oikealle aloitusnäkymässä.** v1.49:n
