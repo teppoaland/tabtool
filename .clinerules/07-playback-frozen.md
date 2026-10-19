@@ -113,6 +113,61 @@ Lukitut vertailuarvot (Seek & Destroy -kalibrointi, v1.52–v1.54):
 - `pytest -q` (93 passed), `compileall`, `node --check app.js` ja
   `remote.js` OK
 
+## Ihmisvalidointi – kuuntelutesti on ainoa hyväksyntä
+
+Automaatio ei kuule synkkaa. `pytest`, `compileall`, `node --check` ja
+headless-ajo todentavat vain, että koodi latautuu ja arvot tallentuvat –
+ne eivät todista, että kursori osuu musiikkiin. Siksi:
+
+1. **Käyttäjä tekee kuuntelu-/tabsynkkitestin itse.** Cline ei koskaan
+   sano synkkaa korjatuksi, valmiiksi eikä "pitäisi toimia" ilman
+   käyttäjän kuittausta.
+2. **Palvelin on käyttäjän CMD-ikkunassa.** Käyttäjä ajaa `stop.bat` /
+   `start.bat`in ja tarkistaa UI:n. Cline ei käynnistä palvelinta
+   taustalle, ei pysäytä sitä eikä kierrä tätä omalla instanssilla
+   toisella portilla.
+3. **Portti ennen seuraavaa työtä:** riskialttiin muutoksen jälkeen Cline
+   pysähtyy, kertoo mitä muuttui ja antaa testiohjeen. Seuraavaa
+   ominaisuutta ei aloiteta ennen kuin käyttäjä on kuitannut testin.
+4. **Epäselvässä tilassa ei arvata:** jos vaikutusta ei voi todentaa,
+   vastaus on "vaatii ihmisvalidoinnin", ei "pitäisi toimia".
+
+### Testiohje käyttäjälle (Seek & Destroy -kalibrointi)
+
+1. `stop.bat` → `start.bat` (uusi koodi latautuu; selaimessa Ctrl+F5).
+2. Avaa kalibrointitabi; aseta **SIIRTO −0,75** ja **BPM 142**.
+3. PLAY: ääni alkaa heti ja kursori osuu tahtiin; 10 s kohdalla tahti **7**.
+4. Seek 30 / 10 / 50 / 20 / 55 / 5 s → tahdit 16 / 6 / 26 / 11 / 28 / 3.
+5. PAUSE: kursori jää audion kohtaan (ei hyppää iskun alkuun).
+6. Raahaa hiiri tabin yli: vihreää loop-aluetta ei jää päälle.
+7. Kuittaa Cline:lle "OK" tai missä kohtaa heitto alkaa (tahti + suunta).
+
+### Mikä laukaisee ihmisvalidoinnin (myös ytimen ulkopuolella)
+
+- mikä tahansa muutos `app/static/app.js`, `index.html` tai `style.css`
+  (myös väri, fontti ja layout)
+- `loadTab`, score-formaatin valinta (`meta.files`), GP5/MusicXML-tuonti
+  ja tempon luku
+- `GET /api/tabs/{id}/audio` (Range → 206), `attach-audio`,
+  `audio_only`-jobit ja tabin poisto
+- alphaTab-vendorin päivitys, `?v=`-leimat ja välimuistiin vaikuttavat
+  muutokset
+- `db.update_tab_sync`, `meta.sync_*`, `meta.gp5_tempo`
+
+## Työtapa, joka estää synkan hajoamisen uudelleen
+
+1. **Yksi riskimuutos kerrallaan**: oma commit ja oma validointi. Ei
+   kahta soittoon vaikuttavaa muutosta samaan committiin.
+2. **Pienin mahdollinen diff.** Ei siivousta, uudelleennimeämistä eikä
+   refaktorointia samalla kierroksella.
+3. **Jos synkka hajoaa: palauta ensin, korjaa sitten.** `git revert`
+   viimeisin koodicommit ja varmista toiminta ennen uutta yritystä – älä
+   korjaa arvaamalla rikkinäisen päälle.
+4. **Visuaaliset työt erikseen** omiin committeihin, jotta soittoketjun
+   regressio ei peity CSS-muutoksen alle.
+5. Ydintä koskeva muutos on oma tehtävänsä ja oma lupansa – ei "samaan
+   hintaan" muun työn kanssa.
+
 ## Kielletyt ilman lupaa
 
 - kellotuksen, offsetin tai count-inin uudelleensuunnittelu

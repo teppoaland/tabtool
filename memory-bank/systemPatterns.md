@@ -184,5 +184,7 @@ resolvoitui työhakemistosta ja tabi menetti audionsa.
   `output.handler`-kytkennät, audio-eventit) sekä transportin DOM-id:t,
   `.alphatab`-mitat ja `/sync|tempo|section`-reitit ovat koskemattomia
   ilman lupaa. Regressiochecklist on samassa säännössä: SIIRTO −0,75 /
-  BPM 142 → lataus 1,268 s ja 10 s → tahti 7.
+  BPM 142 → lataus 1,268 s ja 10 s → tahti 7. **Hyväksyntä tehdään
+  käyttäjän kuuntelu-/tabsynkkitestillä** (ei automatisoitavissa), ja
+  palvelin on käyttäjän CMD-ikkunassa (`stop.bat`/`start.bat`).
 - Ei committoituja modeleita/audioita `static/`-hakemistoon.

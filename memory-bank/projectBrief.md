@@ -45,7 +45,10 @@ Lokaali web-palvelu, jossa voi:
   kohdistus on ainoa 1:1-validoitu toiminto (Seek & Destroy, SIIRTO −0,75 /
   BPM 142). Ydintä ei muuteta ilman erillistä lupaa; uudet ominaisuudet
   lisätään sen ulkopuolelle ja jokainen ydinmuutos validoidaan
-  regressiochecklistillä. Katso `.clinerules/07-playback-frozen.md`.
+  regressiochecklistillä. **Hyväksyntä on käyttäjän kuuntelu-/tabsynkkitesti**
+  – automaatio ei kuule heittoa, joten Cline ei julista synkkaa korjatuksi
+  ilman kuittausta. Palvelimen käynnistää ja pysäyttää käyttäjä omassa
+  CMD-ikkunassaan. Katso `.clinerules/07-playback-frozen.md`.
 - **All rights reserved** (GameHubin käytäntö). Kolmannen osapuolen
   lisenssit `THIRD_PARTY_NOTICES.md`:ssä.
 - **Kappaleen poisto** (v1.38): poistaa tabin, hakemiston, stemmit sekä

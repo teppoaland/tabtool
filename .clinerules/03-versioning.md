@@ -41,6 +41,10 @@ Nosta versiota **aina kun ajettava koodi muuttuu**:
    sitä ilman pyyntöä; kerro käyttäjälle, että uudelleenkäynnistys
    tarvitaan. `start.bat` kieltäytyy käynnistämästä toista instanssia,
    jos portti 8000 on varattu.
+6. **Kuuntelu-/tabsynkkitesti on käyttäjän.** Käyttäjä ajaa `stop.bat` /
+   `start.bat`in omassa CMD-ikkunassaan ja tarkistaa soiton UI:ssa.
+   Cline ei julista synkkaa toimivaksi ilman kuittausta; portti ja
+   testiohje: `.clinerules/07-playback-frozen.md`.
 6. Raportoi lyhyesti: mitä muuttui + versionumero.
 
 ## Testit ennen committia

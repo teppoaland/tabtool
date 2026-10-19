@@ -172,6 +172,9 @@ DB-tiedosto); vain tuotenimi on `AI TabTool`.
   `stop.bat` pysäyttää portin 8000 (myös taustalle jääneen) ja
   `start.bat` käynnistää sen; `status.bat` näyttää tilan ja version.
   Cline ei käynnistä palvelinta taustalle eikä pysäytä ilman pyyntöä.
+  **Soiton/tabin synkka hyväksytään vain käyttäjän kuuntelutestillä**
+  (`.clinerules/07-playback-frozen.md`): pytest, `node --check` ja
+  headless eivät todista kohdistusta.
   Staattisten tiedostojen `?v=1.54`-leimat pakottavat tuoreen CSS/JS:n;
   selaimessa voi silti tarvita Ctrl+F5:n.
 - Modaalin pino: alphaTabin `.at-cursors` on `z-index: 1000`; modaali
