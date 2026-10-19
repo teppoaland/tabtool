@@ -2,6 +2,16 @@
 
 > AI TabTool käyttää `1.x`-versiosarjaa. Aloitus `v1.00`.
 
+## v1.54 – 20.10.2026
+
+- **Palvelimen hallinta käyttäjälle.** `stop.bat` pysäyttää portin 8000
+  kuuntelijan (uvicornin käynnistin + lapsiprosessi) ja tulostaa PID:t;
+  `status.bat` näyttää portin tilan ja `/api/version`-vastauksen.
+- **`start.bat` ei käynnistä toista instanssia**, jos portti 8000 on jo
+  varattu: se tulostaa PID:n ja neuvoo ajamaan `stop.bat`in.
+- Ei muutoksia soittoon, sync-asetuksiin, tablatuuriin tai GP5-dataan.
+- 93 pytest-testiä.
+
 ## v1.53 – 20.10.2026
 
 - **Count-in poistettu toistaiseksi kokonaan.** `#play-countdown`-overlay,

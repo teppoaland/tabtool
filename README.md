@@ -62,6 +62,11 @@ kun `/api/health` vastaa (ei kiinteää viivettä). Sulje ikkuna tai paina
 `Ctrl+C` lopettaaksesi. Automaattiavauksen voi ohittaa asettamalla
 `TABTOOL_NO_BROWSER=1`.
 
+`stop.bat` pysäyttää portin 8000 palvelimen (myös taustalle jääneen
+uvicorn-prosessin) ja `status.bat` näyttää portin tilan sekä
+`/api/version`-vastauksen. Jos portti on jo varattu, `start.bat` ei
+käynnistä toista instanssia vaan neuvoo ajamaan `stop.bat`in.
+
 Avaa tarvittaessa käsin:
 
 - TV/näkymä: <http://127.0.0.1:8000>
@@ -348,6 +353,7 @@ docs/               GITIGNORED
 - **v1.33** ✅ – MP3-kuunteluversiot artistikansioihin + seek-synkin vakaunnus
 - **v1.34** ✅ – desimaali-TAB BPM (esim. 143,55) GP5:n kokonaislukutemposta huolimatta
 - **v1.35** ✅ – SIIRTO (tahtia): rakenne-eron korjaus tabille tallentuen
+- **v1.54** ✅ – palvelimen hallinta: stop.bat, status.bat, start.bat ei käynnistä toista instanssia
 - **v1.53** ✅ – count-in poistettu; soitto 1:1 (v1.48:n play-polku palautettu)
 - **v1.52** ✅ – korjaus: soitto ja tablatuuri synkissä (SIIRTO-inversio myös alphaTabin seekeille)
 - **v1.51** ✅ – count-in vain kerran alussa ja erillään soitosta (SIIRTO-seek-muutos kumottu v1.52:ssa)
