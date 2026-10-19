@@ -144,10 +144,14 @@ resolvoitui työhakemistosta ja tabi menetti audionsa.
   vierittyy oikealle (v1.50).
 - Aikajana: aika/kesto, tahtilukema, ±5 s, Space/nuolet, seek vierittää
   cursorin kohdalle; `TEE TAB TÄSTÄ` tekee pätkäjobin.
-- **Count-in poistettu** (v1.53): PLAY käynnistää toiston heti.
-  Aiempi overlay (v1.49–v1.52) poistettiin, koska soiton ja tabin
-  1:1-sync on kriittinen. Countdown tehdään myöhemmin eri tavalla,
-  irrallaan soittoketjusta.
+- **Count-in (v1.56):** 5 → 0 toteutetaan soittoketjun ulkopuolella.
+  `handlePlayButton` kutsuu muuttumatonta `togglePlayback`ia joko heti
+  (pause, seek ennen ensimmäistä PLAYta) tai laskennan jälkeen.
+  `#play-countdown` on `#viewer-section`in fixed-lapsi eikä grid/flex-
+  item, joten mitat eivät muutu. Toinen PLAY/Esc peruu; `loadTab` nollaa
+  lipun. AlphaTab siirtää audion ensimmäiselle iskulle jo latauksessa
+  (0,8455 s SIIRTO −0,75:llä), joten ohitus ei voi perustua
+  `audio.currentTime`iin.
 - **LIBRARY-modaali** (v1.38, entinen SEARCH v1.49): YouTube-linkki,
   GP5-linkki tai GP5-tiedosto, MP3-valinta, GENERATE TAB, kirjasto ja
   kappaleen valinta/poisto samassa ikkunassa. TV-näkymä jää soittoa varten.

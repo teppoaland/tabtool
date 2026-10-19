@@ -9,7 +9,7 @@
 - **Ei GPU:ta** (`nvidia-smi` tyhjä) → CPU-only
 - D: levytilaa ~147 GB vapaana
 
-## Python-paketit (v1.54)
+## Python-paketit (v1.56)
 
 Core:
 
@@ -58,7 +58,7 @@ python -m venv .venv
 ## Testit
 
 ```powershell
-.venv\Scripts\python.exe -m pytest -q          # 93 passed
+.venv\Scripts\python.exe -m pytest -q          # 96 passed
 .venv\Scripts\python.exe -m compileall -q app scripts tests
 node --check app\static\app.js
 node --check app\static\remote.js
@@ -136,7 +136,13 @@ DB-tiedosto); vain tuotenimi on `AI TabTool`.
   `.alphatab`-tausta `#0d1117`. `mediaHandler.seekTo` kääntää
   SIIRTO/SYNC/BPM-korjauksen kaikille `time > 0` -seekeille (v1.52);
   rajaaminen klikkauksiin rikkoi synkan (aloitus siirtyi 1,268 s → 0).
-  Count-in on poistettu toistaiseksi (v1.53); PLAY käynnistää heti.
+  **Count-in (v1.56):** `handlePlayButton` on portinvartija, joka kutsuu
+  muuttumatonta `togglePlayback`ia joko heti tai 5 → 0 -laskennan jälkeen
+  (`#play-countdown`, fixed-lapsi viewerissä; ei `api.`/`audio`-kutsuja).
+  Ohitus perustuu käyttäjän omaan seekiin (`countInSkipped`), ei
+  `currentTime`iin: alphaTab siirtää audion ensimmäiselle iskulle jo
+  latauksessa (0,8455 s SIIRTO −0,75:llä). Vartio:
+  `tests/test_playback_guard.py`.
 - Score-format valitaan `meta.files`:stä (gp5 ensin, muuten musicxml);
   tuotu tabi ilman audiota piilottaa PLAYn ja transportin.
 - `mediaHandler.playbackRate` seuraa `audio.playbackRate`-arvoa
@@ -175,7 +181,7 @@ DB-tiedosto); vain tuotenimi on `AI TabTool`.
   **Soiton/tabin synkka hyväksytään vain käyttäjän kuuntelutestillä**
   (`.clinerules/07-playback-frozen.md`): pytest, `node --check` ja
   headless eivät todista kohdistusta.
-  Staattisten tiedostojen `?v=1.54`-leimat pakottavat tuoreen CSS/JS:n;
+  Staattisten tiedostojen `?v=1.56`-leimat pakottavat tuoreen CSS/JS:n;
   selaimessa voi silti tarvita Ctrl+F5:n.
 - Modaalin pino: alphaTabin `.at-cursors` on `z-index: 1000`; modaali
   `2000`, dialogi `2100`, viewer `isolation: isolate`, cursor piiloon

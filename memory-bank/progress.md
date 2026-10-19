@@ -1,5 +1,30 @@
 # 📊 Projektin edistyminen – AI TABTOOL
 
+## v1.56 – Count-in toimii, 1:1 säilyy (20.10.2026)
+
+- Count-in 5 → 0 validoitu käyttäjän kuuntelutestillä: laskenta näkyy
+  soittonäkymässä, ääni alkaa vasta 0:n jälkeen, kohdistus pysyy 1:1.
+- Korjaus: `shouldRunCountIn` ei enää lue `audio.currentTime`ia.
+  alphaTab siirtää audion ensimmäiselle iskulle jo latauksessa
+  (`mediaHandler.seekTo` → 0,8455 s SIIRTO −0,75:llä), joten v1.55:n
+  `currentTime > 0.05` -ehto ohitti laskennan aina. Nyt ohitus perustuu
+  käyttäjän omaan seekiin (`countInSkipped`, nollataan `loadTab`issa).
+- Vartiotesti `tests/test_playback_guard.py`: count-in-funktioissa ei saa
+  olla `audio`-/`api.`-viittauksia eikä soittoketjussa count-in-koodia.
+- Headless-Edge (CDP): 5→4→3→2→1→0 ≈ 5,07 s, toisto 5,33 s; laskennan
+  aikana `currentTime` 0,846 ja tahti 1 muuttumattomia, layout 800/800;
+  2. PLAY peruu, seuraava aloittaa vitosesta; A/B audio 11,0 s → tahti 6
+  molemmilla. Ei poikkeuksia konsolissa.
+- 96 pytest-testiä.
+
+## v1.55 – Count-in portinvartijana (20.10.2026)
+
+- `handlePlayButton` + `#play-countdown` (fixed-lapsi `#viewer-section`issä,
+  ei wrapperia `#alphaTab`in ympärille); `togglePlayback` pysyi
+  muuttumattomana (diffissä 2 poistettua riviä).
+- Ensimmäinen versio ei käynnistänyt laskentaa lainkaan (ks. v1.56).
+- 96 pytest-testiä.
+
 ## v1.54 – Palvelimen hallinta käyttäjälle (20.10.2026)
 
 - `stop.bat` + `scripts/stop_server.ps1`: pysäyttää portin 8000
@@ -29,76 +54,43 @@
 
 ## v1.51–v1.52 – Count-in-yritys ja synkan palautus (19.10.2026)
 
-- v1.51 rajasi SIIRTO-inversion osoitinklikkauksiin (600 ms ikkuna).
-  Silloin alphaTabin omat lataus-/play-/pause-seekit jäivät kääntämättä:
-  soitonaloitus siirtyi 1,268 s → 0 ja koko biisi oli 0,75 tahtia eri
-  kohdassa (SIIRTO −0,75 / BPM 142 -kalibrointi).
-- v1.52 palautti inversion kaikille `time > 0` -seekeille. Count-in ei
-  koskenut PLAY-nappiin, audioon eikä kursoriin, mutta se poistettiin
-  kokonaan v1.53:ssa.
-- 93 pytest-testiä.
+- v1.51 rajasi SIIRTO-inversion osoitinklikkauksiin → alphaTabin omat
+  seekit jäivät kääntämättä ja soitonaloitus siirtyi 1,268 s → 0.
+- v1.52 palautti inversion kaikille `time > 0` -seekeille; count-in
+  poistettiin v1.53:ssa. 93 pytest-testiä.
 
 ## v1.50 – Tabinäkymän leveyskorjaus (19.10.2026)
 
-- v1.49:n `.viewer-stage`-kääre otti leveytensä alphaTabin canvasin
-  sisältöleveydestä: grid-rata kasvoi ~7000 px:iin ja sivu vierittyi
-  oikealle. Korjaus: `.viewer-stage` ja `.alphatab` saivat
-  `min-width: 0` sekä `width/max-width: 100 %`.
-- Mitattu 1366/1600/2560 px: `document.scrollWidth == clientWidth`,
-  `#alphaTab` 1084 px (`.shell`-raja). Ei muita muutoksia;
-  93 pytest-testiä.
+- `.viewer-stage` ja `.alphatab` saivat `min-width: 0` ja
+  `width/max-width: 100 %`; canvas ei enää kasvattanut sivua ~7000 px.
+- Mitattu 1366/1600/2560 px, ei sivuttaisvieritystä. 93 testiä.
 
 ## v1.49 – Tumma tabinäkymä, LIBRARY-nimet ja 5 s count-in (19.10.2026)
 
-- Tabi renderöityy oletuksena tummalle taustalle: `display.resources`
-  (`mainGlyphColor`, `secondaryGlyphColor`, `staffLineColor`,
-  `barSeparatorColor`, `barNumberColor`, `scoreInfoColor`) ja
-  `.alphatab`-tausta `#0d1117`; highlight-kursori `var(--ok)`.
-- SEARCH-napit → **LIBRARY** (yläpalkki ja etusivu), lede ja README
-  päivitetty; modaalista poistettu `SEARCH`-h2 ja tilalla
-  `aria-label="Library ja generaattori"`.
-- `#play-countdown`-overlay `.viewer-stage`-ankkurissa: PLAY käynnistää
-  **5 → 0** -laskennan, audio alkaa vasta 0:n jälkeen; toinen PLAY peruu.
-  Kesto `COUNTDOWN_SECONDS` (`app/static/app.js`).
-- Validoitu headless-Edgellä (CDP, trusted click, ei autoplay-poikkeusta):
-  tumma render, modaali ilman otsikkoa, countdown 5→0, peruutus ja toisto.
-- Ei backend-muutoksia; 93 pytest-testiä; live-palvelin v1.49.
+- Tabi tummalle taustalle (`display.resources`-värit, `.alphatab`
+  `#0d1117`); SEARCH-napit → LIBRARY, modaalin h2-otsikko pois.
+- `#play-countdown` `.viewer-stage`-ankkurissa, 5 → 0, toinen PLAY peruu.
+- Headless-CDP validoitu; ei backend-muutoksia; 93 testiä.
 
 ## v1.43–v1.48 – Kursorin synkka ja klikkaus-seek (18.–19.10.2026)
 
-- v1.43–v1.45: `backingTrackDuration` palauttaa partituurin keston
-  (`scoreEndTimeMs` master bar -tikeistä), joten alphaTabin
-  backing track -venytys poistui ja kello on 1:1. `api.endTime` oli
-  live-arvo (0 ennen toistoa), siksi master bar -laskenta.
-- v1.46–v1.47: KOHDISTA-klikkaus ja live-offset-näyttö; animoitu
-  beat-kursori pois päältä, jotta kursori ei ekstrapoloi ääntä edelle.
-- v1.48: klikkaus-seek kääntää SIIRTO/SYNC/BPM-korjauksen, jotta klikattu
-  nuotti osuu kohdalleen. (v1.51 rajaa inversion vain käyttäjän
-  osoitinklikkaukseen; alphaTabin lataus-seek ~0,44 ms menee läpi.)
-- Ei backend-muutoksia; 93 pytest-testiä.
+- `backingTrackDuration` = partituurin kesto (`scoreEndTimeMs` master
+  bar -tikeistä), joten alphaTabin venytys poistui ja kello on 1:1.
+- KOHDISTA-klikkaus ja live-offset-näyttö; animoitu beat-kursori pois.
+- Klikkaus-seek kääntää SIIRTO/SYNC/BPM-korjauksen. 93 testiä.
 
-## v1.42 – Testiyhteenveto ja sessioalustuksen tulosteet (18.10.2026)
+## v1.42 – Testiyhteenveto ja sessioalustus (18.10.2026)
 
-- `pytest.ini`:stä poistettiin `addopts = -q`. Memory bankin ohje
-  `pytest -q` oli siten `-qq`, mikä piilotti yhteenvedon kokonaan
-  (vain pisteet). Nyt `pytest -q` tulostaa `93 passed`.
-- `lue membank` -protokollan komennot putkitetaan
-  `Out-String -Width 200`:lla; agentin kuori on 12×16 merkkiä ja
-  shell integration saattoi pudottaa tulosteen.
+- `pytest.ini`:stä pois `addopts = -q`, joten `pytest -q` tulostaa
+  yhteenvedon; memory bankin komennot putkitetaan `Out-String -Width 200`.
 - Ei toiminnallisia muutoksia; 93 testiä.
 
-## v1.41 – GP3/GP4-tuonti ja audiopolun rescan-korjaus (18.10.2026)
+## v1.41 – GP3/GP4-tuonti ja audiopolun korjaus (18.10.2026)
 
-- `POST /api/tabs/import` ja `import-url` hyväksyvät `.gp3`/`.gp4`;
-  PyGuitarPro lukee ja vanha versio kirjoitetaan aidoksi GP5:ksi
-  (`tab.gp5`). Testattu GP4 → GP5: notet, tahdit ja tempo säilyivät.
-- `db.import_tabs_from_disk` resolvoi nyt relatiivisen
-  `meta.audio_path`-arvon `DATA_DIR`-juuresta; aiemmin levyrekisteröinti
-  pudotti `audio/…wav`-polun ja tabi menetti audion (404).
-- UI: tiedostovalitsin `.gp3/.gp4/.gp5`, GP-tekstit ja vihje
-  "GP4 muunnetaan GP5:ksi".
-- Kirjastoon tuotu 5 kappaletta YT-audiolla; ks. `activeContext.md`.
-- 93 pytest-testiä.
+- `import`/`import-url` hyväksyvät `.gp3`/`.gp4`; vanha versio
+  kirjoitetaan aidoksi GP5:ksi. GP4 → GP5: notet/tahdit/tempo säilyivät.
+- `db.import_tabs_from_disk` resolvoi `meta.audio_path`in `DATA_DIR`:stä.
+- 93 testiä.
 
 ## v1.40 – GP5-tiedosto + YT-linkki yhdellä toiminnolla (18.10.2026)
 
@@ -147,13 +139,14 @@
 
 ## Testitilanne
 
-- `pytest -q` → **93 passed**
+- `pytest -q` → **96 passed**
 - `compileall` → OK
 - `node --check app.js` / `remote.js` → OK
 - Headless-Edge/Chrome: alphaTab-render, cursor, fullscreen, GP5/MusicXML-
   tuonti (linkki + tiedosto), audio attach, BPM/desimaalitempo, SIIRTO,
   SYNC-tallennus, playback range -nollaus, SEARCH-modaali, kappaleen
-  valinta ja poisto.
+  valinta ja poisto, **count-in 5→0** (v1.56: laskennan aikana audio ja
+  tahti muuttumattomia, A/B sama tahti samassa audiokohdassa).
 
 ## Tunnetut rajoitukset
 
@@ -175,16 +168,17 @@
   studioversiota (esim. virallinen kanava) tai sulje selain / anna
   cookie-tiedosto.
 - Poisto ei poista MP3-kuunteluversiota eikä toisen tabin jakamaa audiota.
-- Koodi v1.23–v1.41 on committoitu (v1.41 = GP3/GP4-tuonti); tagi
-  `v1.29` = `bb704e8`. Repoa ei pushatta julkiseen GitHubiin:
-  lokaalit commitit toimivat palautuspisteinä.
+- Koodi v1.23–v1.56 on committoitu ja pushattu `origin/main`iin
+  (käyttäjän pyynnöstä 20.10.2026; HEAD `da3cdc4` + docs-commit).
+  Lokaalit commitit toimivat edelleen palautuspisteinä.
   `data/` ja `docs/` eivät ole gitissä, joten ne tarvitsevat erillisen
   varmuuskopion.
 
 ## Seuraavaksi
 
-0. **Settings-näkymä**: countdownin kesto (nyt 5 s kovakoodattu
-   `COUNTDOWN_SECONDS`) ja muut toiston asetukset säädettäviksi.
+0. **Settings-näkymä**: count-inin kesto ja muut toiston asetukset
+   säädettäviksi (nyt `COUNT_IN_FROM` / `COUNT_IN_STEP_MS` /
+   `COUNT_IN_ZERO_MS` `app.js`:ssä).
 1. Päättää soittotapa/refinger: asemaprofiilit, playability-score,
    turhien nuottien karsinta, per-tahti/fraasiasema.
 2. Vasta sitten Phase 3 / Spotify: PKCE, haku/metadata, SDK/Connect,

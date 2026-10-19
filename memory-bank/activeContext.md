@@ -1,37 +1,37 @@
 # 📍 Aktiivinen konteksti – AI TABTOOL
 
-> **Versio:** `v1.54` (20.10.2026)
-> **Git:** uusin koodicommit v1.54 (palvelimen hallinta);
-> docs-commitit sen päällä, ei pushattu. `origin/main` = `69c2e39`;
-> paikallinen `main` on edellä (`git status -sb` näyttää määrän).
-> Docs-commit siirtää HEADia, joten älä pinnaa HEAD-hashia tähän tiedostoon.
-> **Push:** ei pushata julkiseen GitHubiin — vain lokaalit commitit
+> **Versio:** `v1.56` (20.10.2026)
+> **Git:** uusin koodicommit v1.56 (count-in); docs-commitit sen päällä.
+> `origin/main` = `69c2e39` ennen pushia; paikallinen `main` on edellä
+> (`git status -sb` näyttää määrän). Docs-commit siirtää HEADia, joten älä
+> pinnaa HEAD-hashia tähän tiedostoon.
+> **Push:** vain erillisestä pyynnöstä (käyttäjä pyysi 20.10.2026).
 > **Repo:** https://github.com/teppoaland/tabtool
 > **Palvelin:** käyttäjän hallinnassa (`start.bat` / `stop.bat`); Cline ei
 > käynnistä sitä taustalle eikä pysäytä ilman pyyntöä.
 
 ## Nyt
 
-- **v1.54**: palvelimen hallinta siirretty käyttäjälle. `stop.bat`
-  pysäyttää portin 8000 kuuntelijan (uvicornin käynnistin + lapsi),
-  `status.bat` näyttää portin ja `/api/version`in, ja `start.bat`
-  kieltäytyy käynnistämästä toista instanssia varatulla portilla.
-  Ei muutoksia soittoon, sync-asetuksiin, tablatuuriin tai GP5-dataan.
-- **v1.51**: count-in vain tabin **ensimmäisellä** aloituksella
-  (`countInDone` nollataan `loadTab`issa); se ei muuta PLAY/PAUSE-nappia
-  eikä kutsu alphaTabia/audiota ennen loppua. (SIIRTO-seekin rajaus
-  kumottu v1.52:ssa.)
-- **v1.49**: tabi näytetään oletuksena **tummassa** teemassa (alphaTabin
-  `display.resources`-värit + `.alphatab`-tausta `#0d1117`); SEARCH-napit
-  nimettiin **LIBRARY**ksi ja modaalin iso SEARCH-otsikko poistettiin.
-  Count-in (v1.49–v1.52) on poistettu v1.53:ssa.
+- **v1.56 – count-in 5 → 0 soittoketjun ulkopuolella (validoitu).**
+  `handlePlayButton` on portinvartija: pause → `togglePlayback`, toinen
+  PLAY/Esc peruu, muuten laskenta ja lopussa **muuttumaton**
+  `togglePlayback()` kerran. Overlay `#play-countdown` on
+  `#viewer-section`in fixed-lapsi (ei grid/flex-item). Ohitus perustuu
+  käyttäjän omaan seekiin (`countInSkipped`), ei `audio.currentTime`iin:
+  alphaTab siirtää audion ensimmäiselle iskulle jo latauksessa
+  (0,8455 s SIIRTO −0,75:llä). Vartio: `tests/test_playback_guard.py`.
+  v1.55 oli välivaihe, jossa virheellinen `currentTime`-ehto ohitti
+  laskennan aina.
+- **v1.54**: palvelimen hallinta käyttäjälle (`stop.bat`, `status.bat`,
+  `start.bat`in porttitarkistus); ei muutoksia soittoon.
+- **v1.49**: tabi tummassa teemassa; SEARCH-napit → LIBRARY.
 - **Kursorin synkka (v1.43–v1.48)**: `backingTrackDuration` = partituurin
   kesto master bar -tikeistä (`scoreEndTimeMs`), ei ääniraidan kesto;
   `enableAnimatedBeatCursor = false`; klikkaus-seek kääntää
   SIIRTO/SYNC/BPM-korjauksen (`time > 0`). KOHDISTA-nappi ja
   live-offset-näyttö (v1.46) auttavat kohdistamaan.
 - **v1.42**: `pytest.ini`:n `addopts = -q` poistettu, joten `pytest -q`
-  tulostaa yhteenvedon (`93 passed`).
+  tulostaa yhteenvedon (`96 passed`).
 - Phase 0/1/2 valmiit; v1.23–v1.37 katselu, aikajana, tuonti/audio,
   BPM/Nopeus, SYNC/SIIRTO ja ulkoinen arkisto. v1.38–v1.40 toivat
   **SEARCH-modaalin**, GP5-linkin/-tiedoston + YT-audion yhdellä
@@ -151,22 +151,22 @@ Putki:
 
 ## Tuoreimmat validointitulokset
 
-- `pytest -q` → **93 passed**; `compileall` ja `node --check` OK.
-- v1.41: 5 import-tabia; GP4/GP3 → GP5 (0 nuottieroa); audio 206 Range,
-  MP3/tabit `D:\tabtool_files`; mitatut tempot 143,55 / 161,5 / 143,55 /
-  112,35 / 136,0 BPM.
-- Headless: SYNC `+3.50 %` → `sync_drift 0.035`; Nopeus 50–150 %.
-- v1.31–v1.40 headless: TALLENNA/dirty-tila, backfill + hard link, seek
-  30/10/50/20/55/5 s → tahdit 16/6/26/11/28/3, desimaali-BPM, SIIRTO,
-  SEARCH-modaali + poisto, GP5+YT yhdellä jobilla. Yksityiskohdat
-  `CHANGELOG.md`:ssä.
-- Palvelin pysäytetty 20.10.; käyttäjä käynnistää `start.bat`illa (v1.54).
-- v1.49 headless: tumma render, LIBRARY-modaali ilman h2-otsikkoa,
-  countdown 4→0.
-- v1.52 headless: count-in vain kerran, lataus t = 1,268 s, 10 s toiston
-  jälkeen tahti 7 = odotettu (SIIRTO −0,75).
-- v1.53 headless: ei countdown-elementtejä, PLAY aloittaa heti,
-  lataus t = 1,268 s, 10 s → tahti 7 = odotettu, layout 1600/1600 px.
+- `pytest -q` → **96 passed**; `compileall` ja `node --check` OK.
+- v1.56 headless-Edge (CDP, käyttäjän palvelin): countdown 5→4→3→2→1→0
+  ≈ 5,07 s, toisto 5,33 s; laskennan aikana `audio.currentTime` 0,846,
+  `paused`, tahti 1 – kaikki muuttumattomia; layout 800/800; 2. PLAY
+  peruu, seuraava aloittaa vitosesta; A/B audio 11,0 s → tahti 6
+  molemmilla. Käyttäjän kuuntelutesti: **OK**.
+- v1.31–v1.41 headless: TALLENNA/dirty-tila, backfill + hard link, seek
+  30/10/50/20/55/5 s → 16/6/26/11/28/3, SYNC `+3.50 %` → `0.035`,
+  desimaali-BPM, SIIRTO, GP3/GP4 → GP5 (0 nuottieroa), SEARCH-mod +
+  poisto, GP5+YT. Tempot 143,55 / 161,5 / 143,55 / 112,35 / 136,0 BPM.
+  Yksityiskohdat `CHANGELOG.md`:ssä.
+- Palvelin on käyttäjän CMD-ikkunassa; v1.56 mitattiin käyttäjän
+  käynnissä olevaa palvelinta vasten headless-CDP:llä.
+- v1.49–v1.53 headless: tumma render, LIBRARY ilman otsikkoa, count-in
+  4→0 (v1.49–v1.52) ja sen poisto (v1.53); lataus t = 1,268 s, 10 s →
+  tahti 7 (SIIRTO −0,75), layout 1600/1600 px.
 - Referenssitabi: 258 tahtia, BPM 143,5 (GP5 144); AI-tabi 249 tahtia,
   BPM 143,5547. Audio 414,72 s, PLAY + aikajana + cursor; 5 raitaa.
 - GP5/MusicXML-tuonti ja `LIITÄ AUDIO` validoitu headless-selaimessa.

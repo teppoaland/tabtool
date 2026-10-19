@@ -1,6 +1,6 @@
 # 🎯 Projektin lyhyt kuvaus – AI TABTOOL
 
-> **Versio:** `v1.54` (20.10.2026)
+> **Versio:** `v1.56` (20.10.2026)
 > **Repo:** https://github.com/teppoaland/tabtool
 > **Paikallinen:** `D:\AI\tabtool`
 
@@ -57,9 +57,10 @@ Lokaali web-palvelu, jossa voi:
 - **LIBRARY-modaali** (v1.38, entinen SEARCH v1.49): haku, GP5-linkki/-tiedosto,
   MP3-valinta, kirjasto ja kappaleen valinta samassa ikkunassa; TV-näkymä
   on soittoa varten. Poistolla on oma varoitusdialogi. Tabi on oletuksena
-  tummassa teemassa. Count-in on toistaiseksi poistettu (v1.53) ja
-  tehdään myöhemmin eri tavalla, irrallaan soittoketjusta.
-- **Versiosarja `1.x`**, aloitus `v1.00`; nyt `v1.54`.
+  tummassa teemassa. Count-in **5 → 0** on toteutettu v1.56:ssa
+  soittoketjun ulkopuolelle (overlay + portinvartija
+  `handlePlayButton`); ks. `.clinerules/07-playback-frozen.md`.
+- **Versiosarja `1.x`**, aloitus `v1.00`; nyt `v1.56`.
 - **Ei julkista julkaisua:** koodi pidetään lokaalina. Commitit tehdään
   paikalliseen repoon palautuspisteiksi (revert); push GitHubiin vain
   erillisestä pyynnöstä.
@@ -100,6 +101,6 @@ Sano Cline:lle **`lue membank`**. Sääntö on
 - `app/library.py` – kappaleen poisto (tab/audio/stemmit, MP3 jää)
 - `scripts/pipeline_smoke.py` – CLI-proof
 - `stop.bat` / `status.bat` – palvelimen pysäytys ja tilan tarkistus
-- `tests/` – 93 pytest-testiä
+- `tests/` – 96 pytest-testiä
 - `data/` – GITIGNORED: audio, stemmit, tabit, tokenit
 - `docs/` – GITIGNORED: henkilökohtainen suunnitelma
