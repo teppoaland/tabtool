@@ -6,14 +6,14 @@
   <meta name="color-scheme" content="dark">
   <title>AI TabTool</title>
   <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="/static/style.css?v=1.54">
+  <link rel="stylesheet" href="/static/style.css?v=1.55">
 </head>
 <body>
   <header class="topbar">
     <div class="brand">
       <span class="brand-mark" aria-hidden="true">AT</span>
       <span class="brand-name">AI TABTOOL</span>
-      <span id="version-tag" class="version">v1.54</span>
+      <span id="version-tag" class="version">v1.55</span>
     </div>
     <nav class="nav" aria-label="Päävalikko">
       <button id="open-search-top" type="button" class="ghost small nav-search"
@@ -134,6 +134,13 @@
       </div>
       <div id="alphaTab" class="alphatab" aria-label="Tablatuuri"></div>
       <audio id="audio" preload="metadata"></audio>
+      <!-- Count-in overlay (v1.55): a fixed, out-of-flow child of the viewer
+           so it stays visible inside fullscreen. It must not create a grid
+           or flex item, and it never touches playback. -->
+      <div id="play-countdown" class="countdown" role="status"
+           aria-live="polite" hidden>
+        <span id="play-countdown-value" class="countdown-value">5</span>
+      </div>
     </section>
   </main>
 
@@ -269,12 +276,12 @@
 
 
   <footer class="footer">
-    <span>AI TabTool v1.54</span>
+    <span>AI TabTool v1.55</span>
     <span>Local-first · <a href="/remote">Remote</a></span>
   </footer>
 
-  <script src="/static/vendor/alphaTab/alphaTab.min.js?v=1.54"></script>
-  <script src="/static/app.js?v=1.54" defer></script>
+  <script src="/static/vendor/alphaTab/alphaTab.min.js?v=1.55"></script>
+  <script src="/static/app.js?v=1.55" defer></script>
 </body>
 </html>
 

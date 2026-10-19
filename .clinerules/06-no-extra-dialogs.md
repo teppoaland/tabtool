@@ -35,6 +35,8 @@ ydintekstit:
 
 Hyväksytyt poikkeukset: LIBRARY-modaali (aiemmin SEARCH) ja kappaleen
 poiston varoitusdialogi (v1.38) ovat sallittuja. Muita uusia modaaleja,
-popupeita tai toasteja ei lisätä ilman pyyntöä.
+popupeita tai toasteja ei lisätä ilman pyyntöä. **Count-in-overlay**
+(v1.55, `#play-countdown`) on hyväksytty poikkeus: se ei ole dialogi,
+ei ota fokusta eikä estä klikkauksia.
 
 Näitä saa korjata, mutta uusia viestejä ei lisätä kysymättä.

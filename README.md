@@ -5,7 +5,7 @@ ja katseluun. Hae kappale Spotifysta tai käytä omaa MP3/YouTube-audioita,
 anna tekoälyn tehdä ensimmäinen tablatuuriluonnos ja katsele sitä
 alphaTabilla TV:stä tai tietokoneelta. Puhelin toimii kaukosäätimenä.
 
-**Versio:** `v1.29` (Phase 2 – web-UI, alphaTab ja paikallinen toisto)
+**Versio:** `v1.55` (Phase 2 – web-UI, alphaTab, paikallinen toisto ja count-in)
 
 ## Session aloitus
 
@@ -196,6 +196,13 @@ vakiomäärän iskuja eri kohdassa: esim. `-1,5` = tabi on 6 iskua edellä,
 `+1,5` = 6 iskua jäljessä. Prosenttisäätö ei korjaa tällaista
 vakiosiirtoa. Arvo tallentuu tabille (`sync_offset_bars`) ja pysyy
 mukana.
+
+**Count-in:** tabin ensimmäinen PLAY näyttää **5 → 0** -laskennan
+soittonäkymässä ennen kuin ääni alkaa. Laskenta on pelkkä overlay: se ei
+kirjoita audiota, ei kutsu alphaTabia eikä muuta kohdistusta. Toinen PLAY
+tai Esc peruu laskennan (seuraava PLAY yrittää uudelleen), tauon jälkeen
+toisto jatkuu ilman laskentaa, ja jos siirrät kohdistinta ennen
+ensimmäistä PLAYta, laskenta ohitetaan.
 
 **Vihje:** älä raahaa hiirellä tabin yli – se saattoi aiemmin luoda
 alphaTabin loop-alueen. Nykyään alue nollataan automaattisesti, mutta

@@ -1025,6 +1025,35 @@ body.viewer-fullscreen {
   display: none;
 }
 
+/* Count-in (v1.55): overlay only. Fixed + inset keeps it out of the grid and
+   flex flow, so the tab width, scroll area and .alphatab size are untouched.
+   pointer-events:none lets a second PLAY press reach the button (cancel).
+   z-index 1500 sits above alphaTab's cursor (1000) and below the modal
+   (2000) / dialog (2100) stack. */
+.countdown {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+  z-index: 1500;
+  background: rgba(6, 8, 12, 0.55);
+  backdrop-filter: blur(2px);
+}
+
+.countdown[hidden] {
+  display: none;
+}
+
+.countdown-value {
+  color: var(--accent);
+  font-size: clamp(6rem, 22vw, 16rem);
+  font-weight: 700;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 0 1.5rem rgba(240, 179, 90, 0.45);
+}
+
 @media (max-width: 720px) {
   .viewer-bar {
     align-items: flex-start;

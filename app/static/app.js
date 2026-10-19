@@ -40,6 +40,8 @@
   const viewerEl = document.getElementById("alphaTab");
   const audio = document.getElementById("audio");
   const playButton = document.getElementById("play-button");
+  const playCountdown = document.getElementById("play-countdown");
+  const playCountdownValue = document.getElementById("play-countdown-value");
   const titleEl = document.getElementById("tab-title");
   const metaEl = document.getElementById("tab-meta");
   const staveSelect = document.getElementById("stave-select");
@@ -100,6 +102,17 @@
   let syncSaveTimer = null;
   let pendingDelete = null;
   let alignArmed = false;
+
+  // Count-in (v1.55): five steps then a short "0". UI-only state; see the
+  // COUNT-IN block below and .clinerules/07-playback-frozen.md.
+  const COUNT_IN_FROM = 5;
+  const COUNT_IN_STEP_MS = 1000;
+  const COUNT_IN_ZERO_MS = 250;
+  let countInDone = false;
+  let countInActive = false;
+  let countInTimer = null;
+  let countInZeroTimer = null;
+  let countInValue = COUNT_IN_FROM;
 
   function setPlayLabel(playing) {
     if (!playButton) return;
@@ -1034,6 +1047,91 @@
     }
   }
 
+  // === COUNT-IN (v1.55) – UI only, rule 07 ============================
+  // The countdown runs once per tab load, before the first playback. It owns
+  // nothing but its own overlay: no audio writes, no alphaTab calls and no
+  // changes to the playback chain. Playback starts by calling the unchanged
+  // togglePlayback() exactly once, so the sync path stays identical.
+  function drawCountIn(value) {
+    if (!playCountdown) return;
+    if (value === null) {
+      playCountdown.hidden = true;
+      return;
+    }
+    if (playCountdownValue) playCountdownValue.textContent = String(value);
+    playCountdown.hidden = false;
+  }
+
+  function shouldRunCountIn() {
+    if (!playButton || playButton.disabled) return false;
+    if (countInDone) return false;
+    // A position chosen before the first PLAY means the user resumes on
+    // purpose: skip the countdown and start right away (documented choice).
+    return !(Number(audio.currentTime) > 0.05);
+  }
+
+  function cancelCountIn() {
+    if (countInTimer) window.clearInterval(countInTimer);
+    if (countInZeroTimer) window.clearTimeout(countInZeroTimer);
+    countInTimer = null;
+    countInZeroTimer = null;
+    countInActive = false;
+    drawCountIn(null);
+  }
+
+  function finishCountIn() {
+    if (!countInActive) return;
+    cancelCountIn();
+    countInDone = true;
+    togglePlayback();
+  }
+
+  function beginCountIn() {
+    // Without the overlay the countdown would be invisible; never delay
+    // playback silently. The caller falls back to a normal PLAY.
+    if (!playCountdown) return false;
+    cancelCountIn();
+    countInActive = true;
+    countInValue = COUNT_IN_FROM;
+    drawCountIn(countInValue);
+    countInTimer = window.setInterval(() => {
+      countInValue -= 1;
+      if (countInValue > 0) {
+        drawCountIn(countInValue);
+        return;
+      }
+      window.clearInterval(countInTimer);
+      countInTimer = null;
+      drawCountIn(0);
+      countInZeroTimer = window.setTimeout(finishCountIn, COUNT_IN_ZERO_MS);
+    }, COUNT_IN_STEP_MS);
+    return true;
+  }
+
+  function handlePlayButton() {
+    if (countInActive) {
+      // Second PLAY cancels; the count-in stays pending for the next press.
+      cancelCountIn();
+      return;
+    }
+    const willPlay = playButton
+      ? playButton.dataset.state !== "playing"
+      : audio.paused;
+    if (!willPlay) {
+      togglePlayback();
+      return;
+    }
+    if (shouldRunCountIn()) {
+      // Fullscreen is requested here, while the user gesture is still fresh.
+      // The countdown itself only draws the overlay.
+      enterViewerFullscreen();
+      if (beginCountIn()) return;
+    }
+    countInDone = true;
+    togglePlayback();
+  }
+  // === /COUNT-IN ======================================================
+
   function renderTabMeta(tab) {
     if (titleEl) {
       titleEl.textContent = tab.artist
@@ -1062,6 +1160,9 @@
   }
 
   async function loadTab(tabId) {
+    // The count-in is per tab: switching tabs cancels it and re-arms it.
+    cancelCountIn();
+    countInDone = false;
     try {
       const response = await fetch(`/api/tabs/${tabId}`, { cache: "no-store" });
       if (!response.ok) return;
@@ -1296,6 +1397,7 @@
   }
 
   function clearViewer() {
+    cancelCountIn();
     activeTab = null;
     allTracks = [];
     visibleTrackIndexes = new Set();
@@ -1647,7 +1749,7 @@
       if (event.target === deleteDialog) cancelDelete();
     });
   }
-  if (playButton) playButton.addEventListener("click", togglePlayback);
+  if (playButton) playButton.addEventListener("click", handlePlayButton);
   if (staveSelect) {
     staveSelect.value = staveProfile;
     staveSelect.addEventListener("change", () =>
@@ -1746,6 +1848,11 @@
       }
       return;
     }
+    if (event.key === "Escape" && countInActive) {
+      // Esc during the countdown cancels it; the next PLAY starts it again.
+      cancelCountIn();
+      return;
+    }
     const tag = event.target && event.target.tagName;
     const interactive = ["INPUT", "SELECT", "TEXTAREA", "BUTTON"].includes(
       tag
@@ -1753,7 +1860,7 @@
     if (!interactive && viewerSection && !viewerSection.hidden) {
       if (event.key === " ") {
         event.preventDefault();
-        togglePlayback();
+        handlePlayButton();
         return;
       }
       if (event.key === "ArrowLeft") {

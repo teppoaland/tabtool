@@ -110,7 +110,7 @@ Lukitut vertailuarvot (Seek & Destroy -kalibrointi, v1.52–v1.54):
   sivuttaisvieritystä
 - SYNC ±10 % / 0,05 %, SIIRTO 0,25 tahdin askel, desimaali-TAB BPM
   tallentuvat ja palautuvat tabia avattaessa
-- `pytest -q` (93 passed), `compileall`, `node --check app.js` ja
+- `pytest -q` (96 passed), `compileall`, `node --check app.js` ja
   `remote.js` OK
 
 ## Ihmisvalidointi – kuuntelutesti on ainoa hyväksyntä
@@ -167,6 +167,24 @@ ne eivät todista, että kursori osuu musiikkiin. Siksi:
    regressio ei peity CSS-muutoksen alle.
 5. Ydintä koskeva muutos on oma tehtävänsä ja oma lupansa – ei "samaan
    hintaan" muun työn kanssa.
+
+## Count-in (v1.55) – sallittu vain tässä muodossa
+
+Count-in on sallittu, koska se ei kosketa soittoketjua:
+
+- overlay (`#play-countdown`) on `position: fixed` -lapsi
+  `#viewer-section`issä; **ei wrapperia** `#alphaTab`in ympärille eikä
+  muutoksia `.viewer-section`in grid/flex-mittoihin
+- laskenta tekee vain DOM-muutoksia: ei `api.*`-kutsuja, ei
+  `audio.play`/`audio.pause`, ei `audio.currentTime`-kirjoituksia
+- toisto käynnistetään lopussa **muuttumattomalla** `togglePlayback()`illa
+  täsmälleen kerran
+- fullscreen pyydetään PLAY-käsittelijässä heti (käyttäjän ele), ei
+  laskennan lopussa
+- `togglePlayback`, `mediaHandler`, `seekTo` ja `syncTimeMs`-ketju eivät
+  saa sisältää count-in-koodia; `tests/test_playback_guard.py` valvoo
+- askelmäärän, keston tai äänen muutos vaatii luvan ja koko
+  regressiochecklistin
 
 ## Kielletyt ilman lupaa
 

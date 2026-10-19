@@ -2,6 +2,24 @@
 
 > AI TabTool käyttää `1.x`-versiosarjaa. Aloitus `v1.00`.
 
+## v1.55 – 20.10.2026
+
+- **Count-in 5 → 0 ilman kosketusta soittoketjuun.** Overlay
+  (`#play-countdown`) on `#viewer-section`in fixed-lapsi: se ei ole grid-
+  eikä flex-item, joten tabin leveys, scroll-alue ja `.alphatab`-mitat
+  pysyvät ennallaan. Laskenta tekee vain DOM-muutoksia.
+- **Portinvartija:** PLAY-nappi ja Space kutsuvat `handlePlayButton`ia,
+  joka joko kutsuu **muuttumatonta** `togglePlayback`ia tai näyttää
+  count-inin ja kutsuu samaa funktiota vasta 0:n jälkeen. Fullscreen
+  pyydetään heti PLAYsta (käyttäjän ele), ei laskennan lopussa.
+- Count-in vain tabin ensimmäisellä PLAYlla; `loadTab` nollaa lipun ja
+  peruu keskeneräisen laskennan. Toinen PLAY tai Esc peruu; seek ennen
+  ensimmäistä PLAYta ohittaa laskennan. Ei audiota → ei laskentaa.
+- Uusi vartiotesti `tests/test_playback_guard.py`: count-in ei saa
+  sisältää `api.`/`audio.play`/`audio.pause`-kutsuja eikä
+  `togglePlayback`/`mediaHandler`/`syncTimeMs`-ketju count-in-koodia.
+- 96 pytest-testiä.
+
 ## v1.54 – 20.10.2026
 
 - **Palvelimen hallinta käyttäjälle.** `stop.bat` pysäyttää portin 8000
