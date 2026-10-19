@@ -177,4 +177,12 @@ resolvoitui työhakemistosta ja tabi menetti audionsa.
   1,268 s → 0 ja rikkoi synkan; `time === 0` jätetään ennalleen.
 - Aluevalinta: alphaTabin raahaus ei jää loopiksi – `playbackRange`
   nollataan heti. Pause palauttaa cursorin audion aikaan.
+- **Sääntö #1 – koskematon ydin** (`.clinerules/07-playback-frozen.md`):
+  soitto- ja kohdistusketju (`notatedTempo`/`bpmDrift`, `barDurationMs`/
+  `syncTimeMs`/`scoreEndTimeMs`, `mediaHandler.seekTo`-inversio,
+  `syncPosition`, `seekTo`, `clearPlaybackRange`, `togglePlayback`,
+  `output.handler`-kytkennät, audio-eventit) sekä transportin DOM-id:t,
+  `.alphatab`-mitat ja `/sync|tempo|section`-reitit ovat koskemattomia
+  ilman lupaa. Regressiochecklist on samassa säännössä: SIIRTO −0,75 /
+  BPM 142 → lataus 1,268 s ja 10 s → tahti 7.
 - Ei committoituja modeleita/audioita `static/`-hakemistoon.

@@ -41,6 +41,11 @@ Lokaali web-palvelu, jossa voi:
   tai vakiosiirtoon; kaikki tallentuvat tabille.
 - **Ei pakollista Guitar Prota.** TuxGuitar on ilmainen apuväline
   tarvittaessa; appi tuo GP5/MusicXML:n.
+- **Sääntö #1 – soitto on koskematon.** Soitto ja tablatuurin osoittimen
+  kohdistus on ainoa 1:1-validoitu toiminto (Seek & Destroy, SIIRTO −0,75 /
+  BPM 142). Ydintä ei muuteta ilman erillistä lupaa; uudet ominaisuudet
+  lisätään sen ulkopuolelle ja jokainen ydinmuutos validoidaan
+  regressiochecklistillä. Katso `.clinerules/07-playback-frozen.md`.
 - **All rights reserved** (GameHubin käytäntö). Kolmannen osapuolen
   lisenssit `THIRD_PARTY_NOTICES.md`:ssä.
 - **Kappaleen poisto** (v1.38): poistaa tabin, hakemiston, stemmit sekä
@@ -85,7 +90,7 @@ Sano Cline:lle **`lue membank`**. Sääntö on
 
 - `README.md` – käyttöohje ja tila
 - `CHANGELOG.md` – versiohistoria
-- `.clinerules/` – 7 projektisääntöä
+- `.clinerules/` – 8 projektisääntöä (sääntö #1 = koskematon soitto)
 - `app/pipeline/` – audio-to-tab-putki
 - `app/tab_import.py` – GP5/MusicXML-tuonti
 - `app/tab_download.py` – GP5/MusicXML-linkin palvelinlataus

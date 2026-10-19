@@ -23,6 +23,11 @@ pyörii käyttäjän omalla koneella; ei pilveä, ei monikäyttäjätilejä.
 - `app/static/app.js` – TV-näkymän logiikka
 - `app/static/vendor/alphaTab/*` – kolmannen osapuolen alphaTab (MPL-2.0)
 
+> 🔒 **Sääntö #1:** soitto ja tablatuurin kohdistus ovat koskemattomia.
+> `app.js`n synkka-/seek-/`mediaHandler`-ketju, transportin DOM-id:t,
+> `.alphatab`-mitat ja `/sync|tempo|section`-reitit eivät muutu ilman
+> erillistä lupaa. Katso `.clinerules/07-playback-frozen.md`.
+
 ## Kerrosrajat
 
 1. Reitit eivät kutsu Demucsia tai Basic Pitchiä suoraan – ne luovat jobin.
