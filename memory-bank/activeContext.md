@@ -1,7 +1,7 @@
 # 📍 Aktiivinen konteksti – AI TABTOOL
 
-> **Versio:** `v1.51` (19.10.2026)
-> **Git:** uusin koodicommit v1.51 (count-in erilliseksi, SIIRTO-latausseek);
+> **Versio:** `v1.52` (19.10.2026)
+> **Git:** uusin koodicommit v1.52 (synkan palautus);
 > docs-commitit sen päällä, ei pushattu. `origin/main` = `69c2e39`;
 > paikallinen `main` on edellä (`git status -sb` näyttää määrän).
 > Docs-commit siirtää HEADia, joten älä pinnaa HEAD-hashia tähän tiedostoon.
@@ -10,12 +10,15 @@
 
 ## Nyt
 
+- **v1.52**: palautettu SIIRTO-inversio **kaikille** `time > 0` -seekeille.
+  v1.51 rajoitti sen osoitinklikkauksiin, jolloin alphaTabin omat
+  lataus-/play-/pause-seekit jäivät kääntämättä: soitonaloitus siirtyi
+  1,268 s → 0 ja koko biisi oli 0,75 tahtia eri kohdassa. Nyt mitattu:
+  lataus t = 1,268 s, 10 s toiston jälkeen tahti 7 = odotettu.
 - **v1.51**: count-in vain tabin **ensimmäisellä** aloituksella
   (`countInDone` nollataan `loadTab`issa); se ei muuta PLAY/PAUSE-nappia
-  eikä kutsu alphaTabia/audiota ennen loppua. Lisäksi SIIRTO-inversio
-  tehdään vain käyttäjän osoitinklikkaukselle (600 ms `pointerdown`-
-  ikkuna), joten alphaTabin lataus-seek (~0,44 ms) ei enää siirrä
-  audiota 1,268 s:iin — toisto alkaa 0:sta.
+  eikä kutsu alphaTabia/audiota ennen loppua. (SIIRTO-seekin rajaus
+  kumottu v1.52:ssa.)
 - **v1.49**: tabi näytetään oletuksena **tummassa** teemassa (alphaTabin
   `display.resources`-värit + `.alphatab`-tausta `#0d1117`); SEARCH-napit
   nimettiin **LIBRARY**ksi ja modaalin iso SEARCH-otsikko poistettiin;
@@ -149,29 +152,19 @@ Putki:
 ## Tuoreimmat validointitulokset
 
 - `pytest -q` → **93 passed**; `compileall` ja `node --check` OK.
-- v1.41: 5 kappaletta tuotu kirjastoon (Animal, Whiplash, Tush,
-  Dr. Feelgood, I Only Wanna Be With You). GP4/GP3 → GP5 -konversio
-  tarkistettu (0 nuottieroa); audio 206 Range, MP3:t
-  `D:\tabtool_files\audio\mp3`, tabit `D:\tabtool_files\tabs`.
-  Mitatut tempot: 143,55 / 161,5 / 143,55 / 112,35 / 136,0 BPM.
-- Headless-Chrome: SYNC `+3.50 %` → `sync_drift 0.035` kantaan ja
-  `meta.json`iin; reload palautti arvon; Nopeus 50–150 %.
-- v1.31–v1.37 headless: TALLENNA/dirty-tila, backfill + hard link, seek
-  30/10/50/20/55/5 s → tahdit 16/6/26/11/28/3, desimaali-BPM 119,5 →
-  GP5 120, SIIRTO −8 → tahti 13, raahaus ei jäänyt loopiksi.
-  Yksityiskohdat `CHANGELOG.md`:ssä.
-- Live-palvelin 8000: v1.49 (käynnistetty ilman temp-ympäristömuuttujia).
-- v1.49 headless (CDP, trusted click): tumma render, LIBRARY-modaali
-  ilman h2-otsikkoa, countdown 4→0, peruutus ja toisto ilman
-  autoplay-poikkeusta.
-- v1.38: SEARCH-modaali, GP5-linkki (gprotab-sivu → `?download`-retry),
-  poisto; headless: modaalin avaus, kappaleen valinta, poistodialogi ja
-  GP5-render. 89 testiä.
-- v1.39: `#search-modal` z-index 2000, cursor `display: none` modaalin
-  auki ollessa; selainkuvalla varmistettu, ei läpikuultoa.
-- v1.40: GP5-tiedosto + YT-linkki yhdellä GENERATE TABilla → tabi
-  tuotu, audio liitetty (`/api/tabs/<id>/audio`), modaali sulkeutui;
-  91 testiä.
+- v1.41: 5 import-tabia; GP4/GP3 → GP5 (0 nuottieroa); audio 206 Range,
+  MP3/tabit `D:\tabtool_files`; mitatut tempot 143,55 / 161,5 / 143,55 /
+  112,35 / 136,0 BPM.
+- Headless: SYNC `+3.50 %` → `sync_drift 0.035`; Nopeus 50–150 %.
+- v1.31–v1.40 headless: TALLENNA/dirty-tila, backfill + hard link, seek
+  30/10/50/20/55/5 s → tahdit 16/6/26/11/28/3, desimaali-BPM, SIIRTO,
+  SEARCH-modaali + poisto, GP5+YT yhdellä jobilla. Yksityiskohdat
+  `CHANGELOG.md`:ssä.
+- Live-palvelin 8000: v1.52.
+- v1.49 headless: tumma render, LIBRARY-modaali ilman h2-otsikkoa,
+  countdown 4→0.
+- v1.52 headless: count-in vain kerran, lataus t = 1,268 s, 10 s toiston
+  jälkeen tahti 7 = odotettu (SIIRTO −0,75).
 - Referenssitabi: 258 tahtia, BPM 143,5 (GP5 144); AI-tabi 249 tahtia,
   BPM 143,5547. Audio 414,72 s, PLAY + aikajana + cursor; 5 raitaa.
 - GP5/MusicXML-tuonti ja `LIITÄ AUDIO` validoitu headless-selaimessa.

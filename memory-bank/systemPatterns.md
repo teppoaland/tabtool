@@ -171,6 +171,11 @@ resolvoitui työhakemistosta ja tabi menetti audionsa.
 - Modaalin pino: alphaTabin `.at-cursors` käyttää `z-index: 1000`, joten
   modaali on `2000`, dialogi `2100`, `.viewer-section` on `isolation:
   isolate` ja cursor piilotetaan `body.modal-open`-tilassa.
+- **Seek-invariantti (v1.52):** `mediaHandler.seekTo` kääntää
+  SIIRTO/SYNC/BPM-korjauksen **kaikille** `time > 0` -seekeille, myös
+  alphaTabin omille lataus-/play-/pause-seekeille. Inversion rajaaminen
+  pelkkiin osoitinklikkauksiin (v1.51) siirsi soitonaloituksen
+  1,268 s → 0 ja rikkoi synkan; `time === 0` jätetään ennalleen.
 - Aluevalinta: alphaTabin raahaus ei jää loopiksi – `playbackRange`
   nollataan heti. Pause palauttaa cursorin audion aikaan.
 - Ei committoituja modeleita/audioita `static/`-hakemistoon.

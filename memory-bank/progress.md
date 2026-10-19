@@ -1,5 +1,18 @@
 # 📊 Projektin edistyminen – AI TABTOOL
 
+## v1.52 – Synkan palautus: SIIRTO-inversio kaikille seekeille (19.10.2026)
+
+- v1.51 rajasi SIIRTO-inversion osoitinklikkauksiin (600 ms ikkuna).
+  Silloin alphaTabin omat lataus-/play-/pause-seekit jäivät kääntämättä:
+  soitonaloitus siirtyi 1,268 s → 0 ja koko biisi oli 0,75 tahtia eri
+  kohdassa (SIIRTO −0,75 / BPM 142 -kalibrointi).
+- Korjaus: `mediaHandler.seekTo` kääntää jälleen kaikki `time > 0`
+  -seekit. Count-in-parannukset (vain kerran alussa, ei koske
+  PLAY-nappiin/audioon/kursoriin) säilyivät.
+- Mitattu: lataus t = 1,268 s, count-in ei muuta sitä, 10 s toiston
+  jälkeen tahti 7 = odotettu, tauon jälkeen resume ilman laskentaa.
+- 93 pytest-testiä; live-palvelin v1.52.
+
 ## v1.51 – Count-in erilliseksi ja SIIRTO-latausseek pois (19.10.2026)
 
 - `countInDone`-lippu: count-in vain tabin ensimmäisellä aloituksella,
@@ -7,11 +20,11 @@
 - Count-in ei enää muuta PLAY/PAUSE-nappia eikä kutsu alphaTabia/audiota
   ennen kuin laskenta päättyy. Mitattu: `audio.currentTime = 0` ja
   `Tahti 1` koko count-inin ajan.
-- **SIIRTO-latausseek korjattu:** alphaTab kutsuu `seekTo(~0,44 ms)`
-  latauksessa; vanha `time > 0` -ehto käänsi sen SIIRTO −0,75:llä
-  1,268 s:iin. Nyt inversio vain käyttäjän osoitinklikkaukselle
-  (600 ms `pointerdown`/`mousedown`-ikkuna). Engine-seekit menevät läpi;
-  toisto alkaa 0:sta ja klikkaus-seek osuu oikeaan tahtiin (testi: bar 3).
+- **SIIRTO-latausseek (kumottu v1.52:ssa):** alphaTab kutsuu
+  `seekTo(~0,44 ms)` latauksessa; inversio rajattiin käyttäjän
+  osoitinklikkaukseen (600 ms ikkuna). Tämä siirsi soitonaloituksen
+  1,268 s → 0 ja rikkoi synkan, joten v1.52 palautti inversion kaikille
+  `time > 0` -seekeille.
 - 93 pytest-testiä; live-palvelin v1.51.
 
 ## v1.50 – Tabinäkymän leveyskorjaus (19.10.2026)

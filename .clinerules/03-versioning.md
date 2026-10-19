@@ -7,7 +7,7 @@
 
 ## Nykyinen versio
 
-`v1.51` – `app/__init__.py`:n `__version__`, `app/static/index.html`:n
+`v1.52` – `app/__init__.py`:n `__version__`, `app/static/index.html`:n
 `#version-tag` ja kaikki `?v=`-leimat.
 
 ## Milloin +0.01
