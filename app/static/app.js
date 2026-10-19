@@ -848,7 +848,16 @@
     },
     masterVolume: 1,
     seekTo(time) {
-      const target = Math.max(0, time / 1000);
+      // alphaTab passes the *score* time (ms). Invert syncTimeMs() so the
+      // cursor lands on the clicked note instead of offset by SIIRTO/SYNC/BPM.
+      // time === 0 (rewind/stop) is left as-is so playback start/stop behaves
+      // exactly as before; only real click-to-seek positions are inverted.
+      let targetMs = time;
+      if (time > 0) {
+        const drift = 1 + syncDrift + bpmDrift();
+        targetMs = (time - syncOffsetBars * barDurationMs()) / drift;
+      }
+      const target = Math.max(0, targetMs / 1000);
       try {
         audio.currentTime = Number.isFinite(audio.duration)
           ? Math.min(target, audio.duration)
