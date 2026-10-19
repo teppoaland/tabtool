@@ -348,6 +348,7 @@ docs/               GITIGNORED
 - **v1.33** ✅ – MP3-kuunteluversiot artistikansioihin + seek-synkin vakaunnus
 - **v1.34** ✅ – desimaali-TAB BPM (esim. 143,55) GP5:n kokonaislukutemposta huolimatta
 - **v1.35** ✅ – SIIRTO (tahtia): rakenne-eron korjaus tabille tallentuen
+- **v1.48** ✅ – klikkaus-seek kohdistaa oikein SIIRTO/SYNC/BPM huomioiden (ei koske toistoa)
 - **v1.47** ✅ – osoitin ei enää "juokse" edellä: animoitu beat-kursori pois käytöstä
 - **v1.46** ✅ – kohdistusavustin: live-offset-näyttö + KOHDISTA-klikkaus (tallentaa SIIRTO-arvon)
 - **v1.45** ✅ – kursorin synkka: partituurin kesto master bar -tikeistä (api.endTime oli 0 ennen toistoa)

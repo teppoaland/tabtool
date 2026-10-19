@@ -1,5 +1,14 @@
 # 📊 Projektin edistyminen – AI TABTOOL
 
+## v1.48 – Klikkaus-seek kohdistaa oikein SIIRTO/SYNC/BPM huomioiden (19.10.2026)
+
+- `mediaHandler.seekTo` kääntää `syncTimeMs()`-korjauksen, mutta **vain kun
+  `time > 0`** (klikkaus-seek). `time === 0` (pysäytys/nollaus) jää
+  entiselleen, joten toiston aloitus/pysäytys on identtinen aiemman kanssa.
+- Klikkaus osuu nyt oikeaan tahtiin (ennen valitsi edellisen, kun
+  SIIRTO/SYNC/BPM oli nollasta poikkeava). Ei backend-muutoksia;
+  93 pytest-testiä.
+
 ## v1.47 – Animoitu beat-kursori pois käytöstä (18.10.2026)
 
 - `enableAnimatedBeatCursor = false`: alphaTabin animoitu kursori

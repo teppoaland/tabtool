@@ -2,6 +2,15 @@
 
 > AI TabTool käyttää `1.x`-versiosarjaa. Aloitus `v1.00`.
 
+## v1.48 – 19.10.2026
+
+- **Korjaus: klikkaus-seek kohdistaa nyt oikein.** `mediaHandler.seekTo`
+  käänsi aiemmin SIIRTO/SYNC/BPM-korjauksen vain osittain, joten klikatun
+  tahdin sijaan valittiin edellinen (esim. klikkaa 183 → valitsee 182).
+  Nyt `syncTimeMs()` käännetään klikkaus-seekeissä (`time > 0`), mutta
+  nollaus/pysäytys (`time === 0`) jätetään ennalleen, joten toisto ei
+  muuttunut. Ei backend-muutoksia; 93 pytest-testiä.
+
 ## v1.47 – 18.10.2026
 
 - **Korjaus: osoitin "juoksi" edellä toiston aikana (renderöinti).** alphaTabin
