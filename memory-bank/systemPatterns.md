@@ -139,7 +139,9 @@ resolvoitui työhakemistosta ja tabi menetti audionsa.
   (tabikohtainen muisti), FULLSCREEN/autofullscreen, cursor + edellinen
   rivi, dynamiikat piilossa, vaakascrollbar pois. Tabi renderöityy
   **tummalle** taustalle (`display.resources`-värit, `.alphatab`
-  `#0d1117`; v1.49).
+  `#0d1117`; v1.49). `.viewer-stage`/`.alphatab` tarvitsevat
+  `min-width: 0`:n, muuten alphaTabin canvas kasvattaa grid-radan
+  (~7000 px) ja sivu vierittyy oikealle (v1.50).
 - Aikajana: aika/kesto, tahtilukema, ±5 s, Space/nuolet, seek vierittää
   cursorin kohdalle; `TEE TAB TÄSTÄ` tekee pätkäjobin.
 - **Count-in** (v1.49): PLAY näyttää `.viewer-stage`-ankkurissa

@@ -1,7 +1,7 @@
 # 📍 Aktiivinen konteksti – AI TABTOOL
 
-> **Versio:** `v1.49` (19.10.2026)
-> **Git:** uusin koodicommit v1.49 (tumma tabi, LIBRARY, count-in);
+> **Versio:** `v1.50` (19.10.2026)
+> **Git:** uusin koodicommit v1.50 (tabinäkymän leveyskorjaus);
 > docs-commitit sen päällä, ei pushattu. `origin/main` = `69c2e39`;
 > paikallinen `main` on edellä (`git status -sb` näyttää määrän).
 > Docs-commit siirtää HEADia, joten älä pinnaa HEAD-hashia tähän tiedostoon.
@@ -10,6 +10,11 @@
 
 ## Nyt
 
+- **v1.50**: layout-korjaus. `.viewer-stage` ja `.alphatab` saivat
+  `min-width: 0` sekä `width/max-width: 100 %`, joten alphaTabin canvasin
+  sisältöleveys ei enää kasvata grid-rataa (sivu levisi ~7000 px:iin ja
+  vierittyi oikealle). Testattu 1366/1600/2560 px:
+  `scrollWidth == clientWidth`.
 - **v1.49**: tabi näytetään oletuksena **tummassa** teemassa (alphaTabin
   `display.resources`-värit + `.alphatab`-tausta `#0d1117`); SEARCH-napit
   nimettiin **LIBRARY**ksi ja modaalin iso SEARCH-otsikko poistettiin;

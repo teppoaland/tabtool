@@ -1,5 +1,15 @@
 # 📊 Projektin edistyminen – AI TABTOOL
 
+## v1.50 – Tabinäkymän leveyskorjaus (19.10.2026)
+
+- v1.49:n `.viewer-stage`-kääre otti leveytensä alphaTabin canvasin
+  sisältöleveydestä: grid-rata kasvoi ~7000 px:iin ja sivu vierittyi
+  oikealle. Korjaus: `.viewer-stage` ja `.alphatab` saivat
+  `min-width: 0` sekä `width/max-width: 100 %`.
+- Mitattu 1366/1600/2560 px: `document.scrollWidth == clientWidth`,
+  `#alphaTab` 1084 px (`.shell`-raja). Ei muita muutoksia;
+  93 pytest-testiä.
+
 ## v1.49 – Tumma tabinäkymä, LIBRARY-nimet ja 5 s count-in (19.10.2026)
 
 - Tabi renderöityy oletuksena tummalle taustalle: `display.resources`
