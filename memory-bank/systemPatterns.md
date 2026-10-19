@@ -137,16 +137,21 @@ resolvoitui työhakemistosta ja tabi menetti audionsa.
 - Paikallinen audio: `<audio>` + Range (`FileResponse` 206).
 - Oletus: **tab-only** (StaveProfile.Tab), Näkymä-valinta, raitavalinnat
   (tabikohtainen muisti), FULLSCREEN/autofullscreen, cursor + edellinen
-  rivi, dynamiikat piilossa, vaakascrollbar pois.
+  rivi, dynamiikat piilossa, vaakascrollbar pois. Tabi renderöityy
+  **tummalle** taustalle (`display.resources`-värit, `.alphatab`
+  `#0d1117`; v1.49).
 - Aikajana: aika/kesto, tahtilukema, ±5 s, Space/nuolet, seek vierittää
   cursorin kohdalle; `TEE TAB TÄSTÄ` tekee pätkäjobin.
-- **SEARCH-modaali** (v1.38): YouTube-linkki, GP5-linkki tai
-  GP5-tiedosto, MP3-valinta, GENERATE TAB, kirjasto ja kappaleen
-  valinta/poisto samassa ikkunassa. TV-näkymä jää soittoa varten.
+- **Count-in** (v1.49): PLAY näyttää `.viewer-stage`-ankkurissa
+  `#play-countdown`-overlayn 5 → 0 ja vasta sitten audio alkaa; toinen
+  PLAY peruu. Kesto `COUNTDOWN_SECONDS` app.js:ssä (Settings myöhemmin).
+- **LIBRARY-modaali** (v1.38, entinen SEARCH v1.49): YouTube-linkki,
+  GP5-linkki tai GP5-tiedosto, MP3-valinta, GENERATE TAB, kirjasto ja
+  kappaleen valinta/poisto samassa ikkunassa. TV-näkymä jää soittoa varten.
   GP5-lähde ohittaa AI-generoinnin; YT-audio liitetään samalla jobilla.
   Score-format valitaan `meta.files`:stä (gp5/musicxml). Tuotu tabi ilman
   audiota: PLAY ja aikajana piilotetaan, `LIITÄ AUDIO` hakee samannimisen
-  AI-tabin audion.
+  AI-tabin audion. Modaalin iso otsikko on poistettu (v1.49).
 - Kirjastorivi: `POISTA` avaa varoitusdialogin; poisto päivittää listan ja
   piilottaa viewerin, jos poistettu tabi oli auki. MP3 jää arkistoon.
 - `TAB BPM` kirjoittaa GP5-tempon **TALLENNA**-napista; desimaalit
@@ -157,7 +162,7 @@ resolvoitui työhakemistosta ja tabi menetti audionsa.
   vakiosiirron tai rakenne-eron; molemmat tallentuvat metaan
   (`sync_drift`, `sync_offset_bars`,
   `POST /api/tabs/{id}/sync`); AI-BPM on arvio.
-- SEARCH-modaali ja poiston varoitusdialogi ovat hyväksytyt; muita
+- LIBRARY-modaali ja poiston varoitusdialogi ovat hyväksytyt; muita
   modaaleja/toasteja ei lisätä ilman pyyntöä.
 - Modaalin pino: alphaTabin `.at-cursors` käyttää `z-index: 1000`, joten
   modaali on `2000`, dialogi `2100`, `.viewer-section` on `isolation:

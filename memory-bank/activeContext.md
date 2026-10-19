@@ -1,55 +1,38 @@
 # 📍 Aktiivinen konteksti – AI TABTOOL
 
-> **Versio:** `v1.48` (19.10.2026)
-> **Git:** uusin koodicommit v1.48 (klikkaus-seek-korjaus); docs-commitit sen
-> päällä, ei pushattu. `origin/main` = `69c2e39`; paikallinen `main` on
-> edellä (`git status -sb` näyttää määrän). Docs-commit siirtää HEADia,
-> joten älä pinnaa HEAD-hashia tähän tiedostoon.
+> **Versio:** `v1.49` (19.10.2026)
+> **Git:** uusin koodicommit v1.49 (tumma tabi, LIBRARY, count-in);
+> docs-commitit sen päällä, ei pushattu. `origin/main` = `69c2e39`;
+> paikallinen `main` on edellä (`git status -sb` näyttää määrän).
+> Docs-commit siirtää HEADia, joten älä pinnaa HEAD-hashia tähän tiedostoon.
 > **Push:** ei pushata julkiseen GitHubiin — vain lokaalit commitit
 > **Repo:** https://github.com/teppoaland/tabtool
 
 ## Nyt
 
-- **v1.48**: `mediaHandler.seekTo` kääntää SIIRTO/SYNC/BPM-korjauksen vain
-  klikkaus-seekeissä (`time > 0`); nollaus/pysäytys ennallaan, joten toisto
-  ei muuttunut. Klikkaus osuu nyt oikeaan tahtiin (ennen valitsi edellisen).
-- **v1.47**: `enableAnimatedBeatCursor = false`. alphaTabin animoitu
-  beat-kursori ekstrapoloi CSS-siirtymällä seuraavan iskun yli, joten
-  toiston aikana näkymä "juoksi" edellä ja pysäytyksessä palasi oikeaan
-  paikkaan. Nyt kursori hyppää suoraan oikeaan `tickPosition`iin.
-- **v1.46**: kohdistusavustin. Kuljetuspalkissa live-offset-näyttö
-  (`Osoitin +0,50 tahtia edellä` / `Kohdallaan`); **KOHDISTA**-nappi
-  pysäytettynä: klikkaa nuottia → laskee eron ja tallentaa SIIRTO-arvon.
-  Klikkauksen aikana alphaTabin click-to-seek pois päältä.
-- **v1.45**: `scoreEndTimeMs()` laskee partituurin keston master bar
-  -tikeistä (`(start + calculateDuration()) × 60000 / (tempo × 960)`).
-  `api.endTime` on live `currentPosition` ja oli 0 ennen toistoa, joten
-  aiempi korjaus putosi ääniraidan kestoon ja venytys jäi.
-- **v1.44**: `scoreEndTimeMs()` käyttää suoraan `api.endTime`ä (tick
-  lookup -objektilla ei ole `endTime`-kenttää). Korjaus on selainpuolinen,
-  joten se aktivoituu Ctrl+F5:llä myös ilman palvelimen uudelleenkäynnistystä.
-- **v1.43**: kursorin synkka korjattu. alphaTabin ulkoisen median kello
-  venytti backing trackin ajan partituurin pituuteen suhteella
-  `partituurin kesto / backingTrackDuration`; `backingTrackDuration`
-  palautti ääniraidan keston, joten pidempi tabi (Seek & Destroy 258
-  tahtia vs. audio ~249) sai kursorin kulkemaan ääntä edellä. Nyt se
-  palauttaa partituurin keston (`api.endTime`) → kellotus 1:1,
-  ja TAB BPM/SYNC/SIIRTO toimivat yksin. Tab BPM 143,5 (GP5 144)
-  kohdistaa tahdin 41 viimeisen nuotin.
+- **v1.49**: tabi näytetään oletuksena **tummassa** teemassa (alphaTabin
+  `display.resources`-värit + `.alphatab`-tausta `#0d1117`); SEARCH-napit
+  nimettiin **LIBRARY**ksi ja modaalin iso SEARCH-otsikko poistettiin;
+  PLAY aloittaa **5 → 0 -count-inin** ennen ääntä (toinen PLAY peruu).
+  Kesto `COUNTDOWN_SECONDS` app.js:ssä, kunnes Settings-näkymä tulee.
+- **Kursorin synkka (v1.43–v1.48)**: `backingTrackDuration` = partituurin
+  kesto master bar -tikeistä (`scoreEndTimeMs`), ei ääniraidan kesto;
+  `enableAnimatedBeatCursor = false`; klikkaus-seek kääntää
+  SIIRTO/SYNC/BPM-korjauksen (`time > 0`). KOHDISTA-nappi ja
+  live-offset-näyttö (v1.46) auttavat kohdistamaan.
 - **v1.42**: `pytest.ini`:n `addopts = -q` poistettu, joten `pytest -q`
-  tulostaa taas yhteenvedon (`93 passed`); memory bank -protokollan
-  tarkistuskomennot putkitetaan `Out-String -Width 200`:lla, koska
-  agentin kuori voi olla ~12 merkkiä leveä ja shell integration voi
-  pudottaa tulosteen. Ei toiminnallisia muutoksia.
+  tulostaa yhteenvedon (`93 passed`).
 - Phase 0/1/2 valmiit; v1.23–v1.37 katselu, aikajana, tuonti/audio,
   BPM/Nopeus, SYNC/SIIRTO ja ulkoinen arkisto. v1.38–v1.40 toivat
   **SEARCH-modaalin**, GP5-linkin/-tiedoston + YT-audion yhdellä
   toiminnolla ja kappaleen poiston. **v1.41** lisäsi GP3/GP4-tuonnin
   (konversio aidoksi GP5:ksi) ja korjasi audiopolun katoamisen
   levyrekisteröinnissä.
-- **SEARCH-modaali** (v1.38): YouTube-linkki, GP5-linkki tai
-  GP5-tiedosto, MP3-valinta, GENERATE TAB sekä kirjasto, josta kappale
-  valitaan soittoon. TV-näkymä on soittoa varten.
+- **SEARCH-modaali** (v1.38; v1.49 käyttöliittymässä **LIBRARY**): YouTube-
+  linkki, GP5-linkki tai GP5-tiedosto, MP3-valinta, GENERATE TAB sekä
+  kirjasto, josta kappale valitaan soittoon. TV-näkymä on soittoa varten.
+  Modaalin iso `SEARCH`-otsikko poistettu v1.49:ssä; `aria-label` säilyttää
+  nimeämisen.
 - **GP5 + YT yhdellä toiminnolla** (v1.40): `GP5-linkki` tai
   `GP5-tiedosto` ohittaa AI-generoinnin. YouTube-linkin kanssa tabi
   tuodaan ja audio liitetään samalla jobilla; ilman GP5-lähdettä tabi
@@ -166,24 +149,14 @@ Putki:
   Mitatut tempot: 143,55 / 161,5 / 143,55 / 112,35 / 136,0 BPM.
 - Headless-Chrome: SYNC `+3.50 %` → `sync_drift 0.035` kantaan ja
   `meta.json`iin; reload palautti arvon; Nopeus 50–150 %.
-- v1.31 headless: TALLENNA-nappi, punainen dirty-tila
-  (`rgb(255,123,123)`), BPM 146 → GP5-tempo 146 ja tila tyhjeni;
-  SYNC `+2.50 %` → `0.025`, ei virheitä.
-- v1.32: 69 pytest-testiä; backfill arkistoi 5 tiedostoa
-  (`D:\tabtool_files`), `fsutil hardlink list` vahvisti hard linkin
-  (`yt-62c1293b02.wav` ↔ `Metallica - Seek & Destroy.wav`).
-- Live-palvelin 8000: v1.41 (käynnistetty ilman temp-ympäristömuuttujia).
-- v1.33: seek-testi 30/10/50/20/55/5 s → tahdit 16/6/26/11/28/3
-  (odotetut); MP3 `Metallica` 414,7 s / 9,8 MB, `KISS` 20,0 s
-  (alkuperäinen audio on 20 s klippi); 72 testiä.
-- v1.34: desimaali-BPM 119,5 → GP5 120, 58 s → tahti 29 (ilman
-  korjausta 30); Seek & Destroy 143,555 BPM; live v1.34, 8 tabia.
-- v1.35: SIIRTO −8 → 40 s kohdalla tahti 13 (ilman siirtoa 21),
-  tallentui ja palautui reloadissa; 75 testiä; live v1.35.
-- v1.36: SIIRTO −1,5 (6 iskua) → 40 s kohdalla tahti 19 (ilman 21),
-  tallentui desimaalina; live v1.36.
-- v1.37: raahaus → `.at-selection` 0×0, seek 10 s → tahti 6,
-  pause säilytti tahtilukeman; live v1.37.
+- v1.31–v1.37 headless: TALLENNA/dirty-tila, backfill + hard link, seek
+  30/10/50/20/55/5 s → tahdit 16/6/26/11/28/3, desimaali-BPM 119,5 →
+  GP5 120, SIIRTO −8 → tahti 13, raahaus ei jäänyt loopiksi.
+  Yksityiskohdat `CHANGELOG.md`:ssä.
+- Live-palvelin 8000: v1.49 (käynnistetty ilman temp-ympäristömuuttujia).
+- v1.49 headless (CDP, trusted click): tumma render, LIBRARY-modaali
+  ilman h2-otsikkoa, countdown 4→0, peruutus ja toisto ilman
+  autoplay-poikkeusta.
 - v1.38: SEARCH-modaali, GP5-linkki (gprotab-sivu → `?download`-retry),
   poisto; headless: modaalin avaus, kappaleen valinta, poistodialogi ja
   GP5-render. 89 testiä.
@@ -211,24 +184,14 @@ Putki:
   vain lineaarisen heiton; ylimääräinen/puuttuva tahti vaatii GP5-korjauksen.
 - Spotify Phase 3, remote Phase 4, LAN-PIN, retention, bass/laulu,
   rummut (ADTOF/Omnizart), manuaalinen editori.
-- **Seek & Destroy – melkein kunnossa (19.10.):** ääni vaihdettu oikeaan
-  versioon; toisto osuu tahtiin ~148 asti **SIIRTO −0,75 ja BPM 142**
-  (ei 143,5). Tästä eteenpäin tabi ja äänite erkanevat → **GP5-korjaus
-  tarvitaan noin tahdin 149 kohdalle** (rakenne-ero). Korjausehdotus:
-  `SIIRTO alkaen tahdista X` (breakpoint-offset) tai itse GP5:n muokkaus
-  TuxGuitarilla. Ei vielä toteutettu.
+- **Seek & Destroy todistettu (19.10.):** toisto osuu 1:1 ainakin tahtiin
+  149 asti asetuksilla **SIIRTO −0,75 / BPM 142**. GP5-datan korjaus ei
+  ole prioriteetti: tabi on ohjelman lukemaa syötettä ja dataa korjataan
+  vasta kun ohjelma on valmis. `SIIRTO alkaen tahdista X`
+  (breakpoint-offset) jää myöhemmäksi.
 
 ## Uuden session aloitus
 
-**Sano Cline:lle: `lue membank`.**
-
-Se tekee automaattisesti:
-
-1. Lukee `memory-bank/projectBrief.md`, `systemPatterns.md`,
-   `techContext.md`, `activeContext.md` ja `progress.md`.
-2. Lukee `.clinerules/*.md`.
-3. Ajaa `git --no-pager status -sb`, `git --no-pager log -1 --oneline`
-   ja `pytest -q`.
-4. Jatkaa tämän tiedoston seuraavasta vaiheesta; ei riko
-   `.clinerules/`-sääntöjä.
-5. `docs/` ja `data/` ovat yksityisiä eivätkä kuulu gitiin.
+**Sano Cline:lle: `lue membank`.** Protokolla on `.clinerules/00-memory-bank.md`:ssä:
+lue tämä kansio + säännöt, tarkista git/pytest ja jatka seuraavasta vaiheesta.
+`docs/` ja `data/` ovat yksityisiä eivätkä kuulu gitiin.

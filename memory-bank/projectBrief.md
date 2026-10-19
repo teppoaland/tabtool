@@ -1,6 +1,6 @@
 # 🎯 Projektin lyhyt kuvaus – AI TABTOOL
 
-> **Versio:** `v1.48` (19.10.2026)
+> **Versio:** `v1.49` (19.10.2026)
 > **Repo:** https://github.com/teppoaland/tabtool
 > **Paikallinen:** `D:\AI\tabtool`
 
@@ -14,7 +14,7 @@ Lokaali web-palvelu, jossa voi:
    YouTube-audio yhdellä toiminnolla,
 4. katsoa tablatuuria alphaTabilla TV:stä/tietokoneelta (aikajana,
    cursor, fullscreen, raitavalinnat, BPM/Nopeus),
-5. valita ja poistaa kappaleita SEARCH-modaalin kirjastosta,
+5. valita ja poistaa kappaleita LIBRARY-modaalin kirjastosta,
 6. käyttää puhelinta kaukosäätimenä,
 7. viedä tabin GP5/MusicXML/MIDI-muodossa.
 
@@ -46,10 +46,11 @@ Lokaali web-palvelu, jossa voi:
 - **Kappaleen poisto** (v1.38): poistaa tabin, hakemiston, stemmit sekä
   job/track-rivit. Jaettu audio säilyy, jos toinen tabi käyttää samaa
   tiedostoa. MP3-kuunteluversio jää tarkoituksella arkistoon.
-- **SEARCH-modaali** (v1.38): haku, GP5-linkki/-tiedosto, MP3-valinta,
-  kirjasto ja kappaleen valinta samassa ikkunassa; TV-näkymä on soittoa
-  varten. Poistolla on oma varoitusdialogi.
-- **Versiosarja `1.x`**, aloitus `v1.00`; nyt `v1.48`.
+- **LIBRARY-modaali** (v1.38, entinen SEARCH v1.49): haku, GP5-linkki/-tiedosto,
+  MP3-valinta, kirjasto ja kappaleen valinta samassa ikkunassa; TV-näkymä
+  on soittoa varten. Poistolla on oma varoitusdialogi. Tabi on oletuksena
+  tummassa teemassa ja PLAY näyttää 5 → 0 -count-inin ennen ääntä.
+- **Versiosarja `1.x`**, aloitus `v1.00`; nyt `v1.49`.
 - **Ei julkista julkaisua:** koodi pidetään lokaalina. Commitit tehdään
   paikalliseen repoon palautuspisteiksi (revert); push GitHubiin vain
   erillisestä pyynnöstä.

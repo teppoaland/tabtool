@@ -1,5 +1,21 @@
 # 📊 Projektin edistyminen – AI TABTOOL
 
+## v1.49 – Tumma tabinäkymä, LIBRARY-nimet ja 5 s count-in (19.10.2026)
+
+- Tabi renderöityy oletuksena tummalle taustalle: `display.resources`
+  (`mainGlyphColor`, `secondaryGlyphColor`, `staffLineColor`,
+  `barSeparatorColor`, `barNumberColor`, `scoreInfoColor`) ja
+  `.alphatab`-tausta `#0d1117`; highlight-kursori `var(--ok)`.
+- SEARCH-napit → **LIBRARY** (yläpalkki ja etusivu), lede ja README
+  päivitetty; modaalista poistettu `SEARCH`-h2 ja tilalla
+  `aria-label="Library ja generaattori"`.
+- `#play-countdown`-overlay `.viewer-stage`-ankkurissa: PLAY käynnistää
+  **5 → 0** -laskennan, audio alkaa vasta 0:n jälkeen; toinen PLAY peruu.
+  Kesto `COUNTDOWN_SECONDS` (`app/static/app.js`).
+- Validoitu headless-Edgellä (CDP, trusted click, ei autoplay-poikkeusta):
+  tumma render, modaali ilman otsikkoa, countdown 5→0, peruutus ja toisto.
+- Ei backend-muutoksia; 93 pytest-testiä; live-palvelin v1.49.
+
 ## v1.48 – Klikkaus-seek kohdistaa oikein SIIRTO/SYNC/BPM huomioiden (19.10.2026)
 
 - `mediaHandler.seekTo` kääntää `syncTimeMs()`-korjauksen, mutta **vain kun
@@ -169,10 +185,13 @@
 
 ## Seuraavaksi
 
-0. Seek & Destroy: GP5-korjaus ~tahtiin 149 (rakenne-ero). Toisto osuu
-   siihen asti asetuksilla SIIRTO −0,75 / BPM 142 (ei 143,5).
+0. **Settings-näkymä**: countdownin kesto (nyt 5 s kovakoodattu
+   `COUNTDOWN_SECONDS`) ja muut toiston asetukset säädettäviksi.
 1. Päättää soittotapa/refinger: asemaprofiilit, playability-score,
    turhien nuottien karsinta, per-tahti/fraasiasema.
 2. Vasta sitten Phase 3 / Spotify: PKCE, haku/metadata, SDK/Connect,
    tokenit `oauth_tokens`-tauluun ja mockatut API-testit.
 3. Phase 4: remote-kaukosäädin.
+
+GP5-datan korjaus ei ole prioriteetti: ohjelma todettu 1:1 ainakin
+149 tahtiin (Seek & Destroy), ja tabi on syötettä, ei tuotetta.
