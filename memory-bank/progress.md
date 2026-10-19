@@ -160,6 +160,8 @@
 
 ## Seuraavaksi
 
+0. Seek & Destroy: GP5-korjaus ~tahtiin 149 (rakenne-ero). Toisto osuu
+   siihen asti asetuksilla SIIRTO −0,75 / BPM 142 (ei 143,5).
 1. Päättää soittotapa/refinger: asemaprofiilit, playability-score,
    turhien nuottien karsinta, per-tahti/fraasiasema.
 2. Vasta sitten Phase 3 / Spotify: PKCE, haku/metadata, SDK/Connect,
