@@ -348,7 +348,8 @@ docs/               GITIGNORED
 - **v1.33** ✅ – MP3-kuunteluversiot artistikansioihin + seek-synkin vakaunnus
 - **v1.34** ✅ – desimaali-TAB BPM (esim. 143,55) GP5:n kokonaislukutemposta huolimatta
 - **v1.35** ✅ – SIIRTO (tahtia): rakenne-eron korjaus tabille tallentuen
-- **v1.51** ✅ – count-in vain kerran alussa ja täysin erillään soitosta; SIIRTO ei siirrä audiota latauksessa
+- **v1.52** ✅ – korjaus: soitto ja tablatuuri synkissä (SIIRTO-inversio myös alphaTabin seekeille)
+- **v1.51** ✅ – count-in vain kerran alussa ja erillään soitosta (SIIRTO-seek-muutos kumottu v1.52:ssa)
 - **v1.50** ✅ – korjaus: tabinäkymä ei enää leviä oikealle (viewer-stage min-width)
 - **v1.49** ✅ – tumma tabinäkymä oletuksena, LIBRARY-napit, 5 s count-in ennen toistoa
 - **v1.48** ✅ – klikkaus-seek kohdistaa oikein SIIRTO/SYNC/BPM huomioiden (ei koske toistoa)

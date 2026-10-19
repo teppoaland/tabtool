@@ -2,6 +2,21 @@
 
 > AI TabTool käyttää `1.x`-versiosarjaa. Aloitus `v1.00`.
 
+## v1.52 – 19.10.2026
+
+- **Korjaus: soitto ja tablatuuri pysyvät taas synkissä.** v1.51 rajoitti
+  SIIRTO-inversion pelkkiin osoitinklikkauksiin, jolloin alphaTabin omat
+  seekit (lataus, play, pause) jäivät kääntämättä. Soiton aloituskohta
+  siirtyi 1,268 s → 0 ja koko biisi oli 0,75 tahtia eri kohdassa.
+  Palautettu v1.50:n käytös: `time > 0` -seekeissä inversio tehdään aina,
+  myös alphaTabin omille seekeille.
+- Count-in-parannukset säilyvät: vain ensimmäisellä aloituksella eikä
+  koske PLAY-nappiin, audioon tai kursoriin.
+- Validoitu headless-Edgellä: lataus t = 1,268 s (SIIRTO −0,75),
+  count-in ei muuta sitä, 10 s toiston jälkeen tahti 7 = odotettu,
+  tauon jälkeen resume ilman laskentaa.
+- 93 pytest-testiä.
+
 ## v1.51 – 19.10.2026
 
 - **Count-in vain kerran kappaleen alussa.** `countInDone` asetetaan
@@ -19,6 +34,9 @@
 - Validoitu headless-Edgellä: t = 0 latauksessa ja koko count-inin ajan,
   tauon jälkeen resume ilman laskentaa, klikkaus-seek osuu tahtiin 3.
 - 93 pytest-testiä.
+
+> Huom: v1.51:n SIIRTO-latausseek-muutos kumottiin v1.52:ssa, koska se
+> siirsi soitonaloituksen 1,268 s → 0 ja rikkoi soiton/tabin synkan.
 
 ## v1.50 – 19.10.2026
 

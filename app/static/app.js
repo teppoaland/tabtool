@@ -110,14 +110,6 @@
   let countdownPending = false;
   // Pre-count runs only on the first playback start after a tab is loaded.
   let countInDone = false;
-  // User click-to-seek window: alphaTab's own engine seeks (load/play/stop)
-  // must pass through untouched, only a real pointer click is inverted.
-  const USER_SEEK_WINDOW_MS = 600;
-  let userSeekArmedUntil = 0;
-
-  function armUserSeek() {
-    userSeekArmedUntil = performance.now() + USER_SEEK_WINDOW_MS;
-  }
 
   function setPlayLabel(playing) {
     if (!playButton) return;
@@ -915,13 +907,11 @@
     },
     masterVolume: 1,
     seekTo(time) {
-      // alphaTab passes the *score* time (ms). Only a real pointer click on
-      // the score is inverted (syncTimeMs); engine seeks at load/play/stop
-      // pass through untouched so the audio starts exactly at its position
-      // (alphaTab seeks to ~0.44 ms, not exactly 0, when a score loads).
+      // alphaTab passes the *score* time (ms). Invert syncTimeMs() so the
+      // audio position matches the cursor (click-to-seek and the engine's
+      // own start/stop seeks). time === 0 (rewind/stop) is left as-is.
       let targetMs = time;
-      const userSeek = performance.now() <= userSeekArmedUntil;
-      if (userSeek && time > 0) {
+      if (time > 0) {
         const drift = 1 + syncDrift + bpmDrift();
         targetMs = (time - syncOffsetBars * barDurationMs()) / drift;
       }
@@ -1740,10 +1730,6 @@
     });
   }
   if (playButton) playButton.addEventListener("click", togglePlayback);
-  if (viewerEl) {
-    viewerEl.addEventListener("pointerdown", armUserSeek, { passive: true });
-    viewerEl.addEventListener("mousedown", armUserSeek, { passive: true });
-  }
   if (staveSelect) {
     staveSelect.value = staveProfile;
     staveSelect.addEventListener("change", () =>
