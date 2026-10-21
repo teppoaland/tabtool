@@ -2,6 +2,197 @@
 
 > AI TabTool käyttää `1.x`-versiosarjaa. Aloitus `v1.00`.
 
+## v1.68 – 21.10.2026
+
+- **Viritys näkyviin ja talteen.** GP5-tuonti lukee nyt avoimet kielet
+  (`app/tuning.py`): tunnistetaan Standard E, Drop D, Eb Standard,
+  D Standard, Open G ja bass 4-string; muut → `Custom` + kirjaimet.
+  Tabin metaan tallentuu `tuning_label` (esim. `D Standard · DGCFAD`) ja
+  `tuning_notes` (`["D2","G2",…]`), ja `tabs.tuning` saa oikean avaimen
+  (aiemmin kaikki ei-standardit olivat `custom`).
+- **Näkyvyys:** soittokortin meta alkaa virityksellä
+  (`D Standard · DGCFAD · 142 BPM · …`), kirjastorivi näyttää virityksen
+  kun se ei ole standardi, ja työkaluvihje kertoo kanavan.
+- **Manuaalinen ylikirjoitus:** kirjaston `NIMEÄ`-lomakkeessa on uusi
+  Viritys-kenttä (`meta.tuning_override`); tyhjä kenttä palauttaa
+  tiedostosta luetun virityksen (`tuning_clear`).
+- **Vanhojen tabien viritykset:** `scripts/backfill_tuning.py` lukee
+  tallennetut GP5-tiedostot ja täyttää puuttuvat tiedot (`--dry-run`
+  ensin). Itse tabitiedostoja ei muuteta.
+- AI-tabit saavat virityksen valitusta asetuksesta; GP5-tuonti ei välitä
+  Viritys-valinnasta (se vaikuttaa vain generointiin).
+- 114 pytest-testiä (6 uutta: viritysten tunnistus, D-standard-tuonti,
+  ylikirjoitus). Ei muutoksia soittoketjuun.
+
+## v1.67 – 21.10.2026
+
+- **YouTube-kanava näkyviin jokaiselle tabille.** `fetch_youtube_details()`
+  lukee nyt kanavan (`%(channel)s`, fallback `%(uploader)s`) ja
+  `AudioSource.channel` kuljettaa sen putkeen. Kanava tallentuu tabin
+  metaan (`youtube_channel`) sekä AI-tabeille että GP5 + YouTube
+  -liitoksille (`_process_audio_job`).
+- **Näkyvyys:** kirjastorivi `… · YT: James Sly`, työkaluvihje
+  `YouTube: …` ja soittokortin meta `… · YT: …`. Näin saman kappaleen eri
+  uploadit erottuvat ja oikea GP5/audio-pari pysyy tiedossa.
+- `fetch_youtube_metadata()` säilyy yhteensopivana `(title, artist)`.
+- **Vanhojen tabien kanavat:** `scripts/backfill_youtube_channel.py`
+  hakee kanavan olemassa oleville YouTube-tabeille (`--dry-run` ensin).
+- 108 pytest-testiä (2 uutta: kanavan parsinta, `channel`-kenttä
+  `/api/tabs`-vastauksessa). Ei muutoksia soittoketjuun.
+
+## v1.66 – 21.10.2026
+
+- **Oma tuontikirjasto + bulk-export (ei julkiseen gitiin).** Uusi
+  `app/bulk.py`: `import_folder()` tuo kansiosta (myös alikansiot)
+  GP3/GP4/GP5- ja MusicXML-tabit kirjastoon ja `export_tabs()` kopioi
+  tabit GP5/MusicXML/MIDI-muodossa `manifest.json`in kanssa (valinnainen
+  ZIP). Tuodut tiedostot sijaitsevat `data/`- ja `EXTERNAL_DIR`-juurissa,
+  jotka ovat jo gitignoroituja; `.gitignore` sai lisäksi `library/`.
+- **Tuplien esto:** lähdekansioon kirjoitetaan
+  `.tabtool-imported.json` (SHA-256 → tab_id); `--force` ohittaa.
+- **Komennot:** `scripts/import_folder.py`, `scripts/export_tabs.py` ja
+  `scripts/adb_pull_gp.ps1`, joka hakee puhelimen `/sdcard/Download`ista
+  **itse ladatut** GP/MusicXML-tiedostot tuontikansioon. Skripti ei koske
+  appien yksityiseen dataan eikä hae mitään verkosta.
+- 106 pytest-testiä (5 uutta: `tests/test_bulk.py`).
+- Ei muutoksia soittoketjuun eikä API-reitteihin.
+
+## v1.65 – 21.10.2026
+
+- **Kirjastorivin POISTA on nyt pelkkä punainen ×.** Nappi on
+  ikonimainen ja kapea (ei reunusta normaalitilassa), joten rivi vie
+  vähemmän tilaa. Toiminto on ennallaan: klikkaus avaa saman
+  poiston varoitusdialogin. `title` ja uusi `aria-label` kertovat
+  edelleen "Poista … kirjastosta"; lukitulla rivillä nappi on harmaa
+  ja pois käytöstä.
+- Varoitusdialogin POISTA-nappi on edelleen tekstillinen.
+- 101 pytest-testiä; `node --check` OK.
+
+## v1.64 – 21.10.2026
+
+- **LIBRARY-modaalin sarakkeet vaihdettu:** KIRJASTO on nyt vasemmalla
+  (leveämpi, 1.15fr) ja generaattori (Oma audio / YouTube / GP5) oikealla.
+  Yleensä modaalista vain valitaan soitettava kappale, joten lista on
+  ensisijainen. DOM-järjestys vaihdettiin samaan järjestykseen, joten
+  myös näppäimistö/Tab-järjestys seuraa näkymää.
+- Erotinviiva siirtyi generaattorin sarakkeeseen
+  (`.modal-body > .modal-column:last-child`); ≤900 px -näkymässä viiva on
+  generaattorin yläpuolella. Ei muutoksia toimintaan eikä id:ihin.
+- 101 pytest-testiä; `node --check` OK.
+
+## v1.63 – 21.10.2026
+
+- **Kappaleiden uudelleennimeäminen.** Uusi `tabs.title_override`
+  (näkyvä nimi) ja `tabs.original_title` (generoitu nimi säilyy).
+  Tyhjä nimi palauttaa alkuperäisen. Nimi tallentuu uudella reitillä
+  `POST /api/tabs/{id}/library`. Näkymä ja kirjasto käyttävät aina
+  käyttäjän nimeä, joten samannimiset versiot pysyvät erillään.
+- **Lukitse.** `tabs.locked` estää poiston: `DELETE /api/tabs/{id}`
+  palauttaa 409 ja kirjastorivin `POISTA` on pois käytöstä, kunnes
+  lukitus avataan nimeämislomakkeesta. Lukittu rivi näyttää metassa
+  "lukittu".
+- **Arkistoi + Arkisto-lista.** `tabs.archived` piilottaa kappaleen
+  päälistalta. Listan lopussa on pieni `ARKISTO (n)` -linkki, joka
+  näyttää arkistoidut; arkistorastin poisto palauttaa kappaleen
+  pääkirjastoon. Kirjasto avautuu aina päälistaan.
+- **Aakkosjärjestys.** Rivit järjestetään `artist — title` -nimikkeen
+  mukaan (`localeCompare("fi", {numeric:true})`); myös `db.list_tabs`
+  palauttaa rivit artistin ja nimen mukaan.
+- **Rivin sisäinen nimeämislomake** (ei uutta modaalia): nimi-kenttä,
+  `[ ] Lukitse`, `[ ] Arkistoi`, TALLENNA ja PERUUTA. Virheet näkyvät
+  kirjaston status-rivillä.
+- **Skeemamigraatio:** `init_db` lisää `title_override`/`locked`/
+  `archived` -sarakkeet vanhaan kantaan (`ALTER TABLE`), olemassa oleva
+  data säilyy.
+- 101 pytest-testiä (`tests/test_tab_library.py`: nimeäminen, lukitus,
+  arkisto, järjestys, migraatio).
+
+## v1.62 – 21.10.2026
+
+- **LIBRARY piilotetaan fullscreenissä.** `#open-search` ei näy koko
+  näytön soittotilassa (`:fullscreen` ja `.is-fullscreen`), jotta ruutu
+  jää soitolle; Esc / FULLSCREEN palauttaa sen. Samalla `.viewer-bar`in
+  grid kaventuu kolmeen sarakkeeseen (`auto 1fr auto`), joten FULLSCREEN
+  pysyy kortin oikeassa reunassa ja PLAY siirtyy vasempaan laitaan.
+- Vain CSS; ei muutoksia DOMiin, soittoketjuun eikä reitteihin.
+- 96 pytest-testiä; `node --check` OK.
+
+## v1.61 – 21.10.2026
+
+- **EXPORT-rivi tabikentän alle.** `.viewer-foot` siirrettiin `#alphaTab`in
+  jälkeen: GP5 / MusicXML / MIDI -linkit ovat nyt tablatuurin alapuolella
+  eivätkä vie tilaa soittopalkkien välistä. Fullscreenissä rivi piilotetaan
+  edelleen.
+- **FULLSCREEN kortin oikeaan yläkulmaan.** `#fullscreen-button` siirrettiin
+  `.viewer-tools`ista samalle riville LIBRARYn, PLAYn ja otsikon kanssa;
+  `.viewer-bar`-grid sai neljännen sarakkeen (`auto auto 1fr auto`), joten
+  nappi asettuu kortin oikeaan reunaan.
+- **Transportille oma taustakortti.** `.transport` sai saman pinnan kuin
+  LIBRARY/PLAY-kortti: `var(--panel)`-tausta, reunus, pyöristys, varjo ja
+  `0.9rem 1.2rem` padding (`0 0.35rem` → kortti).
+- Ei muutoksia soittoketjuun: transportin DOM-id:t ja käsittelijät,
+  `#alphaTab`, `mediaHandler`/`seekTo`/`syncTimeMs` ennallaan.
+- 96 pytest-testiä; `compileall`, `node --check` OK.
+
+## v1.60 – 21.10.2026
+
+- **LIBRARY-modaali avautuu LIBRARY-napin korkeudelle** eikä hyppää
+  ruudun keskelle. `openSearch()` mittaa napin `getBoundingClientRect()`
+  -arvon ja kirjoittaa sen `--modal-top`-muuttujaan; `#search-modal`
+  käyttää sitä yläpaddingina (`align-items: flex-start`) ja paneelin
+  `max-height` lasketaan samasta arvosta, jotta paneeli mahtuu ruudulle.
+- Ankkuri: kortin LIBRARY-nappi; jos tabia ei ole auki (viewer piilossa),
+  käytetään topbarin LIBRARY-nappia. Arvo rajataan vähintään 8 px:iin.
+- Poiston varoitusdialogi pysyy keskitettynä (sääntö kohdistuu vain
+  `#search-modal`iin). Ei muutoksia soittoketjuun.
+- 96 pytest-testiä; `compileall`, `node --check` OK.
+
+## v1.59 – 21.10.2026
+
+- **Yläosa tiiviimmäksi.** Hero-osio (kicker + irrallinen LIBRARY-nappi)
+  poistettu; `.shell`-ylämarginaali ja `.viewer-section`in ylämarginaali
+  pienenivät, joten tablatuuri alkaa heti topbarin alta.
+- **LIBRARY samaan korttiin PLAYn kanssa.** `#open-search` siirrettiin
+  `#viewer-section`in `.viewer-bar`-korttiin PLAY-napin vasemmalle
+  puolelle (id ja käsittelijä ennallaan; topbarin `#open-search-top`
+  avaa kirjaston edelleen, kun tabia ei ole auki).
+- **Työkalurivi vasempaan reunaan.** `.viewer-bar` on nyt grid
+  (`auto auto 1fr`), joten NÄKYMÄ, raitavalinnat, FULLSCREEN ja
+  LIITÄ AUDIO alkavat omalta riviltään kortin vasemmasta reunasta
+  LIBRARY-napin alta. ≤720 px: kaksi saraketta + meta omalle rivilleen.
+- Ei muutoksia soittoketjuun: transportin DOM-id:t, `#alphaTab`,
+  `.transport` ja reitit ennallaan.
+- 96 pytest-testiä; `compileall`, `node --check` OK.
+
+## v1.58 – 21.10.2026
+
+- **Scrollbar omalle kaistalleen, marginaalit 30 px.** v1.57:n 15 px
+  sisämarginaali jätti pystyvierityspalkin (15 px gutter) tablatuurin
+  oikean reunan päälle. Nyt `display.padding: [30, 15]`: tablatuurin
+  oikea reuna on 30 px päässä reunasta, joten scrollbar (15 px) saa oman
+  kaistan eikä mene tabin päälle; vasen marginaali 15 → 30 px.
+- Ei muutoksia soittoketjuun: vain scoren sisämarginaali. Score-alueen
+  leveys ja cursor-säiliö seuraavat edelleen samaa `offsetWidth`-mittaa.
+- 96 pytest-testiä; `compileall`, `node --check` OK.
+
+## v1.57 – 21.10.2026
+
+- **Tabinäkymän marginaali 15 px molemmille puolille.** Vasen marginaali
+  oli ~26 px ja oikea ~3 px, koska alphaTab mitoittaa `.at-surface`-
+  kerroksen `.alphatab`-laatikon `offsetWidth`ista (koko reunuslaatikko)
+  mutta sijoittaa sen sisältölaatikon alkuun. Silloin `padding: 0.6rem`,
+  1 px reunus ja 15 px scrollbar-gutter työnsivät tablatuuria oikealle ja
+  oikea reuna leikkautui (`overflow-x: hidden`).
+- Korjaus: `.alphatab` ilman paddingia ja reunusta (reunus piirretään
+  `inset`-varjolla, ei vie tilaa) ja marginaali alphaTabin omalla
+  `display.padding: [15, 15]` -asetuksella. Mitat `min-height`,
+  `max-height`, `overflow`, `min-width`, `width`, `max-width` pysyivät
+  ennallaan.
+- Mitattu headless-Edgellä 1600/1366/1200/1024/800 px: vasen ja oikea
+  marginaali 15 px, ylivuoto 0 px, `document.scrollWidth ===
+  clientWidth` (ei sivuttaisvieritystä).
+- 96 pytest-testiä; `compileall`, `node --check app.js`/`remote.js` OK.
+
 ## v1.56 – 20.10.2026
 
 - **Korjaus: count-in ei käynnistynyt lainkaan.** v1.55 päätteli

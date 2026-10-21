@@ -21,6 +21,7 @@ import app.config as config
 from app import db
 from app.external_store import archive_external, archive_mp3
 from app.pipeline.model import get_tuning, parse_time_signature
+from app.tuning import describe_key, describe_tuning
 
 LOGGER = logging.getLogger("tabtool.jobs")
 
@@ -697,6 +698,8 @@ def _process_audio_job(job: dict[str, Any], options: JobOptions) -> None:
         meta["audio_path"] = audio_relative
         meta["duration_seconds"] = audio.duration
         meta["mp3_created"] = bool(options.archive_mp3)
+        if audio.source_type == "youtube" and audio.channel:
+            meta["youtube_channel"] = audio.channel
         updated = db.update_tab_audio(tab_id, audio_relative, meta)
         if updated is None:
             raise RuntimeError("Audion liittäminen tabiin epäonnistui.")
@@ -759,12 +762,17 @@ def process_job(job_id: str) -> None:
             "artist": document.artist,
             "source": audio.source_ref,
             "source_type": audio.source_type,
+            "youtube_channel": audio.channel if audio.source_type == "youtube" else "",
             "audio_path": db.to_data_relative(audio.path),
             "duration_seconds": audio.duration,
             "bpm": result["bpm"],
             "raw_bpm": result["raw_bpm"],
             "time_signature": list(document.time_signature),
             "tuning": document.tuning.key,
+            "tuning_label": describe_key(document.tuning.key),
+            "tuning_notes": list(
+                (describe_tuning(document.tuning.key) or {}).get("notes") or []
+            ),
             "grid_division": options.grid,
             "pipeline_version": PIPELINE_VERSION,
             "options": options.as_dict(),

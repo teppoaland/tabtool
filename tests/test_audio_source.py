@@ -50,6 +50,22 @@ def test_fetch_youtube_metadata_falls_back_to_uploader(monkeypatch) -> None:
     )
 
 
+def test_fetch_youtube_details_returns_channel(monkeypatch) -> None:
+    def fake_run(command: list[str]) -> subprocess.CompletedProcess[str]:
+        return subprocess.CompletedProcess(
+            command,
+            0,
+            stdout="Animal (Official Video)\nW.A.S.P.\nJames Sly\nJames Sly\n",
+            stderr="",
+        )
+
+    monkeypatch.setattr(audio_source, "_run", fake_run)
+    details = audio_source.fetch_youtube_details("https://youtu.be/7COTI8k-rgo")
+    assert details.title == "Animal"
+    assert details.artist == "W.A.S.P."
+    assert details.channel == "James Sly"
+
+
 def test_effective_track_metadata_prefers_real_metadata() -> None:
     assert jobs.effective_track_metadata(
         "YouTube audio", "", "Seek & Destroy", "Metallica"

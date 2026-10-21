@@ -6,14 +6,14 @@
   <meta name="color-scheme" content="dark">
   <title>AI TabTool</title>
   <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="/static/style.css?v=1.56">
+  <link rel="stylesheet" href="/static/style.css?v=1.68">
 </head>
 <body>
   <header class="topbar">
     <div class="brand">
       <span class="brand-mark" aria-hidden="true">AT</span>
       <span class="brand-name">AI TABTOOL</span>
-      <span id="version-tag" class="version">v1.56</span>
+      <span id="version-tag" class="version">v1.68</span>
     </div>
     <nav class="nav" aria-label="Päävalikko">
       <button id="open-search-top" type="button" class="ghost small nav-search"
@@ -24,28 +24,18 @@
   </header>
 
   <main class="shell">
-    <section class="hero">
-      <p class="kicker">PHASE 2 · GENERAATTORI</p>
-      <h1>Kitaratablatuurit<br>lokaalisti.</h1>
-      <p class="lede">
-        Avaa LIBRARY: liitä YouTube-linkki ja valinnainen GP5-linkki.
-        Tab generoidaan paikallisesti tai tuodaan valmiina, näytetään
-        alphaTabilla ja soitetaan samasta audiolähteestä.
-      </p>
-      <div class="hero-actions">
-        <button id="open-search" type="button" class="primary"
-                title="Avaa kirjasto ja generaattori: YouTube-linkki, GP5-linkki ja kirjasto.">LIBRARY</button>
-      </div>
-    </section>
-
     <section id="viewer-section" class="viewer-section" hidden>
       <div class="viewer-bar">
+        <button id="open-search" type="button" class="primary"
+                title="Avaa kirjasto ja generaattori: YouTube-linkki, GP5-linkki ja kirjasto.">LIBRARY</button>
         <button id="play-button" type="button" class="primary play"
                 title="Toista tai pysäytä audio. Koko näyttö avautuu toistettaessa; Esc palaa.">PLAY</button>
         <div class="viewer-meta">
           <strong id="tab-title"></strong>
           <span id="tab-meta" class="tab-meta"></span>
         </div>
+        <button id="fullscreen-button" type="button" class="ghost"
+                title="Koko näyttö: tabit täyttävät ruudun. Esc palaa.">FULLSCREEN</button>
         <div class="viewer-tools">
           <label class="mini-field"
                  title="Näytä vain tablatuuri (oletus), tab + nuotit tai vain nuotit.">
@@ -61,8 +51,6 @@
           <div id="track-toggles" class="track-toggles" role="group"
                aria-label="Näytettävät raidat"
                title="Valitse näytettävät raidat."></div>
-          <button id="fullscreen-button" type="button" class="ghost"
-                  title="Koko näyttö: tabit täyttävät ruudun. Esc palaa.">FULLSCREEN</button>
           <button id="attach-audio-button" type="button" class="ghost small" hidden
                   title="Etsi samanniminen tabi, jolla on audio, ja liitä sen audio tähän tabiin.">LIITÄ AUDIO</button>
           <span id="attach-status" class="attach-status" aria-live="polite"></span>
@@ -126,13 +114,13 @@
           <span id="bpm-status" class="bpm-status" aria-live="polite"></span>
         </label>
       </div>
+      <div id="alphaTab" class="alphatab" aria-label="Tablatuuri"></div>
       <div class="viewer-foot">
         <span class="export-label">EXPORT</span>
         <a data-format="gp5" href="#" download title="Lataa Guitar Pro 5 -tiedosto.">GP5</a>
         <a data-format="musicxml" href="#" download title="Lataa MusicXML-nuottitiedosto.">MusicXML</a>
         <a data-format="midi" href="#" download title="Lataa MIDI-tiedosto.">MIDI</a>
       </div>
-      <div id="alphaTab" class="alphatab" aria-label="Tablatuuri"></div>
       <audio id="audio" preload="metadata"></audio>
       <!-- Count-in overlay (v1.55): a fixed, out-of-flow child of the viewer
            so it stays visible inside fullscreen. It must not create a grid
@@ -156,6 +144,16 @@
       </header>
 
       <div class="modal-body">
+        <div class="modal-column modal-library-column">
+          <div class="modal-library-head">
+            <h3>Kirjasto</h3>
+            <span id="library-count" class="muted"></span>
+          </div>
+          <div id="library" class="library" aria-label="Tab-kirjasto" hidden
+               title="Valitse kappale soittoon, nimeä se uudelleen tai poista se. Tahtimäärä, nuotit, BPM ja luontiaika erottavat samannimiset versiot."></div>
+          <p id="library-status" class="muted library-status" aria-live="polite"></p>
+        </div>
+
         <div class="modal-column">
           <form id="source-form" class="card studio-form">
             <div class="field-row">
@@ -244,15 +242,6 @@
           </form>
         </div>
 
-        <div class="modal-column modal-library-column">
-          <div class="modal-library-head">
-            <h3>Kirjasto</h3>
-            <span id="library-count" class="muted"></span>
-          </div>
-          <div id="library" class="library" aria-label="Tab-kirjasto" hidden
-               title="Valitse kappale soittoon tai poista se. Tahtimäärä, nuotit, BPM ja luontiaika erottavat samannimiset versiot."></div>
-          <p id="library-status" class="muted library-status" aria-live="polite"></p>
-        </div>
       </div>
     </div>
   </div>
@@ -276,12 +265,12 @@
 
 
   <footer class="footer">
-    <span>AI TabTool v1.56</span>
+    <span>AI TabTool v1.68</span>
     <span>Local-first · <a href="/remote">Remote</a></span>
   </footer>
 
-  <script src="/static/vendor/alphaTab/alphaTab.min.js?v=1.56"></script>
-  <script src="/static/app.js?v=1.56" defer></script>
+  <script src="/static/vendor/alphaTab/alphaTab.min.js?v=1.68"></script>
+  <script src="/static/app.js?v=1.68" defer></script>
 </body>
 </html>
 

@@ -3,6 +3,7 @@ docs/
 data/
 tabs/
 private/
+library/
 
 # ── Ääni- ja tab-tiedostot (generoidut / henkilökohtaiset) ──
 *.wav

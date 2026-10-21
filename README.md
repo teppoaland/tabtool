@@ -268,6 +268,43 @@ Olemassa olevan kirjaston voi arkistoida kertaalleen:
 
 ---
 
+## Oma tuontikirjasto ja bulk-export (v1.66)
+
+Valmiit GP3/GP4/GP5- ja MusicXML-tabit voi tuoda **kansiosta kerralla** ja
+viedä ulos samoilla formaateilla. Tiedostot pysyvät yksityisinä:
+`data/`, `library/` ja `D:\tabtool_files\` ovat gitignoroituja, joten
+tuotu sisältö ei mene julkiseen repoon.
+
+```powershell
+# 1) Tuo kaikki tabit kansiosta (myös alikansiot)
+.venv\Scripts\python.exe scripts\import_folder.py "D:\tabtool_files\imports"
+
+# uudelleentuonti (ohittaa .tabtool-imported.json -manifestin)
+.venv\Scripts\python.exe scripts\import_folder.py "D:\tabtool_files\imports" --force
+
+# 2) Vie koko kirjasto GP5/MusicXML/MIDI-muodossa + manifest.json + ZIP
+.venv\Scripts\python.exe scripts\export_tabs.py "D:\tabtool_files\exports" --zip
+
+# vain osa formaateista / tietyt tabit
+.venv\Scripts\python.exe scripts\export_tabs.py "D:\tabtool_files\exports" --formats gp5 --ids <tab_id>
+```
+
+Tuoja kirjoittaa lähdekansioon `.tabtool-imported.json`-manifestin
+(SHA-256 → tab_id), joten samaa tiedostoa ei tuoda kahdesti. Export
+nimeää tiedostot muotoon `Artisti - Kappale.gp5` ja kirjoittaa
+`manifest.json`iin tunnisteet, BPM:n ja tahtimäärän.
+
+Puhelimesta voi hakea **itse lataamasi** GP/MusicXML-tiedostot
+(`/sdcard/Download`) suoraan tuontikansioon – appien yksityiseen dataan
+skripti ei koske:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\adb_pull_gp.ps1
+.venv\Scripts\python.exe scripts\import_folder.py "D:\tabtool_files\imports"
+```
+
+---
+
 ## Spotify-asetukset (Phase 3)
 
 1. Luo Spotify Developer Dashboardissa app nimeltä `AI TabTool`.

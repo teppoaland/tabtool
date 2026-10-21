@@ -19,6 +19,15 @@ class AudioSource:
     source_ref: str
     title: str
     artist: str = ""
+    # YouTube uploader/channel, so the right upload of a song stays visible.
+    channel: str = ""
+
+
+@dataclass(frozen=True)
+class YouTubeDetails:
+    title: str
+    artist: str
+    channel: str
 
 
 _YOUTUBE_SUFFIX = re.compile(
@@ -92,8 +101,12 @@ def probe_duration(path: str | Path) -> float:
         raise RuntimeError(f"Could not read duration from {path}") from exc
 
 
-def fetch_youtube_metadata(url: str) -> tuple[str, str]:
-    """Return a cleaned video title and artist/uploader without downloading."""
+def fetch_youtube_details(url: str) -> YouTubeDetails:
+    """Cleaned title, artist and the uploading channel of a YouTube video.
+
+    The channel matters: different uploads of the same song have different
+    edits and lengths, so a GP5 tab may only line up with one of them.
+    """
     result = _run(
         [
             sys.executable,
@@ -106,18 +119,30 @@ def fetch_youtube_metadata(url: str) -> tuple[str, str]:
             "--print",
             "%(artist)s",
             "--print",
+            "%(channel)s",
+            "--print",
             "%(uploader)s",
             url,
         ]
     )
     lines = [line.strip() for line in result.stdout.splitlines() if line.strip()]
-    title = clean_youtube_title(lines[0]) if lines else ""
-    artist = ""
-    for line in lines[1:]:
-        if line and line.upper() != "NA":
-            artist = line
-            break
-    return title, artist
+
+    def pick(index: int) -> str:
+        if index >= len(lines):
+            return ""
+        value = lines[index]
+        return "" if value.upper() == "NA" else value
+
+    title = clean_youtube_title(pick(0))
+    artist = pick(1) or pick(2) or pick(3)
+    channel = pick(2) or pick(3)
+    return YouTubeDetails(title=title, artist=artist, channel=channel)
+
+
+def fetch_youtube_metadata(url: str) -> tuple[str, str]:
+    """Return a cleaned video title and artist/uploader without downloading."""
+    details = fetch_youtube_details(url)
+    return details.title, details.artist
 
 
 def normalize_audio(
@@ -220,11 +245,16 @@ def prepare_audio(
     if source.startswith(("http://", "https://")):
         metadata_title = ""
         metadata_artist = ""
+        metadata_channel = ""
         try:
-            metadata_title, metadata_artist = fetch_youtube_metadata(source)
+            details = fetch_youtube_details(source)
+            metadata_title = details.title
+            metadata_artist = details.artist
+            metadata_channel = details.channel
         except Exception:
             metadata_title = ""
             metadata_artist = ""
+            metadata_channel = ""
         downloaded = download_youtube(
             source,
             directory,
@@ -248,6 +278,7 @@ def prepare_audio(
             source_ref=source,
             title=title or metadata_title or "YouTube audio",
             artist=metadata_artist,
+            channel=metadata_channel,
         )
 
     input_path = Path(source).expanduser()

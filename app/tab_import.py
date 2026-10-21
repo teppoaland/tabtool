@@ -10,6 +10,7 @@ from typing import Any
 
 from app import config, db
 from app.external_store import archive_external
+from app.tuning import describe_pitches
 
 MAX_IMPORT_BYTES = 20 * 1024 * 1024
 GP_SUFFIXES = {".gp3", ".gp4", ".gp5"}
@@ -91,21 +92,21 @@ def _parse_gp(path: Path, filename: str) -> dict[str, Any]:
                     notes += len(getattr(beat, "notes", []) or [])
 
     tuning = "custom"
+    tuning_notes: list[str] = []
+    tuning_label = ""
     tracks = list(getattr(song, "tracks", []) or [])
     if tracks:
         values = {
             int(string.number): int(string.value)
             for string in getattr(tracks[0], "strings", []) or []
         }
-        if [values.get(number) for number in range(1, 7)] == [
-            64,
-            59,
-            55,
-            50,
-            45,
-            40,
-        ]:
-            tuning = "standard"
+        numbers = sorted(values, reverse=True)
+        ordered = [values[number] for number in numbers]
+        if ordered and all(isinstance(value, int) for value in ordered):
+            info = describe_pitches(ordered)
+            tuning = str(info["key"])
+            tuning_notes = list(info["notes"])
+            tuning_label = str(info["text"])
 
     time_signature = _time_signature_from_gp(
         headers[0] if headers else None
@@ -116,6 +117,8 @@ def _parse_gp(path: Path, filename: str) -> dict[str, Any]:
         "bpm": bpm,
         "time_signature": time_signature,
         "tuning": tuning,
+        "tuning_notes": tuning_notes,
+        "tuning_label": tuning_label,
         "measures": measures,
         "detected_notes": notes,
         "tab_notes": notes,
@@ -184,6 +187,8 @@ def _parse_musicxml(path: Path, filename: str) -> dict[str, Any]:
         "bpm": bpm,
         "time_signature": time_signature,
         "tuning": "standard",
+        "tuning_notes": [],
+        "tuning_label": "Standard E · EADGBE",
         "measures": measures,
         "detected_notes": notes,
         "tab_notes": notes,
@@ -243,6 +248,8 @@ def import_tab_bytes(data: bytes, filename: str) -> dict[str, Any]:
             "bpm": parsed["bpm"],
             "time_signature": parsed["time_signature"],
             "tuning": parsed["tuning"],
+            "tuning_notes": parsed.get("tuning_notes", []),
+            "tuning_label": parsed.get("tuning_label", ""),
             "grid_division": 16,
             "pipeline_version": "import",
             "options": {},

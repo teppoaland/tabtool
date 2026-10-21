@@ -32,6 +32,7 @@ from app.config import (
     is_loopback,
 )
 from app.pipeline.audio_source import slugify
+from app.tuning import describe_key
 
 ensure_data_dirs()
 
@@ -330,12 +331,37 @@ async def job_events(job_id: str) -> StreamingResponse:
 
 
 def _tab_summary(tab: dict[str, object]) -> dict[str, object]:
-    keys = ("id", "title", "artist", "bpm", "measure_count", "note_count", "created_at")
+    keys = (
+        "id",
+        "title",
+        "artist",
+        "bpm",
+        "measure_count",
+        "note_count",
+        "created_at",
+        "title_override",
+        "original_title",
+        "locked",
+        "archived",
+    )
     summary = {key: tab.get(key) for key in keys}
     meta = tab.get("meta")
     summary["source_type"] = (
         meta.get("source_type") if isinstance(meta, dict) else ""
     )
+    # Which YouTube upload the tab was built from: different uploads of the
+    # same song have different edits, so the GP5 may only fit one of them.
+    summary["channel"] = (
+        str(meta.get("youtube_channel") or "") if isinstance(meta, dict) else ""
+    )
+    tuning_key = str(tab.get("tuning") or "")
+    label = str(meta.get("tuning_label") or "") if isinstance(meta, dict) else ""
+    override = (
+        str(meta.get("tuning_override") or "") if isinstance(meta, dict) else ""
+    )
+    summary["tuning"] = tuning_key
+    summary["tuning_override"] = override
+    summary["tuning_label"] = override or label or describe_key(tuning_key)
     return summary
 
 
@@ -393,10 +419,54 @@ def import_tab_from_url(url: str = Form(...)) -> dict[str, object]:
 @app.delete("/api/tabs/{tab_id}", tags=["tabs"])
 def delete_tab(tab_id: str) -> dict[str, object]:
     """Delete a tab with its audio and stems; the MP3 copy is kept."""
+    tab = _load_tab(tab_id)
+    if tab is not None and tab.get("locked"):
+        raise HTTPException(
+            status_code=409,
+            detail="Tab is locked. Unlock it in the library first.",
+        )
     try:
         return library.delete_tab_data(tab_id)
     except LookupError as exc:
         raise HTTPException(status_code=404, detail="Unknown tab") from exc
+
+
+@app.post("/api/tabs/{tab_id}/library", tags=["tabs"])
+def tab_library(
+    tab_id: str,
+    title: str | None = Form(default=None),
+    locked: bool | None = Form(default=None),
+    archived: bool | None = Form(default=None),
+    tuning: str | None = Form(default=None),
+    tuning_clear: bool = Form(default=False),
+) -> dict[str, object]:
+    """Rename, lock, archive or annotate a tab without touching its tab data."""
+    tab = _load_tab(tab_id)
+    if tab is None:
+        raise HTTPException(status_code=404, detail="Unknown tab")
+    meta = None
+    if tuning_clear:
+        meta = dict(tab.get("meta") or {})
+        meta.pop("tuning_override", None)
+    elif tuning is not None:
+        value = str(tuning).strip()
+        if value:
+            meta = dict(tab.get("meta") or {})
+            meta["tuning_override"] = value
+    if meta is not None:
+        db.update_tab_meta(tab_id, meta)
+        tab = db.get_tab(tab_id) or tab
+    changes: dict[str, object] = {}
+    if title is not None:
+        changes["title_override"] = title
+    if locked is not None:
+        changes["locked"] = locked
+    if archived is not None:
+        changes["archived"] = archived
+    updated = db.update_tab_library(tab_id, **changes)
+    if updated is None:  # pragma: no cover - deleted between the two calls
+        raise HTTPException(status_code=404, detail="Unknown tab")
+    return _tab_summary(updated)
 
 
 @app.get("/api/tabs/{tab_id}", tags=["tabs"])

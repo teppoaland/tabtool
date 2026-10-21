@@ -7,7 +7,7 @@ from fastapi.testclient import TestClient
 from app import config
 from app.pipeline.build import build_document
 from app.pipeline.export_gp5 import export_gp5
-from app.pipeline.model import STANDARD_TUNING, TabNote
+from app.pipeline.model import D_STANDARD_TUNING, STANDARD_TUNING, TabNote
 
 
 def _gp5_bytes(tmp_path: Path) -> bytes:
@@ -35,6 +35,41 @@ def _gp4_bytes(tmp_path: Path) -> bytes:
     path = tmp_path / "import.gp4"
     guitarpro.write(song, str(path), version=(4, 0, 6))
     return path.read_bytes()
+
+
+def test_import_keeps_non_standard_tuning(
+    client: TestClient, tmp_path: Path
+) -> None:
+    document = build_document(
+        title="D Standard Song",
+        artist="Test Band",
+        bpm=100,
+        time_signature="4/4",
+        tuning=D_STANDARD_TUNING,
+        tab_notes=[TabNote(38, 6, 0, 0, 960)],
+        measure_count=1,
+    )
+    path = tmp_path / "dstandard.gp5"
+    export_gp5(document, path)
+
+    response = client.post(
+        "/api/tabs/import",
+        files={
+            "file": (
+                "dstandard.gp5",
+                path.read_bytes(),
+                "application/octet-stream",
+            )
+        },
+    )
+    assert response.status_code == 200, response.text
+    summary = response.json()
+    tab = client.get(f"/api/tabs/{summary['id']}").json()
+
+    assert tab["tuning"] == "d_standard"
+    assert tab["meta"]["tuning_label"] == "D Standard · DGCFAD"
+    assert tab["meta"]["tuning_notes"] == ["D2", "G2", "C3", "F3", "A3", "D4"]
+    assert summary["tuning_label"] == "D Standard · DGCFAD"
 
 
 def test_import_gp4_is_converted_to_gp5(

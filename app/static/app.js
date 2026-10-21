@@ -101,6 +101,8 @@
   let syncOffsetBars = 0;
   let syncSaveTimer = null;
   let pendingDelete = null;
+  let libraryTabs = [];
+  let showArchive = false;
   let alignArmed = false;
 
   // Count-in (v1.55): five steps then a short "0". UI-only state; see the
@@ -603,6 +605,7 @@
           : String(tab.source_type);
       parts.push(`Lähde: ${label}`);
     }
+    if (tab.channel) parts.push(`YouTube: ${tab.channel}`);
     parts.push(`ID: ${tab.id}`);
     return parts.join("\n");
   }
@@ -922,6 +925,13 @@
           scale: 1,
           staveProfile: staveProfileValue(staveProfile),
           layoutMode: alphaTab.LayoutMode ? alphaTab.LayoutMode.Page : 0,
+          // Horizontal/vertical score margin. alphaTab sizes its
+          // .at-surface from the container's offsetWidth and draws the
+          // score inside this padding, so the viewer element must stay
+          // padding/border free (see .alphatab in style.css, v1.57).
+          // 30 px horizontal leaves the 15 px scrollbar its own lane in
+          // the right margin instead of running over the score (v1.58).
+          padding: [30, 15],
           // Dark score: light glyphs and muted staff lines on the dark
           // .alphatab surface (hex strings are parsed by alphaTab's Color).
           resources: {
@@ -1143,12 +1153,20 @@
     }
     if (metaEl) {
       const meta = tab.meta || {};
-      const parts = [
+      const tuningText =
+        meta.tuning_override ||
+        meta.tuning_label ||
+        (meta.tuning ? String(meta.tuning) : "");
+      const parts = [];
+      // Tuning first: it is the thing you must remember before playing.
+      if (tuningText) parts.push(tuningText);
+      parts.push(
         `${formatBpm(tab.bpm)} BPM`,
         `${tab.measure_count} bars`,
-        `${tab.note_count} notes`,
-      ];
-      if (meta.tuning) parts.push(String(meta.tuning));
+        `${tab.note_count} notes`
+      );
+      // Keep the YouTube upload visible: a GP5 tab may only fit one upload.
+      if (meta.youtube_channel) parts.push(`YT: ${meta.youtube_channel}`);
       metaEl.textContent = parts.join(" · ");
     }
     const files = (tab.meta && tab.meta.files) || {};
@@ -1303,49 +1321,204 @@
     if (bpm) parts.push(`${bpm} BPM`);
     parts.push(`${Number(tab.measure_count) || 0} tahtia`);
     parts.push(`${Number(tab.note_count) || 0} nuottia`);
+    if (tab.tuning_label && (tab.tuning_override || tab.tuning !== "standard")) {
+      parts.push(tab.tuning_label);
+    }
     if (tab.source_type === "import") parts.push("tuotu tabi");
+    if (tab.channel) parts.push(`YT: ${tab.channel}`);
+    if (tab.locked) parts.push("lukittu");
     const created = formatTimestamp(tab.created_at);
     if (created) parts.push(created);
     return parts.join(" · ");
   }
 
-  function renderLibrary(tabs) {
+  function sortLibraryTabs(tabs) {
+    return tabs.slice().sort((left, right) =>
+      libraryItemLabel(left).localeCompare(libraryItemLabel(right), "fi", {
+        numeric: true,
+        sensitivity: "base",
+      })
+    );
+  }
+
+  function libraryButton(label, className, title) {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = className;
+    button.textContent = label;
+    if (title) button.title = title;
+    return button;
+  }
+
+  function libraryFlag(labelText, checked, onChange) {
+    const label = document.createElement("label");
+    label.className = "library-flag";
+    const input = document.createElement("input");
+    input.type = "checkbox";
+    input.checked = Boolean(checked);
+    input.addEventListener("change", () => onChange(input.checked));
+    label.append(input, document.createTextNode(labelText));
+    return label;
+  }
+
+  function renderLibraryRow(tab) {
+    const row = document.createElement("div");
+    row.className = "library-item";
+    row.dataset.tabId = tab.id;
+    if (activeTab && activeTab.id === tab.id) row.classList.add("is-active");
+    if (tab.archived) row.classList.add("is-archived");
+
+    const open = document.createElement("button");
+    open.type = "button";
+    open.className = "library-open";
+    open.title = libraryTooltip(tab);
+    open.setAttribute("aria-label", open.title.replace(/\n/g, ", "));
+    const name = document.createElement("span");
+    name.className = "library-title";
+    name.textContent = libraryItemLabel(tab);
+    const meta = document.createElement("span");
+    meta.className = "library-meta";
+    meta.textContent = libraryItemMeta(tab);
+    open.append(name, meta);
+    open.addEventListener("click", () => selectTab(tab.id));
+
+    const rename = libraryButton(
+      "NIMEÄ",
+      "ghost small library-rename",
+      `Nimeä ${libraryItemLabel(tab)} uudelleen.`
+    );
+    rename.addEventListener("click", () => openLibraryEditor(row, tab));
+
+    const remove = libraryButton(
+      "×",
+      "ghost small library-delete library-delete-x",
+      tab.locked
+        ? "Lukittu: avaa lukitus ennen poistoa."
+        : `Poista ${libraryItemLabel(tab)} kirjastosta.`
+    );
+    remove.setAttribute("aria-label", remove.title);
+    remove.disabled = Boolean(tab.locked);
+    remove.addEventListener("click", () => requestDelete(tab));
+
+    row.append(open, rename, remove);
+    if (tab.archived) {
+      row.append(
+        libraryFlag("Arkistoi", true, (checked) =>
+          saveLibraryMeta(tab, { archived: checked })
+        )
+      );
+    }
+    return row;
+  }
+
+  function openLibraryEditor(row, tab) {
+    const form = document.createElement("form");
+    form.className = "library-edit";
+
+    const input = document.createElement("input");
+    input.type = "text";
+    input.className = "library-edit-name";
+    input.maxLength = 200;
+    input.value = tab.title_override || tab.title || "";
+    input.placeholder = "Kappaleen nimi";
+    input.setAttribute("aria-label", "Kappaleen nimi");
+
+    const tuningInput = document.createElement("input");
+    tuningInput.type = "text";
+    tuningInput.className = "library-edit-tuning";
+    tuningInput.maxLength = 60;
+    tuningInput.value = tab.tuning_override || "";
+    tuningInput.placeholder = tab.tuning_label
+      ? `Viritys: ${tab.tuning_label}`
+      : "Viritys (esim. Drop D · DADGBE)";
+    tuningInput.setAttribute("aria-label", "Viritys");
+    tuningInput.title =
+      "Kappaleen viritys, esim. Drop D · DADGBE. Tyhjä kenttä palauttaa tiedostosta luetun virityksen.";
+
+    const lockLabel = document.createElement("label");
+    lockLabel.className = "library-flag";
+    const lockBox = document.createElement("input");
+    lockBox.type = "checkbox";
+    lockBox.checked = Boolean(tab.locked);
+    lockLabel.append(lockBox, document.createTextNode("Lukitse"));
+
+    const archiveLabel = document.createElement("label");
+    archiveLabel.className = "library-flag";
+    const archiveBox = document.createElement("input");
+    archiveBox.type = "checkbox";
+    archiveBox.checked = Boolean(tab.archived);
+    archiveLabel.append(archiveBox, document.createTextNode("Arkistoi"));
+
+    const actions = document.createElement("div");
+    actions.className = "library-edit-actions";
+    const save = document.createElement("button");
+    save.type = "submit";
+    save.className = "ghost small";
+    save.textContent = "TALLENNA";
+    const cancel = libraryButton("PERUUTA", "ghost small", "Peru nimeäminen.");
+    cancel.addEventListener("click", () => renderLibrary());
+    actions.append(save, cancel);
+
+    form.append(input, tuningInput, lockLabel, archiveLabel, actions);
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+      saveLibraryMeta(tab, {
+        title: input.value.trim(),
+        tuning: tuningInput.value.trim(),
+        locked: lockBox.checked,
+        archived: archiveBox.checked,
+      });
+    });
+
+    row.textContent = "";
+    row.append(form);
+    input.focus();
+    input.select();
+  }
+
+  function renderLibrary() {
     if (!libraryEl) return;
-    libraryEl.textContent = "";
+    const active = sortLibraryTabs(
+      (Array.isArray(libraryTabs) ? libraryTabs : []).filter((tab) => !tab.archived)
+    );
+    const archived = sortLibraryTabs(
+      (Array.isArray(libraryTabs) ? libraryTabs : []).filter((tab) => tab.archived)
+    );
+    if (showArchive && archived.length === 0) showArchive = false;
     if (libraryCount) {
-      libraryCount.textContent = `${tabs.length} kappaletta`;
+      libraryCount.textContent = showArchive
+        ? `${archived.length} arkistossa`
+        : `${active.length} kappaletta`;
     }
-    for (const tab of tabs) {
-      const row = document.createElement("div");
-      row.className = "library-item";
-      row.dataset.tabId = tab.id;
-      if (activeTab && activeTab.id === tab.id) row.classList.add("is-active");
-
-      const open = document.createElement("button");
-      open.type = "button";
-      open.className = "library-open";
-      open.title = libraryTooltip(tab);
-      open.setAttribute("aria-label", open.title.replace(/\n/g, ", "));
-      const name = document.createElement("span");
-      name.className = "library-title";
-      name.textContent = libraryItemLabel(tab);
-      const meta = document.createElement("span");
-      meta.className = "library-meta";
-      meta.textContent = libraryItemMeta(tab);
-      open.append(name, meta);
-      open.addEventListener("click", () => selectTab(tab.id));
-
-      const remove = document.createElement("button");
-      remove.type = "button";
-      remove.className = "ghost small library-delete";
-      remove.textContent = "POISTA";
-      remove.title = `Poista ${libraryItemLabel(tab)} kirjastosta.`;
-      remove.addEventListener("click", () => requestDelete(tab));
-
-      row.append(open, remove);
-      libraryEl.append(row);
+    libraryEl.textContent = "";
+    const visible = showArchive ? archived : active;
+    for (const tab of visible) libraryEl.append(renderLibraryRow(tab));
+    if (visible.length === 0) {
+      const empty = document.createElement("p");
+      empty.className = "muted library-empty";
+      empty.textContent = showArchive
+        ? "Arkisto on tyhjä."
+        : "Kirjasto on tyhjä.";
+      libraryEl.append(empty);
     }
-    libraryEl.hidden = tabs.length === 0;
+    if (archived.length || showArchive) {
+      const bar = document.createElement("div");
+      bar.className = "library-archive-bar";
+      const toggle = libraryButton(
+        showArchive ? "TAKAISIN KIRJASTOON" : `ARKISTO (${archived.length})`,
+        "library-archive-link",
+        showArchive
+          ? "Palaa pääkirjastoon."
+          : "Näytä arkistoidut kappaleet ja palauta ne tarvittaessa."
+      );
+      toggle.addEventListener("click", () => {
+        showArchive = !showArchive;
+        renderLibrary();
+      });
+      bar.append(toggle);
+      libraryEl.append(bar);
+    }
+    libraryEl.hidden = false;
   }
 
   async function selectTab(tabId) {
@@ -1356,13 +1529,63 @@
     }
   }
 
+  async function saveLibraryMeta(tab, patch) {
+    const data = new FormData();
+    if (Object.prototype.hasOwnProperty.call(patch, "title")) {
+      data.append("title", String(patch.title || ""));
+    }
+    if (Object.prototype.hasOwnProperty.call(patch, "locked")) {
+      data.append("locked", patch.locked ? "true" : "false");
+    }
+    if (Object.prototype.hasOwnProperty.call(patch, "archived")) {
+      data.append("archived", patch.archived ? "true" : "false");
+    }
+    if (Object.prototype.hasOwnProperty.call(patch, "tuning")) {
+      const value = String(patch.tuning || "").trim();
+      if (value) {
+        data.append("tuning", value);
+      } else {
+        data.append("tuning_clear", "true");
+      }
+    }
+    try {
+      const response = await fetch(`/api/tabs/${tab.id}/library`, {
+        method: "POST",
+        body: data,
+      });
+      if (!response.ok) {
+        setLibraryStatus(await readError(response), true);
+        return null;
+      }
+      const updated = await response.json();
+      await loadLibrary();
+      if (activeTab && activeTab.id === tab.id) {
+        activeTab.title = updated.title;
+        activeTab.title_override = updated.title_override;
+        activeTab.locked = updated.locked;
+        activeTab.archived = updated.archived;
+        activeTab.tuning = updated.tuning;
+        activeTab.meta = activeTab.meta || {};
+        activeTab.meta.tuning_override = updated.tuning_override;
+        activeTab.meta.tuning_label = updated.tuning_label;
+        renderTabMeta(activeTab);
+      }
+      setLibraryStatus("");
+      return updated;
+    } catch (error) {
+      console.error(error);
+      setLibraryStatus("Tallennus epäonnistui.", true);
+      return null;
+    }
+  }
+
   async function loadLibrary() {
     if (!libraryEl) return;
     try {
       const response = await fetch("/api/tabs?limit=200", { cache: "no-store" });
       if (!response.ok) return;
-      const tabs = await response.json();
-      renderLibrary(tabs);
+      libraryTabs = await response.json();
+      renderLibrary();
     } catch (error) {
       console.error(error);
     }
@@ -1370,8 +1593,21 @@
 
   function openSearch() {
     if (!searchModal) return;
+    // The panel opens at the LIBRARY button's height instead of jumping to
+    // the middle of the screen. The in-card button is the anchor; the topbar
+    // button is used when no tab is open (the viewer is hidden then).
+    const anchor =
+      openSearchButton && openSearchButton.offsetParent
+        ? openSearchButton
+        : openSearchTopButton;
+    if (anchor) {
+      const rect = anchor.getBoundingClientRect();
+      const top = Math.max(8, Math.round(rect.top));
+      searchModal.style.setProperty("--modal-top", `${top}px`);
+    }
     searchModal.hidden = false;
     document.body.classList.add("modal-open");
+    showArchive = false;
     setLibraryStatus("");
     loadLibrary();
     if (urlInput) urlInput.focus();

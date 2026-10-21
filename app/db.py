@@ -63,7 +63,10 @@ CREATE TABLE IF NOT EXISTS tabs (
     note_count INTEGER NOT NULL DEFAULT 0,
     audio_path TEXT NOT NULL DEFAULT '',
     meta_json TEXT NOT NULL DEFAULT '{}',
-    created_at TEXT NOT NULL
+    created_at TEXT NOT NULL,
+    title_override TEXT NOT NULL DEFAULT '',
+    locked INTEGER NOT NULL DEFAULT 0,
+    archived INTEGER NOT NULL DEFAULT 0
 );
 
 CREATE INDEX IF NOT EXISTS idx_tabs_created ON tabs(created_at DESC);
@@ -87,6 +90,13 @@ CREATE TABLE IF NOT EXISTS settings (
 
 _initialized: set[str] = set()
 _UNSET = object()
+
+# Library metadata added in v1.63; older databases get them via ALTER TABLE.
+_TAB_LIBRARY_COLUMNS: dict[str, str] = {
+    "title_override": "TEXT NOT NULL DEFAULT ''",
+    "locked": "INTEGER NOT NULL DEFAULT 0",
+    "archived": "INTEGER NOT NULL DEFAULT 0",
+}
 
 
 def utc_now() -> str:
@@ -127,7 +137,16 @@ def init_db() -> None:
     with connection() as conn:
         conn.execute("PRAGMA journal_mode = WAL")
         conn.executescript(SCHEMA)
+        _migrate_tab_columns(conn)
     _initialized.add(str(path))
+
+
+def _migrate_tab_columns(conn: sqlite3.Connection) -> None:
+    """Add the library columns to databases created before v1.63."""
+    existing = {row["name"] for row in conn.execute("PRAGMA table_info(tabs)")}
+    for name, ddl in _TAB_LIBRARY_COLUMNS.items():
+        if name not in existing:
+            conn.execute(f"ALTER TABLE tabs ADD COLUMN {name} {ddl}")
 
 
 def create_job(
@@ -416,6 +435,57 @@ def update_tab_sync(
     return get_tab(tab_id)
 
 
+def update_tab_library(
+    tab_id: str,
+    *,
+    title_override: str | object = _UNSET,
+    locked: bool | object = _UNSET,
+    archived: bool | object = _UNSET,
+) -> dict[str, Any] | None:
+    """Rename, lock or archive a tab (user-owned library metadata)."""
+    if get_tab(tab_id) is None:
+        return None
+    fields: dict[str, Any] = {}
+    if title_override is not _UNSET:
+        fields["title_override"] = str(title_override or "").strip()[:200]
+    if locked is not _UNSET:
+        fields["locked"] = 1 if locked else 0
+    if archived is not _UNSET:
+        fields["archived"] = 1 if archived else 0
+    if fields:
+        assignments = ", ".join(f"{name} = ?" for name in fields)
+        with connection() as conn:
+            conn.execute(
+                f"UPDATE tabs SET {assignments} WHERE id = ?",
+                (*fields.values(), tab_id),
+            )
+    return get_tab(tab_id)
+
+
+def update_tab_meta(tab_id: str, meta: dict[str, Any]) -> dict[str, Any] | None:
+    """Replace a tab's meta JSON (used for user overrides such as tuning)."""
+    if get_tab(tab_id) is None:
+        return None
+    with connection() as conn:
+        conn.execute(
+            "UPDATE tabs SET meta_json = ? WHERE id = ?",
+            (json.dumps(meta, ensure_ascii=False), tab_id),
+        )
+    return get_tab(tab_id)
+
+
+def update_tab_tuning(tab_id: str, tuning: str) -> dict[str, Any] | None:
+    """Store the tuning key detected from the tab file (e.g. ``d_standard``)."""
+    if get_tab(tab_id) is None:
+        return None
+    with connection() as conn:
+        conn.execute(
+            "UPDATE tabs SET tuning = ? WHERE id = ?",
+            (str(tuning or "custom"), tab_id),
+        )
+    return get_tab(tab_id)
+
+
 def delete_tab(tab_id: str) -> dict[str, Any] | None:
     """Remove a tab row (used when an explicit regenerate supersedes it)."""
     tab = get_tab(tab_id)
@@ -562,7 +632,13 @@ def list_tabs(limit: int = 20) -> list[dict[str, Any]]:
     limit = max(1, min(int(limit), 200))
     with connection() as conn:
         rows = conn.execute(
-            "SELECT * FROM tabs ORDER BY created_at DESC, rowid DESC LIMIT ?",
+            """
+            SELECT * FROM tabs
+            ORDER BY artist COLLATE NOCASE ASC,
+                     COALESCE(NULLIF(title_override, ''), title) COLLATE NOCASE ASC,
+                     created_at DESC, rowid DESC
+            LIMIT ?
+            """,
             (limit,),
         ).fetchall()
     return [_tab_row(row) for row in rows]
@@ -635,6 +711,14 @@ def _job_row(row: sqlite3.Row) -> dict[str, Any]:
 def _tab_row(row: sqlite3.Row) -> dict[str, Any]:
     data = dict(row)
     data["meta"] = _loads(data.pop("meta_json", "{}"), {})
+    # Library metadata: the user's own name wins over the generated one.
+    override = str(data.get("title_override") or "").strip()
+    data["title_override"] = override
+    data["original_title"] = str(data.get("title") or "")
+    if override:
+        data["title"] = override
+    data["locked"] = bool(data.get("locked"))
+    data["archived"] = bool(data.get("archived"))
     return data
 
 
