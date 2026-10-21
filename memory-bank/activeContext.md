@@ -1,10 +1,10 @@
 # 📍 Aktiivinen konteksti – AI TABTOOL
 
-> **Versio:** `v1.68` (21.10.2026)
-> **Git:** HEAD = `ac2457c` (v1.68-koodicommit; sisältää v1.57–v1.68
-> koodin). Työpuu clean, `main` 4 committia `origin/main`in edellä eli
-> **v1.57–v1.68 ei ole pushattu**. Docs-commit siirtää HEADia, joten älä
-> pinnaa hashia pysyvästi.
+> **Versio:** `v1.74` (21.10.2026)
+> **Git:** HEAD = docs-commit; **v1.69–v1.74 työpuussa commitoimatta**
+> (`CHANGELOG`, `app/*`, `app/pipeline/*`, `app/static/*`, `scripts/*`,
+> 7 uutta testitiedostoa). `main` 5 committia `origin/main`in edellä =
+> **ei pushattu**. Älä pinnaa hashia pysyvästi.
 > **Push:** vain erillisestä pyynnöstä (käyttäjä pyysi 20.10.2026).
 > **Repo:** https://github.com/teppoaland/tabtool
 > **Palvelin:** käyttäjän hallinnassa (`start.bat` / `stop.bat`); Cline ei
@@ -13,6 +13,27 @@
 
 ## Nyt
 
+- **v1.69–v1.74 (työpuussa, 21.10.2026):**
+  - **v1.69** score-end-guard: `syncTimeMs` clamp `scoreEnd−50ms` → kappale
+    soi loppuun tabin päätyttyä; `handlePlayButton`-nollaus.
+  - **v1.70** lukitus = kaikki asetukset read-only (`_require_unlocked`
+    409; UI disabloi BPM/SYNC/SIIRTO/KOHDISTA/LIITÄ AUDIO; avaus NIMEÄstä).
+  - **v1.71** lukkoikoni 🔒 kirjastoriville.
+  - **v1.72** sormitusprofiilit `fretboard.py` (V1·Avoimet/V2·Boksi/V3·
+    Vähän liikettä) + `playability.py` score + versiot **raitoina yhdessä
+    GP5:ssä** + `VALITSE TÄMÄ` (`POST /api/tabs/{id}/variant`) +
+    `variant_store.py` (JSON-snapshotit) + `PIPELINE_VERSION=2`.
+  - **v1.73** `prune.py` (haamunuottien siivo: oktaavihaamut pois,
+    polyfonia max 4/isku) + `PIPELINE_VERSION=3`.
+  - **v1.74** GP5-merkkijonot UTF-8:ksi (alphaTab luki cp1252:n väärin →
+    `·`/`ä` näkyi `�`nä); `backfill_gp5_utf8.py` korjasi 2 tabia.
+  - **134 pytest-testiä.**
+- **KISS – I Am a Legend Tonight:** AI-tabi (v3) jäi kohinaiseksi (kaksi
+  kitaraa samassa stemissä). Löytyi oikea tekstibabi (Emil Ortenmark);
+  soitetaan **standard E:ssä ilman capoa**. `scripts/build_kiss_legend.py`
+  teki nuottiviite-GP5:n (2 raitaa Rhythm/Lead, 23 tahtia) → tuotu
+  kirjastoon + audio liitetty. Täysi versio (tekniikat + osien järjestys)
+  jäi TuxGuitarille/exportterin laajennukselle.
 - **v1.66–v1.68 – tuonti, kanava ja viritys.** `app/bulk.py` +
   `scripts/import_folder.py` / `export_tabs.py` / `adb_pull_gp.ps1`
   (oma kirjasto pysyy gitin ulkopuolella; SHA-256-manifesti estää

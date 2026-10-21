@@ -1,5 +1,32 @@
 # 📊 Projektin edistyminen – AI TABTOOL
 
+## v1.74 – GP5 UTF-8 (21.10.2026)
+- GP5 merkkijonot kirjoitetaan/luetaan UTF-8:na (alphaTab luki cp1252:n
+  väärin → `·`/`ä` = `�`); `backfill_gp5_utf8.py` korjasi 2 AI-tabia.
+
+## v1.73 – Haamunuottien siivo (21.10.2026)
+- `app/pipeline/prune.py`: oktaavihaamut pois + polyfonia max 4/isku;
+  `PIPELINE_VERSION=3`, meta `pruned_notes`. 5 uutta testiä.
+
+## v1.72 – Sormitusprofiilit + versiot (21.10.2026)
+- `fretboard.py`: 3 profiilia (V1·Avoimet/V2·Boksi/V3·Vähän liikettä) +
+  uusi kustannusfunktio. `playability.py` 0–10 score. Versiot raitoina
+  yhdessä GP5:ssä; `VALITSE TÄMÄ` (`POST /api/tabs/{id}/variant`),
+  `variant_store.py`, `PIPELINE_VERSION=2`. Uudet testit:
+  fretboard_profiles, playability, tab_variant.
+
+## v1.71 – Lukkoikoni (21.10.2026)
+- 🔒 lukitun kappaleen kirjastoriville (rivin oma elementti).
+
+## v1.70 – Lukitus kaikkiin asetuksiin (21.10.2026)
+- `locked` = read-only: nimi/viritys/arkistointi/TAB BPM/SYNC/SIIRTO/
+  audion liityntä + poisto (409). UI disabloi; avaus NIMEÄstä. 2 testiä.
+
+## v1.69 – Kappale soi loppuun (21.10.2026)
+- `syncTimeMs` clamp `scoreEnd−50ms` + `handlePlayButton`-nollaus →
+  tabin päätyttyä audio soi loppuun, kursori jää viimeiselle iskulle.
+  1 testi (score-end-guard).
+
 ## v1.68 – Viritys näkyviin (21.10.2026)
 
 - GP5:n avoimet kielet → `app/tuning.py`: Standard E / Drop D / Eb
