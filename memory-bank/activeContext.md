@@ -1,27 +1,34 @@
 # 📍 Aktiivinen konteksti – AI TABTOOL
 
-> **Versio:** `v1.56` (20.10.2026)
-> **Git:** uusin koodicommit v1.56 (count-in); docs-commitit sen päällä.
-> `origin/main` = `69c2e39` ennen pushia; paikallinen `main` on edellä
-> (`git status -sb` näyttää määrän). Docs-commit siirtää HEADia, joten älä
-> pinnaa HEAD-hashia tähän tiedostoon.
+> **Versio:** `v1.65` (21.10.2026)
+> **Git:** HEAD `196ff62` (docs, ahead 1). **v1.57–v1.65 koodi on
+> työpuussa commitoimatta** (`CHANGELOG`, `app/*`, `app/static/*`,
+> `tests/test_tab_library.py`). Docs-commit siirtää HEADia, joten älä
+> pinnaa hashia pysyvästi.
 > **Push:** vain erillisestä pyynnöstä (käyttäjä pyysi 20.10.2026).
 > **Repo:** https://github.com/teppoaland/tabtool
 > **Palvelin:** käyttäjän hallinnassa (`start.bat` / `stop.bat`); Cline ei
-> käynnistä sitä taustalle eikä pysäytä ilman pyyntöä.
+> käynnistä sitä taustalle eikä pysäytä ilman pyyntöä. 21.10.2026 se on
+> sammutettu.
 
 ## Nyt
 
-- **v1.56 – count-in 5 → 0 soittoketjun ulkopuolella (validoitu).**
-  `handlePlayButton` on portinvartija: pause → `togglePlayback`, toinen
-  PLAY/Esc peruu, muuten laskenta ja lopussa **muuttumaton**
-  `togglePlayback()` kerran. Overlay `#play-countdown` on
-  `#viewer-section`in fixed-lapsi (ei grid/flex-item). Ohitus perustuu
-  käyttäjän omaan seekiin (`countInSkipped`), ei `audio.currentTime`iin:
-  alphaTab siirtää audion ensimmäiselle iskulle jo latauksessa
-  (0,8455 s SIIRTO −0,75:llä). Vartio: `tests/test_playback_guard.py`.
-  v1.55 oli välivaihe, jossa virheellinen `currentTime`-ehto ohitti
-  laskennan aina.
+- **v1.63–v1.65 – kirjaston hallinta.** `POST /api/tabs/{id}/library`
+  (`title`/`locked`/`archived`), rivin `NIMEÄ`-lomake (nimi + Lukitse +
+  Arkistoi + TALLENNA/PERUUTA), `ARKISTO (n)` -linkki listan lopussa,
+  aakkosjärjestys ja punainen `×`-poisto. `locked` estää poiston (409);
+  `archived` piilottaa päälistalta ja rastin poisto palauttaa sen.
+  Sarakkeet: `title_override`, `locked`, `archived` (+ migraatio).
+- **v1.57–v1.62 – ulkoasu.** Tabin marginaalit 30/30 px (alphaTabin
+  `display.padding: [30, 15]`, jotta 15 px scrollbar ei mene tabin
+  päälle), `.alphatab` paddingitta (reunus inset-varjolla), yläosa
+  tiiviimmäksi, LIBRARY PLAY-korttiin, NÄKYMÄ/raitavalinnat omalle
+  riville, FULLSCREEN kortin oikeaan yläkulmaan, `.transport` omaksi
+  kortiksi, EXPORT tabikentän alle, modaali avautuu LIBRARY-napin
+  korkeudelle, LIBRARY piiloon fullscreenissä, KIRJASTO modaalin
+  vasemmaksi sarakkeeksi.
+- **v1.56 – count-in 5 → 0 soittoketjun ulkopuolella (validoitu
+  käyttäjän kuuntelutestillä).** `handlePlayButton` on portinvartija.
 - **v1.54**: palvelimen hallinta käyttäjälle (`stop.bat`, `status.bat`,
   `start.bat`in porttitarkistus); ei muutoksia soittoon.
 - **v1.49**: tabi tummassa teemassa; SEARCH-napit → LIBRARY.
@@ -31,7 +38,7 @@
   SIIRTO/SYNC/BPM-korjauksen (`time > 0`). KOHDISTA-nappi ja
   live-offset-näyttö (v1.46) auttavat kohdistamaan.
 - **v1.42**: `pytest.ini`:n `addopts = -q` poistettu, joten `pytest -q`
-  tulostaa yhteenvedon (`96 passed`).
+  tulostaa yhteenvedon (`101 passed`).
 - Phase 0/1/2 valmiit; v1.23–v1.37 katselu, aikajana, tuonti/audio,
   BPM/Nopeus, SYNC/SIIRTO ja ulkoinen arkisto. v1.38–v1.40 toivat
   **SEARCH-modaalin**, GP5-linkin/-tiedoston + YT-audion yhdellä
@@ -47,9 +54,15 @@
   `GP5-tiedosto` ohittaa AI-generoinnin. YouTube-linkin kanssa tabi
   tuodaan ja audio liitetään samalla jobilla; ilman GP5-lähdettä tabi
   generoidaan AI:lla. GP5 + oma audiotiedosto on estetty.
-- **Poisto** (v1.38): kirjastorivin `POISTA` avaa varoitusdialogin.
-  Tab, hakemisto, stemmit ja job/track-rivit poistetaan; jaettu audio
-  säilyy ja MP3-kuunteluversio jää arkistoon.
+- **Poisto** (v1.38, × v1.65): kirjastorivin punainen `×` avaa
+  varoitusdialogin. Tab, hakemisto, stemmit ja job/track-rivit
+  poistetaan; jaettu audio säilyy ja MP3-kuunteluversio jää arkistoon.
+  Lukittua tabia ei voi poistaa (409).
+- **Kirjaston metadata** (v1.63): `NIMEÄ` avaa rivin lomakkeen
+  (nimi + `[ ] Lukitse` + `[ ] Arkistoi`); `title_override` on käyttäjän
+  nimi, `original_title` generaattorin nimi. Lista on aakkosjärjestyksessä
+  ja arkistoidut löytyvät listan lopun `ARKISTO (n)` -linkistä; rastin
+  poisto palauttaa ne pääkirjastoon.
 - **MP3-valinta** (v1.38): `MP3-kuunteluversio` on oletuksena päällä;
   valinta ei vaikuta tabin cache-avaimeen.
 - **Modaalin pino** (v1.39): alphaTabin cursor (`z-index: 1000`) ei enää
@@ -57,7 +70,8 @@
   `isolation: isolate`, cursor piiloon `body.modal-open`-tilassa.
 - Katselu: **tab-only oletus**, Näkymä (`Tab`/`Auto`/`Tab+nuotit`/`Nuotit`),
   raitavalinnat ja tabikohtainen muisti, FULLSCREEN + automaattinen
-  fullscreen PLAYssa, cursor + edellinen rivi näkyvissä, dynamiikat piilossa,
+  fullscreen PLAYssa (fullscreenissä LIBRARY piilotetaan, v1.62),
+  cursor + edellinen rivi näkyvissä, dynamiikat piilossa,
   vaakascrollbar pois.
 - Aikajana: aika/kesto, **tahtilukema**, ±5 s, Space/nuolet, seek
   vierittää tabin cursorin kohdalle.
@@ -151,7 +165,16 @@ Putki:
 
 ## Tuoreimmat validointitulokset
 
-- `pytest -q` → **96 passed**; `compileall` ja `node --check` OK.
+- `pytest -q` → **101 passed**; `compileall` ja `node --check` OK.
+- v1.57–v1.62 headless (käyttäjän palvelin): tabin marginaalit
+  30/30 px ja tabin reuna → scrollbar 15 px (1600/1366/1200/1024/800 px,
+  ei sivuttaisvieritystä); LIBRARY/PLAY-kortti + FULLSCREEN oikeassa
+  reunassa; modaalin yläreuna = LIBRARY-napin top (118 px); fullscreen
+  piilottaa LIBRARYn; EXPORT 16 px tabikentän alapuolella.
+- v1.63–v1.65: backend **101 passed** (nimeäminen, lukitus/poistoesto,
+  arkisto, järjestys, migraatio); UI-smoke: lista aakkosissa (myös
+  samannimiset), NIMEÄ-lomake (Lukitse/Arkistoi/TALLENNA/PERUUTA) ja
+  PERUUTUS toimivat. Tallennuspolkua ei testattu selaimessa.
 - v1.56 headless-Edge (CDP, käyttäjän palvelin): countdown 5→4→3→2→1→0
   ≈ 5,07 s, toisto 5,33 s; laskennan aikana `audio.currentTime` 0,846,
   `paused`, tahti 1 – kaikki muuttumattomia; layout 800/800; 2. PLAY

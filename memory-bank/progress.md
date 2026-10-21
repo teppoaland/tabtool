@@ -1,5 +1,43 @@
 # 📊 Projektin edistyminen – AI TABTOOL
 
+## v1.65 – POISTA punaiseksi ×:ksi (21.10.2026)
+
+- Kirjastorivin poisto on ikonimainen punainen `×` (`aria-label`/`title`
+  "Poista … kirjastosta"); lukitulla rivillä harmaa ja pois käytöstä.
+- 101 pytest-testiä; `node --check` OK.
+
+## v1.64 – KIRJASTO modaalin vasemmaksi (21.10.2026)
+
+- Sarakkeet vaihdettu DOMissa: KIRJASTO vasen (1.15fr), generaattori
+  oikea; erotinviiva generaattorin sarakkeessa. HTML-jäsennin: ei
+  sulkemattomia tageja.
+
+## v1.63 – Kirjaston nimet, lukitus ja arkisto (21.10.2026)
+
+- Skeema: `tabs.title_override`, `locked`, `archived` + `ALTER TABLE`
+  -migraatio `init_db`ssä (vanha data säilyy).
+- `POST /api/tabs/{id}/library` (Form `title`/`locked`/`archived`);
+  `_tab_summary` palauttaa `title_override`/`original_title`/`locked`/
+  `archived`. Lukittu tabi → `DELETE` 409. Lista aakkosissa
+  (SQL artist/nimi + `localeCompare("fi")` UI:ssa).
+- UI: rivin `NIMEÄ`-lomake (nimi + Lukitse + Arkistoi + TALLENNA/
+  PERUUTA), `ARKISTO (n)` -linkki listan lopussa (rastin poisto
+  palauttaa pääkirjastoon).
+- 101 pytest-testiä (5 uutta: nimeäminen, lukitus, arkisto, järjestys,
+  migraatio).
+
+## v1.57–v1.62 – Tabin marginaalit ja korttiasettelu (21.10.2026)
+
+- Tabin marginaali tulee alphaTabin `display.padding`ista: v1.57
+  15 px, v1.58 `[30, 15]` jotta scrollbar saa oman kaistan. `.alphatab`
+  paddingiton/reunukseton (reunus inset-varjolla). Mitattu 15/15 ja
+  30/30 px eikä ylivuotoa (1600/1366/1200/1024/800 px).
+- v1.59–v1.62: hero pois, LIBRARY PLAY-korttiin, työkalurivi omalle
+  riville, modaali avautuu LIBRARY-napin korkeudelle, EXPORT tabikentän
+  alle, FULLSCREEN kortin oikeaan kulmaan, `.transport` omaksi kortiksi,
+  LIBRARY piiloon fullscreenissä.
+- Ei muutoksia soittoketjuun (`mediaHandler`/`seekTo`/`syncTimeMs`).
+
 ## v1.56 – Count-in toimii, 1:1 säilyy (20.10.2026)
 
 - Count-in 5 → 0 validoitu käyttäjän kuuntelutestillä: laskenta näkyy
@@ -139,14 +177,16 @@
 
 ## Testitilanne
 
-- `pytest -q` → **96 passed**
+- `pytest -q` → **101 passed**
 - `compileall` → OK
 - `node --check app.js` / `remote.js` → OK
 - Headless-Edge/Chrome: alphaTab-render, cursor, fullscreen, GP5/MusicXML-
   tuonti (linkki + tiedosto), audio attach, BPM/desimaalitempo, SIIRTO,
   SYNC-tallennus, playback range -nollaus, SEARCH-modaali, kappaleen
   valinta ja poisto, **count-in 5→0** (v1.56: laskennan aikana audio ja
-  tahti muuttumattomia, A/B sama tahti samassa audiokohdassa).
+  tahti muuttumattomia, A/B sama tahti samassa audiokohdassa),
+  **tabin marginaalit 30/30 px ja scrollbar-kaista** (v1.57–v1.62),
+  **modaalin avautuminen ja kirjaston nimeämislomake** (v1.60, v1.63).
 
 ## Tunnetut rajoitukset
 
@@ -170,7 +210,9 @@
 - Poisto ei poista MP3-kuunteluversiota eikä toisen tabin jakamaa audiota.
 - Koodi v1.23–v1.56 on committoitu ja pushattu `origin/main`iin
   (käyttäjän pyynnöstä 20.10.2026; HEAD `da3cdc4` + docs-commit).
-  Lokaalit commitit toimivat edelleen palautuspisteinä.
+  **v1.57–v1.65 on työpuussa commitoimatta** (21.10.2026): HEAD on
+  docs-commit `196ff62` (`[ahead 1]`). Lokaalit commitit toimivat
+  edelleen palautuspisteinä.
   `data/` ja `docs/` eivät ole gitissä, joten ne tarvitsevat erillisen
   varmuuskopion.
 

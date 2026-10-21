@@ -1,6 +1,6 @@
 # 🎯 Projektin lyhyt kuvaus – AI TABTOOL
 
-> **Versio:** `v1.56` (20.10.2026)
+> **Versio:** `v1.65` (21.10.2026)
 > **Repo:** https://github.com/teppoaland/tabtool
 > **Paikallinen:** `D:\AI\tabtool`
 
@@ -60,7 +60,13 @@ Lokaali web-palvelu, jossa voi:
   tummassa teemassa. Count-in **5 → 0** on toteutettu v1.56:ssa
   soittoketjun ulkopuolelle (overlay + portinvartija
   `handlePlayButton`); ks. `.clinerules/07-playback-frozen.md`.
-- **Versiosarja `1.x`**, aloitus `v1.00`; nyt `v1.56`.
+  KIRJASTO on modaalissa vasemmalla ja generaattori oikealla (v1.64);
+  rivin poisto on punainen × (v1.65).
+- **Kirjaston metadata on käyttäjän dataa** (v1.63): oma nimi
+  (`title_override`, generaattorin nimi säilyy `original_title`ina),
+  lukitus (estää poiston) ja arkistointi (piiloon päälistalta,
+  `ARKISTO (n)` -linkki listan lopussa). Lista on aakkosjärjestyksessä.
+- **Versiosarja `1.x`**, aloitus `v1.00`; nyt `v1.65`.
 - **Ei julkista julkaisua:** koodi pidetään lokaalina. Commitit tehdään
   paikalliseen repoon palautuspisteiksi (revert); push GitHubiin vain
   erillisestä pyynnöstä.
@@ -101,6 +107,6 @@ Sano Cline:lle **`lue membank`**. Sääntö on
 - `app/library.py` – kappaleen poisto (tab/audio/stemmit, MP3 jää)
 - `scripts/pipeline_smoke.py` – CLI-proof
 - `stop.bat` / `status.bat` – palvelimen pysäytys ja tilan tarkistus
-- `tests/` – 96 pytest-testiä
+- `tests/` – 101 pytest-testiä
 - `data/` – GITIGNORED: audio, stemmit, tabit, tokenit
 - `docs/` – GITIGNORED: henkilökohtainen suunnitelma

@@ -8,7 +8,7 @@ FastAPI (app/main.py)
   ├─ /api/jobs, /api/jobs/{id}, /api/jobs/{id}/events (SSE)
   ├─ /api/tabs, /api/tabs/{id} (GET/DELETE)
   ├─ /api/tabs/import, /api/tabs/import-url
-  ├─ /api/tabs/{id}/section, /attach-audio, /tempo, /sync
+  ├─ /api/tabs/{id}/section, /attach-audio, /tempo, /sync, /library
   ├─ score/export/audio
   └─ /, /display, /remote  → app/static/
         │
@@ -39,6 +39,14 @@ Putki (app/pipeline/)
 - `app/library.py` hoitaa poiston: tab-hakemisto, stemmit sekä job/track-
   rivit. Jaettu audio säilyy, jos toinen tabi käyttää sitä; MP3 jää
   `EXTERNAL_DIR`iin. Poisto ei koske `data/`-juuren ulkopuolisiin polkuihin.
+- **Kirjaston metadata** (v1.63): `tabs.title_override` (näkyvä nimi),
+  `tabs.locked`, `tabs.archived`. `db._tab_row` palauttaa `title`nä
+  käyttäjän nimen ja `original_title`ina generaattorin nimen;
+  `db._migrate_tab_columns` lisää sarakkeet vanhaan kantaan
+  `init_db`ssä. Muutokset: `POST /api/tabs/{id}/library`
+  (Form `title`/`locked`/`archived`). Lukittu tabi ei poistu
+  (`DELETE` → 409). `db.list_tabs` järjestää artistin ja nimen mukaan;
+  UI lajittelee lisäksi `localeCompare("fi")`lla.
 - GP5 + YouTube -yhdistelmä: `jobs.submit_job` luo audio-only-jobin
   (`options.audio_only`, `attach_tab_id`), joka lataa audion ja liittää
   sen valmiiksi tuotuun tabiin ilman transkriptiota. Sama polku
@@ -141,7 +149,12 @@ resolvoitui työhakemistosta ja tabi menetti audionsa.
   **tummalle** taustalle (`display.resources`-värit, `.alphatab`
   `#0d1117`; v1.49). `.alphatab` tarvitsee `min-width: 0`:n, muuten
   alphaTabin canvas voi kasvattaa grid-radan (~7000 px) ja sivu
-  vierittyy oikealle (v1.50).
+  vierittyy oikealle (v1.50). Scoren marginaali tulee alphaTabin omasta
+  `display.padding: [30, 15]` -asetuksesta (v1.58): `.alphatab` on
+  paddingiton ja reunukseton (reunus inset-varjolla), koska alphaTab
+  mitoittaa `.at-surface`n `offsetWidth`ista ja sijoittaa sen
+  sisältölaatikkoon. Oikean reunan 30 px jättää 15 px scrollbarille
+  oman kaistan.
 - Aikajana: aika/kesto, tahtilukema, ±5 s, Space/nuolet, seek vierittää
   cursorin kohdalle; `TEE TAB TÄSTÄ` tekee pätkäjobin.
 - **Count-in (v1.56):** 5 → 0 toteutetaan soittoketjun ulkopuolella.
@@ -159,8 +172,25 @@ resolvoitui työhakemistosta ja tabi menetti audionsa.
   Score-format valitaan `meta.files`:stä (gp5/musicxml). Tuotu tabi ilman
   audiota: PLAY ja aikajana piilotetaan, `LIITÄ AUDIO` hakee samannimisen
   AI-tabin audion. Modaalin iso otsikko on poistettu (v1.49).
-- Kirjastorivi: `POISTA` avaa varoitusdialogin; poisto päivittää listan ja
-  piilottaa viewerin, jos poistettu tabi oli auki. MP3 jää arkistoon.
+- Kirjastorivi: `NIMEÄ` avaa rivin sisäisen lomakkeen (nimi +
+  `[ ] Lukitse` + `[ ] Arkistoi` + TALLENNA/PERUUTA); poisto on punainen
+  `×`, joka avaa varoitusdialogin. Poisto päivittää listan ja piilottaa
+  viewerin, jos poistettu tabi oli auki; MP3 jää arkistoon. Lukittu rivi:
+  `×` pois käytöstä, metassa "lukittu". Arkistoidut rivit näkyvät
+  `ARKISTO (n)` -linkin takana; rastin poisto palauttaa ne päälistaan.
+  Modaalissa KIRJASTO on vasen (leveämpi) sarake ja generaattori oikea
+  (v1.64).
+- **Soittokortti (v1.59–v1.62):** `.viewer-bar` on grid
+  `auto auto 1fr auto` (LIBRARY, PLAY, otsikko, FULLSCREEN oikeassa
+  reunassa); NÄKYMÄ/raitavalinnat omalla rivillään vasemmasta reunasta.
+  `.transport` on oma taustakortti. EXPORT-rivi on tabikentän alla.
+  Fullscreenissä LIBRARY piilotetaan ja grid kavennetaan kolmeen
+  sarakkeeseen.
+- **Modaali avautuu LIBRARY-napin korkeudelle** (v1.60):
+  `openSearch()` mittaa napin `getBoundingClientRect().top`in ja asettaa
+  `--modal-top`in; `#search-modal` käyttää sitä yläpaddingina ja
+  paneelin `max-height` lasketaan samasta. Poiston dialogi pysyy
+  keskitettynä.
 - `TAB BPM` kirjoittaa GP5-tempon **TALLENNA**-napista; desimaalit
   sallitaan (0,1 askel) ja desimaaliosa toteutuu toiston korjauksena.
   Tallentamaton arvo näkyy punaisena. `Nopeus` (50–150 %, 0,1 %) on
