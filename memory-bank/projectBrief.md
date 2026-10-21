@@ -1,6 +1,6 @@
 # 🎯 Projektin lyhyt kuvaus – AI TABTOOL
 
-> **Versio:** `v1.65` (21.10.2026)
+> **Versio:** `v1.68` (21.10.2026)
 > **Repo:** https://github.com/teppoaland/tabtool
 > **Paikallinen:** `D:\AI\tabtool`
 
@@ -66,7 +66,24 @@ Lokaali web-palvelu, jossa voi:
   (`title_override`, generaattorin nimi säilyy `original_title`ina),
   lukitus (estää poiston) ja arkistointi (piiloon päälistalta,
   `ARKISTO (n)` -linkki listan lopussa). Lista on aakkosjärjestyksessä.
-- **Versiosarja `1.x`**, aloitus `v1.00`; nyt `v1.65`.
+- **Oma tuontikirjasto (v1.66):** valmiit GP3/GP4/GP5- ja MusicXML-tabit
+  tuodaan kansiosta kerralla (`scripts/import_folder.py`) ja viedään ulos
+  (`scripts/export_tabs.py`: GP5/MusicXML/MIDI + `manifest.json` + ZIP).
+  Tuodut tiedostot ovat `data/`ssa ja `D:\tabtool_files`issa (gitignored)
+  – ne eivät koskaan mene julkiseen gitiin.
+- **YouTube-lähde näkyviin (v1.67):** tabille tallentuu `youtube_channel`
+  ja se näytetään (`YT: <kanava>`), koska GP5 sopii yleensä vain yhteen
+  saman kappaleen uploadiin.
+- **Viritys näkyviin (v1.68):** GP5:n avoimet kielet → `tuning_label`
+  (esim. `D Standard · DGCFAD`) + `tuning_notes`; manuaalinen ylikirjoitus
+  kirjaston NIMEÄ-lomakkeessa. Tuonti ei muuta tabitiedostoa eikä
+  Viritys-valinta vaikuta siihen (se on vain AI-generointia varten).
+- **Songsterr / Ultimate Guitar:** ei scrapea eikä kiertämistä.
+  Songsterr-appin cache sisältää vain SVG-renderin, beat-ajastuksen ja
+  audion (ei string/fret-dataa), ja GP/MIDI/MP3-lataus on Plus-ominaisuus
+  (`songsterr.com/ai.txt`). Käyttäjän Android-osto on **kertamaksu**
+  (vain Android, ei web). GP5:t haetaan laillisesta lähteestä käsin.
+- **Versiosarja `1.x`**, aloitus `v1.00`; nyt `v1.68`.
 - **Ei julkista julkaisua:** koodi pidetään lokaalina. Commitit tehdään
   paikalliseen repoon palautuspisteiksi (revert); push GitHubiin vain
   erillisestä pyynnöstä.
@@ -107,6 +124,6 @@ Sano Cline:lle **`lue membank`**. Sääntö on
 - `app/library.py` – kappaleen poisto (tab/audio/stemmit, MP3 jää)
 - `scripts/pipeline_smoke.py` – CLI-proof
 - `stop.bat` / `status.bat` – palvelimen pysäytys ja tilan tarkistus
-- `tests/` – 101 pytest-testiä
+- `tests/` – 114 pytest-testiä
 - `data/` – GITIGNORED: audio, stemmit, tabit, tokenit
 - `docs/` – GITIGNORED: henkilökohtainen suunnitelma

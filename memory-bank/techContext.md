@@ -9,7 +9,7 @@
 - **Ei GPU:ta** (`nvidia-smi` tyhjä) → CPU-only
 - D: levytilaa ~147 GB vapaana
 
-## Python-paketit (v1.65)
+## Python-paketit (v1.68)
 
 Core:
 
@@ -58,7 +58,7 @@ python -m venv .venv
 ## Testit
 
 ```powershell
-.venv\Scripts\python.exe -m pytest -q          # 101 passed
+.venv\Scripts\python.exe -m pytest -q          # 114 passed
 .venv\Scripts\python.exe -m compileall -q app scripts tests
 node --check app\static\app.js
 node --check app\static\remote.js
@@ -90,8 +90,8 @@ Hyödylliset valinnat: `--model htdemucs_6s`, `--stem guitar`, `--tuning`,
 - Ankkurit: v1.38 `c74ccdd`, v1.39 `8237876`, v1.40 `30e2c0e`,
   v1.41 = GP3/GP4-tuonti; tagi `v1.29` = `bb704e8`.
 - Koodi v1.23–v1.56 on **pushattu** `origin/main`iin käyttäjän pyynnöstä
-  20.10.2026. Sen jälkeen HEAD on docs-commit `196ff62` (`[ahead 1]`) ja
-  **v1.57–v1.65 koodi on työpuussa commitoimatta** (21.10.2026).
+  20.10.2026. Sen jälkeen on tehty vain docs-committeja (memory bank), ja
+  **v1.57–v1.68 koodi on työpuussa commitoimatta** (21.10.2026).
   Committaa vasta kun käyttäjä pyytää; `data/` ja `docs/` eivät ole
   gitissä.
 - Älä kirjaa tähän HEAD-hashia: docs-commit siirtää HEADin joka kerta.
@@ -182,21 +182,28 @@ DB-tiedosto); vain tuotenimi on `AI TabTool`.
   **Soiton/tabin synkka hyväksytään vain käyttäjän kuuntelutestillä**
   (`.clinerules/07-playback-frozen.md`): pytest, `node --check` ja
   headless eivät todista kohdistusta.
-  Staattisten tiedostojen `?v=1.65`-leimat pakottavat tuoreen CSS/JS:n;
+  Staattisten tiedostojen `?v=1.68`-leimat pakottavat tuoreen CSS/JS:n;
   selaimessa voi silti tarvita Ctrl+F5:n.
 - Modaalin pino: alphaTabin `.at-cursors` on `z-index: 1000`; modaali
   `2000`, dialogi `2100`, viewer `isolation: isolate`, cursor piiloon
   `body.modal-open`-tilassa. Modaalin tausta on peittävä.
-- **Kirjasto (v1.63–v1.65):** `POST /api/tabs/{id}/library`
-  (`title`/`locked`/`archived`), `title_override` + `original_title`,
-  `locked` estää poiston (409), `archived` piilottaa päälistalta
-  (`ARKISTO (n)`), aakkosjärjestys `localeCompare("fi")`, rivin
-  NIMEÄ-lomake ja punainen `×`-poisto. Modaalissa KIRJASTO vasemmalla.
+- **Kirjasto ja työkalut (v1.63–v1.68):** `POST /api/tabs/{id}/library`
+  (`title`/`locked`/`archived`/`tuning`, tyhjä viritys `tuning_clear`),
+  `title_override` + `original_title`, `locked` estää poiston (409),
+  `archived` piilottaa päälistalta (`ARKISTO (n)`), aakkosjärjestys
+  `localeCompare("fi")`, NIMEÄ-lomake (nimi, viritys, Lukitse, Arkistoi)
+  ja punainen `×`-poisto. Modaalissa KIRJASTO vasemmalla.
+  Kanava `meta.youtube_channel`, viritys `meta.tuning_label` +
+  `tuning_notes` (GP5:n kielet, `app/tuning.py`).
+- **Skriptit:** `import_folder.py`, `export_tabs.py`,
+  `adb_pull_gp.ps1` (puhelimen Download), `backfill_youtube_channel.py`,
+  `backfill_tuning.py`, `backfill_external.py`, `pipeline_smoke.py`.
 - Headless-Edge/Chrome-validoinnit: alphaTab-render, cursor, fullscreen,
   GP5/MusicXML-tuonti (linkki + tiedosto), audio attach, BPM 140/144,
   aikajana, SEARCH-modaali, poisto, playback range -nollaus.
   v1.57–v1.62: tabin marginaali 30/30 px + 15 px scrollbar-kaista
   (mitattu 1600/1366/1200/1024/800 px), korttien asettelu, modaalin
   avautuminen LIBRARY-napin korkeudelle, LIBRARY piiloon fullscreenissä.
-  v1.63–v1.65: kirjaston nimeäminen/lukitus/arkisto renderöityi oikein;
-  tallennuspolku testattu pytestillä (TestClient), ei selaimessa.
+  v1.63–v1.68: kirjaston nimeäminen/lukitus/arkisto, kanava ja viritys
+  renderöityivät oikein; tallennuspolut testattu pytestillä
+  (TestClient), ei selaimessa.

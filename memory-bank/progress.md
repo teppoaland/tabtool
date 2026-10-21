@@ -1,5 +1,33 @@
 # 📊 Projektin edistyminen – AI TABTOOL
 
+## v1.68 – Viritys näkyviin (21.10.2026)
+
+- GP5:n avoimet kielet → `app/tuning.py`: Standard E / Drop D / Eb
+  Standard / D Standard / Open G / Custom + kirjaimet. Metaan
+  `tuning_label` (`D Standard · DGCFAD`) ja `tuning_notes`;
+  `tabs.tuning` saa oikean avaimen (ennen `custom`).
+- Näkyy soittokortin metassa, kirjastorivillä (ei-standardit) ja
+  NIMEÄ-lomakkeen Viritys-kentässä (`tuning_override`, `tuning_clear`).
+- `scripts/backfill_tuning.py` päivitti 6 tabia: WASP
+  `Eb Standard · EbAbDbGbBbEb`, Dr. Feelgood `D Standard · DGCFAD`,
+  muut Standard E. `smoke-youtube*`-tabien GP5 on rikki (testijäänteitä).
+- 114 pytest-testiä.
+
+## v1.67 – YouTube-kanava tabille (21.10.2026)
+
+- `fetch_youtube_details()` lukee `%(channel)s` (fallback uploader);
+  `AudioSource.channel` → `meta.youtube_channel` sekä AI-tabeille että
+  GP5+YT-liitoksille. Näkyy `YT: <kanava>` kirjastossa, vihjeessä ja
+  soittokortissa; `scripts/backfill_youtube_channel.py`. 108 testiä.
+
+## v1.66 – Oma tuontikirjasto ja bulk-export (21.10.2026)
+
+- `app/bulk.py`: `import_folder()` (SHA-256-manifesti estää tuplat) ja
+  `export_tabs()` (GP5/MusicXML/MIDI + `manifest.json` + ZIP).
+  Skriptit `import_folder.py`, `export_tabs.py`, `adb_pull_gp.ps1`
+  (puhelimen Download, ei appien yksityistä dataa). `.gitignore`:
+  `library/`. 101 pytest-testiä.
+
 ## v1.65 – POISTA punaiseksi ×:ksi (21.10.2026)
 
 - Kirjastorivin poisto on ikonimainen punainen `×` (`aria-label`/`title`
@@ -177,7 +205,7 @@
 
 ## Testitilanne
 
-- `pytest -q` → **101 passed**
+- `pytest -q` → **114 passed**
 - `compileall` → OK
 - `node --check app.js` / `remote.js` → OK
 - Headless-Edge/Chrome: alphaTab-render, cursor, fullscreen, GP5/MusicXML-
@@ -186,7 +214,8 @@
   valinta ja poisto, **count-in 5→0** (v1.56: laskennan aikana audio ja
   tahti muuttumattomia, A/B sama tahti samassa audiokohdassa),
   **tabin marginaalit 30/30 px ja scrollbar-kaista** (v1.57–v1.62),
-  **modaalin avautuminen ja kirjaston nimeämislomake** (v1.60, v1.63).
+  **modaalin avautuminen ja kirjaston nimeämislomake** (v1.60, v1.63),
+  **kanava ja viritys kirjastorivillä** (v1.67–v1.68, pytest + smoke).
 
 ## Tunnetut rajoitukset
 
@@ -209,10 +238,9 @@
   cookie-tiedosto.
 - Poisto ei poista MP3-kuunteluversiota eikä toisen tabin jakamaa audiota.
 - Koodi v1.23–v1.56 on committoitu ja pushattu `origin/main`iin
-  (käyttäjän pyynnöstä 20.10.2026; HEAD `da3cdc4` + docs-commit).
-  **v1.57–v1.65 on työpuussa commitoimatta** (21.10.2026): HEAD on
-  docs-commit `196ff62` (`[ahead 1]`). Lokaalit commitit toimivat
-  edelleen palautuspisteinä.
+  (käyttäjän pyynnöstä 20.10.2026). **v1.57–v1.68 on työpuussa
+  commitoimatta** (21.10.2026); docs-commitit ovat HEADina. Lokaalit
+  commitit toimivat edelleen palautuspisteinä.
   `data/` ja `docs/` eivät ole gitissä, joten ne tarvitsevat erillisen
   varmuuskopion.
 

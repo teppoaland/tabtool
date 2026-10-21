@@ -1,9 +1,9 @@
 # 📍 Aktiivinen konteksti – AI TABTOOL
 
-> **Versio:** `v1.65` (21.10.2026)
-> **Git:** HEAD `196ff62` (docs, ahead 1). **v1.57–v1.65 koodi on
+> **Versio:** `v1.68` (21.10.2026)
+> **Git:** HEAD on docs-commit (memory bank). **v1.57–v1.68 koodi on
 > työpuussa commitoimatta** (`CHANGELOG`, `app/*`, `app/static/*`,
-> `tests/test_tab_library.py`). Docs-commit siirtää HEADia, joten älä
+> `scripts/*`, uudet testit). Docs-commit siirtää HEADia, joten älä
 > pinnaa hashia pysyvästi.
 > **Push:** vain erillisestä pyynnöstä (käyttäjä pyysi 20.10.2026).
 > **Repo:** https://github.com/teppoaland/tabtool
@@ -13,12 +13,19 @@
 
 ## Nyt
 
+- **v1.66–v1.68 – tuonti, kanava ja viritys.** `app/bulk.py` +
+  `scripts/import_folder.py` / `export_tabs.py` / `adb_pull_gp.ps1`
+  (oma kirjasto pysyy gitin ulkopuolella; SHA-256-manifesti estää
+  tuplat; export GP5/MusicXML/MIDI + `manifest.json` + ZIP).
+  `meta.youtube_channel` näkyy `YT: <kanava>` -merkintänä; GP5:n
+  viritys → `tuning_label` (`D Standard · DGCFAD`) + `tuning_notes`,
+  manuaalinen ylikirjoitus NIMEÄ-lomakkeessa (`tuning_clear` nollaa).
+  Backfillit: `backfill_youtube_channel.py`, `backfill_tuning.py`.
 - **v1.63–v1.65 – kirjaston hallinta.** `POST /api/tabs/{id}/library`
-  (`title`/`locked`/`archived`), rivin `NIMEÄ`-lomake (nimi + Lukitse +
-  Arkistoi + TALLENNA/PERUUTA), `ARKISTO (n)` -linkki listan lopussa,
-  aakkosjärjestys ja punainen `×`-poisto. `locked` estää poiston (409);
-  `archived` piilottaa päälistalta ja rastin poisto palauttaa sen.
-  Sarakkeet: `title_override`, `locked`, `archived` (+ migraatio).
+  (`title`/`locked`/`archived`/`tuning`), rivin `NIMEÄ`-lomake,
+  `ARKISTO (n)` -linkki listan lopussa, aakkosjärjestys ja punainen
+  `×`-poisto. `locked` estää poiston (409); `archived` piilottaa
+  päälistalta ja rastin poisto palauttaa sen.
 - **v1.57–v1.62 – ulkoasu.** Tabin marginaalit 30/30 px (alphaTabin
   `display.padding: [30, 15]`, jotta 15 px scrollbar ei mene tabin
   päälle), `.alphatab` paddingitta (reunus inset-varjolla), yläosa
@@ -38,22 +45,14 @@
   SIIRTO/SYNC/BPM-korjauksen (`time > 0`). KOHDISTA-nappi ja
   live-offset-näyttö (v1.46) auttavat kohdistamaan.
 - **v1.42**: `pytest.ini`:n `addopts = -q` poistettu, joten `pytest -q`
-  tulostaa yhteenvedon (`101 passed`).
-- Phase 0/1/2 valmiit; v1.23–v1.37 katselu, aikajana, tuonti/audio,
-  BPM/Nopeus, SYNC/SIIRTO ja ulkoinen arkisto. v1.38–v1.40 toivat
-  **SEARCH-modaalin**, GP5-linkin/-tiedoston + YT-audion yhdellä
-  toiminnolla ja kappaleen poiston. **v1.41** lisäsi GP3/GP4-tuonnin
-  (konversio aidoksi GP5:ksi) ja korjasi audiopolun katoamisen
-  levyrekisteröinnissä.
-- **SEARCH-modaali** (v1.38; v1.49 käyttöliittymässä **LIBRARY**): YouTube-
-  linkki, GP5-linkki tai GP5-tiedosto, MP3-valinta, GENERATE TAB sekä
-  kirjasto, josta kappale valitaan soittoon. TV-näkymä on soittoa varten.
-  Modaalin iso `SEARCH`-otsikko poistettu v1.49:ssä; `aria-label` säilyttää
-  nimeämisen.
+  tulostaa yhteenvedon (`114 passed`).
+- **Historia (v1.23–v1.49):** katselu, aikajana, tuonti/audio, BPM/Nopeus,
+  SYNC/SIIRTO, ulkoinen arkisto, SEARCH-modaali (UI:ssa **LIBRARY**),
+  GP3/GP4-tuonti (konversio aidoksi GP5:ksi) ja kappaleen poisto.
+  Yksityiskohdat `CHANGELOG.md`:ssä ja `README.md`:ssä.
 - **GP5 + YT yhdellä toiminnolla** (v1.40): `GP5-linkki` tai
-  `GP5-tiedosto` ohittaa AI-generoinnin. YouTube-linkin kanssa tabi
-  tuodaan ja audio liitetään samalla jobilla; ilman GP5-lähdettä tabi
-  generoidaan AI:lla. GP5 + oma audiotiedosto on estetty.
+  `GP5-tiedosto` ohittaa AI-generoinnin ja YouTube-audio liitetään samalla
+  jobilla. GP5 + oma audiotiedosto on estetty.
 - **Poisto** (v1.38, × v1.65): kirjastorivin punainen `×` avaa
   varoitusdialogin. Tab, hakemisto, stemmit ja job/track-rivit
   poistetaan; jaettu audio säilyy ja MP3-kuunteluversio jää arkistoon.
@@ -63,11 +62,10 @@
   nimi, `original_title` generaattorin nimi. Lista on aakkosjärjestyksessä
   ja arkistoidut löytyvät listan lopun `ARKISTO (n)` -linkistä; rastin
   poisto palauttaa ne pääkirjastoon.
-- **MP3-valinta** (v1.38): `MP3-kuunteluversio` on oletuksena päällä;
-  valinta ei vaikuta tabin cache-avaimeen.
-- **Modaalin pino** (v1.39): alphaTabin cursor (`z-index: 1000`) ei enää
-  näy modaalin päällä; modaali `2000`, dialogi `2100`, viewer
-  `isolation: isolate`, cursor piiloon `body.modal-open`-tilassa.
+- **MP3-valinta** (v1.38) ei vaikuta tabin cache-avaimeen.
+- **Modaalin pino:** alphaTabin cursor `z-index: 1000`, modaali `2000`,
+  dialogi `2100`, viewer `isolation: isolate`, cursor piiloon
+  `body.modal-open`-tilassa.
 - Katselu: **tab-only oletus**, Näkymä (`Tab`/`Auto`/`Tab+nuotit`/`Nuotit`),
   raitavalinnat ja tabikohtainen muisti, FULLSCREEN + automaattinen
   fullscreen PLAYssa (fullscreenissä LIBRARY piilotetaan, v1.62),
@@ -139,6 +137,9 @@
 
 ## Seuraava vaihe
 
+0. **WASP uudelleen** (käyttäjä tekee itse): export GP5 vanhasta tabista,
+   tuo se + `https://youtu.be/7COTI8k-rgo`, nimeä ja arkistoi vanha.
+   Tarkista riviltä `YT: James Sly` ja viritys.
 1. Päätä soittotapa/refinger-toteutus: asemaprofiilit, playability-score,
    turhien nuottien karsinta, per-tahti/fraasiasema.
 2. Vasta sitten Phase 3 / Spotify: PKCE, haku/metadata, SDK/Connect,
@@ -165,16 +166,20 @@ Putki:
 
 ## Tuoreimmat validointitulokset
 
-- `pytest -q` → **101 passed**; `compileall` ja `node --check` OK.
+- `pytest -q` → **114 passed**; `compileall` ja `node --check` OK.
 - v1.57–v1.62 headless (käyttäjän palvelin): tabin marginaalit
   30/30 px ja tabin reuna → scrollbar 15 px (1600/1366/1200/1024/800 px,
   ei sivuttaisvieritystä); LIBRARY/PLAY-kortti + FULLSCREEN oikeassa
   reunassa; modaalin yläreuna = LIBRARY-napin top (118 px); fullscreen
   piilottaa LIBRARYn; EXPORT 16 px tabikentän alapuolella.
-- v1.63–v1.65: backend **101 passed** (nimeäminen, lukitus/poistoesto,
-  arkisto, järjestys, migraatio); UI-smoke: lista aakkosissa (myös
-  samannimiset), NIMEÄ-lomake (Lukitse/Arkistoi/TALLENNA/PERUUTA) ja
-  PERUUTUS toimivat. Tallennuspolkua ei testattu selaimessa.
+- v1.63–v1.68: backend **114 passed** (nimeäminen, lukitus/poistoesto,
+  arkisto, järjestys, migraatio, kanava, viritys, ylikirjoitus, bulk).
+  UI-smoke: lista aakkosissa (myös samannimiset), NIMEÄ-lomake ja
+  PERUUTUS toimivat; kanava/viritys renderöityivät oikein.
+- **Backfillit ajettu (21.10.2026):** viritys 6 tabille (Dr. Feelgood
+  `D Standard · DGCFAD`, WASP `Eb Standard · EbAbDbGbBbEb`, muut
+  Standard E); kanavaa ei vielä asetettu (vain 2 smoke-tabia olisivat
+  tarjonneet URLin). `smoke-youtube*`-tabien GP5 on rikki (testijäänteitä).
 - v1.56 headless-Edge (CDP, käyttäjän palvelin): countdown 5→4→3→2→1→0
   ≈ 5,07 s, toisto 5,33 s; laskennan aikana `audio.currentTime` 0,846,
   `paused`, tahti 1 – kaikki muuttumattomia; layout 800/800; 2. PLAY
@@ -199,9 +204,22 @@ Putki:
 
 ## Avoimet / myöhemmin
 
+- **WASP uudelleen (seuraava sessio):** vanha tabi
+  `bc5a287d8edd4748acd7cd0159fc5691` = *Animal … (väärä)*. Aja
+  `scripts/export_tabs.py "D:\tabtool_files\exports" --formats gp5 --ids bc5a287d8edd4748acd7cd0159fc5691`,
+  tuo LIBRARYssa `GP5-tiedosto` + `https://youtu.be/7COTI8k-rgo`
+  (kanava James Sly) → uusi tabi näyttää `YT: James Sly` ja virityksen
+  (`Eb Standard · EbAbDbGbBbEb`). Nimeä uusi, arkistoi/poista vanha.
+  Huom: Songsterr näyttää samalle kappaleelle D standardin (DGCFAD) –
+  puolen sävelaskeleen ero on tab-datassa, ei synkassa.
+- **Dr. Feelgood -toisto:** GP5:ssä on vain yksi toisto (m2 ×2,
+  `repeatClose=1`), mutta tahdin 2 yläpuolella lukee beat-tekstinä
+  "Should be played 17 times" (raita 1) ja "Seventeen bars of whammy
+  noise" (raita 2). alphaTab ei lue tekstiä. Jos halutaan, tehdään
+  `scripts/set_repeat.py --tab <id> --bar 2 --times 17` (kirjoittaa
+  GP5:n uudelleen, `repeatClose = times-1`) – oma työ ja validointi.
 - Soittotapa/refinger: asemaprofiilit, helpoin-arvio, turhien nuottien
-  karsinta, per-tahti/fraasiasema; **ei koodia vielä**. Tarkoitus on
-  käyttää samaa nuottidataa ja tehdä eri sormitusvaihtoehdot.
+  karsinta, per-tahti/fraasiasema; **ei koodia vielä**.
 - AI-transkription tarkkuus (Basic Pitch); referenssitabit ja ilmainen
   TuxGuitar apuna, ei Guitar Pro -pakkoa.
 - KISSin kaltaiset kappaleet ilman valmista tabia: AI-tabi + korjaus.

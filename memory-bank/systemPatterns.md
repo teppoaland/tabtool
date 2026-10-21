@@ -44,9 +44,28 @@ Putki (app/pipeline/)
   käyttäjän nimen ja `original_title`ina generaattorin nimen;
   `db._migrate_tab_columns` lisää sarakkeet vanhaan kantaan
   `init_db`ssä. Muutokset: `POST /api/tabs/{id}/library`
-  (Form `title`/`locked`/`archived`). Lukittu tabi ei poistu
-  (`DELETE` → 409). `db.list_tabs` järjestää artistin ja nimen mukaan;
-  UI lajittelee lisäksi `localeCompare("fi")`lla.
+  (Form `title`/`locked`/`archived`/`tuning`; `tuning_clear` poistaa
+  ylikirjoituksen). Lukittu tabi ei poistu (`DELETE` → 409).
+  `db.list_tabs` järjestää artistin ja nimen mukaan; UI lajittelee
+  lisäksi `localeCompare("fi")`lla.
+- **Kanava ja viritys metaan** (v1.67–v1.68): `meta.youtube_channel`
+  (yt-dlp `%(channel)s`, fallback uploader) ja `meta.tuning_label` /
+  `tuning_notes` (`app/tuning.py` lukee GP5:n kielet; presets
+  standard/drop_d/eb_standard/d_standard/open_g, muut `Custom` +
+  kirjaimet). `_tab_summary` palauttaa `channel`, `tuning`,
+  `tuning_override`, `tuning_label`. Viritys-valinta vaikuttaa vain
+  AI-generointiin, ei GP5-tuontiin.
+- **Bulk-tuonti/vienti** (v1.66): `app/bulk.py` – `import_folder()`
+  (SHA-256-manifesti `.tabtool-imported.json`) ja `export_tabs()`
+  (GP5/MusicXML/MIDI + `manifest.json` + ZIP). Skriptit
+  `import_folder.py`, `export_tabs.py`, `adb_pull_gp.ps1`
+  (puhelimen `/sdcard/Download`, ei appien yksityistä dataa).
+- **Toistot ja teksti-huomautukset:** GP5 tallentaa toiston tahtiin
+  (`isRepeatOpen`, `repeatClose`; PyGuitarPro lukee raa'an arvon ja
+  vähentää 1:n, joten `repeatClose = soitokerrat − 1`). alphaTab
+  noudattaa vain näitä. `Beat.text` (esim. "Should be played 17 times")
+  on vain visuaalinen huomautus eikä ohjaa toistoa – esim. Dr. Feelgood
+  m2 on tiedostossa ×2 ja audio toistaa enemmän, joten ero on tab-datassa.
 - GP5 + YouTube -yhdistelmä: `jobs.submit_job` luo audio-only-jobin
   (`options.audio_only`, `attach_tab_id`), joka lataa audion ja liittää
   sen valmiiksi tuotuun tabiin ilman transkriptiota. Sama polku
