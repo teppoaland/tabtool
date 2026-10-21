@@ -85,14 +85,13 @@ Hyödylliset valinnat: `--model htdemucs_6s`, `--stem guitar`, `--tuning`,
 ## Git
 
 - `origin` = `https://github.com/teppoaland/tabtool.git`
-- **Vain lokaalit commitit.** Projektia ei julkaista eikä pushatta
-  julkiseen GitHubiin toistaiseksi. Commitit ovat palautuspisteitä
-  (revert), jos koodi hajoaa. Push vaatii aina erillisen pyynnön.
+- **Push vain erillisestä pyynnöstä.** Projektia ei julkaista; commitit
+  ovat ensisijaisesti paikallisia palautuspisteitä (`git revert`).
 - Ankkurit: v1.38 `c74ccdd`, v1.39 `8237876`, v1.40 `30e2c0e`,
-  v1.41 = GP3/GP4-tuonti; tagi `v1.29` = `bb704e8`,
-  `origin/main` = `69c2e39`.
-- Paikallinen `main` on `origin/main`:ia edellä (v1.23–v1.40 koodi +
-  memory bank -docs); **ei pushattu**. `git status -sb` näyttää määrän.
+  v1.41 = GP3/GP4-tuonti; tagi `v1.29` = `bb704e8`.
+- Koodi v1.23–v1.56 on **pushattu** `origin/main`iin käyttäjän pyynnöstä
+  20.10.2026; paikallinen `main` on tasoissa originin kanssa
+  (`git status -sb` näyttää `main...origin/main` ilman ahead/behind).
 - Älä kirjaa tähän HEAD-hashia: docs-commit siirtää HEADin joka kerta.
 - Työpuu clean committien jälkeen.
 - Git ei versioi `data/`- eikä `docs/`-hakemistoa; tag/commit palauttaa
