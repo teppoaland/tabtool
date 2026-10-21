@@ -90,10 +90,10 @@ Hyödylliset valinnat: `--model htdemucs_6s`, `--stem guitar`, `--tuning`,
 - Ankkurit: v1.38 `c74ccdd`, v1.39 `8237876`, v1.40 `30e2c0e`,
   v1.41 = GP3/GP4-tuonti; tagi `v1.29` = `bb704e8`.
 - Koodi v1.23–v1.56 on **pushattu** `origin/main`iin käyttäjän pyynnöstä
-  20.10.2026. Sen jälkeen on tehty vain docs-committeja (memory bank), ja
-  **v1.57–v1.68 koodi on työpuussa commitoimatta** (21.10.2026).
-  Committaa vasta kun käyttäjä pyytää; `data/` ja `docs/` eivät ole
-  gitissä.
+  20.10.2026. **v1.57–v1.68 on committoitu lokaalisti** (21.10.2026,
+  `ac2457c v1.68: …`), työpuu on clean ja `main` on 4 committia
+  `origin/main`in edellä = **ei pushattu**. Push vain erillisestä
+  pyynnöstä; `data/` ja `docs/` eivät ole gitissä.
 - Älä kirjaa tähän HEAD-hashia: docs-commit siirtää HEADin joka kerta.
 - Työpuu clean committien jälkeen.
 - Git ei versioi `data/`- eikä `docs/`-hakemistoa; tag/commit palauttaa

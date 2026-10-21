@@ -1,9 +1,9 @@
 # 📍 Aktiivinen konteksti – AI TABTOOL
 
 > **Versio:** `v1.68` (21.10.2026)
-> **Git:** HEAD on docs-commit (memory bank). **v1.57–v1.68 koodi on
-> työpuussa commitoimatta** (`CHANGELOG`, `app/*`, `app/static/*`,
-> `scripts/*`, uudet testit). Docs-commit siirtää HEADia, joten älä
+> **Git:** HEAD = `ac2457c` (v1.68-koodicommit; sisältää v1.57–v1.68
+> koodin). Työpuu clean, `main` 4 committia `origin/main`in edellä eli
+> **v1.57–v1.68 ei ole pushattu**. Docs-commit siirtää HEADia, joten älä
 > pinnaa hashia pysyvästi.
 > **Push:** vain erillisestä pyynnöstä (käyttäjä pyysi 20.10.2026).
 > **Repo:** https://github.com/teppoaland/tabtool

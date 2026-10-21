@@ -238,9 +238,10 @@
   cookie-tiedosto.
 - Poisto ei poista MP3-kuunteluversiota eikä toisen tabin jakamaa audiota.
 - Koodi v1.23–v1.56 on committoitu ja pushattu `origin/main`iin
-  (käyttäjän pyynnöstä 20.10.2026). **v1.57–v1.68 on työpuussa
-  commitoimatta** (21.10.2026); docs-commitit ovat HEADina. Lokaalit
-  commitit toimivat edelleen palautuspisteinä.
+  (käyttäjän pyynnöstä 20.10.2026). **v1.57–v1.68 on committoitu
+  lokaalisti** (21.10.2026, `ac2457c`); työpuu clean ja `main` 4
+  committia `origin/main`in edellä eli **puskaamatta**. Lokaalit commitit
+  toimivat palautuspisteinä.
   `data/` ja `docs/` eivät ole gitissä, joten ne tarvitsevat erillisen
   varmuuskopion.
 
