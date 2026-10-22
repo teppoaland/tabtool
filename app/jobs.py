@@ -26,7 +26,7 @@ from app.tuning import describe_key, describe_tuning
 LOGGER = logging.getLogger("tabtool.jobs")
 
 # Bump when the pipeline output changes so old cache entries are not reused.
-PIPELINE_VERSION = "1"
+PIPELINE_VERSION = "3"
 
 SOURCE_TYPES = ("upload", "local", "youtube")
 PLACEHOLDER_TITLES = {"", "youtube audio", "youtube-audio"}
@@ -109,6 +109,7 @@ class JobOptions:
     tuning: str = "standard"
     max_fret: int = 24
     max_span: int = 5
+    variants: bool = True
     clip_seconds: float | None = None
     start_seconds: float | None = None
     onset_threshold: float = 0.5
@@ -160,6 +161,8 @@ class JobOptions:
         if not 1 <= max_span <= 12:
             raise ValueError("max_span must be between 1 and 12")
 
+        variants = _as_bool(raw.get("variants"), True)
+
         clip_seconds = _as_float(raw.get("clip_seconds"), None, "clip_seconds")
         if clip_seconds is not None and not 1.0 <= clip_seconds <= 900.0:
             raise ValueError("clip_seconds must be between 1 and 900")
@@ -204,6 +207,7 @@ class JobOptions:
             tuning=tuning,
             max_fret=max_fret,
             max_span=max_span,
+            variants=variants,
             clip_seconds=clip_seconds,
             start_seconds=start_seconds,
             onset_threshold=onset_threshold,
@@ -228,6 +232,7 @@ class JobOptions:
             "tuning": self.tuning,
             "max_fret": self.max_fret,
             "max_span": self.max_span,
+            "variants": self.variants,
             "clip_seconds": self.clip_seconds,
             "start_seconds": self.start_seconds,
             "onset_threshold": self.onset_threshold,
@@ -498,7 +503,9 @@ def run_pipeline(
     """Run the audio-to-tab pipeline and return everything needed for export."""
     from app.pipeline.audio_source import prepare_audio
     from app.pipeline.build import build_document
-    from app.pipeline.fretboard import assign_fretboard
+    from app.pipeline.fretboard import PROFILES, assign_fretboard
+    from app.pipeline.playability import score_fretboard
+    from app.pipeline.prune import prune_notes
     from app.pipeline.quantize import quantize_notes
     from app.pipeline.separate import separate_stems
     from app.pipeline.tempo import detect_tempo
@@ -590,6 +597,9 @@ def run_pipeline(
         min_frequency=options.min_frequency,
         max_frequency=options.max_frequency,
     )
+    raw_notes = len(notes)
+    notes = prune_notes(notes)
+    pruned_notes = raw_notes - len(notes)
     quantized = quantize_notes(
         notes,
         bpm,
@@ -599,35 +609,60 @@ def run_pipeline(
     )
 
     notify(STAGE_BUILDING)
-    tab_notes, fret_warnings = assign_fretboard(
-        quantized.notes,
-        tuning,
-        max_fret=options.max_fret,
-        max_span=options.max_span,
-    )
-    warnings = list(quantized.warnings) + list(fret_warnings)
-    document = build_document(
-        title=document_title,
-        artist=document_artist,
-        bpm=bpm,
-        time_signature=options.time_signature,
-        tuning=tuning,
-        tab_notes=tab_notes,
-        measure_count=quantized.measure_count,
-        max_fret=options.max_fret,
-        grid_division=options.grid,
-        source_audio=str(audio.path),
-        warnings=warnings,
-    )
+    profile_keys: list[str | None] = list(PROFILES) if options.variants else [None]
+    variants: list[dict[str, Any]] = []
+    default_index = 0
+    for index, key in enumerate(profile_keys):
+        profile = PROFILES[key] if key else None
+        tab_notes, fret_warnings = assign_fretboard(
+            quantized.notes,
+            tuning,
+            max_fret=options.max_fret,
+            max_span=options.max_span,
+            profile=profile,
+        )
+        warnings = list(quantized.warnings) + list(fret_warnings)
+        document = build_document(
+            title=document_title,
+            artist=document_artist,
+            bpm=bpm,
+            time_signature=options.time_signature,
+            tuning=tuning,
+            tab_notes=tab_notes,
+            measure_count=quantized.measure_count,
+            max_fret=options.max_fret,
+            grid_division=options.grid,
+            source_audio=str(audio.path),
+            warnings=warnings,
+        )
+        playability = score_fretboard(
+            tab_notes, quantized.measure_count, warnings
+        )
+        variants.append(
+            {
+                "id": key or "default",
+                "label": profile.label if profile else "Guitar",
+                "document": document,
+                "notes": len(tab_notes),
+                "warnings": warnings,
+                "playability": playability,
+            }
+        )
+        if index == 0 or playability.score > variants[default_index]["playability"].score:
+            default_index = index
+    default_document = variants[default_index]["document"]
     return {
         "audio": audio,
-        "document": document,
-        "warnings": warnings,
+        "document": default_document,
+        "warnings": variants[default_index]["warnings"],
         "bpm": bpm,
         "raw_bpm": raw_bpm,
         "stem": stem_name,
-        "detected_notes": len(notes),
-        "tab_notes": len(tab_notes),
+        "detected_notes": raw_notes,
+        "pruned_notes": pruned_notes,
+        "tab_notes": variants[default_index]["notes"],
+        "variants": variants,
+        "default_variant": variants[default_index]["id"],
     }
 
 
@@ -748,14 +783,67 @@ def process_job(job_id: str) -> None:
         document = result["document"]
         tab_id = db.new_id()
 
-        from app.pipeline.export_gp5 import export_gp5
+        from app.pipeline.export_gp5 import export_gp5_variants
         from app.pipeline.export_midi import export_midi
         from app.pipeline.export_musicxml import export_musicxml
+        from app.pipeline.variant_store import snapshot_document
 
         pending_dir.mkdir(parents=True, exist_ok=False)
-        gp5_path = export_gp5(document, pending_dir / "tab.gp5")
+        variants = result.get("variants")
+        if not variants:
+            from app.pipeline.playability import score_fretboard
+
+            variants = [
+                {
+                    "id": "default",
+                    "label": "Guitar",
+                    "document": document,
+                    "warnings": result.get("warnings") or [],
+                    "playability": score_fretboard([], 1, []),
+                }
+            ]
+        variants_dir = pending_dir / "variants"
+        variants_dir.mkdir()
+        combined: list[tuple[Any, str]] = []
+        variant_meta: list[dict[str, Any]] = []
+        for index, item in enumerate(variants):
+            combined.append((item["document"], item["label"]))
+            _write_json(
+                variants_dir / f"{item['id']}.json",
+                snapshot_document(item["document"]),
+            )
+            play = item["playability"]
+            variant_meta.append(
+                {
+                    "id": item["id"],
+                    "label": item["label"],
+                    "track": index,
+                    "source": f"variants/{item['id']}.json",
+                    "playability": {
+                        "score": play.score,
+                        "shifts_per_bar": play.shifts_per_bar,
+                        "max_shift": play.max_shift,
+                        "avg_fret": play.avg_fret,
+                        "max_fret": play.max_fret,
+                        "max_span": play.max_span,
+                        "open_ratio": play.open_ratio,
+                        "avg_string_jump": play.avg_string_jump,
+                        "skipped_strings": play.skipped_strings,
+                        "notes_lost": play.notes_lost,
+                        "sustain_conflicts": play.sustain_conflicts,
+                    },
+                    "warnings": item["warnings"],
+                }
+            )
+        gp5_path = export_gp5_variants(combined, pending_dir / "tab.gp5")
         xml_path = export_musicxml(document, pending_dir / "tab.musicxml")
         midi_path = export_midi(document, pending_dir / "tab.mid")
+        default_variant_id = str(result.get("default_variant") or variants[0]["id"])
+        default_item = next(
+            (item for item in variants if item["id"] == default_variant_id),
+            variants[0],
+        )
+        default_play = default_item["playability"]
 
         meta = {
             "title": document.title,
@@ -779,11 +867,29 @@ def process_job(job_id: str) -> None:
             "model": options.model if options.separate else None,
             "stem": result["stem"],
             "detected_notes": result["detected_notes"],
+            "pruned_notes": result.get("pruned_notes", 0),
             "tab_notes": result["tab_notes"],
             "measures": len(document.measures),
             "warnings": result["warnings"],
             "job_id": job_id,
             "created_at": db.utc_now(),
+            "variants": variant_meta,
+            "default_variant": default_variant_id,
+            "selected_variant": "",
+            "variant_finalized": False,
+            "playability": {
+                "score": default_play.score,
+                "shifts_per_bar": default_play.shifts_per_bar,
+                "max_shift": default_play.max_shift,
+                "avg_fret": default_play.avg_fret,
+                "max_fret": default_play.max_fret,
+                "max_span": default_play.max_span,
+                "open_ratio": default_play.open_ratio,
+                "avg_string_jump": default_play.avg_string_jump,
+                "skipped_strings": default_play.skipped_strings,
+                "notes_lost": default_play.notes_lost,
+                "sustain_conflicts": default_play.sustain_conflicts,
+            },
             "files": {
                 "gp5": gp5_path.name,
                 "musicxml": xml_path.name,

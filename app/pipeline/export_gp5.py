@@ -49,19 +49,45 @@ def _make_beat(
     return beat
 
 
+def _fill_track(guitarpro, track, document: TabDocument) -> None:
+    for measure, model in zip(track.measures, document.measures):
+        voice = measure.voices[0]
+        for segment in measure_segments(model):
+            offset = 0
+            chunks = split_duration(segment.duration_ticks)
+            for index, chunk in enumerate(chunks):
+                beat = _make_beat(
+                    guitarpro,
+                    voice,
+                    segment.start_tick + offset,
+                    chunk,
+                    segment.notes,
+                    force_tie=index > 0,
+                )
+                voice.beats.append(beat)
+                offset += chunk
+
+
+def _make_song(guitarpro, title: str, artist: str, bpm: float) -> object:
+    song = guitarpro.Song(
+        versionTuple=(5, 1, 0),
+        title=title,
+        artist=artist,
+        tempo=max(1, min(300, round(bpm))),
+    )
+    song.measureHeaders = []
+    return song
+
+
 def export_gp5(document: TabDocument, path: str | Path) -> Path:
     import guitarpro
 
     output = Path(path)
     output.parent.mkdir(parents=True, exist_ok=True)
 
-    song = guitarpro.Song(
-        versionTuple=(5, 1, 0),
-        title=document.title,
-        artist=document.artist,
-        tempo=max(1, min(300, round(document.bpm))),
+    song = _make_song(
+        guitarpro, document.title, document.artist, document.bpm
     )
-    song.measureHeaders = []
 
     numerator, denominator = document.time_signature
     time_signature = guitarpro.TimeSignature(
@@ -87,23 +113,63 @@ def export_gp5(document: TabDocument, path: str | Path) -> Path:
         ],
     )
     song.tracks = [track]
+    _fill_track(guitarpro, track, document)
 
-    for measure, model in zip(track.measures, document.measures):
-        voice = measure.voices[0]
-        for segment in measure_segments(model):
-            offset = 0
-            chunks = split_duration(segment.duration_ticks)
-            for index, chunk in enumerate(chunks):
-                beat = _make_beat(
-                    guitarpro,
-                    voice,
-                    segment.start_tick + offset,
-                    chunk,
-                    segment.notes,
-                    force_tie=index > 0,
-                )
-                voice.beats.append(beat)
-                offset += chunk
+    guitarpro.write(song, str(output), encoding="utf-8")
+    return output
 
-    guitarpro.write(song, str(output))
+
+def export_gp5_variants(
+    variants: list[tuple[TabDocument, str]], path: str | Path
+) -> Path:
+    """Write one GP5 with a track per variant (same timeline, different layouts).
+
+    ``variants`` is a list of ``(document, label)``. The first document defines
+    the title, artist, tempo and measure headers; every document must share the
+    same measure count and time signature.
+    """
+    import guitarpro
+
+    if not variants:
+        raise ValueError("variants must not be empty")
+    first = variants[0][0]
+    counts = {len(document.measures) for document, _label in variants}
+    if len(counts) != 1:
+        raise ValueError("all variants must have the same measure count")
+
+    output = Path(path)
+    output.parent.mkdir(parents=True, exist_ok=True)
+
+    song = _make_song(guitarpro, first.title, first.artist, first.bpm)
+    numerator, denominator = first.time_signature
+    time_signature = guitarpro.TimeSignature(
+        numerator=numerator,
+        denominator=guitarpro.Duration(denominator),
+    )
+    for measure in first.measures:
+        song.addMeasureHeader(
+            guitarpro.MeasureHeader(
+                number=measure.number,
+                start=measure.start_tick,
+                timeSignature=time_signature,
+            )
+        )
+
+    tracks = []
+    for index, (document, label) in enumerate(variants, start=1):
+        track = guitarpro.Track(
+            song=song,
+            number=index,
+            name=str(label)[:40],
+            fretCount=document.max_fret,
+            strings=[
+                guitarpro.GuitarString(number, pitch)
+                for number, pitch in document.tuning.ordered_strings()
+            ],
+        )
+        _fill_track(guitarpro, track, document)
+        tracks.append(track)
+    song.tracks = tracks
+
+    guitarpro.write(song, str(output), encoding="utf-8")
     return output

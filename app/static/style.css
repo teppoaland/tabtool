@@ -417,6 +417,15 @@ a:focus-visible {
   white-space: nowrap;
 }
 
+/* Lock icon for a read-only tab (v1.71); a row-level element so a long title
+   cannot clip it. */
+.library-lock {
+  flex: 0 0 auto;
+  font-size: 0.9rem;
+  line-height: 1;
+  opacity: 0.9;
+}
+
 .library-meta {
   color: var(--muted);
   font-size: 0.76rem;
@@ -548,6 +557,23 @@ a:focus-visible {
 .library-delete:disabled {
   opacity: 0.45;
   cursor: default;
+}
+
+/* A locked tab is read-only (v1.70): the settings controls stay visible but
+   cannot be changed, so the saved values cannot be edited by accident. */
+#bpm-input:disabled,
+#bpm-button:disabled,
+#sync-slider:disabled,
+#shift-input:disabled,
+#align-button:disabled,
+#attach-audio-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.library-edit input:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
 }
 
 body.modal-open {

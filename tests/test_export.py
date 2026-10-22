@@ -62,6 +62,37 @@ def test_export_gp5(tmp_path: Path) -> None:
     ) > 0
 
 
+def test_export_gp5_variants(tmp_path: Path) -> None:
+    import guitarpro
+
+    from app.pipeline.export_gp5 import export_gp5_variants
+
+    first = _document()
+    second = build_document(
+        title="Test Song",
+        artist="TabTool",
+        bpm=120,
+        time_signature="4/4",
+        tuning=STANDARD_TUNING,
+        tab_notes=[
+            TabNote(45, 5, 0, 0, 960),
+            TabNote(52, 4, 2, 0, 960),
+            TabNote(67, 1, 3, 960, 1920),
+        ],
+        measure_count=2,
+    )
+    path = export_gp5_variants(
+        [(first, "V1 · Avoimet kielet"), (second, "V2 · Boksi")],
+        tmp_path / "tab.gp5",
+    )
+    assert path.exists() and path.stat().st_size > 0
+    song = guitarpro.parse(str(path), encoding="utf-8")
+    assert len(song.tracks) == 2
+    assert song.tracks[0].name == "V1 · Avoimet kielet"
+    assert song.tracks[1].name == "V2 · Boksi"
+    assert len(song.measureHeaders) == 2
+
+
 def test_export_musicxml(tmp_path: Path) -> None:
     path = export_musicxml(_document(), tmp_path / "tab.musicxml")
     assert path.exists() and path.stat().st_size > 0

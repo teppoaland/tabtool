@@ -72,6 +72,67 @@ def test_locked_tab_cannot_be_deleted(client: TestClient, data_dir: Path) -> Non
     assert client.delete("/api/tabs/tab-locked").status_code == 200
 
 
+def test_locked_tab_settings_are_read_only(
+    client: TestClient, data_dir: Path
+) -> None:
+    """v1.70: the lock protects every stored setting, not only deletion."""
+    _make_tab("tab-readonly", title="Read Only")
+    assert (
+        client.post(
+            "/api/tabs/tab-readonly/library", data={"locked": "true"}
+        ).status_code
+        == 200
+    )
+
+    blocked = (
+        ("/api/tabs/tab-readonly/library", {"title": "Uusi nimi"}),
+        ("/api/tabs/tab-readonly/library", {"archived": "true"}),
+        ("/api/tabs/tab-readonly/library", {"tuning": "Drop D · DADGBE"}),
+        ("/api/tabs/tab-readonly/library", {"locked": "true"}),
+        ("/api/tabs/tab-readonly/sync", {"drift": "0.01"}),
+        ("/api/tabs/tab-readonly/sync", {"drift": "0", "offset_bars": "0.25"}),
+        ("/api/tabs/tab-readonly/tempo", {"bpm": "150"}),
+    )
+    for url, data in blocked:
+        response = client.post(url, data=data)
+        assert response.status_code == 409, (url, data, response.text)
+        assert "locked" in response.json()["detail"].lower()
+
+    assert client.post("/api/tabs/tab-readonly/attach-audio").status_code == 409
+    assert client.delete("/api/tabs/tab-readonly").status_code == 409
+
+    unchanged = client.get("/api/tabs/tab-readonly").json()
+    assert unchanged["title"] == "Read Only"
+    assert unchanged["locked"] is True
+    assert unchanged["archived"] is False
+    assert unchanged["meta"].get("sync_drift") is None
+    assert unchanged["meta"].get("sync_offset_bars") is None
+
+    unlocked = client.post(
+        "/api/tabs/tab-readonly/library", data={"locked": "false"}
+    )
+    assert unlocked.status_code == 200
+    assert unlocked.json()["locked"] is False
+
+    # After unlocking the same settings save normally again.
+    saved = client.post("/api/tabs/tab-readonly/sync", data={"drift": "0.01"})
+    assert saved.status_code == 200
+    assert saved.json()["meta"]["sync_drift"] == 0.01
+
+
+def test_unlock_and_edit_in_one_save(client: TestClient, data_dir: Path) -> None:
+    _make_tab("tab-unlock", title="Locked Name")
+    client.post("/api/tabs/tab-unlock/library", data={"locked": "true"})
+
+    response = client.post(
+        "/api/tabs/tab-unlock/library",
+        data={"locked": "false", "title": "New Name"},
+    )
+    assert response.status_code == 200, response.text
+    assert response.json()["locked"] is False
+    assert response.json()["title"] == "New Name"
+
+
 def test_archive_flag_roundtrip(client: TestClient, data_dir: Path) -> None:
     _make_tab("tab-archive", title="Archived Song")
 

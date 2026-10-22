@@ -5,6 +5,9 @@ tabs/
 private/
 library/
 
+# Koko kappaleen nuottidata (tekijänoikeus) – pidetään paikallisena
+scripts/build_kiss_legend.py
+
 # ── Ääni- ja tab-tiedostot (generoidut / henkilökohtaiset) ──
 *.wav
 *.mp3

@@ -32,6 +32,9 @@ ydintekstit:
 - `CONNECT SPOTIFY` / `Spotify Premium required` / `Spotify not configured`
 - `SULJE` / `POISTA` / `PERUUTA` / `MP3-kuunteluversio` /
   `GP5-linkki` / `GP5-tiedosto`
+- `VALITSE TÄMÄ` (sormitusversion valinta) sekä versionimet
+  `V1 · Avoimet kielet` / `V2 · Boksi` / `V3 · Vähän liikettä`
+  (v1.72, raitachipit)
 
 Hyväksytyt poikkeukset: LIBRARY-modaali (aiemmin SEARCH) ja kappaleen
 poiston varoitusdialogi (v1.38) ovat sallittuja. Muita uusia modaaleja,

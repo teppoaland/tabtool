@@ -1,9 +1,10 @@
-"""Guards rule #1: the count-in must stay outside the playback chain.
+"""Guards rule #1: the count-in and the score-end guard stay outside the chain.
 
 The playback/cursor alignment is validated by ear, not by pytest, so these
 tests only enforce the structural boundary that keeps it from breaking:
 the count-in may not call the alphaTab API or write to the audio element,
-and the playback-chain functions may not learn about the count-in.
+the score-end guard may not leak into the audio adapter, and the
+playback-chain functions may not learn about either of them.
 """
 
 import re
@@ -104,3 +105,44 @@ def test_playback_chain_has_no_count_in_code():
     media_handler = _object_body(source, "const mediaHandler =")
     assert "countIn" not in media_handler
     assert "countdown" not in media_handler.lower()
+
+
+def test_score_end_guard_keeps_the_audio_playing():
+    """v1.69: the clock holds the feed short of the score end.
+
+    alphaTab finishes the song as soon as the fed position reaches the last
+    bar: it pauses the output (our audio) and rewinds to tick 0, which cut
+    songs whose tab ends before the recording. The guard belongs to the clock
+    alone, so the audio adapter and the transport functions stay untouched.
+    """
+    source = _source()
+
+    clock = _function_body(source, "syncTimeMs")
+    assert "SCORE_END_GUARD_MS" in clock
+    assert "scoreEndTimeMs()" in clock
+    assert "audio.pause" not in clock
+
+    # The audio adapter still pauses and plays exactly as before.
+    media_handler = _object_body(source, "const mediaHandler =")
+    pause_body = _block(media_handler, media_handler.index("pause()"))
+    assert "SCORE_END_GUARD_MS" not in pause_body
+    assert "audio.pause()" in pause_body
+
+    # Only the clock clamps; seeking, pausing and toggling stay untouched.
+    for name in PLAYBACK_FUNCTIONS:
+        if name == "syncTimeMs":
+            continue
+        body = _function_body(source, name)
+        assert "SCORE_END_GUARD_MS" not in body, f"{name} must not clamp the clock"
+
+    toggle = _function_body(source, "togglePlayback")
+    assert "audio.ended" not in toggle
+    assert "api.stop()" not in toggle
+
+    # After the song has run out, the gatekeeper rewinds once so PLAY restarts.
+    handler = _function_body(source, "handlePlayButton")
+    assert "audio.ended" in handler
+    assert "api.stop()" in handler
+    assert "togglePlayback()" in handler
+    assert "beginCountIn()" in handler
+

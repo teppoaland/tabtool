@@ -28,6 +28,9 @@ def patch_exports(monkeypatch: pytest.MonkeyPatch) -> None:
         return _write
 
     monkeypatch.setattr("app.pipeline.export_gp5.export_gp5", writer(FAKE_GP5))
+    monkeypatch.setattr(
+        "app.pipeline.export_gp5.export_gp5_variants", writer(FAKE_GP5)
+    )
     monkeypatch.setattr("app.pipeline.export_musicxml.export_musicxml", writer(FAKE_XML))
     monkeypatch.setattr("app.pipeline.export_midi.export_midi", writer(FAKE_MIDI))
 

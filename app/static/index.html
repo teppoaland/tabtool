@@ -6,14 +6,14 @@
   <meta name="color-scheme" content="dark">
   <title>AI TabTool</title>
   <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="/static/style.css?v=1.68">
+  <link rel="stylesheet" href="/static/style.css?v=1.74">
 </head>
 <body>
   <header class="topbar">
     <div class="brand">
       <span class="brand-mark" aria-hidden="true">AT</span>
       <span class="brand-name">AI TABTOOL</span>
-      <span id="version-tag" class="version">v1.68</span>
+      <span id="version-tag" class="version">v1.74</span>
     </div>
     <nav class="nav" aria-label="Päävalikko">
       <button id="open-search-top" type="button" class="ghost small nav-search"
@@ -51,6 +51,8 @@
           <div id="track-toggles" class="track-toggles" role="group"
                aria-label="Näytettävät raidat"
                title="Valitse näytettävät raidat."></div>
+          <button id="variant-button" type="button" class="ghost small" hidden
+                  title="Valitse näkyvä versio pysyväksi tabiksi ja poista muut versiot.">VALITSE TÄMÄ</button>
           <button id="attach-audio-button" type="button" class="ghost small" hidden
                   title="Etsi samanniminen tabi, jolla on audio, ja liitä sen audio tähän tabiin.">LIITÄ AUDIO</button>
           <span id="attach-status" class="attach-status" aria-live="polite"></span>
@@ -265,12 +267,12 @@
 
 
   <footer class="footer">
-    <span>AI TabTool v1.68</span>
+    <span>AI TabTool v1.74</span>
     <span>Local-first · <a href="/remote">Remote</a></span>
   </footer>
 
-  <script src="/static/vendor/alphaTab/alphaTab.min.js?v=1.68"></script>
-  <script src="/static/app.js?v=1.68" defer></script>
+  <script src="/static/vendor/alphaTab/alphaTab.min.js?v=1.74"></script>
+  <script src="/static/app.js?v=1.74" defer></script>
 </body>
 </html>
 

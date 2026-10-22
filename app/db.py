@@ -474,6 +474,33 @@ def update_tab_meta(tab_id: str, meta: dict[str, Any]) -> dict[str, Any] | None:
     return get_tab(tab_id)
 
 
+def update_tab_finalize(
+    tab_id: str,
+    meta: dict[str, Any],
+    note_count: int,
+) -> dict[str, Any] | None:
+    """Store the finalized variant choice and the tab's new note count (v1.72)."""
+    if get_tab(tab_id) is None:
+        return None
+    with connection() as conn:
+        conn.execute(
+            "UPDATE tabs SET meta_json = ?, note_count = ? WHERE id = ?",
+            (json.dumps(meta, ensure_ascii=False), int(note_count), tab_id),
+        )
+    try:
+        directory = resolve_under_data(str(get_tab(tab_id)["directory"]))
+        meta_path = directory / "meta.json"
+        if meta_path.is_file():
+            temporary = meta_path.with_name(meta_path.name + ".tmp")
+            temporary.write_text(
+                json.dumps(meta, indent=2, ensure_ascii=False), encoding="utf-8"
+            )
+            temporary.replace(meta_path)
+    except (OSError, ValueError):
+        pass
+    return get_tab(tab_id)
+
+
 def update_tab_tuning(tab_id: str, tuning: str) -> dict[str, Any] | None:
     """Store the tuning key detected from the tab file (e.g. ``d_standard``)."""
     if get_tab(tab_id) is None:

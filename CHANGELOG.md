@@ -2,6 +2,129 @@
 
 > AI TabTool käyttää `1.x`-versiosarjaa. Aloitus `v1.00`.
 
+## v1.74 – 21.10.2026
+
+- **Korjaus: GP5-merkkijonot UTF-8:ksi.** PyGuitarPro kirjoitti GP5:n
+  oletuksena `cp1252`:na, mutta alphaTab lukee ne UTF-8:na, joten
+  varianttien nimet `V1 · Avoimet kielet` / `V2 · Boksi` /
+  `V3 · Vähän liikettä` näkyivät `�`-merkkeinä. Nyt `export_gp5`,
+  `export_gp5_variants`, `tab_tempo` ja tuonnin GP3/GP4-muunto kirjoittavat
+  UTF-8:na; omat GP5:t luetaan UTF-8:na ja tuonnissa kokeillaan UTF-8 ensin
+  (fallback cp1252 vanhoille Guitar Pro -tiedostoille).
+- `scripts/backfill_gp5_utf8.py` korjasi 2 olemassa olevaa AI-tabia
+  (uudelleenexport variantti-JSONeista UTF-8:na).
+- 134 pytest-testiä ennallaan; `test_export_gp5_variants` lukee nyt
+  UTF-8:na. Vaatii käyttäjän silmämääräisen tarkistuksen (raidannimet).
+
+## v1.73 – 21.10.2026
+
+- **Haamunuottien siivo** (`app/pipeline/prune.py`): transkription jälkeen,
+  ennen kvantisointia, pudotetaan selvästi hiljaisemmat oktaavi-/kvintti-
+  duplikaatit samasta onsetista ja rajataan soinnun polyfonia max 4 nuottiin
+  per isku (pidetään voimakkaimmat). Suodatin vain poistaa – se ei siirrä
+  eikä muuta säilytettyjä nuotteja.
+- `PIPELINE_VERSION = "3"` → vanhat AI-tabit eivät tule cachesta; uusi
+  generointi käyttää siivottua nuottilistaa. Metaan tallentuu `pruned_notes`
+  (poistettujen määrä) ja `detected_notes` pysyy raakana määränä.
+- 134 pytest-testiä (5 uutta `tests/test_prune.py`: oktaavihaamu pois,
+  samanvahvuinen oktaavituplaus säilyy, polyfoniakatto, onset-ikkuna,
+  determinismi). Vaatii käyttäjän kuuntelutestin.
+
+## v1.72 – 21.10.2026
+
+- **Useampi sormitusversio per generointi.** Putki luo samasta
+  kvantisoidusta MIDI-datasta kolme soitettavaa otelautaversiota
+  (`app/pipeline/fretboard.py`): `V1 · Avoimet kielet`, `V2 · Boksi`,
+  `V3 · Vähän liikettä`. Uusi kustannusfunktio rankaisee käden siirroista,
+  kielten ylityksistä, leveistä otteista ja korkeista nauhoista – ja
+  palkitsee profiilin mukaisesti avoimista kielistä/matalasta
+  rekisteristä.
+- **Soitettavuusmittari** (`app/pipeline/playability.py`): jokainen versio
+  saa deterministisen 0–10-pisteen arvon (siirrot/tahti, otteen leveys,
+  kielihypyt, pudonneet nuotit). Paras score valitsee oletusversion.
+- **Versiot näkyvät raitoina:** katselun GP5 sisältää yhden raidan per
+  versio, joten versioiden vaihto käyttää olemassa olevia raitachipejä
+  (ei audion uudelleenlatausta eikä kosketusta synkkaan). Oletuksena
+  näkyy paras versio; käyttäjän valinta palautuu localStoragesta.
+- **`VALITSE TÄMÄ`** (`POST /api/tabs/{id}/variant`): valittu versio
+  kirjoitetaan 1-raitaiseksi `tab.gp5`/`musicxml`/`mid`, muiden versioiden
+  JSON-snapshotit poistetaan ja `meta.selected_variant`/
+  `variant_finalized` asetetaan. Kirjaston lukitus estää valinnan (409).
+  Lopullinen tiedosto generoidaan tabin **nykyisellä BPM:llä**, joten
+  TAB BPM:n säätö ennen valintaa ei katoa.
+- **Uudet tiedostot:** `app/pipeline/playability.py`,
+  `app/pipeline/variant_store.py` (TabDocument ↔ JSON).
+  `PIPELINE_VERSION = "2"` → vanhat AI-tabit eivät tule cachesta.
+  `JobOptions.variants` (oletus päällä) on mukana cache-avaimessa.
+- **Ei muutoksia soittoketjuun:** `syncTimeMs`, `mediaHandler`,
+  transport ja `#alphaTab`-mitat pysyvät ennallaan. Katselijan pintaan
+  tuli vain `restoreTrackSelection`-oletus ja `VALITSE TÄMÄ` -nappi
+  `.viewer-tools`-riville.
+- Uudet testit: `test_fretboard_profiles.py`, `test_playability.py`,
+  `test_tab_variant.py` + `export_gp5_variants` `test_export.py`:ssä.
+  Vaatii käyttäjän kuuntelu-/tabsynkkitestin (sääntö #1).
+
+## v1.71 – 21.10.2026
+
+- **Lukon kuvake kirjastolistaan.** Lukitun kappaleen rivillä on nyt
+  lukko (🔒) kappaleen nimen jälkeen, ennen `NIMEÄ`/`×`-nappeja;
+  vihje kertoo mitä lukitus estää. Kuvake on rivin oma elementti, joten
+  pitkä nimi ei leikkaa sitä pois (`.library-title` ellipsi säilyy).
+  Muualle UI:hin lukkoa ei lisätty.
+- Kirjastorivin metasta poistui päällekkäinen teksti `lukittu`
+  (kuvake kertoo saman); työkaluvihje ja `#library`-rivi muuten
+  ennallaan.
+- Ei muutoksia soittoketjuun eikä backend-reitteihin.
+- 117 pytest-testiä ennallaan; `node --check` ja `compileall` OK.
+
+## v1.70 – 21.10.2026
+
+- **Lukitus koskee nyt kaikkia asetuksia.** Aiemmin `locked` esti vain
+  poiston. Nyt lukittu tabi on **vain luku**: nimi, viritys,
+  arkistointi, TAB BPM, SYNC, SIIRTO ja audion liittäminen on estetty
+  sekä palvelimessa (`409` `POST /library|/tempo|/sync|/attach-audio`,
+  `DELETE`) että käyttöliittymässä (napit ja kentät pois käytöstä,
+  vihje "Tabi on lukittu. Avaa lukitus kirjastossa (NIMEÄ).").
+- **Lukituksen avaus:** kirjaston `NIMEÄ`-lomakkeessa poistetaan rasti
+  `Lukitse`-kohdasta ja tallennetaan. Yhdellä tallennuksella voi avata
+  lukituksen ja muuttaa nimeä/viritystä/arkistointia
+  (`locked=false` + muut kentät).
+- **Ei muutoksia soittoketjuun:** `app.js`:n soitto-/synkkafunktiot,
+  `mediaHandler` ja transportin DOM-id:t pysyivät ennallaan. Ainoa
+  kosketus on uusi `applyLockState()` (kytkee `disabled`-tilat) sekä
+  `lockTitle`-vihjeiden vaihto.
+- `style.css`: pois käytöstä olevat asetuskentät himmennetään
+  (`opacity`), mitat ja scroll eivät muutu.
+- 117 pytest-testiä (2 uutta: lukitun tabin asetukset 409, avaus +
+  muokkaus samalla tallennuksella). Vaatii käyttäjän silmämääräisen
+  tarkistuksen (disabled-tilat ja lukituksen avaus).
+
+## v1.69 – 21.10.2026
+
+- **Kappale soi loppuun, vaikka tab loppuu aiemmin.** alphaTab lopettaa
+  soiton heti, kun syötetty positio saavuttaa partituurin viimeisen tahdin:
+  `stop()` → `output.pause()` (= `audio.pause()`) ja `tickPosition = 0`
+  (josta `audio.currentTime = 0`). Siksi biisi katkesi kuin seinään, jos
+  tab loppui ennen tallennetta (esim. WASP: kitarat loppuvat, rummut
+  soivat vielä). Nyt `syncTimeMs()` pitää syötön 50 ms ennen partituurin
+  loppua (`SCORE_END_GUARD_MS`), joten alphaTab pysyy soittotilassa ja
+  audio soi omaan loppuunsa; kursori jää viimeiselle iskulle ja
+  `Tahti`-lukema viimeiselle tahdille.
+- **1:1-kellotus ennallaan:** `bpmDrift`, `barDurationMs`,
+  `syncOffsetBars`, SYNC/SIIRTO ja `mediaHandler.seekTo`-inversio eivät
+  muuttuneet. Clamp koskee vain partituurin viimeistä ~0,05 tahtia, joten
+  kalibrointiarvot (lataus 1,268 s, 10 s → tahti 7, seekit
+  16/6/26/11/28/3) pysyvät.
+- **PLAY biisin loputtua:** portinvartija `handlePlayButton` tekee kerran
+  `api.stop()`in, kun audio on jo päättynyt, joten PLAY aloittaa alusta
+  eikä "pauseta" päättynyttä konetta. `togglePlayback`, `mediaHandler` ja
+  `syncPosition` eivät muuttuneet.
+- Tunnettu kosmeettinen sivuvaikutus: outron aikana `SIIRTO`-livenäyttö
+  näyttää kasvavaa "Osoitin x,xx tahtia jäljessä" -lukemaa, koska kursori
+  ei voi seurata tabin ulkopuolelle.
+- 115 pytest-testiä (1 uusi: score-end-guard pysyy kellossa). Vaatii
+  käyttäjän kuuntelu-/tabsynkkitestin (sääntö #1).
+
 ## v1.68 – 21.10.2026
 
 - **Viritys näkyviin ja talteen.** GP5-tuonti lukee nyt avoimet kielet

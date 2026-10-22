@@ -60,7 +60,7 @@ def _normalize_gp5(song: Any, path: Path) -> None:
 
     temporary = path.with_name(path.name + ".tmp")
     try:
-        guitarpro.write(song, str(temporary), version=(5, 1, 0))
+        guitarpro.write(song, str(temporary), version=(5, 1, 0), encoding="utf-8")
         os.replace(temporary, path)
     except Exception as exc:  # noqa: BLE001 - reported to the caller
         temporary.unlink(missing_ok=True)
@@ -73,7 +73,10 @@ def _parse_gp(path: Path, filename: str) -> dict[str, Any]:
     import guitarpro
 
     try:
-        song = guitarpro.parse(str(path))
+        try:
+            song = guitarpro.parse(str(path), encoding="utf-8")
+        except UnicodeDecodeError:
+            song = guitarpro.parse(str(path), encoding="cp1252")
     except Exception as exc:  # noqa: BLE001 - reported to the caller
         raise TabParseError(f"GP-tiedostoa ei voitu lukea: {exc}") from exc
 

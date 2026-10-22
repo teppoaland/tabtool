@@ -22,6 +22,16 @@
   const STAVE_STORAGE_KEY = "tabtool:staveProfile";
   const TRACK_STORAGE_PREFIX = "tabtool:tracks:";
   const SYNC_LIMIT = 0.1;
+  // Hold the fed score position just short of the score end (v1.69). A tab can
+  // end before the recording does (e.g. WASP: the guitars stop, the drums ring
+  // out). As soon as the position reaches the last bar, alphaTab's player
+  // finishes: it pauses the output (our <audio>) and rewinds to tick 0, so the
+  // song was cut at the last tab bar. Keeping the feed this much before the end
+  // lets the engine keep playing while the audio runs out on its own. alphaTab
+  // maps backing-track time onto the score linearly, so the resulting tick is
+  // always below endTick; every other position keeps the 1:1 clock, SIIRTO,
+  // SYNC and BPM unchanged.
+  const SCORE_END_GUARD_MS = 50;
 
   const form = document.getElementById("source-form");
   const fileInput = document.getElementById("file-input");
@@ -46,6 +56,7 @@
   const metaEl = document.getElementById("tab-meta");
   const staveSelect = document.getElementById("stave-select");
   const trackToggles = document.getElementById("track-toggles");
+  const variantButton = document.getElementById("variant-button");
   const fullscreenButton = document.getElementById("fullscreen-button");
   const seekSlider = document.getElementById("seek-slider");
   const seekBack = document.getElementById("seek-back");
@@ -262,7 +273,16 @@
     const duration = Number.isFinite(audio.duration) ? audio.duration : 0;
     const base = current * 1000 * (1 + syncDrift + bpmDrift());
     const position = Math.max(0, base + syncOffsetBars * barDurationMs());
-    return duration > 0 ? Math.min(position, duration * 1000) : position;
+    // Never feed the score end itself (v1.69), otherwise alphaTab finishes and
+    // pauses/rewinds the audio. The clamp only touches the very end of the
+    // score; the 1:1 mapping and the corrections above stay as they were.
+    const audioLimit = duration > 0 ? duration * 1000 : position;
+    const scoreEnd = scoreEndTimeMs();
+    const limit =
+      scoreEnd > SCORE_END_GUARD_MS
+        ? Math.min(audioLimit, scoreEnd - SCORE_END_GUARD_MS)
+        : audioLimit;
+    return Math.min(position, limit);
   }
 
   // End of the score timeline in milliseconds. alphaTab's external-media
@@ -399,6 +419,10 @@
 
   async function persistSyncDrift() {
     if (!activeTab || !activeTab.id) return;
+    if (tabIsLocked(activeTab)) {
+      setSyncStatus(LOCKED_HINT, true);
+      return;
+    }
     const tabId = activeTab.id;
     if (syncSaveTimer) {
       window.clearTimeout(syncSaveTimer);
@@ -446,6 +470,89 @@
       audio.removeAttribute("src");
       audio.load();
       updateTransport();
+    }
+  }
+
+  // A locked tab is read-only (v1.70): the lock protects every stored setting
+  // (name, tuning, archive flag, TAB BPM, SYNC, SIIRTO, attached audio), not
+  // only deletion. Only the library editor may clear the lock itself.
+  const LOCKED_HINT = "Tabi on lukittu. Avaa lukitus kirjastossa (NIMEÄ).";
+
+  function tabIsLocked(tab) {
+    return Boolean(tab && tab.locked);
+  }
+
+  function setLockedControl(element, locked) {
+    if (!element) return;
+    if (!Object.prototype.hasOwnProperty.call(element.dataset, "lockTitle")) {
+      element.dataset.lockTitle = element.title || "";
+    }
+    element.disabled = locked;
+    element.title = locked ? LOCKED_HINT : element.dataset.lockTitle;
+  }
+
+  function applyLockState() {
+    const locked = tabIsLocked(activeTab);
+    for (const element of [
+      bpmInput,
+      bpmButton,
+      syncSlider,
+      shiftInput,
+      alignButton,
+      attachAudioButton,
+    ]) {
+      setLockedControl(element, locked);
+    }
+    if (bpmField) bpmField.classList.toggle("is-locked", locked);
+    updateVariantButton();
+  }
+
+  function updateVariantButton() {
+    if (!variantButton) return;
+    const meta = (activeTab && activeTab.meta) || {};
+    const variants = Array.isArray(meta.variants) ? meta.variants : [];
+    const show = variants.length > 1 && !meta.variant_finalized;
+    variantButton.hidden = !show;
+    if (show) variantButton.disabled = tabIsLocked(activeTab);
+  }
+
+  async function finalizeVariant() {
+    if (!activeTab || !activeTab.id) return;
+    if (tabIsLocked(activeTab)) {
+      setAttachStatus(LOCKED_HINT);
+      return;
+    }
+    const variants = (activeTab.meta && activeTab.meta.variants) || [];
+    const visible = Array.from(visibleTrackIndexes).filter((index) =>
+      variants.some((item) => Number(item.track) === index)
+    );
+    if (visible.length !== 1) {
+      setAttachStatus("Valitse ensin yksi versio näkyviin.");
+      return;
+    }
+    const entry = variants.find((item) => Number(item.track) === visible[0]);
+    if (!entry) return;
+    if (variantButton) variantButton.disabled = true;
+    setAttachStatus("Valitaan…");
+    try {
+      const data = new FormData();
+      data.append("variant", String(entry.id));
+      const response = await fetch(`/api/tabs/${activeTab.id}/variant`, {
+        method: "POST",
+        body: data,
+      });
+      if (!response.ok) {
+        setAttachStatus(await readError(response));
+        return;
+      }
+      const tabId = activeTab.id;
+      await loadTab(tabId);
+      await loadLibrary();
+      setAttachStatus(`Valittu: ${entry.label}`);
+    } catch (error) {
+      setAttachStatus(error instanceof Error ? error.message : String(error));
+    } finally {
+      if (variantButton) variantButton.disabled = tabIsLocked(activeTab);
     }
   }
 
@@ -647,6 +754,21 @@
   function restoreTrackSelection() {
     visibleTrackIndexes = new Set(allTracks.map((_, index) => index));
     if (!activeTab || !allTracks.length) return;
+    // A multi-variant AI tab (v1.72) defaults to the best-scoring variant; the
+    // user's own track choice is still restored from localStorage below.
+    const variants =
+      activeTab.meta && Array.isArray(activeTab.meta.variants)
+        ? activeTab.meta.variants
+        : [];
+    if (variants.length) {
+      const preferred = activeTab.meta.default_variant || variants[0].id;
+      const entry =
+        variants.find((item) => item.id === preferred) || variants[0];
+      const track = Number(entry.track);
+      if (Number.isInteger(track) && track >= 0 && track < allTracks.length) {
+        visibleTrackIndexes = new Set([track]);
+      }
+    }
     if (
       activeTab.meta &&
       activeTab.meta.source_type === "import" &&
@@ -1127,6 +1249,17 @@
       cancelCountIn();
       return;
     }
+    // The score end is held back (SCORE_END_GUARD_MS), so alphaTab no longer
+    // stops itself when the tab runs out. Once the audio has reached its own
+    // end, rewind once: PLAY then starts from the beginning instead of pausing
+    // an engine that is still marked as playing.
+    if (audio.ended && api && activeTab) {
+      try {
+        api.stop();
+      } catch (error) {
+        /* ignore a stopped player */
+      }
+    }
     const willPlay = playButton
       ? playButton.dataset.state !== "playing"
       : audio.paused;
@@ -1233,6 +1366,7 @@
       }
 
       renderTabMeta(tab);
+      applyLockState();
       if (viewerSection) viewerSection.hidden = false;
 
       const files = (tab.meta && tab.meta.files) || {};
@@ -1326,7 +1460,6 @@
     }
     if (tab.source_type === "import") parts.push("tuotu tabi");
     if (tab.channel) parts.push(`YT: ${tab.channel}`);
-    if (tab.locked) parts.push("lukittu");
     const created = formatTimestamp(tab.created_at);
     if (created) parts.push(created);
     return parts.join(" · ");
@@ -1350,12 +1483,15 @@
     return button;
   }
 
-  function libraryFlag(labelText, checked, onChange) {
+  function libraryFlag(labelText, checked, onChange, options) {
+    const settings = options || {};
     const label = document.createElement("label");
     label.className = "library-flag";
     const input = document.createElement("input");
     input.type = "checkbox";
     input.checked = Boolean(checked);
+    input.disabled = Boolean(settings.disabled);
+    if (settings.disabled) label.title = LOCKED_HINT;
     input.addEventListener("change", () => onChange(input.checked));
     label.append(input, document.createTextNode(labelText));
     return label;
@@ -1382,6 +1518,19 @@
     open.append(name, meta);
     open.addEventListener("click", () => selectTab(tab.id));
 
+    // A lock icon after the song marks a read-only tab (v1.71); the icon sits
+    // outside the ellipsised title so it never disappears with a long name.
+    let lockIcon = null;
+    if (tab.locked) {
+      lockIcon = document.createElement("span");
+      lockIcon.className = "library-lock";
+      lockIcon.textContent = "🔒";
+      lockIcon.title =
+        "Lukittu: nimi, viritys, arkistointi, TAB BPM, SYNC, SIIRTO ja poisto on estetty.";
+      lockIcon.setAttribute("role", "img");
+      lockIcon.setAttribute("aria-label", "Lukittu");
+    }
+
     const rename = libraryButton(
       "NIMEÄ",
       "ghost small library-rename",
@@ -1400,11 +1549,16 @@
     remove.disabled = Boolean(tab.locked);
     remove.addEventListener("click", () => requestDelete(tab));
 
-    row.append(open, rename, remove);
+    row.append(open);
+    if (lockIcon) row.append(lockIcon);
+    row.append(rename, remove);
     if (tab.archived) {
       row.append(
-        libraryFlag("Arkistoi", true, (checked) =>
-          saveLibraryMeta(tab, { archived: checked })
+        libraryFlag(
+          "Arkistoi",
+          true,
+          (checked) => saveLibraryMeta(tab, { archived: checked }),
+          { disabled: Boolean(tab.locked) }
         )
       );
     }
@@ -1449,6 +1603,21 @@
     archiveBox.checked = Boolean(tab.archived);
     archiveLabel.append(archiveBox, document.createTextNode("Arkistoi"));
 
+    // A locked tab is read-only (v1.70): the name, tuning and archive flag are
+    // disabled here and the server rejects the same changes. Unticking
+    // "Lukitse" and saving is the one way to unlock.
+    const locked = Boolean(tab.locked);
+    if (locked) {
+      input.disabled = true;
+      tuningInput.disabled = true;
+      archiveBox.disabled = true;
+      form.title = LOCKED_HINT;
+      input.title = LOCKED_HINT;
+      tuningInput.title = LOCKED_HINT;
+      lockLabel.title =
+        "Poista rasti ja tallenna avataksesi lukituksen. Lukittuna nimi, viritys, arkistointi, TAB BPM, SYNC, SIIRTO ja audion liityntä ovat vain luku -tilassa.";
+    }
+
     const actions = document.createElement("div");
     actions.className = "library-edit-actions";
     const save = document.createElement("button");
@@ -1462,6 +1631,15 @@
     form.append(input, tuningInput, lockLabel, archiveLabel, actions);
     form.addEventListener("submit", (event) => {
       event.preventDefault();
+      if (locked) {
+        // Read-only fields: a locked tab can only be unlocked from here.
+        if (lockBox.checked) {
+          setLibraryStatus(LOCKED_HINT, true);
+          return;
+        }
+        saveLibraryMeta(tab, { locked: false });
+        return;
+      }
       saveLibraryMeta(tab, {
         title: input.value.trim(),
         tuning: tuningInput.value.trim(),
@@ -1568,6 +1746,7 @@
         activeTab.meta = activeTab.meta || {};
         activeTab.meta.tuning_override = updated.tuning_override;
         activeTab.meta.tuning_label = updated.tuning_label;
+        applyLockState();
         renderTabMeta(activeTab);
       }
       setLibraryStatus("");
@@ -1639,6 +1818,7 @@
   function clearViewer() {
     cancelCountIn();
     activeTab = null;
+    applyLockState();
     allTracks = [];
     visibleTrackIndexes = new Set();
     if (api) {
@@ -1814,6 +1994,10 @@
 
   async function attachAudio() {
     if (!activeTab || !activeTab.id) return;
+    if (tabIsLocked(activeTab)) {
+      setAttachStatus(LOCKED_HINT);
+      return;
+    }
     if (attachAudioButton) attachAudioButton.disabled = true;
     setAttachStatus("Etsitään audiota…");
     try {
@@ -1841,13 +2025,17 @@
         error instanceof Error ? error.message : String(error)
       );
     } finally {
-      if (attachAudioButton) attachAudioButton.disabled = false;
+      if (attachAudioButton) attachAudioButton.disabled = tabIsLocked(activeTab);
     }
   }
 
   async function applyTempo() {
     if (!activeTab || !activeTab.id) {
       setBpmStatus("Avaa tabi ensin.", true);
+      return;
+    }
+    if (tabIsLocked(activeTab)) {
+      setBpmStatus(LOCKED_HINT, true);
       return;
     }
     const bpm = Number(bpmInput && bpmInput.value);
@@ -1878,7 +2066,7 @@
         true
       );
     } finally {
-      if (bpmButton) bpmButton.disabled = false;
+      if (bpmButton) bpmButton.disabled = tabIsLocked(activeTab);
     }
   }
 
@@ -2032,6 +2220,9 @@
   }
   if (attachAudioButton) {
     attachAudioButton.addEventListener("click", attachAudio);
+  }
+  if (variantButton) {
+    variantButton.addEventListener("click", finalizeVariant);
   }
   if (rateSlider) {
     rateSlider.addEventListener("input", () =>

@@ -9,7 +9,9 @@ from __future__ import annotations
 
 import asyncio
 import json
+import os
 import queue
+import shutil
 from dataclasses import replace
 from pathlib import Path
 from typing import AsyncIterator
@@ -362,6 +364,35 @@ def _tab_summary(tab: dict[str, object]) -> dict[str, object]:
     summary["tuning"] = tuning_key
     summary["tuning_override"] = override
     summary["tuning_label"] = override or label or describe_key(tuning_key)
+    variant_list = meta.get("variants") if isinstance(meta, dict) else None
+    variants = []
+    if isinstance(variant_list, list):
+        for entry in variant_list:
+            if not isinstance(entry, dict):
+                continue
+            play = (
+                entry.get("playability")
+                if isinstance(entry.get("playability"), dict)
+                else {}
+            )
+            variants.append(
+                {
+                    "id": entry.get("id"),
+                    "label": entry.get("label"),
+                    "track": entry.get("track"),
+                    "score": play.get("score"),
+                }
+            )
+    summary["variants"] = variants
+    summary["default_variant"] = (
+        str(meta.get("default_variant") or "") if isinstance(meta, dict) else ""
+    )
+    summary["selected_variant"] = (
+        str(meta.get("selected_variant") or "") if isinstance(meta, dict) else ""
+    )
+    summary["variant_finalized"] = (
+        bool(meta.get("variant_finalized")) if isinstance(meta, dict) else False
+    )
     return summary
 
 
@@ -376,6 +407,17 @@ def _load_tab(tab_id: str) -> dict[str, object] | None:
         db.import_tabs_from_disk()
         tab = db.get_tab(tab_id)
     return tab
+
+
+# A locked tab is read-only (v1.70): the lock protects every stored setting
+# (name, tuning, archive flag, BPM, SYNC/SIIRTO, attached audio), not only
+# deletion. The library editor is the single place that may clear the lock.
+_LOCKED_DETAIL = "Tab is locked. Unlock it in the library first."
+
+
+def _require_unlocked(tab: dict[str, object]) -> None:
+    if tab.get("locked"):
+        raise HTTPException(status_code=409, detail=_LOCKED_DETAIL)
 
 
 @app.get("/api/tabs", tags=["tabs"])
@@ -420,11 +462,8 @@ def import_tab_from_url(url: str = Form(...)) -> dict[str, object]:
 def delete_tab(tab_id: str) -> dict[str, object]:
     """Delete a tab with its audio and stems; the MP3 copy is kept."""
     tab = _load_tab(tab_id)
-    if tab is not None and tab.get("locked"):
-        raise HTTPException(
-            status_code=409,
-            detail="Tab is locked. Unlock it in the library first.",
-        )
+    if tab is not None:
+        _require_unlocked(tab)
     try:
         return library.delete_tab_data(tab_id)
     except LookupError as exc:
@@ -444,6 +483,11 @@ def tab_library(
     tab = _load_tab(tab_id)
     if tab is None:
         raise HTTPException(status_code=404, detail="Unknown tab")
+    # A locked tab is read-only. Only an explicit unlock (locked=false) may
+    # write, and it may carry the new name/tuning/archive flag in the same
+    # request, so one save can unlock and edit at once.
+    if tab.get("locked") and locked is not False:
+        raise HTTPException(status_code=409, detail=_LOCKED_DETAIL)
     meta = None
     if tuning_clear:
         meta = dict(tab.get("meta") or {})
@@ -568,6 +612,7 @@ def tab_attach_audio(tab_id: str) -> dict[str, object]:
     target = _load_tab(tab_id)
     if target is None:
         raise HTTPException(status_code=404, detail="Unknown tab")
+    _require_unlocked(target)
     if target.get("audio_path"):
         return _tab_summary(target)
 
@@ -628,6 +673,7 @@ def tab_tempo(tab_id: str, bpm: float = Form(...)) -> dict[str, object]:
     tab = _load_tab(tab_id)
     if tab is None:
         raise HTTPException(status_code=404, detail="Unknown tab")
+    _require_unlocked(tab)
     if not 20.0 <= float(bpm) <= 400.0:
         raise HTTPException(status_code=422, detail="BPM must be between 20 and 400")
     meta = dict(tab.get("meta") or {})
@@ -649,13 +695,13 @@ def tab_tempo(tab_id: str, bpm: float = Form(...)) -> dict[str, object]:
     try:
         import guitarpro
 
-        song = guitarpro.parse(str(path))
+        song = guitarpro.parse(str(path), encoding="utf-8")
         # GP5 stores an integer tempo; the fractional part is kept in the
         # metadata and applied as a playback correction by the viewer.
         notated_tempo = int(float(bpm) + 0.5)
         song.tempo = notated_tempo
         temporary = path.with_name(path.name + ".tmp")
-        guitarpro.write(song, str(temporary))
+        guitarpro.write(song, str(temporary), encoding="utf-8")
         temporary.replace(path)
     except Exception as exc:  # noqa: BLE001 - reported to the user
         raise HTTPException(
@@ -681,6 +727,7 @@ def tab_sync(
     tab = _load_tab(tab_id)
     if tab is None:
         raise HTTPException(status_code=404, detail="Unknown tab")
+    _require_unlocked(tab)
     value = float(drift)
     if not -0.1 <= value <= 0.1:
         raise HTTPException(
@@ -701,6 +748,68 @@ def tab_sync(
     summary = _tab_summary(updated)
     summary["meta"] = updated.get("meta") or {}
     return summary
+
+
+@app.post("/api/tabs/{tab_id}/variant", tags=["tabs"])
+def tab_variant(tab_id: str, variant: str = Form(...)) -> dict[str, object]:
+    """Keep one generated fingering variant and delete the others (v1.72)."""
+    from app.pipeline.export_gp5 import export_gp5
+    from app.pipeline.export_midi import export_midi
+    from app.pipeline.export_musicxml import export_musicxml
+    from app.pipeline.variant_store import restore_document
+
+    tab = _load_tab(tab_id)
+    if tab is None:
+        raise HTTPException(status_code=404, detail="Unknown tab")
+    _require_unlocked(tab)
+    meta = dict(tab.get("meta") or {})
+    variants = [
+        entry for entry in (meta.get("variants") or []) if isinstance(entry, dict)
+    ]
+    if not variants:
+        raise HTTPException(
+            status_code=422, detail="Tässä tabissa ei ole valittavia versioita."
+        )
+    if meta.get("variant_finalized"):
+        if meta.get("selected_variant") == variant:
+            return _tab_summary(tab)
+        raise HTTPException(status_code=422, detail="Versio on jo valittu.")
+    chosen = next((entry for entry in variants if entry.get("id") == variant), None)
+    if chosen is None:
+        raise HTTPException(status_code=422, detail=f"Tuntematon versio: {variant}")
+
+    directory = db.resolve_under_data(str(tab["directory"]))
+    source_path = directory / str(chosen["source"])
+    if not source_path.is_file():
+        raise HTTPException(status_code=404, detail="Version tiedostoa ei löytynyt.")
+    snapshot = json.loads(source_path.read_text(encoding="utf-8"))
+    document = restore_document(snapshot)
+    # The user may have adjusted TAB BPM after generation; finalize at the
+    # current BPM so the chosen variant keeps the correct tempo.
+    document = replace(document, bpm=float(meta.get("bpm") or document.bpm))
+
+    for name, exporter in (
+        ("tab.gp5", export_gp5),
+        ("tab.musicxml", export_musicxml),
+        ("tab.mid", export_midi),
+    ):
+        final = directory / name
+        temporary = directory / (name + ".tmp")
+        exporter(document, temporary)
+        os.replace(temporary, final)
+
+    variants_dir = directory / "variants"
+    if variants_dir.is_dir():
+        shutil.rmtree(variants_dir)
+
+    meta["selected_variant"] = chosen["id"]
+    meta["variant_finalized"] = True
+    meta["variants"] = [chosen]
+    meta["playability"] = chosen.get("playability")
+    updated = db.update_tab_finalize(tab_id, meta, document.note_count)
+    if updated is None:  # pragma: no cover - deleted between the two calls
+        raise HTTPException(status_code=404, detail="Unknown tab")
+    return _tab_summary(updated)
 
 
 @app.get("/api/tabs/{tab_id}/audio", tags=["tabs"])

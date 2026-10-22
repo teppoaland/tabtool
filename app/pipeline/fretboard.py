@@ -20,6 +20,73 @@ class _Candidate:
     span: int
     open_count: int
     base_cost: float
+    hand_fret: float = 0.0
+    string_center: float = 0.0
+
+
+@dataclass(frozen=True)
+class FretboardProfile:
+    """Fingering policy: weights for the DP cost function (v1.72).
+
+    Each profile scores the same notes differently, producing a different
+    playable layout (open-string campfire shapes, a compact mid-neck box, or
+    minimal hand movement). All profiles are deterministic.
+    """
+
+    key: str
+    label: str
+    open_bonus: float = 0.2
+    low_fret_penalty: float = 0.0
+    high_fret_penalty: float = 0.05
+    span_weight: float = 1.5
+    box_center: int | None = None
+    box_width: int = 2
+    box_penalty_weight: float = 0.6
+    shift_weight: float = 1.0
+    string_jump_weight: float = 0.15
+    skip_weight: float = 0.05
+
+
+PROFILES: dict[str, FretboardProfile] = {
+    "open": FretboardProfile(
+        key="open",
+        label="V1 · Avoimet kielet",
+        open_bonus=0.6,
+        low_fret_penalty=0.04,
+        high_fret_penalty=0.12,
+        span_weight=1.5,
+        shift_weight=0.8,
+        string_jump_weight=0.1,
+    ),
+    "box": FretboardProfile(
+        key="box",
+        label="V2 · Boksi",
+        open_bonus=0.15,
+        high_fret_penalty=0.05,
+        span_weight=2.0,
+        shift_weight=1.2,
+        string_jump_weight=0.15,
+        skip_weight=0.05,
+    ),
+    "smooth": FretboardProfile(
+        key="smooth",
+        label="V3 · Vähän liikettä",
+        open_bonus=0.2,
+        high_fret_penalty=0.05,
+        span_weight=1.2,
+        shift_weight=2.5,
+        string_jump_weight=0.12,
+    ),
+}
+
+
+def get_profile(value: str | FretboardProfile | None) -> FretboardProfile | None:
+    if value is None or isinstance(value, FretboardProfile):
+        return value
+    key = str(value).strip().lower()
+    if key not in PROFILES:
+        raise ValueError(f"Unknown fretboard profile: {value!r}")
+    return PROFILES[key]
 
 
 @dataclass(frozen=True)
@@ -41,7 +108,7 @@ def candidates_for_pitch(
     return positions
 
 
-def _candidate_cost(frets: Iterable[int]) -> tuple[float, int, int, float]:
+def _legacy_candidate_cost(frets: Iterable[int]) -> tuple[float, int, int, float]:
     values = tuple(frets)
     span = max(values) - min(values)
     mean = sum(values) / len(values)
@@ -51,12 +118,50 @@ def _candidate_cost(frets: Iterable[int]) -> tuple[float, int, int, float]:
     return cost, span, open_count, mean
 
 
+def _profile_candidate_cost(
+    frets: Iterable[int], profile: FretboardProfile
+) -> tuple[float, int, int, float, float, float]:
+    values = tuple(frets)
+    span = max(values) - min(values)
+    mean = sum(values) / len(values)
+    open_count = sum(1 for fret in values if fret == 0)
+    max_fret = max(values)
+    hand_fret = min((fret for fret in values if fret > 0), default=0)
+    high_fret = max(0, max_fret - 12)
+    box_penalty = 0.0
+    if profile.box_center is not None:
+        box_penalty = max(0.0, abs(mean - profile.box_center) - profile.box_width)
+    cost = (
+        span * profile.span_weight
+        + mean * (0.02 + profile.low_fret_penalty)
+        + high_fret * profile.high_fret_penalty
+        - open_count * profile.open_bonus
+        + box_penalty * profile.box_penalty_weight
+    )
+    return cost, span, open_count, mean, hand_fret, max_fret
+
+
+def _profile_transition(
+    previous: _Candidate, current: _Candidate, profile: FretboardProfile
+) -> float:
+    """Penalise hand movement and string crossing between two chords."""
+    shift = abs(current.hand_fret - previous.hand_fret)
+    jump = abs(current.string_center - previous.string_center)
+    skip = max(0.0, jump - 2.0)
+    return (
+        shift * profile.shift_weight
+        + jump * profile.string_jump_weight
+        + skip * profile.skip_weight
+    )
+
+
 def _enumerate_candidates(
     notes: list[QuantizedNote],
     tuning: Tuning,
     max_fret: int,
     max_span: int,
     limit: int = MAX_CANDIDATES_PER_CHORD,
+    profile: FretboardProfile | None = None,
 ) -> list[_Candidate]:
     """Enumerate playable string/fret combinations for one chord."""
     if not notes:
@@ -81,18 +186,38 @@ def _enumerate_candidates(
         if len(results) >= limit:
             return
         if depth == len(order):
-            base_cost, span, open_count, mean = _candidate_cost(current_frets)
-            if span <= max_span:
-                results.append(
-                    _Candidate(
-                        strings=tuple(strings_for_note[i] for i in range(len(notes))),
-                        frets=tuple(frets_for_note[i] for i in range(len(notes))),
-                        mean_fret=mean,
-                        span=span,
-                        open_count=open_count,
-                        base_cost=base_cost,
+            strings = tuple(strings_for_note[i] for i in range(len(notes)))
+            frets = tuple(frets_for_note[i] for i in range(len(notes)))
+            if profile is None:
+                base_cost, span, open_count, mean = _legacy_candidate_cost(frets)
+                if span <= max_span:
+                    results.append(
+                        _Candidate(
+                            strings=strings,
+                            frets=frets,
+                            mean_fret=mean,
+                            span=span,
+                            open_count=open_count,
+                            base_cost=base_cost,
+                        )
                     )
+            else:
+                base_cost, span, open_count, mean, hand_fret, _max = (
+                    _profile_candidate_cost(frets, profile)
                 )
+                if span <= max_span:
+                    results.append(
+                        _Candidate(
+                            strings=strings,
+                            frets=frets,
+                            mean_fret=mean,
+                            span=span,
+                            open_count=open_count,
+                            base_cost=base_cost,
+                            hand_fret=hand_fret,
+                            string_center=sum(strings) / len(strings),
+                        )
+                    )
             return
 
         note_index = order[depth]
@@ -149,7 +274,9 @@ def _prepare_group(
 
 
 def _solve_path(
-    groups: list[list[QuantizedNote]], candidates: list[list[_Candidate]]
+    groups: list[list[QuantizedNote]],
+    candidates: list[list[_Candidate]],
+    profile: FretboardProfile | None = None,
 ) -> list[_Candidate] | None:
     """Viterbi pass with back-pointers over the small candidate sets."""
     if not groups or not candidates:
@@ -176,11 +303,12 @@ def _solve_path(
                 previous_candidate = candidates[group_index - 1][
                     previous_state.candidate_index
                 ]
-                cost = (
-                    previous_state.cost
-                    + candidate.base_cost
-                    + abs(candidate.mean_fret - previous_candidate.mean_fret)
+                transition = (
+                    abs(candidate.mean_fret - previous_candidate.mean_fret)
+                    if profile is None
+                    else _profile_transition(previous_candidate, candidate, profile)
                 )
+                cost = previous_state.cost + candidate.base_cost + transition
                 if cost < best_cost:
                     best_cost = cost
                     best_previous = previous_index
@@ -209,13 +337,16 @@ def assign_fretboard(
     tuning: Tuning,
     max_fret: int = 24,
     max_span: int = 5,
+    profile: str | FretboardProfile | None = None,
 ) -> tuple[list[TabNote], list[str]]:
     """Assign every note to a string/fret using a small dynamic program.
 
     The cost prefers staying near the previous hand position, avoids wide
-    stretches, and gives a small bonus to open strings.
+    stretches, and gives a small bonus to open strings. A ``profile`` switches
+    to the richer cost function (v1.72); ``None`` keeps the legacy weights.
     """
     warnings: list[str] = []
+    resolved = get_profile(profile)
     if max_span < 0:
         raise ValueError("max_span must be >= 0")
     if max_fret < 0:
@@ -233,7 +364,7 @@ def assign_fretboard(
         if not group:
             continue
         group_candidates = _enumerate_candidates(
-            group, tuning, max_fret, max_span
+            group, tuning, max_fret, max_span, MAX_CANDIDATES_PER_CHORD, resolved
         )
         if not group_candidates:
             warnings.append(
@@ -247,7 +378,7 @@ def assign_fretboard(
     if not prepared:
         return [], warnings
 
-    path = _solve_path(prepared, candidates)
+    path = _solve_path(prepared, candidates, resolved)
     if path is None:
         return [], warnings
     if len(path) != len(prepared):
