@@ -54,6 +54,12 @@ EXPORT_FORMATS: dict[str, tuple[str, str]] = {
 
 DOWNLOAD_SUFFIX = {"gp5": ".gp5", "musicxml": ".musicxml", "midi": ".mid"}
 
+# SIIRTO (whole-bar shift) may have to bridge a large structure difference
+# (e.g. a section the tab expands vs. the recording), so the limit is
+# deliberately generous. The viewer clamps the resulting position to the
+# score end, so a big value cannot break the clock (v1.75).
+SYNC_OFFSET_LIMIT = 999.0
+
 
 
 def _html(name: str) -> FileResponse:
@@ -667,6 +673,22 @@ def tab_attach_audio(tab_id: str) -> dict[str, object]:
     return summary
 
 
+def _gp5_song(path: Path):
+    """Read a GP5 file: UTF-8 first, cp1252 fallback for older exports.
+
+    Imported GP5s keep the encoding they were written with. A UTF-8-only read
+    failed on e.g. "Mötley Crüe" (byte 0xf6) and the tempo save answered
+    "'utf-8' codec can't decode byte 0xf6 in position 1" (v1.75). Writing the
+    song back as UTF-8 also repairs such a file for alphaTab.
+    """
+    import guitarpro
+
+    try:
+        return guitarpro.parse(str(path), encoding="utf-8")
+    except UnicodeDecodeError:
+        return guitarpro.parse(str(path), encoding="cp1252")
+
+
 @app.post("/api/tabs/{tab_id}/tempo", tags=["tabs"])
 def tab_tempo(tab_id: str, bpm: float = Form(...)) -> dict[str, object]:
     """Rewrite a GP5 tab tempo so the tab matches the song's real BPM."""
@@ -695,7 +717,7 @@ def tab_tempo(tab_id: str, bpm: float = Form(...)) -> dict[str, object]:
     try:
         import guitarpro
 
-        song = guitarpro.parse(str(path), encoding="utf-8")
+        song = _gp5_song(path)
         # GP5 stores an integer tempo; the fractional part is kept in the
         # metadata and applied as a playback correction by the viewer.
         notated_tempo = int(float(bpm) + 0.5)
@@ -735,10 +757,13 @@ def tab_sync(
             detail="SYNC must be between -10 and 10 percent",
         )
     bars = float(offset_bars)
-    if not -64.0 <= bars <= 64.0:
+    if not -SYNC_OFFSET_LIMIT <= bars <= SYNC_OFFSET_LIMIT:
         raise HTTPException(
             status_code=422,
-            detail="SIIRTO must be between -64 and 64 bars",
+            detail=(
+                f"SIIRTO must be between -{SYNC_OFFSET_LIMIT:g} and "
+                f"{SYNC_OFFSET_LIMIT:g} bars"
+            ),
         )
     meta = dict(tab.get("meta") or {})
     meta["sync_offset_bars"] = bars

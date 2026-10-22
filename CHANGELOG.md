@@ -2,6 +2,24 @@
 
 > AI TabTool käyttää `1.x`-versiosarjaa. Aloitus `v1.00`.
 
+## v1.75 – 22.10.2026
+
+- **Korjaus: TEMPO-tallennus kaatui cp1252-koodattuun GP5:een.** Valmiina
+  tuodut GP5:t (esim. Dr. Feelgood) säilyttävät alkuperäisen koodauksensa,
+  ja `POST /api/tabs/{id}/tempo` luki ne vain UTF-8:nä →
+  `'utf-8' codec can't decode byte 0xf6 in position 1` (M**ö**tley).
+  Nyt luenta kokeilee UTF-8:aa ja fallbackaa cp1252:een (`_gp5_song`,
+  sama kaava kuin tuonnissa) ja kirjoittaa tabin takaisin UTF-8:na, joten
+  myös GP5:n otsikot korjautuvat alphaTabissa.
+- **SIIRTO-raja ±64 → ±999 tahtia** (`SYNC_OFFSET_LIMIT`): rakenne-ero voi
+  vaatia kymmeniä tahteja (tabin toistot vs. levytys). Kellotus ei muutu –
+  `syncTimeMs` rajaa position edelleen partituurin loppuun.
+  `#shift-input`in `min`/`max` ja `app.js`n kaksi clampia käyttävät samaa
+  rajaa.
+- Testit: 136 (`test_set_tab_tempo_handles_cp1252_gp5`,
+  `test_set_tab_sync_accepts_long_bar_shift`; hylkytesti siirretty arvoon
+  5000). Vaatii käyttäjän kuuntelu-/tabsynkkitestin (sääntö #1).
+
 ## v1.74 – 21.10.2026
 
 - **Korjaus: GP5-merkkijonot UTF-8:ksi.** PyGuitarPro kirjoitti GP5:n

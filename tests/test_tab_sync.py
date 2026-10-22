@@ -118,6 +118,24 @@ def test_set_tab_sync_persists_bar_shift(
     assert stored["sync_offset_bars"] == -1.5
 
 
+def test_set_tab_sync_accepts_long_bar_shift(
+    client: TestClient,
+    data_dir: Path,
+) -> None:
+    """v1.75: a structure difference can need dozens of bars."""
+    _make_tab(data_dir, "sync-long-shift")
+    for value in ("-96", "200.25", "999", "-999"):
+        response = client.post(
+            "/api/tabs/sync-long-shift/sync",
+            data={"drift": "0", "offset_bars": value},
+        )
+        assert response.status_code == 200, response.text
+        assert response.json()["meta"]["sync_offset_bars"] == float(value)
+
+    tab = client.get("/api/tabs/sync-long-shift").json()
+    assert tab["meta"]["sync_offset_bars"] == -999.0
+
+
 def test_set_tab_sync_rejects_large_bar_shift(
     client: TestClient,
     data_dir: Path,
@@ -125,7 +143,7 @@ def test_set_tab_sync_rejects_large_bar_shift(
     _make_tab(data_dir, "sync-shift-invalid")
     response = client.post(
         "/api/tabs/sync-shift-invalid/sync",
-        data={"drift": "0", "offset_bars": "100"},
+        data={"drift": "0", "offset_bars": "5000"},
     )
     assert response.status_code == 422
 

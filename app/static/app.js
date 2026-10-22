@@ -22,6 +22,10 @@
   const STAVE_STORAGE_KEY = "tabtool:staveProfile";
   const TRACK_STORAGE_PREFIX = "tabtool:tracks:";
   const SYNC_LIMIT = 0.1;
+  // SIIRTO (whole-bar shift) may have to bridge a large structure difference
+  // in the tab data, so its range is generous (v1.75). syncTimeMs() still
+  // clamps the resulting position to the score end, so the clock is unchanged.
+  const SYNC_OFFSET_LIMIT = 999;
   // Hold the fed score position just short of the score end (v1.69). A tab can
   // end before the recording does (e.g. WASP: the guitars stop, the drums ring
   // out). As soon as the position reaches the last bar, alphaTab's player
@@ -260,7 +264,10 @@
     const number = Number(value);
     // Quarter-bar steps (= one beat in 4/4); keeps the value human-sized.
     syncOffsetBars = Number.isFinite(number)
-      ? Math.min(64, Math.max(-64, Math.round(number * 4) / 4))
+      ? Math.min(
+          SYNC_OFFSET_LIMIT,
+          Math.max(-SYNC_OFFSET_LIMIT, Math.round(number * 4) / 4)
+        )
       : 0;
     if (shiftInput && Number(shiftInput.value) !== syncOffsetBars) {
       shiftInput.value = String(syncOffsetBars);
@@ -408,8 +415,11 @@
     }
     const deltaBars = (clickedTick - currentTick) / perBar;
     const next = Math.min(
-      64,
-      Math.max(-64, Math.round((syncOffsetBars + deltaBars) * 4) / 4)
+      SYNC_OFFSET_LIMIT,
+      Math.max(
+        -SYNC_OFFSET_LIMIT,
+        Math.round((syncOffsetBars + deltaBars) * 4) / 4
+      )
     );
     setSyncOffsetBars(next);
     persistSyncDrift();

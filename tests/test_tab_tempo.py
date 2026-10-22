@@ -104,3 +104,42 @@ def test_set_tab_tempo_rejects_invalid_bpm(
         data={"bpm": "999"},
     )
     assert response.status_code == 422
+
+
+def test_set_tab_tempo_handles_cp1252_gp5(
+    client: TestClient,
+    data_dir: Path,
+) -> None:
+    """v1.75: an imported GP5 may be cp1252 ("Mötley Crüe" = byte 0xf6).
+
+    A UTF-8-only read raised "'utf-8' codec can't decode byte 0xf6 in position
+    1", so the tempo save failed. The route now falls back to cp1252 and writes
+    the song back as UTF-8.
+    """
+    import os
+
+    import guitarpro
+    import pytest
+
+    _make_tab(data_dir, "tempo-cp1252")
+    path = data_dir / "tabs" / "tempo-cp1252" / "tab.gp5"
+    song = guitarpro.parse(str(path), encoding="utf-8")
+    song.title = "Mötley Crüe"
+    song.artist = "Mötley Crüe"
+    temporary = path.with_name(path.name + ".cp1252")
+    guitarpro.write(song, str(temporary), encoding="cp1252")
+    os.replace(temporary, path)
+
+    with pytest.raises(UnicodeDecodeError):
+        guitarpro.parse(str(path), encoding="utf-8")
+
+    response = client.post(
+        "/api/tabs/tempo-cp1252/tempo",
+        data={"bpm": "113"},
+    )
+    assert response.status_code == 200, response.text
+    assert response.json()["bpm"] == 113.0
+
+    rewritten = guitarpro.parse(str(path), encoding="utf-8")
+    assert rewritten.tempo == 113
+    assert rewritten.title == "Mötley Crüe"
