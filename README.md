@@ -341,6 +341,25 @@ raidoilta, ja loput numeroidaan uudelleen:
 
 Väli käy muodossa `136-138`. `--reset-sync` nollaa SYNC- ja SIIRTO-arvot.
 
+### Virityksen vaihto niin, että musiikki pysyy samana (v1.80)
+
+Jos tabi on kirjoitettu eri viritykseen kuin oma kitara, skripti vaihtaa
+kitararaitojen avoimet kielet ja siirtää nauhat vastaavasti – sävelet pysyvät
+identtisinä, soitto-ohje vain siirtyy oikeisiin asemiin:
+
+```powershell
+# tarkista ensin: montako raitaa/nuottia ja mikä on suurin nauha
+.venv\Scripts\python.exe scripts\retune_tab.py --tab <tab_id> --from drop_d --to d_standard --dry-run
+
+# vaihda (varmuuskopio data/backups/, sävelet validoidaan ennen/jälkeen)
+.venv\Scripts\python.exe scripts\retune_tab.py --tab <tab_id> --from drop_d --to d_standard --clear-override
+```
+
+Viritysavaimet: `standard`, `drop_d`, `eb_standard`, `d_standard`, `open_g`.
+Vain raidat, joiden avoimet kielet täsmäävät `--from`-viritykseen, muutetaan
+(laulu-, basso- ja rumpuraidat jäävät ennalleen). `--clear-override` poistaa
+manuaalisen viritystiedon, koska data on nyt oikeasti uudessa virityksessä.
+
 ---
 
 ## Spotify-asetukset (Phase 3)

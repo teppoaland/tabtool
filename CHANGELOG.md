@@ -2,6 +2,25 @@
 
 > AI TabTool käyttää `1.x`-versiosarjaa. Aloitus `v1.00`.
 
+## v1.80 – 22.10.2026
+
+- **Virityksen vaihto säilyttäen musiikki** (`app.tab_edit.retune_tracks`,
+  `scripts/retune_tab.py`): vaihtaa raidat, joiden avoimet kielet vastaavat
+  lähtöviritystä, uuteen viritykseen ja siirtää **jokaisen nauhan saman
+  verran kuin sen kieli** (`fret_new = sävel − uusi avoin kieli`), joten
+  soivat sävelet pysyvät identtisinä. Muut raidat (laulu, basso, rummut)
+  jätetään koskematta. Skripti tulostaa `--dry-run`illa raitamäärän,
+  siirrettyjen nuottien määrän ja suurimman nauhan, varmuuskopioi GP5:n,
+  päivittää virityslabelin ja validoi tuloksen vertaamalla jokaisen nuotin
+  soivan sävelen ennen/jälkeen.
+- **Volbeat `I Only Wanna Be With You` (uusin tabi, 116a1fa3…) kirjoitettu
+  D Standardiin:** kitararaidat `DADGBE` → `DGCFAD`, **2529 nuottia siirretty**
+  (5. kieli 0 → 2 jne.), suurin nauha 13, sävelet ennallaan. BAR 7 alkaa nyt
+  `0/2` (6. kieli 0, 5. kieli 2) ja BAR 9–10 `0/2 … 4/2 5/3 6/4`.
+  `tuning_label` = `D Standard · DGCFAD` (manuaalinen override poistettu,
+  koska data on nyt oikeasti D standard).
+- 2 uutta testiä (`retune_tracks`) → **150 pytest-testiä**.
+
 ## v1.79 – 22.10.2026
 
 - **Korjaus: viritys luetaan kitararaidasta, ei raidasta 0.**

@@ -8,7 +8,13 @@ import pytest
 from app.pipeline.build import build_document
 from app.pipeline.export_gp5 import export_gp5
 from app.pipeline.model import STANDARD_TUNING, TabNote
-from app.tab_edit import TabEditError, count_notes, expand_repeat, remove_bars
+from app.tab_edit import (
+    TabEditError,
+    count_notes,
+    expand_repeat,
+    remove_bars,
+    retune_tracks,
+)
 
 BARS = 4
 BAR_TICKS = 3840
@@ -173,3 +179,35 @@ def test_remove_bars_rejects_unknown_or_all_bars(tmp_path: Path) -> None:
         remove_bars(song, [])
     with pytest.raises(TabEditError):
         remove_bars(song, [1, 2, 3, 4])
+
+
+def _pitches(song) -> list[int]:
+    return [
+        note.realValue
+        for track in song.tracks
+        for measure in track.measures
+        for voice in measure.voices
+        for beat in voice.beats
+        for note in beat.notes
+    ]
+
+
+def test_retune_tracks_keeps_the_sounding_pitches(tmp_path: Path) -> None:
+    """Standard E -> Drop D: the low string drops a step, the frets move +2."""
+    song = _song(tmp_path)
+    pitches_before = _pitches(song)
+
+    stats = retune_tracks(song, [64, 59, 55, 50, 45, 40], [64, 59, 55, 50, 45, 38])
+
+    assert stats["tracks"] == len(song.tracks)
+    assert stats["notes_moved"] == BARS
+    assert _pitches(song) == pitches_before
+    assert _frets(song) == [[3], [4], [5], [6]]
+    assert [string.value for string in song.tracks[0].strings][-1] == 38
+
+
+def test_retune_tracks_requires_the_source_tuning(tmp_path: Path) -> None:
+    song = _song(tmp_path)
+    with pytest.raises(TabEditError):
+        retune_tracks(song, [64, 59, 55, 50, 45, 38], [62, 57, 53, 48, 43, 38])
+

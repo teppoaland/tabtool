@@ -17,7 +17,7 @@ import os
 import shutil
 from datetime import datetime
 from pathlib import Path
-from typing import Any
+from typing import Any, Sequence
 
 from app import config
 
@@ -264,3 +264,63 @@ def save_song(path: Path, song: Any, expected_bars: int) -> None:
     stored = read_song(path)
     if len(stored.measureHeaders) != expected_bars:
         raise TabEditError("tahtimäärä ei täsmää kirjoituksen jälkeen")
+
+
+def retune_tracks(
+    song: Any,
+    from_pitches: Sequence[int],
+    to_pitches: Sequence[int],
+) -> dict[str, int]:
+    """Retune matching tracks and move the frets so the pitches stay the same.
+
+    ``from_pitches`` / ``to_pitches`` are the open strings from the highest
+    string (1) to the lowest, e.g. Drop D ``[64, 59, 55, 50, 45, 38]`` ->
+    D Standard ``[62, 57, 53, 48, 43, 38]``. Only tracks whose current tuning
+    equals ``from_pitches`` are touched (a vocals or bass track is left alone).
+    """
+    from_values = [int(value) for value in from_pitches]
+    to_values = [int(value) for value in to_pitches]
+    if len(from_values) != len(to_values):
+        raise TabEditError("Virityksissä on eri määrä kieliä.")
+
+    tracks_changed = 0
+    notes_moved = 0
+    max_fret = 0
+    for track in getattr(song, "tracks", []) or []:
+        if bool(getattr(track, "isPercussionTrack", False)):
+            continue
+        strings = list(getattr(track, "strings", []) or [])
+        if len(strings) != len(from_values):
+            continue
+        current = [int(string.value) for string in strings]
+        if current != from_values:
+            continue
+        for measure in getattr(track, "measures", []) or []:
+            for voice in getattr(measure, "voices", []) or []:
+                for beat in getattr(voice, "beats", []) or []:
+                    for note in getattr(beat, "notes", []) or []:
+                        number = int(getattr(note, "string", 0))
+                        if not 1 <= number <= len(to_values):
+                            continue
+                        # realValue = fret + open string, so keep that constant.
+                        pitch = int(note.value) + current[number - 1]
+                        new_fret = pitch - to_values[number - 1]
+                        if new_fret < 0:
+                            raise TabEditError(
+                                f"Kielelle {number} tarvittaisiin negatiivinen nauha "
+                                f"({new_fret})."
+                            )
+                        note.value = new_fret
+                        notes_moved += 1
+                        max_fret = max(max_fret, new_fret)
+        for index, string in enumerate(strings):
+            string.value = to_values[index]
+        tracks_changed += 1
+
+    if not tracks_changed:
+        raise TabEditError("Yhtään raitaa ei vastannut lähtöviritystä.")
+    return {
+        "tracks": tracks_changed,
+        "notes_moved": notes_moved,
+        "max_fret": max_fret,
+    }
