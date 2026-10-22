@@ -2,6 +2,27 @@
 
 > AI TabTool käyttää `1.x`-versiosarjaa. Aloitus `v1.00`.
 
+## v1.78 – 22.10.2026
+
+- **Korjaus: pickup-tahdin poisto ei siirrä kappaletta ajassa.**
+  `remove_bars` pitää nyt ensimmäisen jäljelle jäävän tahdin absoluuttisen
+  alun (`header.start`), jotta anacrusis-tahdin poisto ei nytkäytä koko
+  biisiä. 1 uusi testi.
+- **Dr. Feelgood: 1/16-anacrusis (BAR 1) pois.** Tahdissa 1 oli yksi avoin
+  D-kieli (tick 960) ja raita 2 tyhjä, joten se näkyi pelkkänä suikaleena.
+  Tärkeämpää: `barDurationMs()` ja `ticksPerBar()` laskevat tahdin pituuden
+  kahdesta ensimmäisestä tahdista, joten 1/16-alkutahdin takia **SIIRTO oli
+  tässä tabissa 16× liian voimakas** (240 tickiä = 133 ms "tahti").
+  39 "tahtia" oli siis ~2,4 oikeaa tahtia. Nyt tabi on 135 tahtia, tahdin
+  pituus 3840 tickiä (oikea 4/4) ja SIIRTO toimii oikeina tahteina.
+  1. nuotti = riffin alku, SYNC/SIIRTO = 0.
+- Huom: GP5:n ensimmäinen tahti alkaa aina tickistä 960, joten anacrusiksen
+  poisto siirtää sisältöä 240 tickiä (0,13 s) aikaisemmaksi. Jos sen kuulee,
+  SYNC +0,05 % kompensoi; vaihtoehtoisesti koko anacrusis palautetaan
+  varmuuskopiosta ja korjataan `barDurationMs`/`ticksPerBar` (koskematon
+  soittoketju – vaatii erillisen luvan).
+- 1 uusi testi → **146 pytest-testiä**.
+
 ## v1.77 – 22.10.2026
 
 - **Ylimääräisten tahtien poisto** (`app/tab_edit.remove_bars`,

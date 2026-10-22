@@ -226,7 +226,12 @@ def remove_bars(song: Any, bars: list[int]) -> dict[str, int]:
     notes_before = count_notes(song)
     new_headers = [header for index, header in enumerate(headers) if index not in drop]
 
-    tick = headers[0].start if headers else 0
+    # Keep the absolute start tick of the first kept bar, so removing a pickup
+    # bar does not shift the rest of the song in time.
+    first_kept = next(
+        (header for index, header in enumerate(headers) if index not in drop), None
+    )
+    tick = first_kept.start if first_kept is not None else headers[0].start
     for index, header in enumerate(new_headers):
         header.number = index + 1
         header.start = tick

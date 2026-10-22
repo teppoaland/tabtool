@@ -154,6 +154,17 @@ def test_remove_bars_accepts_a_range(tmp_path: Path) -> None:
     assert _frets(song) == [[1], [2]]
 
 
+def test_remove_bars_keeps_the_absolute_start_of_the_first_kept_bar(
+    tmp_path: Path,
+) -> None:
+    """Removing a pickup bar must not shift the rest of the song in time."""
+    song = _song(tmp_path)
+    start_before = song.measureHeaders[1].start
+    remove_bars(song, [1])
+    assert song.measureHeaders[0].start == start_before
+    assert _frets(song) == [[2], [3], [4]]
+
+
 def test_remove_bars_rejects_unknown_or_all_bars(tmp_path: Path) -> None:
     song = _song(tmp_path)
     with pytest.raises(TabEditError):
