@@ -1,9 +1,8 @@
 # 📍 Aktiivinen konteksti – AI TABTOOL
 
-> **Versio:** `v1.74` (21.10.2026)
-> **Git:** HEAD = docs-commit; **v1.69–v1.74 työpuussa commitoimatta**
-> (`CHANGELOG`, `app/*`, `app/pipeline/*`, `app/static/*`, `scripts/*`,
-> 7 uutta testitiedostoa). `main` 5 committia `origin/main`in edellä =
+> **Versio:** `v1.74` (21.10.2026; committoitu 22.10.2026)
+> **Git:** v1.69–v1.74 committoitu lokaalisti 22.10.2026 (koodi `d76ddaf`,
+> perässä docs-commit). `main` 8 committia `origin/main`in edellä =
 > **ei pushattu**. Älä pinnaa hashia pysyvästi.
 > **Push:** vain erillisestä pyynnöstä (käyttäjä pyysi 20.10.2026).
 > **Repo:** https://github.com/teppoaland/tabtool
@@ -13,7 +12,7 @@
 
 ## Nyt
 
-- **v1.69–v1.74 (työpuussa, 21.10.2026):**
+- **v1.69–v1.74 (committoitu `d76ddaf`, 22.10.2026):**
   - **v1.69** score-end-guard: `syncTimeMs` clamp `scoreEnd−50ms` → kappale
     soi loppuun tabin päätyttyä; `handlePlayButton`-nollaus.
   - **v1.70** lukitus = kaikki asetukset read-only (`_require_unlocked`
@@ -187,7 +186,7 @@ Putki:
 
 ## Tuoreimmat validointitulokset
 
-- `pytest -q` → **114 passed**; `compileall` ja `node --check` OK.
+- `pytest -q` → **134 passed** (v1.74); `compileall` ja `node --check` OK.
 - v1.57–v1.62 headless (käyttäjän palvelin): tabin marginaalit
   30/30 px ja tabin reuna → scrollbar 15 px (1600/1366/1200/1024/800 px,
   ei sivuttaisvieritystä); LIBRARY/PLAY-kortti + FULLSCREEN oikeassa
