@@ -304,6 +304,27 @@ powershell -ExecutionPolicy Bypass -File scripts\adb_pull_gp.ps1
 .venv\Scripts\python.exe scripts\import_folder.py "D:\tabtool_files\imports"
 ```
 
+### Toiston kirjoittaminen auki (v1.76)
+
+Katselimen kello laskee partituurin keston **kirjoitetuista** tahdeista
+(`scoreEndTimeMs`). alphaTab laajentaa toistot vasta toistossa, joten GP5:n
+`×17`-toistomerkintä jätti partituurin 15 tahtia lyhyemmäksi eikä SIIRTO
+voinut korjata sitä. `scripts/expand_repeat.py` kirjoittaa toistetun tahdin
+tahdeiksi, poistaa toistomerkit ja numeroi loput tahdit uudelleen – tabi ja
+audio ovat silloin 1:1.
+
+```powershell
+# tarkista ensin (ei kirjoita mitään)
+.venv\Scripts\python.exe scripts\expand_repeat.py --tab <tab_id> --bar 2 --times 17 --dry-run
+
+# kirjoita: alkuperäinen varmuuskopioidaan data/backups/<id>-<aika>/
+.venv\Scripts\python.exe scripts\expand_repeat.py --tab <tab_id> --bar 2 --times 17 --reset-sync
+```
+
+`--reset-sync` nollaa SYNC- ja SIIRTO-arvot, koska tabi vastaa nyt audiota.
+Skripti validoi tuloksen lukemalla GP5:n takaisin ja palauttaa
+varmuuskopion, jos kirjoitus epäonnistuu.
+
 ---
 
 ## Spotify-asetukset (Phase 3)

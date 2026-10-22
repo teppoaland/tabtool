@@ -2,6 +2,24 @@
 
 > AI TabTool käyttää `1.x`-versiosarjaa. Aloitus `v1.00`.
 
+## v1.76 – 22.10.2026
+
+- **Toiston kirjoittaminen auki** (`app/tab_edit.py`, `scripts/expand_repeat.py`):
+  katselimen kello laskee partituurin keston kirjoitetuista tahdeista
+  (`scoreEndTimeMs`), ja alphaTab laajentaa toistot vasta toistossa. GP5:n
+  `bar 2 ×17` jätti siksi partituurin 15 tahtia lyhyemmäksi eikä SIIRTO
+  korjannut sitä. Skripti kirjoittaa toistetun tahdin tahdeiksi, poistaa
+  toistomerkit ja numeroi tahdit uudelleen; tulos validoidaan lukemalla GP5
+  takaisin ja alkuperäinen varmuuskopioidaan `data/backups/`.
+- **Dr. Feelgood (Mötley Crüe) korjattu datasta:** bar 2 ×2 → **17
+  kirjoitettua tahtia** (122 → 138 tahtia, 2471 → 2615 nuottia, `×17`-teksti
+  vain ensimmäisessä tahdissa), toistomerkit poistettu ja SYNC/SIIRTO
+  nollattu. Partituurin loppu 291,6 s vs. audio 290,0 s → score-end-guard
+  pitää toiston audion mitassa. GP5 kirjoitettiin UTF-8:na, joten
+  `Mötley Crüe` näkyy oikein.
+- 6 uutta testiä (`tests/test_tab_edit.py`) → **142 pytest-testiä**.
+  Vaatii käyttäjän kuuntelu-/tabsynkkitestin (sääntö #1).
+
 ## v1.75 – 22.10.2026
 
 - **Korjaus: TEMPO-tallennus kaatui cp1252-koodattuun GP5:een.** Valmiina
