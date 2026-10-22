@@ -790,6 +790,81 @@ body.modal-open .at-cursors {
   flex-wrap: wrap;
 }
 
+/* FULLSCREEN and its COUNT-IN switch share the right-hand corner of the bar,
+   so the switch sits under the button in the normal and the fullscreen view. */
+.viewer-corner {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.45rem;
+}
+
+.countin-field {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.62rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-weight: 700;
+  cursor: pointer;
+  user-select: none;
+}
+
+.countin-field input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+.countin-switch {
+  position: relative;
+  display: inline-block;
+  width: 2.05rem;
+  height: 1.05rem;
+  border-radius: 999px;
+  background: var(--bg-soft);
+  border: 1px solid var(--border);
+  transition: background 120ms ease, border-color 120ms ease;
+}
+
+.countin-switch::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 2px;
+  width: 0.78rem;
+  height: 0.78rem;
+  border-radius: 50%;
+  background: var(--muted);
+  transform: translateY(-50%);
+  transition: left 120ms ease, background 120ms ease;
+}
+
+.countin-field input:checked + .countin-switch {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.countin-field input:checked + .countin-switch::after {
+  left: calc(100% - 0.78rem - 2px);
+  background: #0d0d0d;
+}
+
+.countin-field input:focus-visible + .countin-switch {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.countin-state {
+  min-width: 1.9rem;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
 .mini-field {
   display: grid;
   gap: 0.3rem;

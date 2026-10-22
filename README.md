@@ -203,7 +203,10 @@ soittonäkymässä ennen kuin ääni alkaa. Laskenta on pelkkä overlay: se ei
 kirjoita audiota, ei kutsu alphaTabia eikä muuta kohdistusta. Toinen PLAY
 tai Esc peruu laskennan (seuraava PLAY yrittää uudelleen), tauon jälkeen
 toisto jatkuu ilman laskentaa, ja jos siirrät kohdistinta ennen
-ensimmäistä PLAYta, laskenta ohitetaan.
+ensimmäistä PLAYta, laskenta ohitetaan. **FULLSCREEN-napin alla on
+COUNT-IN-kytkin (ON/OFF, oletus ON)** sekä normaalissa että koko näytön
+näkymässä; valinta muistetaan selaimessa. Kytkin luetaan vain
+`shouldRunCountIn`issa – se ei koske soittoketjuun.
 
 **Vihje:** älä raahaa hiirellä tabin yli – se saattoi aiemmin luoda
 alphaTabin loop-alueen. Nykyään alue nollataan automaattisesti, mutta

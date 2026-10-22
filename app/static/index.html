@@ -6,14 +6,14 @@
   <meta name="color-scheme" content="dark">
   <title>AI TabTool</title>
   <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="/static/style.css?v=1.80">
+  <link rel="stylesheet" href="/static/style.css?v=1.81">
 </head>
 <body>
   <header class="topbar">
     <div class="brand">
       <span class="brand-mark" aria-hidden="true">AT</span>
       <span class="brand-name">AI TABTOOL</span>
-      <span id="version-tag" class="version">v1.80</span>
+      <span id="version-tag" class="version">v1.81</span>
     </div>
     <nav class="nav" aria-label="Päävalikko">
       <button id="open-search-top" type="button" class="ghost small nav-search"
@@ -34,8 +34,17 @@
           <strong id="tab-title"></strong>
           <span id="tab-meta" class="tab-meta"></span>
         </div>
-        <button id="fullscreen-button" type="button" class="ghost"
-                title="Koko näyttö: tabit täyttävät ruudun. Esc palaa.">FULLSCREEN</button>
+        <div class="viewer-corner">
+          <button id="fullscreen-button" type="button" class="ghost"
+                  title="Koko näyttö: tabit täyttävät ruudun. Esc palaa.">FULLSCREEN</button>
+          <label class="countin-field"
+                 title="Lähtölaskenta 5 → 0 ennen toistoa. Kytke pois, jos haluat soiton alkavan heti.">
+            <input id="countin-toggle" type="checkbox" checked
+                   aria-label="Lähtölaskenta ennen toistoa">
+            <span class="countin-switch" aria-hidden="true"></span>
+            <span id="countin-state" class="countin-state">ON</span>
+          </label>
+        </div>
         <div class="viewer-tools">
           <label class="mini-field"
                  title="Näytä vain tablatuuri (oletus), tab + nuotit tai vain nuotit.">
@@ -267,12 +276,12 @@
 
 
   <footer class="footer">
-    <span>AI TabTool v1.80</span>
+    <span>AI TabTool v1.81</span>
     <span>Local-first · <a href="/remote">Remote</a></span>
   </footer>
 
-  <script src="/static/vendor/alphaTab/alphaTab.min.js?v=1.80"></script>
-  <script src="/static/app.js?v=1.80" defer></script>
+  <script src="/static/vendor/alphaTab/alphaTab.min.js?v=1.81"></script>
+  <script src="/static/app.js?v=1.81" defer></script>
 </body>
 </html>
 

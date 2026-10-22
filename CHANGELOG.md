@@ -2,6 +2,22 @@
 
 > AI TabTool käyttää `1.x`-versiosarjaa. Aloitus `v1.00`.
 
+## v1.81 – 22.10.2026
+
+- **COUNT-IN-kytkin (ON/OFF).** FULLSCREEN-napin alle tuli pieni liukukytkin
+  (`#countin-toggle` + `#countin-state`), joka näkyy sekä normaalissa että
+  koko näytön näkymässä. Oletus **ON**, valinta tallentuu selaimeen
+  (`tabtool:countIn`). Kytkin luetaan **vain** `shouldRunCountIn()`issa, joten
+  `togglePlayback`, `mediaHandler`, `seekTo`, `syncTimeMs` ja itse
+  laskenta-animaatio pysyvät koskemattomina; kesken laskennan pois
+  kytkeminen peruu laskennan (`cancelCountIn`).
+- `index.html`: FULLSCREEN-nappi ja kytkin ovat samassa `.viewer-corner`
+  -lohkossa – ruudukkoon ei tullut uutta saraketta, joten TAB-alueen mitat
+  eivät muutu.
+- 2 uutta guard-testiä (`countInEnabled` vain `shouldRunCountIn`issa;
+  kytkin on FULLSCREEN-napin alla ja oletuksena päällä) → **152
+  pytest-testiä**. Vaatii käyttäjän kuuntelu-/tabsynkkitestin (sääntö #1).
+
 ## v1.80 – 22.10.2026
 
 - **Virityksen vaihto säilyttäen musiikki** (`app.tab_edit.retune_tracks`,

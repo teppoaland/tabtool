@@ -11,6 +11,7 @@ import re
 from pathlib import Path
 
 APP_JS = Path(__file__).resolve().parents[1] / "app" / "static" / "app.js"
+INDEX_HTML = Path(__file__).resolve().parents[1] / "app" / "static" / "index.html"
 
 
 def _source() -> str:
@@ -105,6 +106,27 @@ def test_playback_chain_has_no_count_in_code():
     media_handler = _object_body(source, "const mediaHandler =")
     assert "countIn" not in media_handler
     assert "countdown" not in media_handler.lower()
+
+
+def test_count_in_switch_only_gates_the_countdown():
+    """v1.81: the ON/OFF switch is read in shouldRunCountIn and nowhere else."""
+    source = _source()
+    gate = _function_body(source, "shouldRunCountIn")
+    assert "countInEnabled" in gate
+    for name in PLAYBACK_FUNCTIONS:
+        assert (
+            "countInEnabled" not in _function_body(source, name)
+        ), f"{name} must not know about the count-in switch"
+
+
+def test_count_in_switch_sits_under_the_fullscreen_button():
+    html = INDEX_HTML.read_text(encoding="utf-8")
+    corner = html[html.index('class="viewer-corner"') :]
+    corner = corner[: corner.index("</div>")]
+    assert 'id="fullscreen-button"' in corner
+    assert 'id="countin-toggle"' in corner
+    # Default is on.
+    assert "checked" in corner
 
 
 def test_score_end_guard_keeps_the_audio_playing():

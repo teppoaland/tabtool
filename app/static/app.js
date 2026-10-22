@@ -21,6 +21,7 @@
   };
   const STAVE_STORAGE_KEY = "tabtool:staveProfile";
   const TRACK_STORAGE_PREFIX = "tabtool:tracks:";
+  const COUNT_IN_STORAGE_KEY = "tabtool:countIn";
   const SYNC_LIMIT = 0.1;
   // SIIRTO (whole-bar shift) may have to bridge a large structure difference
   // in the tab data, so its range is generous (v1.75). syncTimeMs() still
@@ -81,6 +82,8 @@
   const shiftInput = document.getElementById("shift-input");
   const syncOffsetReadout = document.getElementById("sync-offset-readout");
   const alignButton = document.getElementById("align-button");
+  const countInToggle = document.getElementById("countin-toggle");
+  const countInState = document.getElementById("countin-state");
   const bpmInput = document.getElementById("bpm-input");
   const bpmButton = document.getElementById("bpm-button");
   const bpmStatus = document.getElementById("bpm-status");
@@ -131,6 +134,7 @@
   let countInTimer = null;
   let countInZeroTimer = null;
   let countInValue = COUNT_IN_FROM;
+  let countInEnabled = true;
 
   function setPlayLabel(playing) {
     if (!playButton) return;
@@ -1208,6 +1212,9 @@
   function shouldRunCountIn() {
     if (!playButton || playButton.disabled) return false;
     if (countInDone) return false;
+    // The switch under FULLSCREEN turns the countdown off (default on). It is
+    // read here only, so the playback chain itself never learns about it.
+    if (!countInEnabled) return false;
     // alphaTab pre-positions the audio on the first beat while loading
     // (~0.85 s with SIIRTO −0,75), so audio.currentTime cannot tell a user
     // seek apart from the engine's own initial seek. Only an explicit UI
@@ -1222,6 +1229,30 @@
     countInZeroTimer = null;
     countInActive = false;
     drawCountIn(null);
+  }
+
+  function readCountInEnabled() {
+    try {
+      return localStorage.getItem(COUNT_IN_STORAGE_KEY) !== "off";
+    } catch (error) {
+      return true;
+    }
+  }
+
+  function setCountInEnabled(enabled, options) {
+    const settings = options || {};
+    countInEnabled = Boolean(enabled);
+    if (countInToggle && countInToggle.checked !== countInEnabled) {
+      countInToggle.checked = countInEnabled;
+    }
+    if (countInState) countInState.textContent = countInEnabled ? "ON" : "OFF";
+    if (!countInEnabled && countInActive) cancelCountIn();
+    if (settings.persist === false) return;
+    try {
+      localStorage.setItem(COUNT_IN_STORAGE_KEY, countInEnabled ? "on" : "off");
+    } catch (error) {
+      /* storage disabled */
+    }
   }
 
   function finishCountIn() {
@@ -2188,6 +2219,12 @@
     });
   }
   if (playButton) playButton.addEventListener("click", handlePlayButton);
+  if (countInToggle) {
+    countInToggle.addEventListener("change", () =>
+      setCountInEnabled(countInToggle.checked)
+    );
+  }
+  setCountInEnabled(readCountInEnabled(), { persist: false });
   if (staveSelect) {
     staveSelect.value = staveProfile;
     staveSelect.addEventListener("change", () =>
