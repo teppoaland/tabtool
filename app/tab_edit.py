@@ -13,11 +13,56 @@ does the I/O.
 from __future__ import annotations
 
 import copy
+import os
+import shutil
+from datetime import datetime
+from pathlib import Path
 from typing import Any
+
+from app import config
 
 
 class TabEditError(ValueError):
     """Raised when the requested edit does not fit the tab."""
+
+
+def read_song(path: Path):
+    """Read a GP5 file: UTF-8 first, cp1252 for older exports."""
+    import guitarpro
+
+    try:
+        return guitarpro.parse(str(path), encoding="utf-8")
+    except UnicodeDecodeError:
+        return guitarpro.parse(str(path), encoding="cp1252")
+
+
+def backup_file(path: Path, key: str) -> Path:
+    """Copy the tab file to data/backups/<key>-<timestamp>/ before editing."""
+    stamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+    target = Path(config.DATA_DIR) / "backups" / f"{key}-{stamp}"
+    target.mkdir(parents=True, exist_ok=True)
+    destination = target / path.name
+    shutil.copy2(path, destination)
+    return destination
+
+
+def resolve_tab_gp5(tab_id: str) -> Path:
+    """Return the GP5 file of a library tab (inside data/, validated)."""
+    from app import db
+
+    tab = db.get_tab(tab_id)
+    if tab is None:
+        raise TabEditError(f"Tabia ei löytynyt: {tab_id}")
+    meta = dict(tab.get("meta") or {})
+    files = meta.get("files") if isinstance(meta.get("files"), dict) else {}
+    name = str(files.get("gp5") or "")
+    if not name:
+        raise TabEditError(f"Tabilla {tab_id} ei ole GP5-tiedostoa.")
+    directory = db.resolve_under_data(str(tab.get("directory") or ""))
+    path = (directory / name).resolve()
+    if path.parent != directory.resolve() or not path.is_file():
+        raise TabEditError(f"GP5-tiedostoa ei löytynyt: {name}")
+    return path
 
 
 def count_notes(song: Any) -> int:
@@ -150,3 +195,67 @@ def expand_repeat(
         "notes_added": notes_per_block * (times - 1),
         "ticks_added": block_length * (times - 1),
     }
+
+
+def remove_bars(song: Any, bars: list[int]) -> dict[str, int]:
+    """Remove the given 1-based bars from every track and renumber the rest.
+
+    Used to tidy a tab whose tail extends past the recording: the notated
+    timeline is what the clock follows, so deleting the extra bars makes the
+    score end where the audio ends.
+    """
+    headers = list(getattr(song, "measureHeaders", []) or [])
+    tracks = list(getattr(song, "tracks", []) or [])
+    if not tracks:
+        raise TabEditError("Tabissa ei ole raitoja.")
+    if any(len(track.measures) != len(headers) for track in tracks):
+        raise TabEditError("Tahtien määrä ei täsmää raitojen ja otsikoiden välillä.")
+
+    remove = sorted({int(bar) for bar in bars})
+    if not remove:
+        raise TabEditError("Ei poistettavia tahteja.")
+    for bar in remove:
+        if not 1 <= bar <= len(headers):
+            raise TabEditError(
+                f"Tahtia {bar} ei ole: tabissa on {len(headers)} tahtia."
+            )
+    if len(remove) >= len(headers):
+        raise TabEditError("Kaikkia tahteja ei voi poistaa.")
+
+    drop = {bar - 1 for bar in remove}
+    notes_before = count_notes(song)
+    new_headers = [header for index, header in enumerate(headers) if index not in drop]
+
+    tick = headers[0].start if headers else 0
+    for index, header in enumerate(new_headers):
+        header.number = index + 1
+        header.start = tick
+        tick += header.length
+
+    song.measureHeaders = new_headers
+    for track in tracks:
+        track.measures = [
+            measure for index, measure in enumerate(track.measures) if index not in drop
+        ]
+    if any(len(track.measures) != len(new_headers) for track in tracks):
+        raise TabEditError("Tahtien poisto epäonnistui: raidat eivät täsmää.")
+
+    return {
+        "bars_before": len(headers),
+        "bars_after": len(new_headers),
+        "removed": len(remove),
+        "notes_before": notes_before,
+        "notes_after": count_notes(song),
+    }
+
+
+def save_song(path: Path, song: Any, expected_bars: int) -> None:
+    """Write the tab as UTF-8 (temp + atomic replace) and validate it."""
+    import guitarpro
+
+    temporary = path.with_name(path.name + ".tmp")
+    guitarpro.write(song, str(temporary), encoding="utf-8")
+    os.replace(temporary, path)
+    stored = read_song(path)
+    if len(stored.measureHeaders) != expected_bars:
+        raise TabEditError("tahtimäärä ei täsmää kirjoituksen jälkeen")

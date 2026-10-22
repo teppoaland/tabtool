@@ -325,6 +325,22 @@ audio ovat silloin 1:1.
 Skripti validoi tuloksen lukemalla GP5:n takaisin ja palauttaa
 varmuuskopion, jos kirjoitus epäonnistuu.
 
+### Ylimääräisten tahtien poisto (v1.77)
+
+Jos tabin häntä jatkuu audion yli (kursori jatkaa soittamisen jälkeen),
+ylimääräiset tahdit voi poistaa. Tahdit annetaan 1-pohjaisina, kaikilta
+raidoilta, ja loput numeroidaan uudelleen:
+
+```powershell
+# tarkista ensin
+.venv\Scripts\python.exe scripts\trim_bars.py --tab <tab_id> --bars 137,138 --dry-run
+
+# poista (varmuuskopio data/backups/<id>-<aika>/)
+.venv\Scripts\python.exe scripts\trim_bars.py --tab <tab_id> --bars 137,138 --reset-sync
+```
+
+Väli käy muodossa `136-138`. `--reset-sync` nollaa SYNC- ja SIIRTO-arvot.
+
 ---
 
 ## Spotify-asetukset (Phase 3)

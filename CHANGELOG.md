@@ -2,6 +2,24 @@
 
 > AI TabTool käyttää `1.x`-versiosarjaa. Aloitus `v1.00`.
 
+## v1.77 – 22.10.2026
+
+- **Ylimääräisten tahtien poisto** (`app/tab_edit.remove_bars`,
+  `scripts/trim_bars.py`): katselimen kello seuraa kirjoitettua aikajanaa,
+  joten tabin häntä audion yli piti saada pois. `--bars "137,138"` (tai
+  `"136-138"`) poistaa tahdit kaikilta raidoilta, numeroi loput uudelleen ja
+  laskee tahtien alut; GP5 validoidaan lukemalla takaisin ja alkuperäinen
+  varmuuskopioidaan `data/backups/`. `--reset-sync` nollaa SYNC/SIIRTO-arvot.
+- **Dr. Feelgood siistitty:** 138 → **136 tahtia** (2551 nuottia). Audion
+  musiikki päättyy 287,74 s, mutta tabi jatkui 291,6 s asti eli kaksi
+  viimeistä tahtia (137–138) osuivat kokonaan audion hiljaiseen häntään.
+  Nyt tabi päättyy **287,39 s**, SIIRTO/SYNC = 0. (Mitattu audion tempo on
+  112,35 BPM; GP5:ssä 113 – ero on alle 1 % ja korjattavissa TAB BPM:llä.)
+- `scripts/expand_repeat.py` käyttää samoja `app/tab_edit`-apureita
+  (`read_song`, `backup_file`, `resolve_tab_gp5`) eikä omaa kopiota.
+- 3 uutta testiä (`remove_bars`) → **145 pytest-testiä**. Vaatii käyttäjän
+  kuuntelu-/tabsynkkitestin (sääntö #1).
+
 ## v1.76 – 22.10.2026
 
 - **Toiston kirjoittaminen auki** (`app/tab_edit.py`, `scripts/expand_repeat.py`):

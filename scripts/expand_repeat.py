@@ -23,22 +23,11 @@ import json
 import os
 import shutil
 import sys
-from datetime import datetime
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from app import config, db, tab_edit  # noqa: E402
-
-
-def _read_song(path: Path):
-    """Read a GP5 file: UTF-8 first, cp1252 for older exports."""
-    import guitarpro
-
-    try:
-        return guitarpro.parse(str(path), encoding="utf-8")
-    except UnicodeDecodeError:
-        return guitarpro.parse(str(path), encoding="cp1252")
+from app import db, tab_edit  # noqa: E402
 
 
 def _resolve(args: argparse.Namespace) -> tuple[Path, str]:
@@ -48,28 +37,10 @@ def _resolve(args: argparse.Namespace) -> tuple[Path, str]:
             raise SystemExit(f"Tiedostoa ei löytynyt: {path}")
         return path, path.stem
 
-    tab = db.get_tab(args.tab)
-    if tab is None:
-        raise SystemExit(f"Tabia ei löytynyt: {args.tab}")
-    meta = dict(tab.get("meta") or {})
-    files = meta.get("files") if isinstance(meta.get("files"), dict) else {}
-    name = str(files.get("gp5") or "")
-    if not name:
-        raise SystemExit(f"Tabilla {args.tab} ei ole GP5-tiedostoa.")
-    directory = db.resolve_under_data(str(tab.get("directory") or ""))
-    path = (directory / name).resolve()
-    if path.parent != directory.resolve() or not path.is_file():
-        raise SystemExit(f"GP5-tiedostoa ei löytynyt: {name}")
-    return path, args.tab
-
-
-def _backup(path: Path, key: str) -> Path:
-    stamp = datetime.now().strftime("%Y%m%d-%H%M%S")
-    target = Path(config.DATA_DIR) / "backups" / f"{key}-{stamp}"
-    target.mkdir(parents=True, exist_ok=True)
-    destination = target / path.name
-    shutil.copy2(path, destination)
-    return destination
+    try:
+        return tab_edit.resolve_tab_gp5(args.tab), args.tab
+    except tab_edit.TabEditError as exc:
+        raise SystemExit(str(exc)) from exc
 
 
 def main() -> int:
@@ -101,7 +72,7 @@ def main() -> int:
     args = parser.parse_args()
 
     path, key = _resolve(args)
-    song = _read_song(path)
+    song = tab_edit.read_song(path)
     notes_before = tab_edit.count_notes(song)
 
     try:
@@ -130,7 +101,7 @@ def main() -> int:
         print(json.dumps(summary, indent=2, ensure_ascii=False))
         return 0
 
-    backup = _backup(path, key)
+    backup = tab_edit.backup_file(path, key)
     summary["backup"] = str(backup)
 
     import guitarpro
@@ -139,7 +110,7 @@ def main() -> int:
     try:
         guitarpro.write(song, str(temporary), encoding="utf-8")
         os.replace(temporary, path)
-        check = _read_song(path)
+        check = tab_edit.read_song(path)
         if len(check.measureHeaders) != stats["bars_after"]:
             raise ValueError("tahtimäärä ei täsmää kirjoituksen jälkeen")
         if any(

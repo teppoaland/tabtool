@@ -8,7 +8,7 @@ import pytest
 from app.pipeline.build import build_document
 from app.pipeline.export_gp5 import export_gp5
 from app.pipeline.model import STANDARD_TUNING, TabNote
-from app.tab_edit import TabEditError, count_notes, expand_repeat
+from app.tab_edit import TabEditError, count_notes, expand_repeat, remove_bars
 
 BARS = 4
 BAR_TICKS = 3840
@@ -128,3 +128,37 @@ def test_expand_repeat_rejects_unknown_bar(tmp_path: Path) -> None:
     song = _song(tmp_path)
     with pytest.raises(TabEditError):
         expand_repeat(song, bar=99, times=17)
+
+
+def test_remove_bars_drops_the_tail_and_renumbers(tmp_path: Path) -> None:
+    song = _song(tmp_path)
+    stats = remove_bars(song, [4])
+
+    assert stats["bars_before"] == BARS
+    assert stats["bars_after"] == BARS - 1
+    assert stats["removed"] == 1
+    assert len(song.measureHeaders) == BARS - 1
+    assert [header.number for header in song.measureHeaders] == [1, 2, 3]
+    headers = song.measureHeaders
+    steps = {headers[index + 1].start - headers[index].start for index in range(len(headers) - 1)}
+    assert steps == {BAR_TICKS}
+    assert _frets(song) == [[1], [2], [3]]
+    assert stats["notes_after"] == BARS - 1 == count_notes(song)
+    assert all(len(track.measures) == BARS - 1 for track in song.tracks)
+
+
+def test_remove_bars_accepts_a_range(tmp_path: Path) -> None:
+    song = _song(tmp_path)
+    stats = remove_bars(song, [3, 4])
+    assert stats["bars_after"] == 2
+    assert _frets(song) == [[1], [2]]
+
+
+def test_remove_bars_rejects_unknown_or_all_bars(tmp_path: Path) -> None:
+    song = _song(tmp_path)
+    with pytest.raises(TabEditError):
+        remove_bars(song, [99])
+    with pytest.raises(TabEditError):
+        remove_bars(song, [])
+    with pytest.raises(TabEditError):
+        remove_bars(song, [1, 2, 3, 4])
