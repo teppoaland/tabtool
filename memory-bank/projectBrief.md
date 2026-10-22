@@ -1,6 +1,6 @@
 # 🎯 Projektin lyhyt kuvaus – AI TABTOOL
 
-> **Versio:** `v1.74` (21.10.2026)
+> **Versio:** `v1.81` (22.10.2026)
 > **Repo:** https://github.com/teppoaland/tabtool
 > **Paikallinen:** `D:\AI\tabtool`
 
@@ -37,7 +37,7 @@ Lokaali web-palvelu, jossa voi:
   voidaan myös liittää tuotuun tabiin. Tabin BPM korjattavissa
   desimaalilla (GP5 tallentaa kokonaisluvun; desimaali on toiston
   korjaus), `Nopeus` 50–150 % harjoitteluun, `SYNC` ±10 % hienosäätöön
-  ja `SIIRTO` tahdeittain (0,25 tahdin askel = 1 isku) rakenne-eroon
+  ja `SIIRTO` tahdeittain (±999, 0,25 tahdin askel = 1 isku) rakenne-eroon
   tai vakiosiirtoon; kaikki tallentuvat tabille.
 - **Ei pakollista Guitar Prota.** TuxGuitar on ilmainen apuväline
   tarvittaessa; appi tuo GP5/MusicXML:n.
@@ -61,7 +61,9 @@ Lokaali web-palvelu, jossa voi:
   soittoketjun ulkopuolelle (overlay + portinvartija
   `handlePlayButton`); ks. `.clinerules/07-playback-frozen.md`.
   KIRJASTO on modaalissa vasemmalla ja generaattori oikealla (v1.64);
-  rivin poisto on punainen × (v1.65).
+  rivin poisto on punainen × (v1.65). Count-in on kytkettävissä
+  **ON/OFF** (v1.81): kytkin on FULLSCREEN-napin alla sekä normaalissa
+  että koko näytön näkymässä, oletus ON, valinta muistetaan selaimessa.
 - **Kirjaston metadata on käyttäjän dataa** (v1.63): oma nimi
   (`title_override`, generaattorin nimi säilyy `original_title`ina),
   lukitus (estää poiston) ja arkistointi (piiloon päälistalta,
@@ -78,12 +80,22 @@ Lokaali web-palvelu, jossa voi:
   (esim. `D Standard · DGCFAD`) + `tuning_notes`; manuaalinen ylikirjoitus
   kirjaston NIMEÄ-lomakkeessa. Tuonti ei muuta tabitiedostoa eikä
   Viritys-valinta vaikuta siihen (se on vain AI-generointia varten).
+  Viritys luetaan **kitararaidasta** (v1.79: eniten nuotteja, 6 kieltä;
+  ei raidasta 0, joka on usein laulu). `scripts/retune_tab.py` (v1.80)
+  vaihtaa virityksen säilyttäen soivat sävelet (nauhat siirtyvät
+  kielikohtaisesti) – silloin GP5 on oikeasti uudessa virityksessä.
+- **Tab-datan työkalut (v1.76–v1.80):** `app/tab_edit.py` + skriptit
+  `expand_repeat.py` (toisto kirjoitetaan tahdeiksi, koska katselimen kello
+  seuraa kirjoitettua aikajanaa), `trim_bars.py` (ylimääräiset tahdit pois)
+  ja `retune_tab.py` (virityksen vaihto). Kaikki varmuuskopioivat GP5:n
+  `data/backups/`iin, validoivat tuloksen lukemalla tiedoston takaisin ja
+  palauttavat varmuuskopion, jos jokin ei täsmää.
 - **Songsterr / Ultimate Guitar:** ei scrapea eikä kiertämistä.
   Songsterr-appin cache sisältää vain SVG-renderin, beat-ajastuksen ja
   audion (ei string/fret-dataa), ja GP/MIDI/MP3-lataus on Plus-ominaisuus
   (`songsterr.com/ai.txt`). Käyttäjän Android-osto on **kertamaksu**
   (vain Android, ei web). GP5:t haetaan laillisesta lähteestä käsin.
-- **Versiosarja `1.x`**, aloitus `v1.00`; nyt `v1.74`.
+- **Versiosarja `1.x`**, aloitus `v1.00`; nyt `v1.81`.
 - **Ei julkista julkaisua:** koodi pidetään lokaalina. Commitit tehdään
   paikalliseen repoon palautuspisteiksi (revert); push GitHubiin vain
   erillisestä pyynnöstä.
@@ -122,8 +134,9 @@ Sano Cline:lle **`lue membank`**. Sääntö on
 - `app/tab_import.py` – GP5/MusicXML-tuonti
 - `app/tab_download.py` – GP5/MusicXML-linkin palvelinlataus
 - `app/library.py` – kappaleen poisto (tab/audio/stemmit, MP3 jää)
+- `app/tab_edit.py` – tab-datan muokkaus (toisto, tahdin poisto, viritys)
 - `scripts/pipeline_smoke.py` – CLI-proof
 - `stop.bat` / `status.bat` – palvelimen pysäytys ja tilan tarkistus
-- `tests/` – 134 pytest-testiä
+- `tests/` – 152 pytest-testiä
 - `data/` – GITIGNORED: audio, stemmit, tabit, tokenit
 - `docs/` – GITIGNORED: henkilökohtainen suunnitelma

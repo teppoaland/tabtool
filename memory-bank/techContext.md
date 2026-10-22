@@ -9,7 +9,7 @@
 - **Ei GPU:ta** (`nvidia-smi` tyhjä) → CPU-only
 - D: levytilaa ~147 GB vapaana
 
-## Python-paketit (v1.74)
+## Python-paketit (v1.81)
 
 Core:
 
@@ -58,7 +58,7 @@ python -m venv .venv
 ## Testit
 
 ```powershell
-.venv\Scripts\python.exe -m pytest -q          # 134 passed
+.venv\Scripts\python.exe -m pytest -q          # 152 passed
 .venv\Scripts\python.exe -m compileall -q app scripts tests
 node --check app\static\app.js
 node --check app\static\remote.js
@@ -91,10 +91,10 @@ Hyödylliset valinnat: `--model htdemucs_6s`, `--stem guitar`, `--tuning`,
   v1.41 = GP3/GP4-tuonti; tagi `v1.29` = `bb704e8`.
 - Koodi v1.23–v1.56 on **pushattu** `origin/main`iin käyttäjän pyynnöstä
   20.10.2026. **v1.57–v1.68 committoitu lokaalisti** (21.10.2026,
-  `ac2457c v1.68: …`); **v1.69–v1.74 committoitu lokaalisti**
-  (22.10.2026, `d76ddaf v1.74: …`) ja `main` on 8 committia
-  `origin/main`in edellä = **ei pushattu**. Push vain erillisestä
-  pyynnöstä; `data/` ja `docs/` eivät ole gitissä.
+  `ac2457c v1.68: …`); **v1.69–v1.74** (22.10.2026, `d76ddaf`) ja
+  **v1.75–v1.81** (22.10.2026, koodi `9769371`) on committoitu lokaalisti.
+  `main` on ~16 committia `origin/main`in edellä = **ei pushattu**. Push vain
+  erillisestä pyynnöstä; `data/` ja `docs/` eivät ole gitissä.
 - `scripts/build_kiss_legend.py` on `.gitignore`ssa: se sisältää koko
   kappaleen nuottidatan (tekijänoikeus), joten sitä ei viedä julkiseen
   gitiin.
@@ -146,8 +146,10 @@ DB-tiedosto); vain tuotenimi on `AI TabTool`.
   (`#play-countdown`, fixed-lapsi viewerissä; ei `api.`/`audio`-kutsuja).
   Ohitus perustuu käyttäjän omaan seekiin (`countInSkipped`), ei
   `currentTime`iin: alphaTab siirtää audion ensimmäiselle iskulle jo
-  latauksessa (0,8455 s SIIRTO −0,75:llä). Vartio:
-  `tests/test_playback_guard.py`.
+  latauksessa (0,8455 s SIIRTO −0,75:llä). **v1.81:** ON/OFF-kytkin
+  (`#countin-toggle`, `#countin-state`, `.viewer-corner` FULLSCREEN-napin
+  alla, localStorage `tabtool:countIn`, oletus ON) luetaan **vain**
+  `shouldRunCountIn`issa. Vartio: `tests/test_playback_guard.py`.
 - Score-format valitaan `meta.files`:stä (gp5 ensin, muuten musicxml);
   tuotu tabi ilman audiota piilottaa PLAYn ja transportin.
 - `mediaHandler.playbackRate` seuraa `audio.playbackRate`-arvoa
@@ -171,7 +173,13 @@ DB-tiedosto); vain tuotenimi on `AI TabTool`.
 - SIIRTO: `sync_offset_bars` lisätään positioon
   `bars × tahtipituus_ms`; tahtipituus lasketaan `masterBars`-tickeistä
   ja nuottitemposta. Tallentuu `meta.sync_offset_bars`iin.
-  UI pyöristää 0,25 tahdin askeleeseen (1 isku 4/4:ssä).
+  UI pyöristää 0,25 tahdin askeleeseen (1 isku 4/4:ssä). Rajana
+  **±999 tahtia** (`app/main.py` `SYNC_OFFSET_LIMIT`, v1.75).
+  **Tunnettu rajoite:** `barDurationMs()`/`ticksPerBar()` ottavat
+  tahdin pituuden **kahdesta ensimmäisestä tahdista** – jos tabi alkaa
+  anacrusiksella, SIIRTO on 8×/16× liian voimakas (Dr. Feelgood ennen
+  v1.78:aa). Data korjataan `trim_bars.py --bars 1`llä;
+  koodikorjaus on sääntö #1:n ydintä ja vaatii erillisen luvan.
 - Playback range: alphaTab luo raahauksella `playbackRange`in; se
   nollataan (`clearPlaybackRange`) ennen seekiä, latauksessa ja
   `playbackRangeChanged`issa. Pause → `syncPosition(true)`.
@@ -186,7 +194,7 @@ DB-tiedosto); vain tuotenimi on `AI TabTool`.
   **Soiton/tabin synkka hyväksytään vain käyttäjän kuuntelutestillä**
   (`.clinerules/07-playback-frozen.md`): pytest, `node --check` ja
   headless eivät todista kohdistusta.
-  Staattisten tiedostojen `?v=1.68`-leimat pakottavat tuoreen CSS/JS:n;
+  Staattisten tiedostojen `?v=1.81`-leimat pakottavat tuoreen CSS/JS:n;
   selaimessa voi silti tarvita Ctrl+F5:n.
 - Modaalin pino: alphaTabin `.at-cursors` on `z-index: 1000`; modaali
   `2000`, dialogi `2100`, viewer `isolation: isolate`, cursor piiloon
@@ -201,7 +209,11 @@ DB-tiedosto); vain tuotenimi on `AI TabTool`.
   `tuning_notes` (GP5:n kielet, `app/tuning.py`).
 - **Skriptit:** `import_folder.py`, `export_tabs.py`,
   `adb_pull_gp.ps1` (puhelimen Download), `backfill_youtube_channel.py`,
-  `backfill_tuning.py`, `backfill_external.py`, `pipeline_smoke.py`.
+  `backfill_tuning.py` (`--force`), `backfill_external.py`,
+  `backfill_gp5_utf8.py`, `pipeline_smoke.py` ja tab-datan työkalut
+  `expand_repeat.py` (toisto tahdeiksi), `trim_bars.py` (tahdin poisto),
+  `retune_tab.py` (virityksen vaihto sävelet säilyttäen). Kaikki
+  varmuuskopioivat `data/backups/`iin.
 - Headless-Edge/Chrome-validoinnit: alphaTab-render, cursor, fullscreen,
   GP5/MusicXML-tuonti (linkki + tiedosto), audio attach, BPM 140/144,
   aikajana, SEARCH-modaali, poisto, playback range -nollaus.

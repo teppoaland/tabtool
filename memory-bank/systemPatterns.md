@@ -54,7 +54,20 @@ Putki (app/pipeline/)
   standard/drop_d/eb_standard/d_standard/open_g, muut `Custom` +
   kirjaimet). `_tab_summary` palauttaa `channel`, `tuning`,
   `tuning_override`, `tuning_label`. Viritys-valinta vaikuttaa vain
-  AI-generointiin, ei GP5-tuontiin.
+  AI-generointiin, ei GP5-tuontiin. **v1.79:** `app.tuning.open_strings()`
+  valitsee kitararaidan (6 kieltä, eniten nuotteja; rummut ohitetaan),
+  koska moniraitaisen GP5:n raita 0 on usein laulu – ennen tätä Drop D
+  -kitara näkyi `Standard E`nä. **v1.80:** `retune_tracks()` vaihtaa
+  virityksen ja siirtää nauhat kielikohtaisesti, joten soivat sävelet
+  pysyvät samoina.
+- `app/tab_edit.py` hoitaa tab-datan muokkauksen ilman HTTP- tai
+  ML-riippuvuutta: `read_song` (UTF-8 → cp1252 -fallback), `backup_file`
+  (`data/backups/<id>-<aika>/`), `save_song` (temp + `os.replace`,
+  validointi lukemalla takaisin), `expand_repeat` (toisto tahdeiksi),
+  `remove_bars` (tahdin poisto, säilyttää absoluuttisen ajoituksen),
+  `retune_tracks` (viritys + nauhojen siirto, sävelet ennallaan) ja
+  `resolve_tab_gp5`. Kutsujat: `scripts/expand_repeat.py`,
+  `scripts/trim_bars.py`, `scripts/retune_tab.py`.
 - **Bulk-tuonti/vienti** (v1.66): `app/bulk.py` – `import_folder()`
   (SHA-256-manifesti `.tabtool-imported.json`) ja `export_tabs()`
   (GP5/MusicXML/MIDI + `manifest.json` + ZIP). Skriptit
@@ -66,6 +79,10 @@ Putki (app/pipeline/)
   noudattaa vain näitä. `Beat.text` (esim. "Should be played 17 times")
   on vain visuaalinen huomautus eikä ohjaa toistoa – esim. Dr. Feelgood
   m2 on tiedostossa ×2 ja audio toistaa enemmän, joten ero on tab-datassa.
+  **v1.76 ratkaisu:** toisto kirjoitetaan tahdeiksi
+  (`scripts/expand_repeat.py`) eikä toistomerkiksi, koska katselimen kello
+  laskee partituurin keston kirjoitetuista tahdeista – toistomerkki
+  jättäisi partituurin lyhyemmäksi ja score-end-guard katkaisisi toiston.
 - GP5 + YouTube -yhdistelmä: `jobs.submit_job` luo audio-only-jobin
   (`options.audio_only`, `attach_tab_id`), joka lataa audion ja liittää
   sen valmiiksi tuotuun tabiin ilman transkriptiota. Sama polku
@@ -92,11 +109,13 @@ Putki (app/pipeline/)
   vapaalle kielelle tai edellistä nuottia lyhennetään.
 - Viritykset: standard, drop D, Eb, D, open G, bass 4-string.
 - Standard E -alueen ulkopuoliset nuotit pudotetaan varoituksella.
-- **Soittotapa/refinger ei ole vielä toteutettu.** Suunniteltu:
-  asemaprofiilit (1./5./7. asema, avoimet/matalat kielet, ei venytyksiä),
-  playability-score ja turhien/harmonisten nuottien karsinta. Nykyinen
-  DP tuottaa yhden sormituksen, joten sama nuottidata voi näyttää
-  erilaiselta kuin opittu tabi.
+- **Sormitusversiot (v1.72):** `fretboard.py` tuottaa kolme profiilia
+  (`V1 · Avoimet kielet`, `V2 · Boksi`, `V3 · Vähän liikettä`),
+  `playability.py` laskee 0–10-score; versiot kirjoitetaan raitoina samaan
+  GP5:hen ja valitaan `VALITSE TÄMÄ`lla (`POST /api/tabs/{id}/variant`,
+  `variant_store.py` JSON-snapshotit). Jäljellä: parhaan version
+  automaattinen valinta, score näkyviin ja turhien nuottien karsinta
+  per tahti/fraasi.
 
 ## Export
 
@@ -204,7 +223,9 @@ resolvoitui työhakemistosta ja tabi menetti audionsa.
   reunassa); NÄKYMÄ/raitavalinnat omalla rivillään vasemmasta reunasta.
   `.transport` on oma taustakortti. EXPORT-rivi on tabikentän alla.
   Fullscreenissä LIBRARY piilotetaan ja grid kavennetaan kolmeen
-  sarakkeeseen.
+  sarakkeeseen. **v1.81:** FULLSCREEN-nappi ja COUNT-IN-kytkin ovat
+  samassa `.viewer-corner`-lohkossa (flex-sarake), joten ruudukkoon ei
+  tullut uutta saraketta eikä tabialueen mitat muutu.
 - **Modaali avautuu LIBRARY-napin korkeudelle** (v1.60):
   `openSearch()` mittaa napin `getBoundingClientRect().top`in ja asettaa
   `--modal-top`in; `#search-modal` käyttää sitä yläpaddingina ja
@@ -230,6 +251,14 @@ resolvoitui työhakemistosta ja tabi menetti audionsa.
   1,268 s → 0 ja rikkoi synkan; `time === 0` jätetään ennalleen.
 - Aluevalinta: alphaTabin raahaus ei jää loopiksi – `playbackRange`
   nollataan heti. Pause palauttaa cursorin audion aikaan.
+- **Tunnettu rajoite (avaa lupaa vaativa korjaus):** `barDurationMs()` ja
+  `ticksPerBar()` laskevat tahdin pituuden **kahdesta ensimmäisestä
+  tahdista** (`bars[1].start − bars[0].start`). Jos tabi alkaa
+  anacrusiksella (1/16 tai 1/8), SIIRTO ja KOHDISTA ovat 8×/16× liian
+  voimakkaita. Toistaiseksi korjaus tehdään datasta
+  (`scripts/trim_bars.py --bars 1`), kuten Dr. Feelgoodissa v1.78;
+  koodikorjaus on sääntö #1:n ydintä ja vaatii erillisen luvan sekä koko
+  regressiochecklistin.
 - **Sääntö #1 – koskematon ydin** (`.clinerules/07-playback-frozen.md`):
   soitto- ja kohdistusketju (`notatedTempo`/`bpmDrift`, `barDurationMs`/
   `syncTimeMs`/`scoreEndTimeMs`, `mediaHandler.seekTo`-inversio,

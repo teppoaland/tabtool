@@ -1,32 +1,49 @@
 # 📍 Aktiivinen konteksti – AI TABTOOL
 
-> **Versio:** `v1.74` (21.10.2026; committoitu 22.10.2026)
-> **Git:** v1.69–v1.74 committoitu lokaalisti 22.10.2026 (koodi `d76ddaf`,
-> perässä docs-commit). `main` 8 committia `origin/main`in edellä =
+> **Versio:** `v1.81` (22.10.2026)
+> **Git:** v1.75–v1.81 committoitu lokaalisti 22.10.2026 (koodi `9769371`,
+> perässä docs-commit). `main` ~16 committia `origin/main`in edellä =
 > **ei pushattu**. Älä pinnaa hashia pysyvästi.
 > **Push:** vain erillisestä pyynnöstä (käyttäjä pyysi 20.10.2026).
 > **Repo:** https://github.com/teppoaland/tabtool
 > **Palvelin:** käyttäjän hallinnassa (`start.bat` / `stop.bat`); Cline ei
-> käynnistä sitä taustalle eikä pysäytä ilman pyyntöä. 21.10.2026 se on
+> käynnistä sitä taustalle eikä pysäytä ilman pyyntöä. 22.10.2026 se on
 > sammutettu.
 
 ## Nyt
 
-- **v1.69–v1.74 (committoitu `d76ddaf`, 22.10.2026):**
-  - **v1.69** score-end-guard: `syncTimeMs` clamp `scoreEnd−50ms` → kappale
-    soi loppuun tabin päätyttyä; `handlePlayButton`-nollaus.
-  - **v1.70** lukitus = kaikki asetukset read-only (`_require_unlocked`
-    409; UI disabloi BPM/SYNC/SIIRTO/KOHDISTA/LIITÄ AUDIO; avaus NIMEÄstä).
-  - **v1.71** lukkoikoni 🔒 kirjastoriville.
-  - **v1.72** sormitusprofiilit `fretboard.py` (V1·Avoimet/V2·Boksi/V3·
-    Vähän liikettä) + `playability.py` score + versiot **raitoina yhdessä
-    GP5:ssä** + `VALITSE TÄMÄ` (`POST /api/tabs/{id}/variant`) +
-    `variant_store.py` (JSON-snapshotit) + `PIPELINE_VERSION=2`.
-  - **v1.73** `prune.py` (haamunuottien siivo: oktaavihaamut pois,
-    polyfonia max 4/isku) + `PIPELINE_VERSION=3`.
-  - **v1.74** GP5-merkkijonot UTF-8:ksi (alphaTab luki cp1252:n väärin →
-    `·`/`ä` näkyi `�`nä); `backfill_gp5_utf8.py` korjasi 2 tabia.
-  - **134 pytest-testiä.**
+- **v1.75–v1.81 (22.10.2026, committoitu lokaalisti; ~14 h sessio):**
+  - **v1.75** TEMPO-reitti lukee cp1252-GP5:n (`_gp5_song`, fallback) ja
+    kirjoittaa UTF-8:na; SIIRTO-raja ±64 → **±999** (`SYNC_OFFSET_LIMIT`).
+    Syy: Dr. Feelgoodin GP5 oli cp1252 (`Mötley Crüe` = 0xf6) → TALLENNA
+    kaatui `'utf-8' codec can't decode byte 0xf6`.
+  - **v1.76** `app/tab_edit.py` + `scripts/expand_repeat.py`: toisto
+    kirjoitetaan tahdeiksi. Dr. Feelgood bar 2 ×2 → **17 tahdia**
+    (122 → 138, 2615 nuottia). Toistomerkki ei toimi, koska kello seuraa
+    kirjoitettua aikajanaa (score-end-guard katkaisisi).
+  - **v1.77** `remove_bars` + `scripts/trim_bars.py`: audion musiikki
+    päättyy 287,74 s mutta tabi jatkui 291,6 s → 2 viimeistä tahtia pois.
+  - **v1.78** pickup-tahdin poisto säilyttää ajoituksen; Dr. Feelgoodin
+    1/16-anacrusis (BAR 1, yksi avoin D) pois → **135 tahtia**, nuotit 2550,
+    `ticksPerBar` 3840 (ennen 240 → SIIRTO oli 16× liian voimakas).
+  - **v1.79** viritys luetaan kitararaidasta (`app.tuning.open_strings`),
+    ei raidasta 0 (laulu); `backfill_tuning.py --force` korjasi
+    Volbeat-tabit `Standard E` → **`Drop D · DADGBE`**.
+  - **v1.80** `retune_tracks` + `scripts/retune_tab.py`: Drop D →
+    **D Standard** sävelet säilyttäen (2529 nuottia, max nauha 13;
+    BAR 7 `0/2`, BAR 9–10 `4/2 5/3 6/4`). Uusin Volbeat-tabi 116a1fa3…
+    on nyt datassa D standard (override poistettu).
+  - **v1.81** COUNT-IN ON/OFF -kytkin FULLSCREEN-napin alle
+    (`.viewer-corner`, `#countin-toggle`, localStorage `tabtool:countIn`,
+    oletus ON); luetaan vain `shouldRunCountIn`issa, soitoketju koskematon.
+  - **152 pytest-testiä** (v1.74:ssä 134).
+- **Kirjaston data 22.10.2026:** 12 tabia. Dr. Feelgood 135 tahtia /
+  2550 nuottia (17 toistoa, SYNC/SIIRTO 0). Volbeat 2 tabia samasta
+  biisistä eri audioilla: `7f30610c…` `Drop D · DADGBE` (SIIRTO −0,25),
+  `116a1fa3…` **`D Standard · DGCFAD`**.
+- **Aiemmat (v1.69–v1.74, `d76ddaf`):** score-end-guard (v1.69), lukitus
+  read-only (v1.70), lukkoikoni (v1.71), sormitusprofiilit + versiot
+  (v1.72), haamunuottien siivo (v1.73), GP5 UTF-8 (v1.74).
 - **KISS – I Am a Legend Tonight:** AI-tabi (v3) jäi kohinaiseksi (kaksi
   kitaraa samassa stemissä). Löytyi oikea tekstibabi (Emil Ortenmark);
   soitetaan **standard E:ssä ilman capoa**. `scripts/build_kiss_legend.py`
@@ -35,57 +52,27 @@
   jäi TuxGuitarille/exportterin laajennukselle.
 - **v1.66–v1.68 – tuonti, kanava ja viritys.** `app/bulk.py` +
   `scripts/import_folder.py` / `export_tabs.py` / `adb_pull_gp.ps1`
-  (oma kirjasto pysyy gitin ulkopuolella; SHA-256-manifesti estää
-  tuplat; export GP5/MusicXML/MIDI + `manifest.json` + ZIP).
-  `meta.youtube_channel` näkyy `YT: <kanava>` -merkintänä; GP5:n
-  viritys → `tuning_label` (`D Standard · DGCFAD`) + `tuning_notes`,
-  manuaalinen ylikirjoitus NIMEÄ-lomakkeessa (`tuning_clear` nollaa).
-  Backfillit: `backfill_youtube_channel.py`, `backfill_tuning.py`.
-- **v1.63–v1.65 – kirjaston hallinta.** `POST /api/tabs/{id}/library`
-  (`title`/`locked`/`archived`/`tuning`), rivin `NIMEÄ`-lomake,
-  `ARKISTO (n)` -linkki listan lopussa, aakkosjärjestys ja punainen
-  `×`-poisto. `locked` estää poiston (409); `archived` piilottaa
-  päälistalta ja rastin poisto palauttaa sen.
-- **v1.57–v1.62 – ulkoasu.** Tabin marginaalit 30/30 px (alphaTabin
-  `display.padding: [30, 15]`, jotta 15 px scrollbar ei mene tabin
-  päälle), `.alphatab` paddingitta (reunus inset-varjolla), yläosa
-  tiiviimmäksi, LIBRARY PLAY-korttiin, NÄKYMÄ/raitavalinnat omalle
-  riville, FULLSCREEN kortin oikeaan yläkulmaan, `.transport` omaksi
-  kortiksi, EXPORT tabikentän alle, modaali avautuu LIBRARY-napin
-  korkeudelle, LIBRARY piiloon fullscreenissä, KIRJASTO modaalin
-  vasemmaksi sarakkeeksi.
-- **v1.56 – count-in 5 → 0 soittoketjun ulkopuolella (validoitu
-  käyttäjän kuuntelutestillä).** `handlePlayButton` on portinvartija.
-- **v1.54**: palvelimen hallinta käyttäjälle (`stop.bat`, `status.bat`,
-  `start.bat`in porttitarkistus); ei muutoksia soittoon.
-- **v1.49**: tabi tummassa teemassa; SEARCH-napit → LIBRARY.
-- **Kursorin synkka (v1.43–v1.48)**: `backingTrackDuration` = partituurin
-  kesto master bar -tikeistä (`scoreEndTimeMs`), ei ääniraidan kesto;
-  `enableAnimatedBeatCursor = false`; klikkaus-seek kääntää
-  SIIRTO/SYNC/BPM-korjauksen (`time > 0`). KOHDISTA-nappi ja
-  live-offset-näyttö (v1.46) auttavat kohdistamaan.
-- **v1.42**: `pytest.ini`:n `addopts = -q` poistettu, joten `pytest -q`
-  tulostaa yhteenvedon (`114 passed`).
-- **Historia (v1.23–v1.49):** katselu, aikajana, tuonti/audio, BPM/Nopeus,
+  (SHA-256-manifesti estää tuplat; export GP5/MusicXML/MIDI + `manifest.json`
+  + ZIP). `meta.youtube_channel` näkyy `YT: <kanava>`; viritys →
+  `tuning_label` + `tuning_notes`, manuaalinen ylikirjoitus NIMEÄ-lomakkeessa
+  (`tuning_clear`). Backfillit `backfill_youtube_channel.py`,
+  `backfill_tuning.py`.
+- **v1.38–v1.65 – kirjasto ja ulkoasu.** `POST /api/tabs/{id}/library`
+  (`title`/`locked`/`archived`/`tuning`), `NIMEÄ`-lomake, `ARKISTO (n)`,
+  aakkosjärjestys, punainen `×`-poisto + varoitusdialogi (lukittu → 409;
+  jaettu audio säilyy, MP3 jää arkistoon). Tabin marginaalit 30/30 px,
+  `.transport` omaksi kortiksi, EXPORT tabikentän alle, modaali avautuu
+  LIBRARY-napin korkeudelle, modaalin pino (cursor `1000`, modaali `2000`,
+  dialogi `2100`).
+- **v1.43–v1.56 – synkka ja count-in.** `backingTrackDuration` = partituurin
+  kesto (`scoreEndTimeMs`), ei ääniraidan; klikkaus-seek kääntää
+  SIIRTO/SYNC/BPM-korjauksen (`time > 0`); KOHDISTA + live-offset.
+  Count-in 5 → 0 soittoketjun ulkopuolella (`handlePlayButton` portinvartija;
+  kytkin ON/OFF v1.81). Palvelin käyttäjän hallintaan (v1.54).
+- **Historia (v1.20–v1.42):** katselu, aikajana, tuonti/audio, BPM/Nopeus,
   SYNC/SIIRTO, ulkoinen arkisto, SEARCH-modaali (UI:ssa **LIBRARY**),
-  GP3/GP4-tuonti (konversio aidoksi GP5:ksi) ja kappaleen poisto.
+  GP5+YT yhdellä jobilla, GP3/GP4-konversio, poisto, pytest-yhteenveto.
   Yksityiskohdat `CHANGELOG.md`:ssä ja `README.md`:ssä.
-- **GP5 + YT yhdellä toiminnolla** (v1.40): `GP5-linkki` tai
-  `GP5-tiedosto` ohittaa AI-generoinnin ja YouTube-audio liitetään samalla
-  jobilla. GP5 + oma audiotiedosto on estetty.
-- **Poisto** (v1.38, × v1.65): kirjastorivin punainen `×` avaa
-  varoitusdialogin. Tab, hakemisto, stemmit ja job/track-rivit
-  poistetaan; jaettu audio säilyy ja MP3-kuunteluversio jää arkistoon.
-  Lukittua tabia ei voi poistaa (409).
-- **Kirjaston metadata** (v1.63): `NIMEÄ` avaa rivin lomakkeen
-  (nimi + `[ ] Lukitse` + `[ ] Arkistoi`); `title_override` on käyttäjän
-  nimi, `original_title` generaattorin nimi. Lista on aakkosjärjestyksessä
-  ja arkistoidut löytyvät listan lopun `ARKISTO (n)` -linkistä; rastin
-  poisto palauttaa ne pääkirjastoon.
-- **MP3-valinta** (v1.38) ei vaikuta tabin cache-avaimeen.
-- **Modaalin pino:** alphaTabin cursor `z-index: 1000`, modaali `2000`,
-  dialogi `2100`, viewer `isolation: isolate`, cursor piiloon
-  `body.modal-open`-tilassa.
 - Katselu: **tab-only oletus**, Näkymä (`Tab`/`Auto`/`Tab+nuotit`/`Nuotit`),
   raitavalinnat ja tabikohtainen muisti, FULLSCREEN + automaattinen
   fullscreen PLAYssa (fullscreenissä LIBRARY piilotetaan, v1.62),
@@ -186,7 +173,12 @@ Putki:
 
 ## Tuoreimmat validointitulokset
 
-- `pytest -q` → **134 passed** (v1.74); `compileall` ja `node --check` OK.
+- `pytest -q` → **152 passed** (v1.81); `compileall` ja `node --check` OK.
+- v1.75–v1.81: tässä sessiossa ajettu `pytest` (152), `compileall`,
+  `node --check` ja HTML-tagien tasapaino; data-validoinnit tehty
+  lukemalla GP5 takaisin (tahtimäärä, nuotit, soivat sävelet, toistot).
+  **Soiton/tabin synkka odottaa käyttäjän kuuntelutestiä** (sääntö #1):
+  count-in-kytkin ja uusi `.viewer-corner`-asettelu.
 - v1.57–v1.62 headless (käyttäjän palvelin): tabin marginaalit
   30/30 px ja tabin reuna → scrollbar 15 px (1600/1366/1200/1024/800 px,
   ei sivuttaisvieritystä); LIBRARY/PLAY-kortti + FULLSCREEN oikeassa
@@ -224,20 +216,23 @@ Putki:
 
 ## Avoimet / myöhemmin
 
-- **WASP uudelleen (seuraava sessio):** vanha tabi
-  `bc5a287d8edd4748acd7cd0159fc5691` = *Animal … (väärä)*. Aja
-  `scripts/export_tabs.py "D:\tabtool_files\exports" --formats gp5 --ids bc5a287d8edd4748acd7cd0159fc5691`,
-  tuo LIBRARYssa `GP5-tiedosto` + `https://youtu.be/7COTI8k-rgo`
-  (kanava James Sly) → uusi tabi näyttää `YT: James Sly` ja virityksen
-  (`Eb Standard · EbAbDbGbBbEb`). Nimeä uusi, arkistoi/poista vanha.
-  Huom: Songsterr näyttää samalle kappaleelle D standardin (DGCFAD) –
-  puolen sävelaskeleen ero on tab-datassa, ei synkassa.
-- **Dr. Feelgood -toisto:** GP5:ssä on vain yksi toisto (m2 ×2,
-  `repeatClose=1`), mutta tahdin 2 yläpuolella lukee beat-tekstinä
-  "Should be played 17 times" (raita 1) ja "Seventeen bars of whammy
-  noise" (raita 2). alphaTab ei lue tekstiä. Jos halutaan, tehdään
-  `scripts/set_repeat.py --tab <id> --bar 2 --times 17` (kirjoittaa
-  GP5:n uudelleen, `repeatClose = times-1`) – oma työ ja validointi.
+- **Pickup-varotin soittokelloon (vaatii luvan, sääntö #1):**
+  `barDurationMs()` ja `ticksPerBar()` ottavat tahdin pituuden **kahdesta
+  ensimmäisestä tahdista** (`bars[1] − bars[0]`). Anacrusis-tabissa SIIRTO
+  ja KOHDISTA ovat 8×/16× liian voimakkaita (Dr. Feelgood ennen v1.78:aa).
+  Data korjataan `scripts/trim_bars.py --bars 1`llä; koodikorjaus vaatii
+  luvan, koko regressiochecklistin ja käyttäjän kuuntelutestin.
+- **W.A.S.P.:** kirjastossa `8e8dfa0f…` *Animal (Fuck Like A Beast)*,
+  `Eb Standard · EbAbDbGbBbEb`; vanhaa väärää `bc5a287d…` ei ole enää
+  kannassa. Uusi tuonti kanavalta James Sly (`https://youtu.be/7COTI8k-rgo`)
+  vain jos viritys/rakenne kaipaa korjausta – Songsterr näyttää samalle
+  kappaleelle D standardia, ero on tab-datassa, ei synkassa.
+- **Dr. Feelgood – valmis (v1.76–v1.78):** bar 2 soitetaan 17 kertaa
+  kirjoitettuina tahteina (135 tahtia), 2 ylimääräistä lopputahtia ja
+  1/16-pickup poistettu. Erillistä `set_repeat.py`tä ei tarvita.
+- **Session tilanne 22.10.2026:** koodattu ~14 h; v1.75–v1.81 valmiit,
+  152 testiä vihreänä, työpuu clean. Seuraava sessio: `lue membank` →
+  valitse pickup-korjaus / Settings-näkymä / tuonnin laatuapurit.
 - Soittotapa/refinger: asemaprofiilit, helpoin-arvio, turhien nuottien
   karsinta, per-tahti/fraasiasema; **ei koodia vielä**.
 - AI-transkription tarkkuus (Basic Pitch); referenssitabit ja ilmainen

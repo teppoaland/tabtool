@@ -1,5 +1,47 @@
 # 📊 Projektin edistyminen – AI TABTOOL
 
+## v1.81 – COUNT-IN ON/OFF (22.10.2026)
+- FULLSCREEN-napin alle `.viewer-corner`-lohkoon liukukytkin
+  (`#countin-toggle`, `#countin-state`, ON/OFF), oletus ON, valinta
+  localStorageen (`tabtool:countIn`). Luetaan **vain**
+  `shouldRunCountIn`issa → soittoketju koskematon. 2 guard-testiä.
+
+## v1.80 – Virityksen vaihto sävelet säilyttäen (22.10.2026)
+- `app.tab_edit.retune_tracks` + `scripts/retune_tab.py`: raidat, joiden
+  avoimet kielet täsmäävät `--from`iin, viritetään uudelleen ja nauhat
+  siirretään kielikohtaisesti (`nauha = sävel − uusi avoin`). Validointi
+  vertaa jokaisen nuotin soivan sävelen; varmuuskopio + palautus.
+- Volbeat `116a1fa3…` Drop D → **D Standard** (2529 nuottia, max nauha 13,
+  BAR 7 `0/2`, BAR 9–10 `4/2 5/3 6/4`). 2 uutta testiä.
+
+## v1.79 – Viritys kitararaidasta (22.10.2026)
+- `app.tuning.open_strings()`: 6-kielinen raita, jossa eniten nuotteja
+  (rummut ohitetaan) → Volbeat-tabit `Standard E` → `Drop D · DADGBE`.
+- `backfill_tuning.py --force` (ohittaa manuaaliset overridet, lukee
+  UTF-8 → cp1252). 2 uutta testiä.
+
+## v1.78 – Pickup-tahdin poisto (22.10.2026)
+- `remove_bars` pitää ensimmäisen jäljelle jäävän tahdin absoluuttisen
+  alun. Dr. Feelgoodin 1/16-anacrusis pois → 135 tahtia, `ticksPerBar`
+  240 → 3840 (SIIRTO oli 16× liian voimakas). 1 uusi testi.
+
+## v1.77 – Ylimääräiset tahdit pois (22.10.2026)
+- `remove_bars` + `scripts/trim_bars.py` (`--bars "137,138"`, `--reset-sync`).
+  Dr. Feelgood 138 → 136 tahtia: audion musiikki päättyy 287,74 s, tabi
+  jatkui 291,6 s. 3 uutta testiä.
+
+## v1.76 – Toisto kirjoitetaan tahdeiksi (22.10.2026)
+- `app/tab_edit.py` (`read_song`, `backup_file`, `save_song`,
+  `expand_repeat`, `count_notes`) + `scripts/expand_repeat.py`.
+  Dr. Feelgood bar 2 ×2 → 17 tahtia (122 → 138, 2615 nuottia).
+  6 uutta testiä.
+
+## v1.75 – TEMPO cp1252 + SIIRTO ±999 (22.10.2026)
+- `_gp5_song()` lukee GP5:n UTF-8 → cp1252 -fallbackilla ja kirjoittaa
+  UTF-8:na (Dr. Feelgood `Mötley Crüe`, 0xf6). `SYNC_OFFSET_LIMIT = 999`
+  (backend + `#shift-input` + `app.js`n clampit). 2 uutta testiä.
+
+
 ## v1.74 – GP5 UTF-8 (21.10.2026)
 - GP5 merkkijonot kirjoitetaan/luetaan UTF-8:na (alphaTab luki cp1252:n
   väärin → `·`/`ä` = `�`); `backfill_gp5_utf8.py` korjasi 2 AI-tabia.
@@ -185,54 +227,22 @@
 - `db.import_tabs_from_disk` resolvoi `meta.audio_path`in `DATA_DIR`:stä.
 - 93 testiä.
 
-## v1.40 – GP5-tiedosto + YT-linkki yhdellä toiminnolla (18.10.2026)
+## v1.20–v1.40 – Perusta, tuonti ja modaali (18.10.2026)
 
-- SEARCH-modaaliin tuli `GP5-linkki`-kentän rinnalle `tai GP5-tiedosto`.
-  `POST /api/tabs/import` hyväksyy nyt `youtube_url` + `options`: ilman
-  linkkiä vastaus on tab-yhteenveto, linkin kanssa audio-job, joka
-  liittää audion tuotuun tabiin. Sama `_queue_audio_job` kuin
-  GP5-linkilla; erillinen `IMPORT TAB` poistettiin.
-- GP5 + oma audiotiedosto estetty; audion lähde on YouTube-linkki.
-- 91 pytest-testiä; headless: tiedosto + YT → tabi, audio ja viewer.
-
-## v1.39 – SEARCH-modaalin pino (18.10.2026)
-
-- alphaTabin `.at-cursors` käyttää `z-index: 1000`, joten cursor piirtyi
-  modaalin päälle. Modaali `2000`, dialogi `2100`,
-  `.viewer-section { isolation: isolate }` ja cursor piiloon
-  `body.modal-open`-tilassa; paneeli täysin peittäväksi.
-- 89 testiä; selainkuvalla varmistettu, ei läpikuultoa.
-
-## v1.38 – SEARCH-modaali, GP5-linkki ja poisto (18.10.2026)
-
-- Haku, GP5-tuonti, kirjasto ja kappaleen valinta siirrettiin
-  SEARCH-modaaliin; TV-näkymä jäi soittoon.
-- `app/tab_download.py`: GP5/MusicXML-linkin palvelinlataus (vain
-  julkinen http(s), max 20 MB, redirectit validoitu, gprotab.net
-  HTML → `?download`-retry).
-- `app/library.py` + `DELETE /api/tabs/{id}`: tab, hakemisto, stemmit ja
-  job/track-rivit pois; jaettu audio säilyy; MP3 jää arkistoon.
-- `options.archive_mp3` (oletus true) ja audio-only-job
-  (`audio_only`/`attach_tab_id`, ei cachea) GP5 + YT -yhdistelmälle.
-- 89 testiä; headless: modaali, valinta, poisto, GP5-render.
-
-## v1.23–v1.37 – Katselu, tuonti ja synkki (18.10.2026)
-
-- Katselu: tab-only, Näkymä, raitavalinnat, FULLSCREEN, cursor.
-- Tuonti/pätkä/audio: GP5/MusicXML, `TEE TAB TÄSTÄ`,
-  `LIITÄ AUDIO`, TAB BPM (v1.34 desimaali), Nopeus.
-- Synkki: SYNC ±10 % (v1.30), SIIRTO tahdein 0,25 askel (v1.35–36),
-  playback range -nollaus ja pause-palautus (v1.37).
-- MP3-kuunteluversiot (v1.33) ja ulkoinen arkisto `D:\tabtool_files`
-  (v1.32); tuotenimi AI TabTool (v1.22); käynnistyksen automaatio
-  (v1.21); web-UI/job-jono/alphaTab (v1.20).
-- **Ei pushia julkiseen GitHubiin** – vain lokaalit commitit.
-  Memory bank -protokolla: `lue membank` (`.clinerules/00`).
-- Yksityiskohdat: `CHANGELOG.md`.
+- Katselu (tab-only, Näkymä, raitavalinnat, FULLSCREEN, cursor), pätkä- ja
+  audiojobi, SYNC ±10 %, SIIRTO, playback range -nollaus, MP3-kuunteluversiot,
+  `D:\tabtool_files`-arkisto, web-UI/job-jono/alphaTab, käynnistyksen
+  automaatio, tuotenimi AI TabTool.
+- SEARCH-modaali (haku, GP5-linkki + `app/tab_download.py`, GP5-tiedosto +
+  YT-linkki samalla jobilla), kappaleen poisto (`app/library.py`),
+  GP3/GP4-tuonti (muunnos aidoksi GP5:ksi, 0 nuottoeroa).
+- Modaalin pino (`z-index` 2000/2100, cursor piiloon) ja
+  `db.import_tabs_from_disk`.
+- Yksityiskohdat `CHANGELOG.md`:ssä, ankkurit `techContext.md`:ssä.
 
 ## Testitilanne
 
-- `pytest -q` → **134 passed**
+- `pytest -q` → **152 passed**
 - `compileall` → OK
 - `node --check app.js` / `remote.js` → OK
 - Headless-Edge/Chrome: alphaTab-render, cursor, fullscreen, GP5/MusicXML-
@@ -266,23 +276,31 @@
 - Poisto ei poista MP3-kuunteluversiota eikä toisen tabin jakamaa audiota.
 - Koodi v1.23–v1.56 on committoitu ja pushattu `origin/main`iin
   (käyttäjän pyynnöstä 20.10.2026). **v1.57–v1.68 on committoitu
-  lokaalisti** (21.10.2026, `ac2457c`); **v1.69–v1.74 on committoitu
-  lokaalisti** (22.10.2026, `d76ddaf`) ja `main` 8 committia
-  `origin/main`in edellä eli **puskaamatta**. Lokaalit commitit toimivat
+  lokaalisti** (21.10.2026, `ac2457c`); **v1.69–v1.74** (22.10.2026,
+  `d76ddaf`) ja **v1.75–v1.81** (22.10.2026, koodi `9769371`) on
+  committoitu lokaalisti, ja `main` on ~16 committia `origin/main`in
+  edellä eli **puskaamatta**. Lokaalit commitit toimivat
   palautuspisteinä. `scripts/build_kiss_legend.py` on gitignorattu (koko
   kappaleen nuottidata, tekijänoikeus). `data/` ja `docs/` eivät ole
   gitissä, joten ne tarvitsevat erillisen varmuuskopion.
 
 ## Seuraavaksi
 
-0. **Settings-näkymä**: count-inin kesto ja muut toiston asetukset
+0. **Pickup-varotin soittokelloon** (`barDurationMs`/`ticksPerBar`):
+   anacrusis-tabissa SIIRTO/KOHDISTA 8×/16× liian voimakas. Vaatii luvan
+   (sääntö #1) + regressiochecklist + kuuntelutesti. Sitä ennen data-kierto
+   `scripts/trim_bars.py --bars 1`.
+1. **Tuonnin laatuapurit:** duplikaattien tunnistus (sama GP5 SHA-256 tai
+   sama artisti+biisi eri audio), tabin pituus vs. audion kesto,
+   pickup-varoitus.
+2. **Settings-näkymä**: count-inin kesto ja muut toisto-oletukset
    säädettäviksi (nyt `COUNT_IN_FROM` / `COUNT_IN_STEP_MS` /
-   `COUNT_IN_ZERO_MS` `app.js`:ssä).
-1. Päättää soittotapa/refinger: asemaprofiilit, playability-score,
-   turhien nuottien karsinta, per-tahti/fraasiasema.
-2. Vasta sitten Phase 3 / Spotify: PKCE, haku/metadata, SDK/Connect,
+   `COUNT_IN_ZERO_MS` `app.js`:ssä; ON/OFF-kytkin on jo v1.81).
+3. **Refinger/playability loppuun:** paras versio automaattisesti, score
+   näkyviin, turhien nuottien karsinta per tahti/fraasi.
+4. Vasta sitten Phase 3 / Spotify: PKCE, haku/metadata, SDK/Connect,
    tokenit `oauth_tokens`-tauluun ja mockatut API-testit.
-3. Phase 4: remote-kaukosäädin.
+5. Phase 4: remote-kaukosäädin.
 
 GP5-datan korjaus ei ole prioriteetti: ohjelma todettu 1:1 ainakin
 149 tahtiin (Seek & Destroy), ja tabi on syötettä, ei tuotetta.

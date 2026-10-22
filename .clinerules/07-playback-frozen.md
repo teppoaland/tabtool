@@ -183,6 +183,9 @@ Count-in on sallittu, koska se ei kosketa soittoketjua:
   laskennan lopussa
 - `togglePlayback`, `mediaHandler`, `seekTo` ja `syncTimeMs`-ketju eivät
   saa sisältää count-in-koodia; `tests/test_playback_guard.py` valvoo
+- ON/OFF-kytkin (v1.81) on sallittu: `#countin-toggle` luetaan **vain**
+  `shouldRunCountIn()`issa. Se ei muuta askelmäärää, kestoa eikä ääntä,
+  eikä kytkentä saa näkyä soitofunktioissa (guard-testi valvoo)
 - askelmäärän, keston tai äänen muutos vaatii luvan ja koko
   regressiochecklistin
 

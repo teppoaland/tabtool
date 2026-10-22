@@ -35,6 +35,7 @@ ydintekstit:
 - `VALITSE TÄMÄ` (sormitusversion valinta) sekä versionimet
   `V1 · Avoimet kielet` / `V2 · Boksi` / `V3 · Vähän liikettä`
   (v1.72, raitachipit)
+- `COUNT-IN` / `ON` / `OFF` (v1.81, FULLSCREEN-napin alla oleva kytkin)
 
 Hyväksytyt poikkeukset: LIBRARY-modaali (aiemmin SEARCH) ja kappaleen
 poiston varoitusdialogi (v1.38) ovat sallittuja. Muita uusia modaaleja,
