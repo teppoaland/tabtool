@@ -2,6 +2,25 @@
 
 > AI TabTool käyttää `1.x`-versiosarjaa. Aloitus `v1.00`.
 
+## v1.79 – 22.10.2026
+
+- **Korjaus: viritys luetaan kitararaidasta, ei raidasta 0.**
+  Moniraitaisessa GP5:ssä ensimmäinen raita on usein laulu tai koskettimet, ja
+  `tuning_label` tuli siitä (esim. kitara Drop D:ssä näkyi `Standard E`).
+  Uusi `app.tuning.open_strings()` valitsee 6-kielisen raidan, jossa on eniten
+  nuotteja (rummut ohitetaan, koska niiden kielet ovat 0). Käytössä tuonnissa
+  (`app/tab_import.py`) ja backfillissä.
+- `scripts/backfill_tuning.py`: `--force` laskee labelit uudelleen, lukee
+  GP5:n UTF-8 → cp1252 -fallbackilla ja **ohittaa tabit, joilla on manuaalinen
+  `tuning_override`**.
+- **Volbeat-data:** molemmat `I Only Wanna Be With You` -tabit näyttivät
+  `Standard E`, vaikka kitara on Drop D. Nyt label on `Drop D · DADGBE`
+  (kumpikin). Uusin tabi (22.10., kanava "Austrian Stuff") sai manuaalisen
+  virityksen **`D Standard · DGCFAD`** – GP5:n kielet ovat edelleen DADGBE,
+  eli ylikirjoitus on tabin viritystieto (näkyy kirjastossa ja
+  AI-generoinnissa), ei soivaa dataa.
+- 2 uutta testiä (`open_strings`) → **148 pytest-testiä**.
+
 ## v1.78 – 22.10.2026
 
 - **Korjaus: pickup-tahdin poisto ei siirrä kappaletta ajassa.**

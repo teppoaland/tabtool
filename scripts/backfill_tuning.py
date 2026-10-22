@@ -19,26 +19,27 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from app import db  # noqa: E402
-from app.tuning import describe_pitches  # noqa: E402
+from app.tuning import describe_pitches, open_strings  # noqa: E402
 
 
 def _open_strings(path: Path) -> list[int]:
     import guitarpro
 
-    song = guitarpro.parse(str(path))
-    tracks = list(getattr(song, "tracks", []) or [])
-    if not tracks:
-        return []
-    values = {
-        int(string.number): int(string.value)
-        for string in getattr(tracks[0], "strings", []) or []
-    }
-    return [values[number] for number in sorted(values, reverse=True)]
+    try:
+        song = guitarpro.parse(str(path), encoding="utf-8")
+    except UnicodeDecodeError:
+        song = guitarpro.parse(str(path), encoding="cp1252")
+    return open_strings(song)
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--dry-run", action="store_true", help="Only list the tabs")
+    parser.add_argument(
+        "--force",
+        action="store_true",
+        help="Recompute tabs that already have a tuning label",
+    )
     args = parser.parse_args()
 
     updated: list[dict[str, str]] = []
@@ -52,7 +53,10 @@ def main() -> int:
         if not name:
             skipped.append({"tab_id": str(tab["id"]), "reason": "no gp5"})
             continue
-        if str(meta.get("tuning_label") or "").strip():
+        if str(meta.get("tuning_override") or "").strip():
+            skipped.append({"tab_id": str(tab["id"]), "reason": "manual override"})
+            continue
+        if not args.force and str(meta.get("tuning_label") or "").strip():
             skipped.append({"tab_id": str(tab["id"]), "reason": "already set"})
             continue
         try:

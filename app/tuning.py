@@ -8,7 +8,7 @@ label, the letter names and a per-string list, and recognise the presets in
 
 from __future__ import annotations
 
-from typing import Sequence
+from typing import Any, Sequence
 
 from app.pipeline.model import TUNINGS, Tuning
 
@@ -64,3 +64,38 @@ def describe_key(key: str) -> str:
         return tuning.name
     text = str(key or "").strip()
     return text[:1].upper() + text[1:] if text else ""
+
+
+def open_strings(song: Any) -> list[int]:
+    """Open strings (low string first) of the tab's guitar track.
+
+    Multi-track GP5s often list vocals or keys first, so reading track 0 gave
+    the wrong tuning (a Drop D guitar showed as ``Standard E``). The guitar is
+    the six-string track with the most notes; drums store zero pitches and are
+    skipped.
+    """
+    best_score: tuple[int, int, int] | None = None
+    best_pitches: list[int] = []
+    fallback: list[int] = []
+    for track in getattr(song, "tracks", []) or []:
+        values = {
+            int(string.number): int(string.value)
+            for string in getattr(track, "strings", []) or []
+        }
+        if not values:
+            continue
+        pitches = [values[number] for number in sorted(values, reverse=True)]
+        if any(pitch <= 0 for pitch in pitches):
+            continue
+        if not fallback:
+            fallback = pitches
+        notes = 0
+        for measure in getattr(track, "measures", []) or []:
+            for voice in getattr(measure, "voices", []) or []:
+                for beat in getattr(voice, "beats", []) or []:
+                    notes += len(getattr(beat, "notes", []) or [])
+        score = (1 if len(pitches) == 6 else 0, notes, len(pitches))
+        if best_score is None or score > best_score:
+            best_score = score
+            best_pitches = pitches
+    return best_pitches or fallback

@@ -10,7 +10,7 @@ from typing import Any
 
 from app import config, db
 from app.external_store import archive_external
-from app.tuning import describe_pitches
+from app.tuning import describe_pitches, open_strings
 
 MAX_IMPORT_BYTES = 20 * 1024 * 1024
 GP_SUFFIXES = {".gp3", ".gp4", ".gp5"}
@@ -97,19 +97,12 @@ def _parse_gp(path: Path, filename: str) -> dict[str, Any]:
     tuning = "custom"
     tuning_notes: list[str] = []
     tuning_label = ""
-    tracks = list(getattr(song, "tracks", []) or [])
-    if tracks:
-        values = {
-            int(string.number): int(string.value)
-            for string in getattr(tracks[0], "strings", []) or []
-        }
-        numbers = sorted(values, reverse=True)
-        ordered = [values[number] for number in numbers]
-        if ordered and all(isinstance(value, int) for value in ordered):
-            info = describe_pitches(ordered)
-            tuning = str(info["key"])
-            tuning_notes = list(info["notes"])
-            tuning_label = str(info["text"])
+    ordered = open_strings(song)
+    if ordered:
+        info = describe_pitches(ordered)
+        tuning = str(info["key"])
+        tuning_notes = list(info["notes"])
+        tuning_label = str(info["text"])
 
     time_signature = _time_signature_from_gp(
         headers[0] if headers else None
