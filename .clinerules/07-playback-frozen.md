@@ -17,6 +17,14 @@
   ja käyttäjää **pyydetään testaamaan soitto referenssikappaleella**
   (Seek & Destroy, SIIRTO −0,75 / BPM 142) ennen ja jälkeen. Muutos
   hyväksytään vasta käyttäjän kuuntelutestillä.
+- **Nopeus ≠ kohdistus:** `setPlaybackRate` / `audio.playbackRate` on
+  harjoittelunopeus. Se skaalaa äänen ja kursorin yhdessä, koska
+  `syncTimeMs()` lukee `audio.currentTime`ia; `playbackRate` ei esiinny
+  kellotuksessa, `bpmDrift`issä eikä `seekTo`-inversiossa. Nopeuden
+  muutos (50–150 %) ei siis siirrä tabia audion suhteen. Silti se on
+  lukittu pinta, koska se kirjoittaa audio-elementtiin.
+  `tests/test_playback_guard.py` valvoo, ettei `playbackRate` päädy
+  kohdistusmatematiikkaan.
 
 ## Miksi tämä on sääntö #1
 

@@ -200,3 +200,28 @@ def test_score_end_guard_keeps_the_audio_playing():
     assert "togglePlayback()" in handler
     assert "beginCountIn()" in handler
 
+
+def test_playback_rate_never_enters_the_alignment_math():
+    """v1.97: Nopeus is practice speed, not a sync control.
+
+    The slider only scales audio.playbackRate. The cursor is fed from
+    audio.currentTime (media time) in syncTimeMs(), so audio and cursor
+    slow down together and the tab-audio relationship stays put. If
+    playbackRate ever appears in the clock or the seek inverse, this test
+    fails before a listening test is needed.
+    """
+    source = _source()
+    for name in (
+        "syncTimeMs",
+        "bpmDrift",
+        "barDurationMs",
+        "scoreEndTimeMs",
+        "syncPosition",
+    ):
+        body = _function_body(source, name)
+        assert "playbackRate" not in body, f"{name} must not use the practice speed"
+
+    media_handler = _object_body(source, "const mediaHandler =")
+    seek = _block(media_handler, media_handler.index("seekTo("))
+    assert "playbackRate" not in seek
+
