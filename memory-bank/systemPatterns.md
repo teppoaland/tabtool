@@ -70,7 +70,7 @@ Putki (app/pipeline/)
   `retune_tracks` (viritys + nauhojen siirto, sävelet ennallaan) ja
   `resolve_tab_gp5`. Kutsujat: `scripts/expand_repeat.py`,
   `scripts/trim_bars.py`, `scripts/retune_tab.py`.
-- **LAN-kaukosäädin** (v1.82–v1.83): `app/remote.py` omistaa komentojonon
+- **LAN-kaukosäädin** (v1.82–v1.84): `app/remote.py` omistaa komentojonon
   (`RemoteHub`, 50 komentoa, TTL 60 s), TV:n tilan, QR-koodin
   (`segno`, aina sen hetkisestä IP:stä) ja valinnaisen PIN-portinvartijan.
   `app/main.py` kutsuu vain `remote.install(app)`. Selainpuolella

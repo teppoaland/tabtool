@@ -1,7 +1,7 @@
 # 📍 Aktiivinen konteksti – AI TABTOOL
 
-> **Versio:** `v1.83` (23.10.2026)
-> **Git:** v1.75–v1.83 committoitu lokaalisti (`main` ~20 committia
+> **Versio:** `v1.84` (23.10.2026)
+> **Git:** v1.75–v1.84 committoitu lokaalisti (`main` ~21 committia
 > `origin/main`in edellä = **ei pushattu**). Älä pinnaa hashia pysyvästi.
 > **Push:** vain erillisestä pyynnöstä (käyttäjä pyysi 20.10.2026).
 > **Repo:** https://github.com/teppoaland/tabtool
@@ -10,6 +10,10 @@
 
 ## Nyt
 
+- **v1.84 (23.10.2026): QR-SVG -korjaus.**
+  - `/api/lan/qr.svg` kirjoitetaan standalone-SVG:nä (`segno.save(
+    kind="svg")`) → `xmlns` mukana; ennen `svg_inline` jätti sen pois ja
+    selain näytti rikkinäisen kuvan. Testi valvoo `xmlns`-määrettä.
 - **v1.83 (23.10.2026): yksi käynnistin + QR `/remote`ssa.**
   - `start-lan.bat` **poistettu**; `start.bat` sitoo aina `0.0.0.0:8000`:aan
     ja tulostaa LAN-osoitteet (`scripts/lan_addresses.ps1`).
@@ -244,10 +248,10 @@ Putki:
 - **Dr. Feelgood – valmis (v1.76–v1.78):** bar 2 soitetaan 17 kertaa
   kirjoitettuina tahteina (135 tahtia), 2 ylimääräistä lopputahtia ja
   1/16-pickup poistettu. Erillistä `set_repeat.py`tä ei tarvita.
-- **Session tilanne 23.10.2026:** v1.83 valmis (yksi start.bat, QR
-  `/remote`ssa, PIN), 176 testiä vihreänä. Seuraava: käyttäjän
-  puhelin-/kuuntelutesti (`start.bat` → `/remote` → QR) ja sen jälkeen
-  pickup-korjaus / Settings-näkymä / tuonnin laatuapurit.
+- **Session tilanne 23.10.2026:** v1.84 valmis (yksi start.bat, QR
+  `/remote`ssa, SVG-xmlns-korjaus), 176 testiä vihreänä. Seuraava:
+  käyttäjän puhelin-/kuuntelutesti (`start.bat` → `/remote` → QR) ja sen
+  jälkeen pickup-korjaus / Settings-näkymä / tuonnin laatuapurit.
 - Soittotapa/refinger: asemaprofiilit, helpoin-arvio, turhien nuottien
   karsinta, per-tahti/fraasiasema; **ei koodia vielä**.
 - AI-transkription tarkkuus (Basic Pitch); referenssitabit ja ilmainen

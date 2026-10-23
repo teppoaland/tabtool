@@ -1,5 +1,11 @@
 # 📊 Projektin edistyminen – AI TABTOOL
 
+## v1.84 – QR-SVG:n xmlns-korjaus (23.10.2026)
+- `/api/lan/qr.svg` käytti `svg_inline`iä, joka jättää `xmlns`:n pois →
+  selain näytti rikkinäisen kuvan. Nyt `segno.save(kind="svg")` →
+  `<svg xmlns="http://www.w3.org/2000/svg" …>`. Testi valvoo määrettä.
+  176 testiä.
+
 ## v1.83 – Yksi käynnistin + QR `/remote`ssa (23.10.2026)
 - `start-lan.bat` **poistettu** (turha): `start.bat` sitoo aina
   `0.0.0.0:8000`:aan, tulostaa LAN-osoitteet ja avaa TV-näkymän.

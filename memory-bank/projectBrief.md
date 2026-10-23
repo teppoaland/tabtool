@@ -1,6 +1,6 @@
 # 🎯 Projektin lyhyt kuvaus – AI TABTOOL
 
-> **Versio:** `v1.83` (23.10.2026)
+> **Versio:** `v1.84` (23.10.2026)
 > **Repo:** https://github.com/teppoaland/tabtool
 > **Paikallinen:** `D:\AI\tabtool`
 
@@ -65,7 +65,7 @@ Lokaali web-palvelu, jossa voi:
   rivin poisto on punainen × (v1.65). Count-in on kytkettävissä
   **ON/OFF** (v1.81): kytkin on FULLSCREEN-napin alla sekä normaalissa
   että koko näytön näkymässä, oletus ON, valinta muistetaan selaimessa.
-- **LAN-kaukosäädin (v1.82–v1.83):** `start.bat` sitoo palvelimen
+- **LAN-kaukosäädin (v1.82–v1.84):** `start.bat` sitoo palvelimen
   sisäverkkoon ja tulostaa LAN-osoitteet. **`/remote`-sivu näyttää
   150 × 150 px QR-koodin** ja osoitteen; QR generoidaan **pyydettäessä sen
   hetkisestä IP-osoitteesta** (ei kiinteää IP:tä; DHCP saa vaihtua).
@@ -106,7 +106,7 @@ Lokaali web-palvelu, jossa voi:
   audion (ei string/fret-dataa), ja GP/MIDI/MP3-lataus on Plus-ominaisuus
   (`songsterr.com/ai.txt`). Käyttäjän Android-osto on **kertamaksu**
   (vain Android, ei web). GP5:t haetaan laillisesta lähteestä käsin.
-- **Versiosarja `1.x`**, aloitus `v1.00`; nyt `v1.83`.
+- **Versiosarja `1.x`**, aloitus `v1.00`; nyt `v1.84`.
 - **Ei julkista julkaisua:** koodi pidetään lokaalina. Commitit tehdään
   paikalliseen repoon palautuspisteiksi (revert); push GitHubiin vain
   erillisestä pyynnöstä.
