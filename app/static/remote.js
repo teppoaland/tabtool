@@ -604,10 +604,10 @@
     seekSlider.addEventListener("change", commitSeek);
     seekSlider.addEventListener("pointerup", commitSeek);
   }
-  // Speed: step=0.01 (1 % steps) removes the fine jitter, a ±2 % window
-  // around 100 % snaps to the neutral speed, and a double tap on the
-  // readout always returns to exactly 100 %.
-  const RATE_SNAP = 0.02;
+  // Speed: step=0.01 (1 % steps) removes the fine jitter, a ±5 % window
+  // (10 % in total) around 100 % snaps to the neutral speed, and a double
+  // tap on the readout always returns to exactly 100 %.
+  const RATE_SNAP_PERCENT = 5;
 
   function showRate(value) {
     if (rateReadout) {
@@ -624,7 +624,8 @@
   if (rateSlider) {
     rateSlider.addEventListener("input", () => {
       rating = true;
-      if (Math.abs(Number(rateSlider.value) - 1) <= RATE_SNAP) {
+      const percent = Math.round(Number(rateSlider.value) * 100);
+      if (Math.abs(percent - 100) <= RATE_SNAP_PERCENT) {
         rateSlider.value = "1";
       }
       showRate(rateSlider.value);

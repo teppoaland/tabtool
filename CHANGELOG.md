@@ -2,6 +2,18 @@
 
 > AI TabTool käyttää `1.x`-versiosarjaa. Aloitus `v1.00`.
 
+## v1.96 – 23.10.2026
+
+- **Päänäkymän Nopeus-säädin (sääntö #1:n lukittu pinta, käyttäjän
+  pyyntö):** `step` 0,001 → 0,01 (1 % askelet) ja 95–105 % snapittuu
+  täsmälleen 100 %:iin (10 %:n ikkuna keskikohdan ympärillä). 0,1 %:n
+  tarkkuutta ei käytetä soittonopeuden säätämiseen.
+- Sama 10 %:n ikkuna myös puhelimen `/remote`-nopeussäätimessä
+  (`RATE_SNAP` 0,02 → 0,05); kaksoisnapautus palauttaa edelleen 100 %.
+- Ei muutoksia `setPlaybackRate`-funktioon, kellotukseen, seekiin,
+  `mediaHandler`iin, audio-eventteihin eikä DOM-id:ihin. Muutos koskee
+  vain liukusäätimen `input`-käsittelijää.
+
 ## v1.95 – 23.10.2026
 
 - **Remote-soittopalkki:** `−5 s` -nappi on nyt `«` (hyppy alkuun,

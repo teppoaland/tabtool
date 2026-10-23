@@ -2319,9 +2319,16 @@
     variantButton.addEventListener("click", finalizeVariant);
   }
   if (rateSlider) {
-    rateSlider.addEventListener("input", () =>
-      setPlaybackRate(rateSlider.value)
-    );
+    rateSlider.addEventListener("input", () => {
+      // v1.96: 1 % steps; 95–105 % snaps to exactly 100 % so the neutral
+      // practice speed is easy to hit with a mouse (no 0.1 % precision).
+      // Compare whole percents to avoid float edge cases at 0.95 / 1.05.
+      const value = Number(rateSlider.value);
+      const percent = Math.round(value * 100);
+      const snapped = Math.abs(percent - 100) <= 5 ? 1 : value;
+      if (snapped !== value) rateSlider.value = String(snapped);
+      setPlaybackRate(snapped);
+    });
   }
   if (syncSlider) {
     syncSlider.addEventListener("input", () => {

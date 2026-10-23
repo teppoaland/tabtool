@@ -68,6 +68,12 @@ tapahtumakytkennät ovat lukittuja: `#play-button`, `#seek-back`,
 `#audio`. Myös `#viewer-section`-rakennetta ja `.transport`-palkkia
 koskee sama raja.
 
+- **v1.96 (käyttäjän pyyntö):** `#rate-slider` on `min="0.5" max="1.5"
+  step="0.01"` ja sen `input`-käsittelijä snapittaa 95–105 % → 100 %
+  (10 %:n ikkuna). Sama ikkuna on `/remote`-sivun nopeussäätimessä.
+  Muut lukitut `min/max/step`-arvot ja kytkennät ovat ennallaan;
+  `setPlaybackRate` itse ei muuttunut.
+
 ### 3. `app/static/style.css` – mitat ja pino
 
 - `.alphatab` ja `.viewer-stage`: `min-width: 0`, `width/max-width: 100 %`
