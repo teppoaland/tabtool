@@ -339,9 +339,9 @@
     }
   }
 
-  // Match the TV library: title first, artist as the tiebreaker.
+  // Match the TV library: band name first, song title as the tiebreaker.
   function tabSortKey(tab) {
-    return `${String(tab.title || tab.id || "")} ${String(tab.artist || "")}`.trim();
+    return `${String(tab.artist || "")} ${String(tab.title || tab.id || "")}`.trim();
   }
 
   function sortTabs(list) {

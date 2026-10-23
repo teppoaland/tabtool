@@ -2,6 +2,15 @@
 
 > AI TabTool käyttää `1.x`-versiosarjaa. Aloitus `v1.00`.
 
+## v2.01 – 23.10.2026
+
+- **Kirjastojen järjestys korjattu: bändin nimi ensin.** v2.00:ssa
+  lajittelu ehti mennä kappaleen nimen mukaan, mikä sekoitti artistit.
+  Nyt sekä TV-näkymän LIBRARY että puhelimen SOITA- ja SÄÄDÄ-listat
+  järjestetään `artist` → `title` (`localeCompare("fi", {numeric:true,
+  sensitivity:"base"})`).
+- Remote-kirjaston yksi scrollbar (v2.00) säilyy.
+
 ## v2.00 – 23.10.2026
 
 - **Kirjastot aakkosjärjestykseen kappaleen nimellä.** Sekä TV-näkymän

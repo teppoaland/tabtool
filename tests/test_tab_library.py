@@ -37,9 +37,10 @@ def _make_tab(tab_id: str, *, title: str, artist: str = "Artist") -> None:
     )
 
 
-def test_library_rows_are_sorted_by_title() -> None:
+def test_library_rows_are_sorted_by_artist() -> None:
     source = (config.STATIC_DIR / "app.js").read_text(encoding="utf-8")
     assert "function librarySortKey" in source
+    assert '${String(tab.artist || "")} ${String(tab.title' in source
     assert "librarySortKey(left).localeCompare" in source
 
 

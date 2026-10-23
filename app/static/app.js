@@ -1553,10 +1553,10 @@
     return parts.join(" · ");
   }
 
-  // Songs are listed by title first (artist as the tiebreaker), so the
-  // library reads alphabetically even when several artists are mixed.
+  // Bands first: the library is alphabetical by artist (band name), with the
+  // song title as the tiebreaker.
   function librarySortKey(tab) {
-    return `${String(tab.title || tab.id || "")} ${String(tab.artist || "")}`.trim();
+    return `${String(tab.artist || "")} ${String(tab.title || tab.id || "")}`.trim();
   }
 
   function sortLibraryTabs(tabs) {
