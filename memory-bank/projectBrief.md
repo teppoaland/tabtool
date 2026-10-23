@@ -1,6 +1,6 @@
 # 🎯 Projektin lyhyt kuvaus – AI TABTOOL
 
-> **Versio:** `v1.99` (23.10.2026)
+> **Versio:** `v2.01` (23.10.2026)
 > **Repo:** https://github.com/teppoaland/tabtool
 > **Paikallinen:** `D:\AI\tabtool`
 
@@ -62,6 +62,11 @@ Lokaali web-palvelu, jossa voi:
   QR-lohko on sivun alaosassa (piilossa puhelimessa). Nopeus 1 % askelet +
   10 %:n ikkuna. `start.bat` pysäyttää vanhan Python/uvicorn-instanssin ja
   käynnistää uuden yhdellä ajolla (v1.94); vierasta prosessia ei tapeta.
+- **Kirjastot aakkosissa bändin nimellä (v2.00–v2.01).** TV:n LIBRARY ja
+  puhelimen SOITA/SÄÄDÄ järjestetään `artist` → `title`
+  (`localeCompare("fi", {numeric:true, sensitivity:"base"})`).
+  Remote-kirjastossa ei ole sisäistä scroll-ikkunaa: lista kasvaa sivun
+  mukana (yksi scrollbar).
 - **All rights reserved** (GameHubin käytäntö). Kolmannen osapuolen
   lisenssit `THIRD_PARTY_NOTICES.md`:ssä.
 - **Kappaleen poisto** (v1.38): poistaa tabin, hakemiston, stemmit sekä
@@ -120,7 +125,7 @@ Lokaali web-palvelu, jossa voi:
   audion (ei string/fret-dataa), ja GP/MIDI/MP3-lataus on Plus-ominaisuus
   (`songsterr.com/ai.txt`). Käyttäjän Android-osto on **kertamaksu**
   (vain Android, ei web). GP5:t haetaan laillisesta lähteestä käsin.
-- **Versiosarja `1.x`**, aloitus `v1.00`; nyt `v1.99`.
+- **Versiosarja `1.x`**, aloitus `v1.00`; nyt `v2.01`.
 - **Ei julkista julkaisua:** koodi pidetään lokaalina. Commitit tehdään
   paikalliseen repoon palautuspisteiksi (revert); push GitHubiin vain
   erillisestä pyynnöstä.
@@ -162,6 +167,6 @@ Sano Cline:lle **`lue membank`**. Sääntö on
 - `app/tab_edit.py` – tab-datan muokkaus (toisto, tahdin poisto, viritys)
 - `scripts/pipeline_smoke.py` – CLI-proof
 - `stop.bat` / `status.bat` – palvelimen pysäytys ja tilan tarkistus
-- `tests/` – 192 pytest-testiä
+- `tests/` – 195 pytest-testiä
 - `data/` – GITIGNORED: audio, stemmit, tabit, tokenit
 - `docs/` – GITIGNORED: henkilökohtainen suunnitelma

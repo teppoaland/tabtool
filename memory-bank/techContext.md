@@ -9,7 +9,7 @@
 - **Ei GPU:ta** (`nvidia-smi` tyhjä) → CPU-only
 - D: levytilaa ~147 GB vapaana
 
-## Python-paketit (v1.99)
+## Python-paketit (v2.01)
 
 Core:
 
@@ -59,7 +59,7 @@ python -m venv .venv
 ## Testit
 
 ```powershell
-.venv\Scripts\python.exe -m pytest -q          # 192 passed
+.venv\Scripts\python.exe -m pytest -q          # 195 passed
 .venv\Scripts\python.exe -m compileall -q app scripts tests
 node --check app\static\app.js
 node --check app\static\remote.js
@@ -93,9 +93,10 @@ Hyödylliset valinnat: `--model htdemucs_6s`, `--stem guitar`, `--tuning`,
   v1.41 = GP3/GP4-tuonti; tagi `v1.29` = `bb704e8`; tagi `v1.99` =
   toimiva palautuspiste (23.10.2026).
 - Koodi v1.23–v1.99 on **pushattu** `origin/main`iin käyttäjän pyynnöstä
-  23.10.2026 (aiempi push 20.10.2026). **Tagi `v1.99` = toimiva
-  palautuspiste** (`git reset --hard v1.99`). Push vain erillisestä
-  pyynnöstä; `data/` ja `docs/` eivät ole gitissä.
+  23.10.2026 (aiempi push 20.10.2026). **Tagi `v1.99` = viimeisin
+  pushattu palautuspiste** (`git reset --hard v1.99`); v2.00–v2.01 ovat
+  paikallisia (ei pushattu). Push vain erillisestä pyynnöstä; `data/` ja
+  `docs/` eivät ole gitissä.
 - `scripts/build_kiss_legend.py` on `.gitignore`ssa: se sisältää koko
   kappaleen nuottidatan (tekijänoikeus), joten sitä ei viedä julkiseen
   gitiin.
@@ -237,7 +238,7 @@ DB-tiedosto); vain tuotenimi on `AI TabTool`.
   renderöityivät oikein; tallennuspolut testattu pytestillä
   (TestClient), ei selaimessa.
 
-## v1.93–v1.99 (23.10.2026)
+## v1.93–v2.01 (23.10.2026)
 
 - **Remote:** otsikko yhdellä rivillä (AT-merkki, DISPLAY/API-nav ja
   REMOTE-kicker pois); yksi tila-indikaattori `Online` / `Offline` /
@@ -251,4 +252,7 @@ DB-tiedosto); vain tuotenimi on `AI TabTool`.
   portilla 8000 ei tapeta.
 - **GP3-tuonti:** `_sanitize_for_gp5` (grace fret −1 → `isDead`, fret 0)
   ennen GP5-kirjoitusta (v1.99); White Wedding (gprotab) toimii.
-- Testit **192**; tagi `v1.99` = toimiva palautuspiste.
+- **Kirjastot (v2.00–v2.01):** TV:n LIBRARY ja puhelimen SOITA/SÄÄDÄ
+  järjestetään `artist` → `title` (`localeCompare("fi")`); remote-kirjaston
+  sisäinen `max-height`/`overflow` poistettu → yksi sivun scrollbar.
+- Testit **195**; tagi `v1.99` = viimeisin pushattu palautuspiste.

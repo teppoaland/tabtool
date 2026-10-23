@@ -1,9 +1,10 @@
 # 📍 Aktiivinen konteksti – AI TABTOOL
 
-> **Versio:** `v1.99` (23.10.2026)
+> **Versio:** `v2.01` (23.10.2026)
 > **Git:** v1.23–v1.99 **pushattu** `origin/main`iin 23.10.2026 käyttäjän
-> pyynnöstä; **tagi `v1.99` = toimiva palautuspiste** (`git reset --hard
-> v1.99`). Älä pinnaa HEAD-hashia pysyvästi.
+> pyynnöstä; **tagi `v1.99` = viimeisin pushattu palautuspiste**
+> (`git reset --hard v1.99`); v2.00–v2.01 ovat paikallisia. Älä pinnaa
+> HEAD-hashia pysyvästi.
 > **Push:** vain erillisestä pyynnöstä (käyttäjä pyysi 20.10. ja 23.10.2026).
 > **Repo:** https://github.com/teppoaland/tabtool
 > **Palvelin:** käyttäjän hallinnassa (`start.bat` / `stop.bat`); Cline ei
@@ -19,7 +20,7 @@
   **pyydetään testaamaan soitto referenssikappaleella** (Seek & Destroy,
   SIIRTO −0,75 / BPM 142) ennen ja jälkeen. Katso
   `.clinerules/07-playback-frozen.md`.
-- **v1.93–v1.99 (23.10.2026) – UI/tuonti, ei soittoketjuun:**
+- **v1.93–v2.01 (23.10.2026) – UI/tuonti, ei soittoketjuun:**
   - v1.93–v1.95: remote-otsikko yhdelle riville; `«` = `seek 0`,
     `+5 s` pois; nopeus 1 % askelet + 95–105 % → 100 %; QR sivun alaosaan.
   - v1.96: sama nopeusikkuna päänäkymään. v1.97: `playbackRate` todettu
@@ -30,6 +31,9 @@
     viittaus pois + regressiotesti.
   - v1.99: GP3-tuonti kaatui grace-nuotin fret −1:een; `_sanitize_for_gp5`
     mappaa sen `isDead`-lipuksi ennen GP5-kirjoitusta. White Wedding toimii.
+  - v2.00–v2.01: kirjastot aakkosissa **bändin nimellä** (`artist` →
+    `title`); remote-kirjastosta pois sisäinen scroll-ikkuna (yksi sivun
+    scrollbar).
 - ✅ **RATKAISTU (23.10.2026, v1.92) – kursorin heitto tahdeissa 1–41.**
   Syy ei ollut audion tempo eikä synkka-koodi, vaan **count-inin
   portinvartija** (v1.55–v1.56): se viivästytti `togglePlayback()` →
@@ -327,12 +331,13 @@ Putki:
 - **Dr. Feelgood – valmis (v1.76–v1.78):** bar 2 soitetaan 17 kertaa
   kirjoitettuina tahteina (135 tahtia), 2 ylimääräistä lopputahtia ja
   1/16-pickup poistettu. Erillistä `set_repeat.py`tä ei tarvita.
-- **Session tilanne 23.10.2026:** v1.93–v1.99 valmiit (remote-yhden rivin
+- **Session tilanne 23.10.2026:** v1.93–v2.01 valmiit (remote-yhden rivin
   UI, `«`-alkuun, nopeus 1 % + 10 % snap, yksi tila-indikaattori,
   seek-sliderin strict-mode-korjaus, `start.bat` stop+start, GP3-grace-
-  korjaus). 192 testiä vihreänä. **Soitto kuitattu valmiiksi (99 %,
-  riittää) → ISO LUKKO; tagi `v1.99` = palautuspiste.** Seuraava:
-  pickup-korjaus / Settings-näkymä.
+  korjaus, kirjastot bändin nimellä, remote yksi scrollbar). 195 testiä
+  vihreänä. **Soitto kuitattu valmiiksi (99 %, riittää) → ISO LUKKO;
+  tagi `v1.99` = viimeisin pushattu palautuspiste, v2.01 paikallinen.**
+  Seuraava: pickup-korjaus / Settings-näkymä.
 - Soittotapa/refinger: asemaprofiilit, helpoin-arvio, turhien nuottien
   karsinta, per-tahti/fraasiasema; **ei koodia vielä**.
 - AI-transkription tarkkuus (Basic Pitch); referenssitabit ja ilmainen

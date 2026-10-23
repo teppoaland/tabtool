@@ -11,7 +11,7 @@
   SIIRTO −0,75 / BPM 142) ennen ja jälkeen.
 - Katso `.clinerules/07-playback-frozen.md`.
 
-## v1.93–v1.99 – Remote-UI, nopeus ja GP3-tuonti (23.10.2026)
+## v1.93–v2.01 – Remote-UI, nopeus, GP3 ja kirjastot (23.10.2026)
 
 - **Remote (v1.93–v1.98):** otsikko yhdelle riville (AT-merkki,
   DISPLAY/API-nav ja REMOTE-kicker pois); QR sivun alaosaan; `«` =
@@ -28,7 +28,12 @@
 - **GP3 → GP5 (v1.99):** `_sanitize_for_gp5` korjaa grace-fretin −1
   (`isDead`, fret 0) ennen kirjoitusta; White Wedding (gprotab) toimii.
   Testi: GP3 −1-grace → aito GP5.
-- Testit **192**; tagi `v1.99` = palautuspiste.
+- **Kirjastot (v2.00–v2.01):** TV:n LIBRARY ja puhelimen SOITA/SÄÄDÄ
+  järjestetään bändin nimellä (`artist` → `title`,
+  `localeCompare("fi")`); remote-kirjaston sisäinen `max-height`/
+  `overflow` poistettu → yksi sivun scrollbar.
+- Testit **195**; tagi `v1.99` = viimeisin pushattu palautuspiste
+  (v2.00–v2.01 paikallisia).
 
 ## v1.92 – Count-in ei siirrä alkukohdistusta (23.10.2026)
 
@@ -419,8 +424,8 @@
   cookie-tiedosto.
 - Poisto ei poista MP3-kuunteluversiota eikä toisen tabin jakamaa audiota.
 - **Koko historia v1.23–v1.99 on pushattu `origin/main`iin** (käyttäjän
-  pyynnöistä 20.10. ja 23.10.2026); `main` == `origin/main` pushin
-  jälkeen. **Tagi `v1.99` = toimiva palautuspiste.** 
+  pyynnöistä 20.10. ja 23.10.2026); **tagi `v1.99` = viimeisin pushattu
+  palautuspiste**; v2.00–v2.01 ovat paikallisia (ei pushattu).
   `scripts/build_kiss_legend.py` on gitignorattu (koko kappaleen
   nuottidata, tekijänoikeus). `data/` ja `docs/` eivät ole gitissä,
   joten ne tarvitsevat erillisen varmuuskopion.
