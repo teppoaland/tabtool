@@ -1,27 +1,31 @@
 # 📍 Aktiivinen konteksti – AI TABTOOL
 
-> **Versio:** `v1.82` (23.10.2026)
-> **Git:** v1.75–v1.82 committoitu lokaalisti (`main` ~18 committia
+> **Versio:** `v1.83` (23.10.2026)
+> **Git:** v1.75–v1.83 committoitu lokaalisti (`main` ~20 committia
 > `origin/main`in edellä = **ei pushattu**). Älä pinnaa hashia pysyvästi.
 > **Push:** vain erillisestä pyynnöstä (käyttäjä pyysi 20.10.2026).
 > **Repo:** https://github.com/teppoaland/tabtool
-> **Palvelin:** käyttäjän hallinnassa (`start.bat` / `start-lan.bat` /
-> `stop.bat`); Cline ei käynnistä sitä taustalle eikä pysäytä ilman
-> pyyntöä.
+> **Palvelin:** käyttäjän hallinnassa (`start.bat` / `stop.bat`); Cline ei
+> käynnistä sitä taustalle eikä pysäytä ilman pyyntöä.
 
 ## Nyt
 
-- **v1.82 (23.10.2026): LAN-kaukosäädin + QR-pariutus.**
-  - `start-lan.bat` (= `start.bat lan`) sitoo `0.0.0.0:8000`, tulostaa
-    LAN-osoitteet (`scripts/lan_addresses.ps1`) ja avaa `/connect`-sivun.
-  - QR generoidaan pyydettäessä (`segno`), joten DHCP-osoite saa vaihtua;
-    QR → `/remote` tai PINillä `/lan?t=<istuntotoken>`.
+- **v1.83 (23.10.2026): yksi käynnistin + QR `/remote`ssa.**
+  - `start-lan.bat` **poistettu**; `start.bat` sitoo aina `0.0.0.0:8000`:aan
+    ja tulostaa LAN-osoitteet (`scripts/lan_addresses.ps1`).
+  - **150 × 150 px QR `/remote`-sivun oikeassa reunassa** + osoite
+    `http://<LAN-IP>:8000/remote`; piilotettu alle 720 px näytöillä.
+    QR encodaa aina LAN-IP:n (ei 127.0.0.1), DHCP saa vaihtua.
+  - `/connect`-sivu poistettu (turha mutka); `GET /connect` → 404.
   - `app/remote.py`: komentojono + TV:n tila + valinnainen LAN-PIN
-    (`TABTOOL_LAN_PIN`, HttpOnly-eväste, 10 yritystä/60 s).
+    (`TABTOOL_LAN_PIN`, HttpOnly-eväste, 10 yritystä/60 s); PINillä QR →
+    `/lan?t=<istuntotoken>`.
   - `app/static/remote-bridge.js` pollaa komennot ja klikkaa olemassa
     olevia transport-nappeja → **app.js koskematon** (sääntö #1).
-  - `/remote` uusittu puhelinnäkymäksi: PLAY/PAUSE, ±5 s, seek, Nopeus,
-    kirjasto. 23 uutta testiä → **175 pytest-testiä**.
+  - **176 pytest-testiä**.
+- **v1.82 (23.10.2026): LAN-kaukosäädin.** `RemoteHub`, `/api/remote/*`,
+  `/api/lan/info|qr.svg`, `/lan`-PIN, `/remote`-puhelinnäkymä, `segno`.
+  (v1.83 yhdisti käynnistyksen ja siirsi QR:n `/remote`en.)
 - **v1.75–v1.81 (22.10.2026, committoitu lokaalisti; ~14 h sessio):**
   - **v1.75** TEMPO-reitti lukee cp1252-GP5:n (`_gp5_song`, fallback) ja
     kirjoittaa UTF-8:na; SIIRTO-raja ±64 → **±999** (`SYNC_OFFSET_LIMIT`).
@@ -46,7 +50,7 @@
   - **v1.81** COUNT-IN ON/OFF -kytkin FULLSCREEN-napin alle
     (`.viewer-corner`, `#countin-toggle`, localStorage `tabtool:countIn`,
     oletus ON); luetaan vain `shouldRunCountIn`issa, soitoketju koskematon.
-  - **175 pytest-testiä** (v1.81:ssä 152).
+  - **176 pytest-testiä** (v1.81:ssä 152).
 - **Kirjaston data 22.10.2026:** 12 tabia. Dr. Feelgood 135 tahtia /
   2550 nuottia (17 toistoa, SYNC/SIIRTO 0). Volbeat 2 tabia samasta
   biisistä eri audioilla: `7f30610c…` `Drop D · DADGBE` (SIIRTO −0,25),
@@ -240,10 +244,10 @@ Putki:
 - **Dr. Feelgood – valmis (v1.76–v1.78):** bar 2 soitetaan 17 kertaa
   kirjoitettuina tahteina (135 tahtia), 2 ylimääräistä lopputahtia ja
   1/16-pickup poistettu. Erillistä `set_repeat.py`tä ei tarvita.
-- **Session tilanne 23.10.2026:** v1.82 valmis (LAN-kaukosäädin, QR,
-  PIN), 175 testiä vihreänä. Seuraava: käyttäjän puhelin-/kuuntelutesti
-  (`start-lan.bat` → QR) ja sen jälkeen pickup-korjaus / Settings-näkymä /
-  tuonnin laatuapurit.
+- **Session tilanne 23.10.2026:** v1.83 valmis (yksi start.bat, QR
+  `/remote`ssa, PIN), 176 testiä vihreänä. Seuraava: käyttäjän
+  puhelin-/kuuntelutesti (`start.bat` → `/remote` → QR) ja sen jälkeen
+  pickup-korjaus / Settings-näkymä / tuonnin laatuapurit.
 - Soittotapa/refinger: asemaprofiilit, helpoin-arvio, turhien nuottien
   karsinta, per-tahti/fraasiasema; **ei koodia vielä**.
 - AI-transkription tarkkuus (Basic Pitch); referenssitabit ja ilmainen
@@ -253,9 +257,9 @@ Putki:
   vain lineaarisen heiton; ylimääräinen/puuttuva tahti vaatii GP5-korjauksen.
 - Spotify Phase 3, retention, bass/laulu,
   rummut (ADTOF/Omnizart), manuaalinen editori.
-- **LAN-kaukosäädin (v1.82) – käyttäjän testi:** `start-lan.bat`, QR
-  `/connect`, `/remote`. Cline ei julista kaukosäätöä toimivaksi ilman
-  käyttäjän puhelintestiä (sääntö #1:n ihmisvalidointi).
+- **LAN-kaukosäädin (v1.82–v1.83) – käyttäjän testi:** `start.bat`,
+  `/remote` (150 px QR), `/lan` PIN. Cline ei julista kaukosäätöä
+  toimivaksi ilman käyttäjän puhelintestiä (sääntö #1:n ihmisvalidointi).
 - **Seek & Destroy todistettu (19.10.):** toisto osuu 1:1 ainakin tahtiin
   149 asti asetuksilla **SIIRTO −0,75 / BPM 142**. GP5-datan korjaus ei
   ole prioriteetti: tabi on ohjelman lukemaa syötettä ja dataa korjataan

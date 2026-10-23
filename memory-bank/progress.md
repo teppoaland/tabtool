@@ -1,6 +1,16 @@
 # 📊 Projektin edistyminen – AI TABTOOL
 
-## v1.82 – LAN-kaukosäädin + QR (23.10.2026)
+## v1.83 – Yksi käynnistin + QR `/remote`ssa (23.10.2026)
+- `start-lan.bat` **poistettu** (turha): `start.bat` sitoo aina
+  `0.0.0.0:8000`:aan, tulostaa LAN-osoitteet ja avaa TV-näkymän.
+- **150 × 150 px QR `/remote`-sivun oikeassa reunassa** + osoite
+  `http://<LAN-IP>:8000/remote`; piilotettu alle 720 px näytöillä.
+  QR encodaa LAN-IP:n, ei 127.0.0.1; päivittyy 30 s välein (istuntotoken).
+- `/connect`-sivu poistettu (`connect.html/js`); `GET /connect` → 404.
+- `scripts/lan_addresses.ps1` tulostaa vain `LAN: http://…/remote`.
+- `app.js` ei muuttunut; `index.html` vain `?v=1.83`-leimat. 176 testiä.
+
+## v1.82 – LAN-kaukosäädin (23.10.2026)
 - `start-lan.bat` (= `start.bat lan`): `0.0.0.0:8000`, LAN-osoitteet
   (`scripts/lan_addresses.ps1`), selain `/connect`-sivulle. `status.bat`
   näyttää LAN-osoitteen, kun palvelin kuuntelee kaikkia rajapintoja.
@@ -15,6 +25,7 @@
   tila). `connect.html/js` = QR-sivu.
 - `segno==1.6.6` (BSD-3-Clause, puhdas Python). 23 uutta testiä →
   **175 pytest-testiä**. Vaatii käyttäjän puhelin-/kuuntelutestin.
+  (v1.83 yhdisti käynnistyksen ja siirsi QR:n `/remote`en.)
 
 ## v1.81 – COUNT-IN ON/OFF (22.10.2026)
 - FULLSCREEN-napin alle `.viewer-corner`-lohkoon liukukytkin
@@ -258,9 +269,9 @@
 
 ## Testitilanne
 
-- `pytest -q` → **175 passed**
+- `pytest -q` → **176 passed**
 - `compileall` → OK
-- `node --check app.js` / `remote.js` / `remote-bridge.js` / `connect.js` → OK
+- `node --check app.js` / `remote.js` / `remote-bridge.js` → OK
 - Headless-Edge/Chrome: alphaTab-render, cursor, fullscreen, GP5/MusicXML-
   tuonti (linkki + tiedosto), audio attach, BPM/desimaalitempo, SIIRTO,
   SYNC-tallennus, playback range -nollaus, SEARCH-modaali, kappaleen
@@ -294,8 +305,8 @@
 - Koodi v1.23–v1.56 on committoitu ja pushattu `origin/main`iin
   (käyttäjän pyynnöstä 20.10.2026). **v1.57–v1.68 on committoitu
   lokaalisti** (21.10.2026, `ac2457c`); **v1.69–v1.74** (22.10.2026,
-  `d76ddaf`) ja **v1.75–v1.82** (22.–23.10.2026) on
-  committoitu lokaalisti, ja `main` on ~18 committia `origin/main`in
+  `d76ddaf`) ja **v1.75–v1.83** (22.–23.10.2026) on
+  committoitu lokaalisti, ja `main` on ~20 committia `origin/main`in
   edellä eli **puskaamatta**. Lokaalit commitit toimivat
   palautuspisteinä. `scripts/build_kiss_legend.py` on gitignorattu (koko
   kappaleen nuottidata, tekijänoikeus). `data/` ja `docs/` eivät ole
@@ -317,7 +328,7 @@
    näkyviin, turhien nuottien karsinta per tahti/fraasi.
 4. Vasta sitten Phase 3 / Spotify: PKCE, haku/metadata, SDK/Connect,
    tokenit `oauth_tokens`-tauluun ja mockatut API-testit.
-5. Remote-kaukosäädin valmis (v1.82) – odottaa käyttäjän puhelintestiä.
+5. Remote-kaukosäädin valmis (v1.82–v1.83) – odottaa käyttäjän puhelintestiä.
 
 GP5-datan korjaus ei ole prioriteetti: ohjelma todettu 1:1 ainakin
 149 tahtiin (Seek & Destroy), ja tabi on syötettä, ei tuotetta.
