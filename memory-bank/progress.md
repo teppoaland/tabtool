@@ -1,5 +1,16 @@
 # 📊 Projektin edistyminen – AI TABTOOL
 
+## 🔒 ISO LUKKO – soitto valmis ja jäädytetty (23.10.2026)
+
+- Käyttäjä kuitannut: **kaikki soittoviat on korjattu** ja soitto toimii
+  **99 % tarkkuudella** oikein, mikä **riittää**. Tila on hyväksytty
+  lopulliseksi.
+- **Soittoon vaikuttaviin koodeihin EI KOSKETA.** Mikä tahansa koodi, jolla
+  on pienikin mahdollisuus sotkea soittoa, tehdään **varoen** ja käyttäjää
+  **pyydetään testaamaan soitto referenssikappaleella** (Seek & Destroy,
+  SIIRTO −0,75 / BPM 142) ennen ja jälkeen.
+- Katso `.clinerules/07-playback-frozen.md`.
+
 ## v1.92 – Count-in ei siirrä alkukohdistusta (23.10.2026)
 
 - **Juurisyy (bisect):** count-inin 5→0-portinvartija (v1.55–v1.56) viivästytti
@@ -396,10 +407,10 @@
 
 ## Seuraavaksi
 
-0. **Kursorin heitto (sääntö #1) – v1.91 toteutettu, odottaa kuuntelutestiä:**
-   syöttö on nyt monotoninen toiston aikana. Jos heitto näkyy yhä, mittaa
-   ensin (console.debug-laskuri) ja vasta sitten harkitse interpolaatiota tai
-   animoitua beat-kursoria. Yksi muutos kerrallaan + regressiochecklist.
+0. ~~Kursorin heitto (sääntö #1)~~ ✅ **RATKAISTU v1.92 – ISO LUKKO.**
+   Soitto kuitattu valmiiksi (99 %, riittää). Soittoon vaikuttaviin
+   koodeihin ei kosketa; riskimuutokset varoen + referenssitesti
+   (Seek & Destroy, SIIRTO −0,75 / BPM 142).
 1. **Pickup-varotin soittokelloon** (`barDurationMs`/`ticksPerBar`):
    anacrusis-tabissa SIIRTO/KOHDISTA 8×/16× liian voimakas. Vaatii luvan
    (sääntö #1) + regressiochecklist + kuuntelutesti. Sitä ennen data-kierto

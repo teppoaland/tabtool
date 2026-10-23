@@ -4,6 +4,20 @@
 > koska rikkomus näkyy vasta minuuttien kuluttua: kursori ja ääni erkanevat
 > hiljalleen eikä syy löydy enää siitä muutoksesta, joka sen aiheutti.
 
+## 🔒 ISO LUKKO – soitto on valmis ja jäädytetty (23.10.2026)
+
+- Käyttäjä on kuitannut: **kaikki soittoviat on korjattu** ja soitto toimii
+  **99 % tarkkuudella** oikein, mikä **riittää** käyttäjälle. Tila on
+  hyväksytty lopulliseksi, ei enää "odottaa kuuntelutestiä".
+- **Soittoon vaikuttaviin koodeihin EI KOSKETA.** Tämä koskee kaikkea,
+  mikä voi vaikuttaa äänen ja kursorin kohdistukseen, kellotukseen,
+  seekiin, count-iniin, alphaTab-kytkentöihin tai transportin DOM-rakenteeseen.
+- **Jos jokin koodi, jolla on pienikin mahdollisuus sotkea soittoa, on
+  pakko muuttaa:** se tehdään **varoen**, pienimmällä mahdollisella diffillä,
+  ja käyttäjää **pyydetään testaamaan soitto referenssikappaleella**
+  (Seek & Destroy, SIIRTO −0,75 / BPM 142) ennen ja jälkeen. Muutos
+  hyväksytään vasta käyttäjän kuuntelutestillä.
+
 ## Miksi tämä on sääntö #1
 
 Soitto ja tablatuurin osoittimen kohdistus (paikallinen audio ↔ alphaTabin

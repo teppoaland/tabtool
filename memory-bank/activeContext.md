@@ -10,6 +10,14 @@
 
 ## Nyt
 
+- 🔒 **ISO LUKKO (23.10.2026) – SOITTO ON VALMIS JA JÄÄDYTETTY.** Käyttäjä
+  on kuitannut: kaikki soittoviat on korjattu ja soitto toimii **99 %
+  tarkkuudella** oikein, mikä **riittää**. Tila on hyväksytty lopulliseksi:
+  **soittoon vaikuttaviin koodeihin ei kosketa.** Mikä tahansa koodi, jolla
+  on pienikin mahdollisuus sotkea soittoa, tehdään **varoen** ja käyttäjää
+  **pyydetään testaamaan soitto referenssikappaleella** (Seek & Destroy,
+  SIIRTO −0,75 / BPM 142) ennen ja jälkeen. Katso
+  `.clinerules/07-playback-frozen.md`.
 - ✅ **RATKAISTU (23.10.2026, v1.92) – kursorin heitto tahdeissa 1–41.**
   Syy ei ollut audion tempo eikä synkka-koodi, vaan **count-inin
   portinvartija** (v1.55–v1.56): se viivästytti `togglePlayback()` →
@@ -307,12 +315,12 @@ Putki:
 - **Dr. Feelgood – valmis (v1.76–v1.78):** bar 2 soitetaan 17 kertaa
   kirjoitettuina tahteina (135 tahtia), 2 ylimääräistä lopputahtia ja
   1/16-pickup poistettu. Erillistä `set_repeat.py`tä ei tarvita.
-- **Session tilanne 23.10.2026:** v1.91 valmis (kursorin edestakainen
-  heitto korjattu; taustalla v1.83–v1.90: yksi start.bat, QR `/remote`ssa,
-  kolme tilaa + 409-esto, PAUSE punaisella, vanhojen komentojen toisto
-  estetty), 189 testiä vihreänä. Seuraava: käyttäjän kuuntelu-/puhelintesti
-  (erityisesti lukitut tabit: Seek & Destroy, Whiplash) ja sen jälkeen
-  pickup-korjaus / Settings-näkymä.
+- **Session tilanne 23.10.2026:** v1.91 + v1.92 valmiit (kursorin
+  edestakainen heitto ja count-inin aiheuttama alkukohdistuksen siirto
+  korjattu; taustalla v1.83–v1.90: yksi start.bat, QR `/remote`ssa, kolme
+  tilaa + 409-esto, PAUSE punaisella, vanhojen komentojen toisto estetty),
+  189 testiä vihreänä. **Soitto kuitattu valmiiksi (99 %, riittää) →
+  ISO LUKKO.** Seuraava: pickup-korjaus / Settings-näkymä.
 - Soittotapa/refinger: asemaprofiilit, helpoin-arvio, turhien nuottien
   karsinta, per-tahti/fraasiasema; **ei koodia vielä**.
 - AI-transkription tarkkuus (Basic Pitch); referenssitabit ja ilmainen

@@ -1,6 +1,6 @@
 # 🎯 Projektin lyhyt kuvaus – AI TABTOOL
 
-> **Versio:** `v1.90` (23.10.2026)
+> **Versio:** `v1.92` (23.10.2026)
 > **Repo:** https://github.com/teppoaland/tabtool
 > **Paikallinen:** `D:\AI\tabtool`
 
@@ -108,7 +108,7 @@ Lokaali web-palvelu, jossa voi:
   audion (ei string/fret-dataa), ja GP/MIDI/MP3-lataus on Plus-ominaisuus
   (`songsterr.com/ai.txt`). Käyttäjän Android-osto on **kertamaksu**
   (vain Android, ei web). GP5:t haetaan laillisesta lähteestä käsin.
-- **Versiosarja `1.x`**, aloitus `v1.00`; nyt `v1.90`.
+- **Versiosarja `1.x`**, aloitus `v1.00`; nyt `v1.92`.
 - **Ei julkista julkaisua:** koodi pidetään lokaalina. Commitit tehdään
   paikalliseen repoon palautuspisteiksi (revert); push GitHubiin vain
   erillisestä pyynnöstä.
