@@ -37,6 +37,14 @@
   // always below endTick; every other position keeps the 1:1 clock, SIIRTO,
   // SYNC and BPM unchanged.
   const SCORE_END_GUARD_MS = 50;
+  // The browser reports audio.currentTime in chunks (typically ~250 ms) that
+  // can repeat or step back a little between two reads. alphaTab turns every
+  // fed position into the cursor, so one stale read rewinds it: the cursor
+  // hops a beat forward and back. While the audio plays the feed therefore
+  // keeps the highest position seen (it always comes from a real read, so the
+  // clock cannot run ahead). A bigger backwards jump is a real seek and resets
+  // the baseline (v1.91).
+  const FEED_JITTER_S = 0.3;
 
   const form = document.getElementById("source-form");
   const fileInput = document.getElementById("file-input");
@@ -122,6 +130,11 @@
   let libraryTabs = [];
   let showArchive = false;
   let alignArmed = false;
+  // Cursor feed (v1.91): the last position handed to alphaTab and the audio
+  // time it was computed from. Used only to keep the feed monotonic while the
+  // audio plays; the clock (syncTimeMs) is untouched.
+  let lastFedScoreMs = -1;
+  let lastFedAudioS = -1;
 
   // Count-in (v1.55): five steps then a short "0". UI-only state; see the
   // COUNT-IN block below and .clinerules/07-playback-frozen.md.
@@ -1041,9 +1054,29 @@
     // While the browser is seeking, currentTime can still report the old
     // position. Feeding it to alphaTab would make the cursor jump back.
     if (!force && audio.seeking) return;
+    const reported = Number(audio.currentTime) || 0;
+    let position = syncTimeMs();
+    // Keep the feed monotonic while the audio plays (v1.91). alphaTab applies
+    // every fed value as the cursor position without any check, so a repeated
+    // or slightly stale currentTime rewinds the cursor for a moment. The held
+    // value is a position that was already computed from a real read, so the
+    // clock is not moved ahead of the audio; the cursor only waits instead of
+    // hopping back. Forced syncs (seek, pause, load, SIIRTO/SYNC) and a real
+    // backwards seek reset the baseline, so rewind still works.
+    const playing = !audio.paused && !audio.ended;
+    const backwardsSeek =
+      lastFedAudioS >= 0 && reported < lastFedAudioS - FEED_JITTER_S;
+    if (force || !playing || backwardsSeek) {
+      lastFedScoreMs = position;
+    } else if (lastFedScoreMs >= 0 && position < lastFedScoreMs) {
+      position = lastFedScoreMs;
+    } else {
+      lastFedScoreMs = position;
+    }
+    lastFedAudioS = reported;
     const output = api.player.output;
     if (output && typeof output.updatePosition === "function") {
-      output.updatePosition(syncTimeMs());
+      output.updatePosition(position);
     }
   }
 

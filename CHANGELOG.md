@@ -2,6 +2,31 @@
 
 > AI TabTool käyttää `1.x`-versiosarjaa. Aloitus `v1.00`.
 
+## v1.91 – 23.10.2026
+
+- **Korjaus: kursorin edestakainen heitto soitossa (sääntö #1).** Selain
+  ilmoittaa `audio.currentTime`n paloina (~250 ms), jotka voivat toistua
+  tai mennä hetken taaksepäin kahden lukeman välillä. alphaTab ottaa
+  jokaisen syötetyn ajan suoraan kursorin sijainniksi **ilman
+  tarkistusta** (`updatePosition` → `updateTimePosition`), joten yksi
+  vanhentunut lukema käänsi kursorin takaisin: kursori hyppäsi iskun
+  eteen ja palasi.
+- **Muutos:** `syncPosition()` pitää syötön monotonisena toiston aikana
+  (`lastFedScoreMs` / `lastFedAudioS` / `FEED_JITTER_S = 0,3 s`). Pidetty
+  arvo on aina jonkin oikean lukeman tuottama, joten kello ei mene
+  audion edelle – kursori vain odottaa eikä hyppää taakse. Pakotettu
+  synkka (seek, pause, lataus, SIIRTO/SYNC) ja yli 0,3 s taaksepäin
+  menevä aito seek nollaavat vertailun, joten kelaus taaksepäin toimii
+  ennallaan.
+- **Ei koskettu:** `syncTimeMs` (kellotus), `mediaHandler.seekTo`
+  (inversio), `togglePlayback`, audio-eventit, DOM-id:t eikä CSS-mitat.
+  Regressioarvot (lataus 1,268 s, 10 s → tahti 7, seek 30/10/50/20/55/5 s
+  → 16/6/26/11/28/3) eivät muutu, koska syötetty arvo tulee edelleen
+  samasta kellosta eikä koskaan ylitä viimeisintä oikeaa lukemaa.
+- Uusi vartiotesti: syöttö ei mene taaksepäin eikä kelloon/adapteriin
+  vuoda tilaa → **189 pytest-testiä**.
+- **Vaatii käyttäjän kuuntelu-/tabsynkkitestin** (sääntö #1).
+
 ## v1.90 – 23.10.2026
 
 - **Korjaus: TV-sivu toisti vanhat remote-komennot avattaessa.** Silta

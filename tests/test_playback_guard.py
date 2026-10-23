@@ -129,6 +129,38 @@ def test_count_in_switch_sits_under_the_fullscreen_button():
     assert "checked" in corner
 
 
+def test_cursor_feed_never_goes_backwards_while_playing():
+    """v1.91: a stale audio.currentTime may not rewind the cursor.
+
+    alphaTab applies every fed position as the cursor position without any
+    check, so one repeated or slightly stale read (the browser reports
+    currentTime in ~250 ms chunks) hops the cursor a beat forward and back.
+    The hold lives in syncPosition only: the clock, the audio adapter and the
+    forced syncs keep their behaviour, so rewind and the bar math stay.
+    """
+    source = _source()
+    feed = _code_only(_function_body(source, "syncPosition"))
+
+    assert "lastFedScoreMs" in feed
+    assert "lastFedAudioS" in feed
+    assert "FEED_JITTER_S" in feed
+    # A paused/ended audio, a forced sync or a real backwards seek resets it.
+    assert "force" in feed
+    assert "audio.paused" in feed
+
+    # The clock keeps its own math: no feed state leaks into it.
+    clock = _function_body(source, "syncTimeMs")
+    assert "lastFedScoreMs" not in clock
+    assert "FEED_JITTER_S" not in clock
+
+    # The audio adapter stays as it was; only the feed knows the baseline.
+    media_handler = _object_body(source, "const mediaHandler =")
+    assert "lastFedScoreMs" not in media_handler
+
+    # Seeking still rewinds: the transport seek feeds a forced position.
+    assert "syncPosition(true)" in _function_body(source, "seekTo")
+
+
 def test_score_end_guard_keeps_the_audio_playing():
     """v1.69: the clock holds the feed short of the score end.
 
