@@ -1,5 +1,9 @@
 # 📊 Projektin edistyminen – AI TABTOOL
 
+## v1.87 – PAUSE-tila punaisella (23.10.2026)
+- `remote.js` togglaa `.is-playing`-luokan; CSS `#remote-play.is-playing`
+  = `--error`-tausta + tumma teksti. 1 uusi testi → **179 testiä**.
+
 ## v1.86 – PLAY ei himmene offline-tilassa (23.10.2026)
 - `remote.js`: `playButton.disabled` pois; komento jonoutuu ja toteutuu
   kun TV-sivu on näkyvissä. Tilateksti `TV: Offline · avaa TV-näkymä`.
@@ -286,7 +290,7 @@
 
 ## Testitilanne
 
-- `pytest -q` → **178 passed**
+- `pytest -q` → **179 passed**
 - `compileall` → OK
 - `node --check app.js` / `remote.js` / `remote-bridge.js` → OK
 - Headless-Edge/Chrome: alphaTab-render, cursor, fullscreen, GP5/MusicXML-
