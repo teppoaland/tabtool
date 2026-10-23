@@ -2,6 +2,19 @@
 
 > AI TabTool käyttää `1.x`-versiosarjaa. Aloitus `v1.00`.
 
+## v1.93 – 23.10.2026
+
+- **Remote-näkymän otsikko yhdelle riville (vain UI).** Poistettu
+  punaisella merkityt ylimääräiset: `AT`-brändimerkki, DISPLAY/API-nav ja
+  REMOTE-kicker. Jäljelle jäävä tila (AI TABTOOL, versio, Online,
+  TV: Online) on yhdellä rivillä puhelimen pysynäytössä.
+- **Ei toiminnallisia muutoksia:** `remote.js`n logiikka, reitit, komennot
+  ja soittoketju (`app.js`, `style.css`n playback-säännöt) ovat
+  koskemattomia. `#tv-hint` säilyy omana rivinään, kun TV on offline.
+- Muutetut tiedostot: `app/static/remote.html`, `app/static/style.css`
+  (uudet `.remote-topbar`/`.remote-statusline`-säännöt) sekä
+  versioleimat `index.html`/`remote.html`/`app/__init__.py`.
+
 ## v1.92 – 23.10.2026
 
 - **Korjaus: count-in ei enää siirrä alkukohdistusta (sääntö #1).** Bisect

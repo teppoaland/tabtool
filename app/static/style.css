@@ -1415,6 +1415,56 @@ body.modal-open .at-cursors {
   color: var(--muted);
 }
 
+/* v1.93: the phone header is one row. Brand, version, connection state and
+   TV state share the line; the AT mark, DISPLAY/API nav and the REMOTE
+   kicker were removed so the always-on screen has more room. Scoped to
+   .remote-topbar, so the TV page's .topbar and the playback layout stay
+   untouched (rule 07). */
+.remote-topbar {
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.55rem 0.85rem;
+}
+
+.remote-topbar .brand {
+  gap: 0.4rem;
+  min-width: 0;
+}
+
+.remote-topbar .brand-name {
+  font-size: 0.82rem;
+  letter-spacing: 0.1em;
+  white-space: nowrap;
+}
+
+.remote-topbar .version {
+  padding: 0.05rem 0.4rem;
+  font-size: 0.68rem;
+}
+
+.remote-statusline {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin-left: auto;
+  min-width: 0;
+}
+
+.remote-topbar .status-pill {
+  margin: 0;
+  padding: 0.2rem 0.5rem;
+  gap: 0.35rem;
+  font-size: 0.7rem;
+}
+
+.remote-tv {
+  color: var(--muted);
+  font-size: 0.7rem;
+  white-space: nowrap;
+}
+
 @media (min-width: 720px) {
   .remote-controls {
     grid-template-columns: repeat(3, minmax(6rem, 10rem));
