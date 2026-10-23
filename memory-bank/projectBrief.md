@@ -1,6 +1,6 @@
 # 🎯 Projektin lyhyt kuvaus – AI TABTOOL
 
-> **Versio:** `v1.88` (23.10.2026)
+> **Versio:** `v1.89` (23.10.2026)
 > **Repo:** https://github.com/teppoaland/tabtool
 > **Paikallinen:** `D:\AI\tabtool`
 
@@ -65,12 +65,14 @@ Lokaali web-palvelu, jossa voi:
   rivin poisto on punainen × (v1.65). Count-in on kytkettävissä
   **ON/OFF** (v1.81): kytkin on FULLSCREEN-napin alla sekä normaalissa
   että koko näytön näkymässä, oletus ON, valinta muistetaan selaimessa.
-- **LAN-kaukosäädin (v1.82–v1.88):** `start.bat` sitoo palvelimen
+- **LAN-kaukosäädin (v1.82–v1.89):** `start.bat` sitoo palvelimen
   sisäverkkoon ja tulostaa LAN-osoitteet. **`/remote`-sivu näyttää
   150 × 150 px QR-koodin** ja osoitteen; QR generoidaan **pyydettäessä sen
   hetkisestä IP-osoitteesta** (ei kiinteää IP:tä; DHCP saa vaihtua).
   Puhelin avaa `/remote`-näkymän: PLAY/PAUSE, ±5 s, toistokohta, Nopeus ja
-  kirjaston valinta. Toisto tapahtuu aina tietokoneen omasta
+  kirjaston valinta. **Yksi toiminto kerrallaan:** SOITA / LISÄÄ / SÄÄDÄ;
+  lisäys estetty soiton aikana ja soitto jobin aikana (409). Toisto
+  tapahtuu aina tietokoneen omasta
   audiotiedostosta. Valinnainen `TABTOOL_LAN_PIN` vaatii PINin localhostin
   ulkopuolelta; QR-pariutus kirjaa puhelimen sisään istuntotokenilla.
   Kaukosäätö ei muuta soittoketjua: TV:n silta klikkaa olemassa olevia
@@ -106,7 +108,7 @@ Lokaali web-palvelu, jossa voi:
   audion (ei string/fret-dataa), ja GP/MIDI/MP3-lataus on Plus-ominaisuus
   (`songsterr.com/ai.txt`). Käyttäjän Android-osto on **kertamaksu**
   (vain Android, ei web). GP5:t haetaan laillisesta lähteestä käsin.
-- **Versiosarja `1.x`**, aloitus `v1.00`; nyt `v1.88`.
+- **Versiosarja `1.x`**, aloitus `v1.00`; nyt `v1.89`.
 - **Ei julkista julkaisua:** koodi pidetään lokaalina. Commitit tehdään
   paikalliseen repoon palautuspisteiksi (revert); push GitHubiin vain
   erillisestä pyynnöstä.
@@ -148,6 +150,6 @@ Sano Cline:lle **`lue membank`**. Sääntö on
 - `app/tab_edit.py` – tab-datan muokkaus (toisto, tahdin poisto, viritys)
 - `scripts/pipeline_smoke.py` – CLI-proof
 - `stop.bat` / `status.bat` – palvelimen pysäytys ja tilan tarkistus
-- `tests/` – 180 pytest-testiä
+- `tests/` – 186 pytest-testiä
 - `data/` – GITIGNORED: audio, stemmit, tabit, tokenit
 - `docs/` – GITIGNORED: henkilökohtainen suunnitelma

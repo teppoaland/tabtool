@@ -1,7 +1,7 @@
 # 📍 Aktiivinen konteksti – AI TABTOOL
 
-> **Versio:** `v1.88` (23.10.2026)
-> **Git:** v1.75–v1.88 committoitu lokaalisti (`main` ~25 committia
+> **Versio:** `v1.89` (23.10.2026)
+> **Git:** v1.75–v1.89 committoitu lokaalisti (`main` ~26 committia
 > `origin/main`in edellä = **ei pushattu**). Älä pinnaa hashia pysyvästi.
 > **Push:** vain erillisestä pyynnöstä (käyttäjä pyysi 20.10.2026).
 > **Repo:** https://github.com/teppoaland/tabtool
@@ -10,6 +10,14 @@
 
 ## Nyt
 
+- **v1.89 (23.10.2026): remote kolmessa tilassa, yksi kerrallaan.**
+  - SOITA / LISÄÄ / SÄÄDÄ; vain yksi paneeli näkyvissä.
+  - LISÄÄ: YouTube (+ GP5-linkki/-tiedosto) → `/api/jobs` tai
+    `/api/tabs/import`; työn seuranta 1,5 s, kirjasto päivittyy.
+  - SÄÄDÄ: nimi, viritys, lukitus, arkistointi (`/library`).
+  - Ei päällekkäisyyttä: palvelin 409 job-pyyntöihin soiton aikana ja
+    PLAY-komentoon jobin aikana; UI näyttää saman.
+  - 6 uutta testiä → **186 testiä**.
 - **v1.88 (23.10.2026): varoitus, kun TV-näkymä puuttuu.**
   - `/remote` näyttää punaisen rivin `TV-näkymä ei ole auki…`, kun
     `tv_online: false`; PLAY pysyy käytössä mutta syy näkyy.
@@ -42,7 +50,7 @@
     `/lan?t=<istuntotoken>`.
   - `app/static/remote-bridge.js` pollaa komennot ja klikkaa olemassa
     olevia transport-nappeja → **app.js koskematon** (sääntö #1).
-  - **180 pytest-testiä**.
+  - **186 pytest-testiä**.
 - **v1.82 (23.10.2026): LAN-kaukosäädin.** `RemoteHub`, `/api/remote/*`,
   `/api/lan/info|qr.svg`, `/lan`-PIN, `/remote`-puhelinnäkymä, `segno`.
   (v1.83 yhdisti käynnistyksen ja siirsi QR:n `/remote`en.)
@@ -70,7 +78,7 @@
   - **v1.81** COUNT-IN ON/OFF -kytkin FULLSCREEN-napin alle
     (`.viewer-corner`, `#countin-toggle`, localStorage `tabtool:countIn`,
     oletus ON); luetaan vain `shouldRunCountIn`issa, soitoketju koskematon.
-  - **180 pytest-testiä** (v1.81:ssä 152).
+  - **186 pytest-testiä** (v1.81:ssä 152).
 - **Kirjaston data 22.10.2026:** 12 tabia. Dr. Feelgood 135 tahtia /
   2550 nuottia (17 toistoa, SYNC/SIIRTO 0). Volbeat 2 tabia samasta
   biisistä eri audioilla: `7f30610c…` `Drop D · DADGBE` (SIIRTO −0,25),
@@ -264,12 +272,12 @@ Putki:
 - **Dr. Feelgood – valmis (v1.76–v1.78):** bar 2 soitetaan 17 kertaa
   kirjoitettuina tahteina (135 tahtia), 2 ylimääräistä lopputahtia ja
   1/16-pickup poistettu. Erillistä `set_repeat.py`tä ei tarvita.
-- **Session tilanne 23.10.2026:** v1.88 valmis (yksi start.bat, QR
-  `/remote`ssa, SVG-xmlns- ja URL-rivikorjaukset, PLAY ei himmene,
-  PAUSE punaisella, offline-varoitus), 180 testiä vihreänä. Seuraava:
-  käyttäjän puhelin-/kuuntelutesti (`start.bat` → `/` auki + `/remote`
-  toisessa välilehdessä → QR) ja sen jälkeen pickup-korjaus /
-  Settings-näkymä / tuonnin laatuapurit.
+- **Session tilanne 23.10.2026:** v1.89 valmis (yksi start.bat, QR
+  `/remote`ssa, offline-varoitus, PLAY/PAUSE punaisella, kolme tilaa:
+  SOITA/LISÄÄ/SÄÄDÄ ja 409-esto päällekkäisyydelle), 186 testiä vihreänä.
+  Seuraava: käyttäjän puhelin-/kuuntelutesti (`start.bat` → `/` auki +
+  `/remote` toisessa välilehdessä → QR, lisää YT-kappale puhelimesta) ja
+  sen jälkeen pickup-korjaus / Settings-näkymä / tuonnin laatuapurit.
 - Soittotapa/refinger: asemaprofiilit, helpoin-arvio, turhien nuottien
   karsinta, per-tahti/fraasiasema; **ei koodia vielä**.
 - AI-transkription tarkkuus (Basic Pitch); referenssitabit ja ilmainen

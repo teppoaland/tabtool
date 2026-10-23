@@ -1,5 +1,12 @@
 # 📊 Projektin edistyminen – AI TABTOOL
 
+## v1.89 – Remote kolmessa tilassa (23.10.2026)
+- SOITA / LISÄÄ / SÄÄDÄ, vain yksi paneeli kerrallaan. Lisäys estetty
+  soiton aikana ja soitto jobin aikana (palvelin 409 + UI).
+- LISÄÄ: YT + valinn. GP5-linkki/-tiedosto → olemassa olevat reitit;
+  job-seuranta 1,5 s; kirjasto päivittyy. SÄÄDÄ: nimi/viritys/lukitus/
+  arkistointi. 6 uutta testiä → **186 testiä**.
+
 ## v1.88 – Varoitus, kun TV-näkymä puuttuu (23.10.2026)
 - `/remote`: `#tv-hint` kertoo `TV-näkymä ei ole auki. Avaa
   http://127.0.0.1:8000 tietokoneella.`, kun `tv_online: false`.
@@ -296,7 +303,7 @@
 
 ## Testitilanne
 
-- `pytest -q` → **180 passed**
+- `pytest -q` → **186 passed**
 - `compileall` → OK
 - `node --check app.js` / `remote.js` / `remote-bridge.js` → OK
 - Headless-Edge/Chrome: alphaTab-render, cursor, fullscreen, GP5/MusicXML-
