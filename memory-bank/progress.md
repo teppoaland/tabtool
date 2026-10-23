@@ -323,6 +323,14 @@
 
 ## Tunnetut rajoitukset
 
+- **Kursorin pieni edestakainen heitto (käyttäjän havainto 23.10.2026).**
+  Soitossa kursori nykii hetken eteen ja palaa; ei iso virhe. Epäilty syy:
+  `syncPosition()` 50 ms välein suoraan `audio.currentTime`sta (selain
+  päivittää sen ~250 ms paloina) + `enableAnimatedBeatCursor: false` +
+  pause/seek-palautukset. Korjaus on sääntö #1:n ydintä → oma sessio,
+  yksi muutos, regressiochecklist ja kuuntelutesti. Katso
+  `activeContext.md` (Seuraava sessio).
+
 - AI-transkriptio on luonnos; särö/akordit/nopeat soolot virheellisiä.
 - Basic Pitch ei ole kitarakohtainen; otteet/asemat voivat poiketa
   opitusta tabista. Referenssitabi + TuxGuitar auttavat.
@@ -342,33 +350,34 @@
   studioversiota (esim. virallinen kanava) tai sulje selain / anna
   cookie-tiedosto.
 - Poisto ei poista MP3-kuunteluversiota eikä toisen tabin jakamaa audiota.
-- Koodi v1.23–v1.56 on committoitu ja pushattu `origin/main`iin
-  (käyttäjän pyynnöstä 20.10.2026). **v1.57–v1.68 on committoitu
-  lokaalisti** (21.10.2026, `ac2457c`); **v1.69–v1.74** (22.10.2026,
-  `d76ddaf`) ja **v1.75–v1.83** (22.–23.10.2026) on
-  committoitu lokaalisti, ja `main` on ~20 committia `origin/main`in
-  edellä eli **puskaamatta**. Lokaalit commitit toimivat
-  palautuspisteinä. `scripts/build_kiss_legend.py` on gitignorattu (koko
+- **Koko historia v1.23–v1.90 on pushattu `origin/main`iin** (käyttäjän
+  pyynnöistä 20.10. ja 23.10.2026); `main` == `origin/main` pushin
+  jälkeen. `scripts/build_kiss_legend.py` on gitignorattu (koko
   kappaleen nuottidata, tekijänoikeus). `data/` ja `docs/` eivät ole
   gitissä, joten ne tarvitsevat erillisen varmuuskopion.
 
 ## Seuraavaksi
 
-0. **Pickup-varotin soittokelloon** (`barDurationMs`/`ticksPerBar`):
+0. **Tablatuurisynkan hienosäätö (sääntö #1):** pieni edestakainen heitto
+   soitossa (kursori eteen/palautuu). Epäilyt ja suunnat
+   `activeContext.md`:ssä (Seuraava sessio). Yksi muutos kerrallaan,
+   regressiochecklist ja käyttäjän kuuntelutesti.
+1. **Pickup-varotin soittokelloon** (`barDurationMs`/`ticksPerBar`):
    anacrusis-tabissa SIIRTO/KOHDISTA 8×/16× liian voimakas. Vaatii luvan
    (sääntö #1) + regressiochecklist + kuuntelutesti. Sitä ennen data-kierto
    `scripts/trim_bars.py --bars 1`.
-1. **Tuonnin laatuapurit:** duplikaattien tunnistus (sama GP5 SHA-256 tai
+2. **Tuonnin laatuapurit:** duplikaattien tunnistus (sama GP5 SHA-256 tai
    sama artisti+biisi eri audio), tabin pituus vs. audion kesto,
    pickup-varoitus.
-2. **Settings-näkymä**: count-inin kesto ja muut toisto-oletukset
+3. **Settings-näkymä**: count-inin kesto ja muut toisto-oletukset
    säädettäviksi (nyt `COUNT_IN_FROM` / `COUNT_IN_STEP_MS` /
    `COUNT_IN_ZERO_MS` `app.js`:ssä; ON/OFF-kytkin on jo v1.81).
-3. **Refinger/playability loppuun:** paras versio automaattisesti, score
+4. **Refinger/playability loppuun:** paras versio automaattisesti, score
    näkyviin, turhien nuottien karsinta per tahti/fraasi.
-4. Vasta sitten Phase 3 / Spotify: PKCE, haku/metadata, SDK/Connect,
+5. Vasta sitten Phase 3 / Spotify: PKCE, haku/metadata, SDK/Connect,
    tokenit `oauth_tokens`-tauluun ja mockatut API-testit.
-5. Remote-kaukosäädin valmis (v1.82–v1.83) – odottaa käyttäjän puhelintestiä.
+6. Remote-kaukosäädin valmis (v1.82–v1.90) – odottaa käyttäjän
+   puhelintestiä.
 
 GP5-datan korjaus ei ole prioriteetti: ohjelma todettu 1:1 ainakin
 149 tahtiin (Seek & Destroy), ja tabi on syötettä, ei tuotetta.

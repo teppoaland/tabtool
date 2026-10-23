@@ -91,12 +91,10 @@ Hyödylliset valinnat: `--model htdemucs_6s`, `--stem guitar`, `--tuning`,
   ovat ensisijaisesti paikallisia palautuspisteitä (`git revert`).
 - Ankkurit: v1.38 `c74ccdd`, v1.39 `8237876`, v1.40 `30e2c0e`,
   v1.41 = GP3/GP4-tuonti; tagi `v1.29` = `bb704e8`.
-- Koodi v1.23–v1.56 on **pushattu** `origin/main`iin käyttäjän pyynnöstä
-  20.10.2026. **v1.57–v1.68 committoitu lokaalisti** (21.10.2026,
-  `ac2457c v1.68: …`); **v1.69–v1.74** (22.10.2026, `d76ddaf`) ja
-  **v1.75–v1.81** (22.10.2026, koodi `9769371`) on committoitu lokaalisti.
-  `main` on ~16 committia `origin/main`in edellä = **ei pushattu**. Push vain
-  erillisestä pyynnöstä; `data/` ja `docs/` eivät ole gitissä.
+- Koodi v1.23–v1.90 on **pushattu** `origin/main`iin käyttäjän pyynnöstä
+  23.10.2026 (aiempi push 20.10.2026). `main` == `origin/main` pushin
+  jälkeen. Push vain erillisestä pyynnöstä; `data/` ja `docs/` eivät ole
+  gitissä.
 - `scripts/build_kiss_legend.py` on `.gitignore`ssa: se sisältää koko
   kappaleen nuottidatan (tekijänoikeus), joten sitä ei viedä julkiseen
   gitiin.

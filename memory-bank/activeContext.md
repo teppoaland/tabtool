@@ -1,9 +1,9 @@
 # 📍 Aktiivinen konteksti – AI TABTOOL
 
 > **Versio:** `v1.90` (23.10.2026)
-> **Git:** v1.75–v1.90 committoitu lokaalisti (`main` ~27 committia
-> `origin/main`in edellä = **ei pushattu**). Älä pinnaa hashia pysyvästi.
-> **Push:** vain erillisestä pyynnöstä (käyttäjä pyysi 20.10.2026).
+> **Git:** v1.23–v1.90 **pushattu** `origin/main`iin 23.10.2026 käyttäjän
+> pyynnöstä; työpuu clean. Älä pinnaa hashia pysyvästi.
+> **Push:** vain erillisestä pyynnöstä (käyttäjä pyysi 20.10. ja 23.10.2026).
 > **Repo:** https://github.com/teppoaland/tabtool
 > **Palvelin:** käyttäjän hallinnassa (`start.bat` / `stop.bat`); Cline ei
 > käynnistä sitä taustalle eikä pysäytä ilman pyyntöä.
@@ -294,9 +294,27 @@ Putki:
   vain lineaarisen heiton; ylimääräinen/puuttuva tahti vaatii GP5-korjauksen.
 - Spotify Phase 3, retention, bass/laulu,
   rummut (ADTOF/Omnizart), manuaalinen editori.
-- **LAN-kaukosäädin (v1.82–v1.83) – käyttäjän testi:** `start.bat`,
-  `/remote` (150 px QR), `/lan` PIN. Cline ei julista kaukosäätöä
-  toimivaksi ilman käyttäjän puhelintestiä (sääntö #1:n ihmisvalidointi).
+- **LAN-kaukosäädin (v1.82–v1.90) – käyttäjän testi:** `start.bat`,
+  `/remote` (150 px QR), `/lan` PIN, kolme tilaa (SOITA/LISÄÄ/SÄÄDÄ).
+  Cline ei julista kaukosäätöä toimivaksi ilman käyttäjän puhelintestiä
+  (sääntö #1:n ihmisvalidointi).
+- **SEURAAVA SESSIO – tablatuurisynkan hienosäätö (sääntö #1).**
+  Käyttäjän havainto 23.10.: soitossa on **pientä edestakaista heittoa**
+  (kursori menee hetken eteen ja palaa); ei iso virhe, mutta näkyy.
+  Epäilyt, tarkistettava järjestyksessä:
+  1. `syncPosition()` syöttää `audio.currentTime`n alphaTabille **50 ms**
+     välein, mutta selain päivittää `currentTime`n karkeina paloina
+     (tyypillisesti ~250 ms) → kursori hyppii ja voi näyttää palaavan.
+  2. `enableAnimatedBeatCursor: false` (v1.47) poistaa pehmennyksen;
+     jokainen update näkyy hyppynä.
+  3. `playerStateChanged`/pause/seek kutsuu `syncPosition(true)`, joka voi
+     syöttää hetkellisesti vanhentuneen ajan (erityisesti `audio.seeking`).
+  Mahdolliset suunnat: interpolaatio `timeupdate`-tapahtumien välillä
+  (`performance.now()` + `playbackRate`), monotoninen clamp (kursori ei
+  mene taaksepäin toiston aikana) tai animoidun beat-kursorin
+  uudelleenarviointi. **Yksi muutos kerrallaan**, koko regressiochecklist
+  ja käyttäjän kuuntelutesti; älä koske `togglePlayback`/`mediaHandler`-
+  inversioon ilman erillistä lupaa.
 - **Seek & Destroy todistettu (19.10.):** toisto osuu 1:1 ainakin tahtiin
   149 asti asetuksilla **SIIRTO −0,75 / BPM 142**. GP5-datan korjaus ei
   ole prioriteetti: tabi on ohjelman lukemaa syötettä ja dataa korjataan

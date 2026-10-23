@@ -274,6 +274,11 @@ resolvoitui työhakemistosta ja tabi menetti audionsa.
   (`scripts/trim_bars.py --bars 1`), kuten Dr. Feelgoodissa v1.78;
   koodikorjaus on sääntö #1:n ydintä ja vaatii erillisen luvan sekä koko
   regressiochecklistin.
+- **Tunnettu rajoite: kursorin pieni edestakainen heitto (23.10.2026).**
+  `syncPosition()` syöttää `audio.currentTime`n 50 ms välein, mutta selain
+  päivittää sen ~250 ms paloina ja `enableAnimatedBeatCursor` on pois
+  (v1.47) → kursori hyppii ja voi näyttää palaavan. Ei iso virhe, mutta
+  näkyy. Korjaus on sääntö #1:n ydintä; suunnat `activeContext.md`:ssä.
 - **Sääntö #1 – koskematon ydin** (`.clinerules/07-playback-frozen.md`):
   soitto- ja kohdistusketju (`notatedTempo`/`bpmDrift`, `barDurationMs`/
   `syncTimeMs`/`scoreEndTimeMs`, `mediaHandler.seekTo`-inversio,
