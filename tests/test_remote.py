@@ -249,7 +249,7 @@ def test_remote_js_does_not_disable_play_when_tv_is_offline() -> None:
     source = (config.STATIC_DIR / "remote.js").read_text(encoding="utf-8")
     assert "playButton.disabled = !tvOnline" not in source
     assert "playButton.disabled = jobActive" in source
-    assert "TV: Offline" in source
+    assert '"Offline-TV"' in source
 
 
 def test_remote_play_button_turns_red_while_playing() -> None:
@@ -259,13 +259,20 @@ def test_remote_play_button_turns_red_while_playing() -> None:
     assert "#remote-play.is-playing" in css
 
 
-def test_remote_page_warns_when_tv_is_offline(api_client: TestClient) -> None:
+def test_remote_page_has_one_state_aware_connection_indicator(
+    api_client: TestClient,
+) -> None:
     response = api_client.get("/remote")
     assert response.status_code == 200
-    assert 'id="tv-hint"' in response.text
-    assert "TV-näkymä ei ole auki" in response.text
+    assert 'id="api-status"' in response.text
+    # v1.97: the verbose TV hint and the second TV label are gone. The one
+    # pill shows Online / Offline / Offline-TV by state, so a brief API
+    # failure cannot claim that the TV view is closed.
+    assert 'id="tv-hint"' not in response.text
+    assert 'id="tv-status"' not in response.text
     js = (config.STATIC_DIR / "remote.js").read_text(encoding="utf-8")
-    assert "tvHintEl.hidden" in js
+    assert '"Offline-TV"' in js
+    assert '"Offline"' in js
 
 
 def test_remote_page_has_modes_and_forms(api_client: TestClient) -> None:

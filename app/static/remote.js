@@ -30,9 +30,7 @@
 
   const statusEl = byId("api-status");
   const detailEl = byId("api-version");
-  const tvEl = byId("tv-status");
   const versionEl = byId("version-tag");
-  const tvHintEl = byId("tv-hint");
 
   const titleEl = byId("remote-title");
   const metaEl = byId("remote-meta");
@@ -249,44 +247,67 @@
   }
 
   async function refresh() {
+    let health = null;
+    let remote = null;
     try {
-      const [health, remote] = await Promise.all([
+      [health, remote] = await Promise.all([
         fetch("/api/health", { cache: "no-store" }),
         fetch("/api/remote/state", { cache: "no-store" }),
       ]);
-      if (remote.status === 401) {
-        window.location.href = "/lan";
-        return;
-      }
-      if (!health.ok || !remote.ok) throw new Error(`HTTP ${remote.status}`);
-      const healthData = await health.json();
-      const remoteData = await remote.json();
-      setStatus("Online", true);
-      if (detailEl) detailEl.textContent = `${healthData.app} v${healthData.version}`;
-      if (versionEl) versionEl.textContent = `v${healthData.version}`;
-      const previousTab = state && state.tab_id;
-      const wasBusy = jobActive;
-      state = remoteData.state || {};
-      tvOnline = Boolean(remoteData.tv_online);
-      jobActive = Boolean(remoteData.job_active);
-      if (tvEl) {
-        tvEl.textContent = tvOnline
-          ? "TV: Online"
-          : "TV: Offline · avaa TV-näkymä";
-      }
-      if (tvHintEl) tvHintEl.hidden = tvOnline;
-      if ((state.tab_id || "") !== (previousTab || "")) renderLibrary();
-      // A job that finished elsewhere (TV or another phone) also refreshes
-      // the library here.
-      if (wasBusy && !jobActive) loadLibrary();
-      render();
     } catch (error) {
+      /* a failed request is handled as offline below */
+    }
+
+    if (remote && remote.status === 401) {
+      window.location.href = "/lan";
+      return;
+    }
+
+    // One connection indicator with three states:
+    //   Online     – this phone reaches the server and the TV reports
+    //   Offline    – this phone cannot reach the server
+    //   Offline-TV – the server is up but the TV page is not reporting
+    // A failed request never claims that the TV view is closed; the old
+    // hint did that whenever the phone briefly lost the API.
+    if (!health || !health.ok) {
       setStatus("Offline", false);
       tvOnline = false;
-      if (tvEl) tvEl.textContent = "TV: Offline · avaa TV-näkymä";
-      if (tvHintEl) tvHintEl.hidden = false;
       render();
+      return;
     }
+
+    try {
+      const healthData = await health.json();
+      if (detailEl) detailEl.textContent = `${healthData.app} v${healthData.version}`;
+      if (versionEl) versionEl.textContent = `v${healthData.version}`;
+    } catch (error) {
+      /* the version text is optional */
+    }
+
+    if (!remote || !remote.ok) {
+      setStatus("Online", true);
+      return;
+    }
+
+    let remoteData;
+    try {
+      remoteData = await remote.json();
+    } catch (error) {
+      setStatus("Online", true);
+      return;
+    }
+
+    const previousTab = state && state.tab_id;
+    const wasBusy = jobActive;
+    state = remoteData.state || {};
+    tvOnline = Boolean(remoteData.tv_online);
+    jobActive = Boolean(remoteData.job_active);
+    setStatus(tvOnline ? "Online" : "Offline-TV", tvOnline);
+    if ((state.tab_id || "") !== (previousTab || "")) renderLibrary();
+    // A job that finished elsewhere (TV or another phone) also refreshes
+    // the library here.
+    if (wasBusy && !jobActive) loadLibrary();
+    render();
   }
 
   async function loadLanInfo() {

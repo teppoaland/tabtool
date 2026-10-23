@@ -2,6 +2,21 @@
 
 > AI TabTool käyttää `1.x`-versiosarjaa. Aloitus `v1.00`.
 
+## v1.97 – 23.10.2026
+
+- **Remote: yksi tilatieto kolmella tilalla.** Punainen varoitus
+  "TV-näkymä ei ole auki…" ja erillinen `TV: Offline · avaa TV-näkymä`
+  poistettu. Yksi pilli näyttää: `Online` (API + TV), `Offline` (puhelin
+  ei saa yhteyttä palvelimeen) tai `Offline-TV` (palvelin vastaa, mutta
+  TV-sivu ei raportoi). Lyhyt API-katkos ei enää väitä, että TV-näkymä
+  olisi kiinni.
+- **Sääntö #1: Nopeus ≠ kohdistus.** `playbackRate` on harjoittelunopeus;
+  uusi vartiotesti (`test_playback_rate_never_enters_the_alignment_math`)
+  estää sen päätymisen `syncTimeMs`iin, `bpmDrift`iin,
+  `barDurationMs`iin, `scoreEndTimeMs`iin, `syncPosition`iin tai
+  `seekTo`-inversioon.
+- Ei muutoksia soittoketjuun (`app.js`n synkka-/seek-funktiot).
+
 ## v1.96 – 23.10.2026
 
 - **Päänäkymän Nopeus-säädin (sääntö #1:n lukittu pinta, käyttäjän
