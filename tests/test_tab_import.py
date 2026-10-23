@@ -37,6 +37,20 @@ def _gp4_bytes(tmp_path: Path) -> bytes:
     return path.read_bytes()
 
 
+def _gp3_bytes(tmp_path: Path) -> bytes:
+    """A GP3 copy with a dead grace note (fret -1, a real-world GP3 value)."""
+    import guitarpro
+
+    source = tmp_path / "source.gp5"
+    source.write_bytes(_gp5_bytes(tmp_path))
+    song = guitarpro.parse(str(source))
+    note = song.tracks[0].measures[0].voices[0].beats[0].notes[0]
+    note.effect.grace = guitarpro.models.GraceEffect(fret=-1)
+    path = tmp_path / "import.gp3"
+    guitarpro.write(song, str(path), version=(3, 0, 0))
+    return path.read_bytes()
+
+
 def test_import_keeps_non_standard_tuning(
     client: TestClient, tmp_path: Path
 ) -> None:
@@ -99,6 +113,38 @@ def test_import_gp4_is_converted_to_gp5(
     archived = config.EXTERNAL_DIR / "tabs" / "Imported Band - Imported Song.gp5"
     assert archived.is_file()
     assert b"FICHIER GUITAR PRO v5" in archived.read_bytes()[:32]
+
+
+def test_import_gp3_is_converted_to_gp5(client: TestClient, tmp_path: Path) -> None:
+    """v1.99: a GP3 grace note with fret -1 must not fail the conversion."""
+    data = _gp3_bytes(tmp_path)
+    assert b"FICHIER GUITAR PRO v3" in data[:32]
+
+    response = client.post(
+        "/api/tabs/import",
+        files={"file": ("legacy.gp3", data, "application/octet-stream")},
+    )
+    assert response.status_code == 200, response.text
+    summary = response.json()
+    assert summary["title"] == "Imported Song"
+    assert summary["artist"] == "Imported Band"
+
+    tab = client.get(f"/api/tabs/{summary['id']}").json()
+    assert tab["meta"]["files"]["gp5"] == "tab.gp5"
+
+    score = client.get(f"/api/tabs/{summary['id']}/score/gp5")
+    assert score.status_code == 200
+    assert b"FICHIER GUITAR PRO v5" in score.content[:32]
+
+    import guitarpro
+
+    written = tmp_path / "written.gp5"
+    written.write_bytes(score.content)
+    song = guitarpro.parse(str(written))
+    grace = song.tracks[0].measures[0].voices[0].beats[0].notes[0].effect.grace
+    assert grace is not None
+    assert grace.fret == 0
+    assert grace.isDead is True
 
 
 def test_import_gp5(client: TestClient, tmp_path: Path) -> None:

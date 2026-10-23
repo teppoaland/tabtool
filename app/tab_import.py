@@ -42,11 +42,44 @@ def _time_signature_from_gp(header: Any) -> list[int]:
     return [numerator, denominator]
 
 
+def _sanitize_for_gp5(song: Any) -> None:
+    """Fix legacy values that GP5 stores as unsigned bytes.
+
+    GP3 stores the grace-note fret as a signed byte. Some files use -1 for a
+    dead grace note; PyGuitarPro reads it as -1 and the GP5 writer rejects it
+    ("ubyte format requires 0 <= number <= 255"), which failed the whole
+    import (e.g. White Wedding). Map -1 to the GP5 dead flag and clamp the
+    rest into 0..255.
+    """
+    for track in getattr(song, "tracks", []) or []:
+        for measure in getattr(track, "measures", []) or []:
+            for voice in getattr(measure, "voices", []) or []:
+                for beat in getattr(voice, "beats", []) or []:
+                    for note in getattr(beat, "notes", []) or []:
+                        grace = getattr(
+                            getattr(note, "effect", None), "grace", None
+                        )
+                        if grace is None:
+                            continue
+                        try:
+                            fret = int(grace.fret)
+                        except (TypeError, ValueError):
+                            fret = 0
+                        if fret < 0:
+                            grace.fret = 0
+                            if hasattr(grace, "isDead"):
+                                grace.isDead = True
+                        elif fret > 255:
+                            grace.fret = 255
+                        else:
+                            grace.fret = fret
+
+
 def _normalize_gp5(song: Any, path: Path) -> None:
     """Rewrite a GP3/GP4 song as a real GP5 file in place.
 
     alphaTab and the GP5 export expect version 5 data; PyGuitarPro reads all
-    three versions, so a GP4 upload is converted instead of rejected.
+    three versions, so a GP3/GP4 upload is converted instead of rejected.
     """
     version = getattr(song, "versionTuple", (5, 1, 0)) or (5, 1, 0)
     try:
@@ -58,6 +91,7 @@ def _normalize_gp5(song: Any, path: Path) -> None:
 
     import guitarpro
 
+    _sanitize_for_gp5(song)
     temporary = path.with_name(path.name + ".tmp")
     try:
         guitarpro.write(song, str(temporary), version=(5, 1, 0), encoding="utf-8")

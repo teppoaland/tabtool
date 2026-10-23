@@ -2,6 +2,18 @@
 
 > AI TabTool käyttää `1.x`-versiosarjaa. Aloitus `v1.00`.
 
+## v1.99 – 23.10.2026
+
+- **GP3 → GP5 -muunnos korjattu.** Osa GP3-tabeista (esim. White Wedding,
+  gprotab.net) sisältää grace-nuotin, jonka fret on −1 (GP3 tallentaa sen
+  etumerkillisenä tavuna). PyGuitarPro luki sen −1:nä ja GP5-kirjoitus
+  kaatui (`ubyte format requires 0 <= number <= 255`), joten koko tuonti
+  epäonnistui. Nyt `_sanitize_for_gp5` mappaa −1:n GP5:n `isDead`-lipuksi
+  (fret 0) ja clampaa muut arvot 0–255:een ennen kirjoitusta.
+- Testi: GP3-tiedosto, jossa on −1-fretin grace, tuodaan ja tallentuu
+  aidoksi GP5:ksi (fret 0, `isDead`).
+- Ei muutoksia soittoketjuun (`app.js`).
+
 ## v1.98 – 23.10.2026
 
 - **Korjaus: puhelimen Toisto-liukusäädin jäi vasempaan laitaan.**

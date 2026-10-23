@@ -1,3 +1,3 @@
 """AI TabTool – local guitar tab generator and viewer."""
 
-__version__ = "1.98"
+__version__ = "1.99"
