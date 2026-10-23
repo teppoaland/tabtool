@@ -9,8 +9,10 @@ FastAPI (app/main.py)
   ├─ /api/tabs, /api/tabs/{id} (GET/DELETE)
   ├─ /api/tabs/import, /api/tabs/import-url
   ├─ /api/tabs/{id}/section, /attach-audio, /tempo, /sync, /library
+  ├─ /api/remote/command|state|commands, /api/lan/info|qr.svg
   ├─ score/export/audio
-  └─ /, /display, /remote  → app/static/
+  ├─ /lan (PIN-kirjautuminen), /connect (QR)
+  └─ /, /display, /remote, /connect  → app/static/
         │
         ▼
 Job-kerros (app/jobs.py: jono + worker + cache + eventit)
@@ -68,6 +70,14 @@ Putki (app/pipeline/)
   `retune_tracks` (viritys + nauhojen siirto, sävelet ennallaan) ja
   `resolve_tab_gp5`. Kutsujat: `scripts/expand_repeat.py`,
   `scripts/trim_bars.py`, `scripts/retune_tab.py`.
+- **LAN-kaukosäädin** (v1.82): `app/remote.py` omistaa komentojonon
+  (`RemoteHub`, 50 komentoa, TTL 60 s), TV:n tilan, QR-koodin
+  (`segno`, aina sen hetkisestä IP:stä) ja valinnaisen PIN-portinvartijan.
+  `app/main.py` kutsuu vain `remote.install(app)`. Selainpuolella
+  `remote-bridge.js` pollaa komennot 0,5 s välein ja klikkaa olemassa
+  olevia kontrolleja (`#play-button`, `#seek-slider`, `#rate-slider`,
+  kirjaston rivi) – `app.js` ja soittoketju pysyvät koskemattomina.
+  `/remote` pollaa tilan 1 s välein; `/connect` näyttää QR-koodin.
 - **Bulk-tuonti/vienti** (v1.66): `app/bulk.py` – `import_folder()`
   (SHA-256-manifesti `.tabtool-imported.json`) ja `export_tabs()`
   (GP5/MusicXML/MIDI + `manifest.json` + ZIP). Skriptit
@@ -173,7 +183,8 @@ resolvoitui työhakemistosta ja tabi menetti audionsa.
 
 ## UI
 
-- `/` ja `/display` = TV-näkymä, `/remote` = puhelin (Phase 4).
+- `/` ja `/display` = TV-näkymä, `/remote` = puhelinohjain, `/connect` =
+  QR-pariutus (v1.82). Puhelin ei toista audiota: TV omistaa audion.
 - alphaTab 1.8.4 vendoroituna `app/static/vendor/alphaTab/`
   (Bravura-fontti `font/`, `core.useWorkers = false`).
 - `PlayerMode.EnabledExternalMedia` + `IExternalMediaHandler`;
