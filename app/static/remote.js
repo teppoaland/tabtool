@@ -38,7 +38,6 @@
   const metaEl = byId("remote-meta");
   const playButton = byId("remote-play");
   const backButton = byId("remote-back");
-  const forwardButton = byId("remote-forward");
   const seekSlider = byId("remote-seek");
   const rateSlider = byId("remote-rate");
   const rateReadout = byId("remote-rate-readout");
@@ -585,14 +584,9 @@
   if (backButton) {
     backButton.addEventListener("click", async () => {
       if (jobActive) return;
-      await send("seek_rel", -5);
-      window.setTimeout(refresh, 400);
-    });
-  }
-  if (forwardButton) {
-    forwardButton.addEventListener("click", async () => {
-      if (jobActive) return;
-      await send("seek_rel", 5);
+      // Absolute seek to 0: the bridge sets the TV seek slider to the start,
+      // so SIIRTO/SYNC/BPM corrections apply exactly as a user seek would.
+      await send("seek", 0);
       window.setTimeout(refresh, 400);
     });
   }
@@ -610,18 +604,52 @@
     seekSlider.addEventListener("change", commitSeek);
     seekSlider.addEventListener("pointerup", commitSeek);
   }
+  // Speed: step=0.01 (1 % steps) removes the fine jitter, a ±2 % window
+  // around 100 % snaps to the neutral speed, and a double tap on the
+  // readout always returns to exactly 100 %.
+  const RATE_SNAP = 0.02;
+
+  function showRate(value) {
+    if (rateReadout) {
+      rateReadout.textContent = `${(Number(value) * 100).toFixed(1)}%`;
+    }
+  }
+
+  function setRateValue(value) {
+    const number = Math.min(1.5, Math.max(0.5, Number(value) || 1));
+    if (rateSlider) rateSlider.value = String(number);
+    showRate(number);
+  }
+
   if (rateSlider) {
     rateSlider.addEventListener("input", () => {
       rating = true;
-      if (rateReadout) {
-        rateReadout.textContent = `${(Number(rateSlider.value) * 100).toFixed(1)}%`;
+      if (Math.abs(Number(rateSlider.value) - 1) <= RATE_SNAP) {
+        rateSlider.value = "1";
       }
+      showRate(rateSlider.value);
     });
     rateSlider.addEventListener("change", async () => {
       rating = false;
       if (jobActive) return;
       await send("rate", Number(rateSlider.value));
       window.setTimeout(refresh, 300);
+    });
+  }
+
+  if (rateReadout) {
+    let lastTap = 0;
+    rateReadout.addEventListener("pointerup", async () => {
+      const now = Date.now();
+      if (!lastTap || now - lastTap > 350) {
+        lastTap = now;
+        return;
+      }
+      lastTap = 0;
+      setRateValue(1);
+      if (jobActive) return;
+      await send("rate", 1);
+      window.setTimeout(refresh, 600);
     });
   }
 

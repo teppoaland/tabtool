@@ -1273,6 +1273,11 @@ body.modal-open .at-cursors {
   .remote-pair {
     display: none;
   }
+
+  /* v1.95: an empty QR section would still add a flex gap at the bottom. */
+  .remote-hero {
+    display: none;
+  }
 }
 
 .pin-card {
@@ -1293,6 +1298,9 @@ body.modal-open .at-cursors {
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
+  /* v1.95: no empty QR section above the mode buttons on a phone; the top
+     space matches the gap below the buttons (~15 px). */
+  padding-top: 0.95rem;
 }
 
 .remote-panel,
@@ -1323,13 +1331,20 @@ body.modal-open .at-cursors {
 
 .remote-controls {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  /* v1.95: start + PLAY only (the +5 s button was removed). */
+  grid-template-columns: minmax(4.25rem, auto) minmax(0, 1fr);
   gap: 0.6rem;
 }
 
 .remote-controls button {
   min-height: 3.25rem;
   font-size: 1rem;
+}
+
+/* v1.95: the start button shows only «, so the glyph needs to be readable. */
+.remote-controls .ghost {
+  font-size: 1.35rem;
+  line-height: 1;
 }
 
 /* The same button toggles PLAY/PAUSE. While the TV is playing it turns red,
@@ -1362,6 +1377,9 @@ body.modal-open .at-cursors {
 .remote-field .muted {
   min-width: 3.4rem;
   text-align: right;
+  /* v1.95: double tap on the speed readout resets to 100 %. */
+  cursor: pointer;
+  user-select: none;
 }
 
 .remote-library-card h2 {
@@ -1467,7 +1485,7 @@ body.modal-open .at-cursors {
 
 @media (min-width: 720px) {
   .remote-controls {
-    grid-template-columns: repeat(3, minmax(6rem, 10rem));
+    grid-template-columns: repeat(2, minmax(6rem, 10rem));
     justify-content: start;
   }
 }

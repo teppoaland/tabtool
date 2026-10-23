@@ -2,6 +2,21 @@
 
 > AI TabTool käyttää `1.x`-versiosarjaa. Aloitus `v1.00`.
 
+## v1.95 – 23.10.2026
+
+- **Remote-soittopalkki:** `−5 s` -nappi on nyt `«` (hyppy alkuun,
+  absoluuttinen `seek 0`), ja `+5 s` on poistettu. Jäljellä on kaksi
+  painiketta: `«` ja PLAY/PAUSE.
+- **Tyhjä tila pois:** QR-pariutuslohko siirrettiin sivun alaosaan, joten
+  SOITA/LISÄÄ/SÄÄDÄ-painikkeiden yläpuolella on enää sama ~15 px
+  marginaali kuin alapuolella.
+- **Nopeussäädin:** `step` 0,001 → 0,01 (1 % askelet), 100 %:n ympärillä
+  ±2 % snap-ikkuna ja **kaksoisnapautus nopeuslukemasta** palauttaa
+  täsmälleen 100 %.
+- Ei muutoksia TV-puolen soittoketjuun (`app.js`, `remote-bridge.js`);
+  komennot ovat edelleen `seek` ja `rate`, jotka palvelin ja silta
+  tukivat jo.
+
 ## v1.94 – 23.10.2026
 
 - **Yksi `start.bat` riittää: se pysäyttää vanhan instanssin ja käynnistää
