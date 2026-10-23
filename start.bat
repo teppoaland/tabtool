@@ -7,16 +7,13 @@ if not exist ".venv\Scripts\python.exe" (
   exit /b 1
 )
 
-rem Refuse to start a second instance: two servers on the same port make
-rem API and audio responses unpredictable. Run stop.bat first.
+rem One click restarts the server: stop the previous instance, then start.
+rem prepare_start.ps1 stops only a Python/uvicorn listener on the port; a
+rem foreign program is reported and left alone.
 set "PORT=8000"
-set "PORT_PID="
-for /f "tokens=5" %%P in ('netstat -ano ^| findstr /R /C:"LISTENING" ^| findstr /C:":%PORT% "') do (
-  if not defined PORT_PID set "PORT_PID=%%P"
-)
-if defined PORT_PID (
-  echo Port %PORT% is already in use by PID !PORT_PID!.
-  echo Run stop.bat first, then start.bat again.
+call powershell -NoProfile -ExecutionPolicy Bypass -File "scripts\prepare_start.ps1" -Port %PORT%
+if errorlevel 1 (
+  echo Could not prepare port %PORT%. Fix the message above and run start.bat again.
   exit /b 1
 )
 

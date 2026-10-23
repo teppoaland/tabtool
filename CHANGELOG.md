@@ -2,6 +2,17 @@
 
 > AI TabTool käyttää `1.x`-versiosarjaa. Aloitus `v1.00`.
 
+## v1.94 – 23.10.2026
+
+- **Yksi `start.bat` riittää: se pysäyttää vanhan instanssin ja käynnistää
+  uuden.** Aiemmin koodimuutoksen jälkeen piti ajaa `stop.bat` ja
+  `start.bat` erikseen. Nyt `start.bat` kutsuu `scripts\prepare_start.ps1`
+  -apuria, joka tarkistaa portin 8000 kuuntelijan ja pysäyttää sen vain,
+  jos se on Python/uvicorn (AI TabTool). Vierasta prosessia ei tapeta;
+  siitä kerrotaan ja käynnistys keskeytyy.
+- `stop.bat` säilyy erillisenä "pysäytä"-komentona; `status.bat` ennallaan.
+- Ei muutoksia soittoketjuun (`app.js`, transport, CSS-mitat).
+
 ## v1.93 – 23.10.2026
 
 - **Remote-näkymän otsikko yhdelle riville (vain UI).** Poistettu

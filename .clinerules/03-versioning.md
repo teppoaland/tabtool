@@ -36,13 +36,15 @@ Nosta versiota **aina kun ajettava koodi muuttuu**:
    `origin`iin ilman käyttäjän erillistä pyyntöä. Lokaalit commitit
    riittävät palautuspisteiksi (`git revert`, `git reset`).
 5. **Palvelin on käyttäjän hallinnassa.** Uvicorn ei käytä `--reload`ia,
-   joten koodimuutoksen jälkeen palvelin pitää käynnistää uudelleen
-   (`stop.bat` + `start.bat`). Älä käynnistä sitä taustalle äläkä pysäytä
-   sitä ilman pyyntöä; kerro käyttäjälle, että uudelleenkäynnistys
-   tarvitaan. `start.bat` kieltäytyy käynnistämästä toista instanssia,
-   jos portti 8000 on varattu.
-6. **Kuuntelu-/tabsynkkitesti on käyttäjän.** Käyttäjä ajaa `stop.bat` /
-   `start.bat`in omassa CMD-ikkunassaan ja tarkistaa soiton UI:ssa.
+   joten koodimuutoksen jälkeen palvelin pitää käynnistää uudelleen.
+   `start.bat` tekee sen yhdellä ajolla: se pysäyttää vanhan instanssin
+   (vain Python/uvicorn-prosessin) ja käynnistää uuden. Älä käynnistä
+   palvelinta taustalle äläkä pysäytä sitä ilman pyyntöä; kerro
+   käyttäjälle, että uudelleenkäynnistys tarvitaan. Vierasta prosessia
+   portilla 8000 `start.bat` ei tapa – se kertoo siitä ja lopettaa.
+6. **Kuuntelu-/tabsynkkitesti on käyttäjän.** Käyttäjä ajaa `start.bat`in
+   omassa CMD-ikkunassaan (se sammuttaa ja käynnistää palvelimen) ja
+   tarkistaa soiton UI:ssa.
    Cline ei julista synkkaa toimivaksi ilman kuittausta; portti ja
    testiohje: `.clinerules/07-playback-frozen.md`.
 6. Raportoi lyhyesti: mitä muuttui + versionumero.

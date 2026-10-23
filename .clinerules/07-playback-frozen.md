@@ -136,10 +136,10 @@ ne eivät todista, että kursori osuu musiikkiin. Siksi:
 1. **Käyttäjä tekee kuuntelu-/tabsynkkitestin itse.** Cline ei koskaan
    sano synkkaa korjatuksi, valmiiksi eikä "pitäisi toimia" ilman
    käyttäjän kuittausta.
-2. **Palvelin on käyttäjän CMD-ikkunassa.** Käyttäjä ajaa `stop.bat` /
-   `start.bat`in ja tarkistaa UI:n. Cline ei käynnistä palvelinta
-   taustalle, ei pysäytä sitä eikä kierrä tätä omalla instanssilla
-   toisella portilla.
+2. **Palvelin on käyttäjän CMD-ikkunassa.** Käyttäjä ajaa `start.bat`in
+   (se pysäyttää vanhan instanssin ja käynnistää uuden) ja tarkistaa
+   UI:n. Cline ei käynnistä palvelinta taustalle, ei pysäytä sitä eikä
+   kierrä tätä omalla instanssilla toisella portilla.
 3. **Portti ennen seuraavaa työtä:** riskialttiin muutoksen jälkeen Cline
    pysähtyy, kertoo mitä muuttui ja antaa testiohjeen. Seuraavaa
    ominaisuutta ei aloiteta ennen kuin käyttäjä on kuitannut testin.
@@ -148,7 +148,7 @@ ne eivät todista, että kursori osuu musiikkiin. Siksi:
 
 ### Testiohje käyttäjälle (Seek & Destroy -kalibrointi)
 
-1. `stop.bat` → `start.bat` (uusi koodi latautuu; selaimessa Ctrl+F5).
+1. `start.bat` (pysäyttää ja käynnistää palvelimen; selaimessa Ctrl+F5).
 2. Avaa kalibrointitabi; aseta **SIIRTO −0,75** ja **BPM 142**.
 3. PLAY: ääni alkaa heti ja kursori osuu tahtiin; 10 s kohdalla tahti **7**.
 4. Seek 30 / 10 / 50 / 20 / 55 / 5 s → tahdit 16 / 6 / 26 / 11 / 28 / 3.

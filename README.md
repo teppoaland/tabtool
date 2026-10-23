@@ -5,7 +5,7 @@ ja katseluun. Hae kappale Spotifysta tai käytä omaa MP3/YouTube-audioita,
 anna tekoälyn tehdä ensimmäinen tablatuuriluonnos ja katsele sitä
 alphaTabilla TV:stä tai tietokoneelta. Puhelin toimii kaukosäätimenä.
 
-**Versio:** `v1.90` (Phase 4 – LAN-kaukosäädin: soita / lisää / säädä, QR `remote`-sivulla)
+**Versio:** `v1.94` (Phase 4 – LAN-kaukosäädin: soita / lisää / säädä, QR `remote`-sivulla)
 
 ## Session aloitus
 
@@ -58,14 +58,17 @@ start.bat
 ```
 
 `start.bat` käynnistää palvelimen ja avaa oletusselaimen automaattisesti,
-kun `/api/health` vastaa (ei kiinteää viivettä). Sulje ikkuna tai paina
-`Ctrl+C` lopettaaksesi. Automaattiavauksen voi ohittaa asettamalla
-`TABTOOL_NO_BROWSER=1`.
+kun `/api/health` vastaa (ei kiinteää viivettä). Jos palvelin on jo
+käynnissä, `start.bat` pysäyttää vanhan instanssin ja käynnistää sen
+uudelleen – yksi kaksoisklikkaus riittää koodimuutoksen jälkeen. Sulje
+ikkuna tai paina `Ctrl+C` lopettaaksesi. Automaattiavauksen voi ohittaa
+asettamalla `TABTOOL_NO_BROWSER=1`.
 
 `stop.bat` pysäyttää portin 8000 palvelimen (myös taustalle jääneen
 uvicorn-prosessin) ja `status.bat` näyttää portin tilan sekä
-`/api/version`-vastauksen. Jos portti on jo varattu, `start.bat` ei
-käynnistä toista instanssia vaan neuvoo ajamaan `stop.bat`in.
+`/api/version`-vastauksen. `start.bat` ei tapa vierasta prosessia: jos
+portilla 8000 kuuntelee muu kuin Python/uvicorn, se kertoo siitä eikä
+käynnistä toista instanssia.
 
 Avaa tarvittaessa käsin:
 
