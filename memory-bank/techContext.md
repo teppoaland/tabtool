@@ -9,7 +9,7 @@
 - **Ei GPU:ta** (`nvidia-smi` tyhjä) → CPU-only
 - D: levytilaa ~147 GB vapaana
 
-## Python-paketit (v1.87)
+## Python-paketit (v1.88)
 
 Core:
 
@@ -59,7 +59,7 @@ python -m venv .venv
 ## Testit
 
 ```powershell
-.venv\Scripts\python.exe -m pytest -q          # 179 passed
+.venv\Scripts\python.exe -m pytest -q          # 180 passed
 .venv\Scripts\python.exe -m compileall -q app scripts tests
 node --check app\static\app.js
 node --check app\static\remote.js
@@ -196,9 +196,9 @@ DB-tiedosto); vain tuotenimi on `AI TabTool`.
   **Soiton/tabin synkka hyväksytään vain käyttäjän kuuntelutestillä**
   (`.clinerules/07-playback-frozen.md`): pytest, `node --check` ja
   headless eivät todista kohdistusta.
-  Staattisten tiedostojen `?v=1.87`-leimat pakottavat tuoreen CSS/JS:n;
+  Staattisten tiedostojen `?v=1.88`-leimat pakottavat tuoreen CSS/JS:n;
   selaimessa voi silti tarvita Ctrl+F5:n.
-- **LAN ja puhelin (v1.82–v1.87):** `start.bat` sitoo aina `0.0.0.0`:aan
+- **LAN ja puhelin (v1.82–v1.88):** `start.bat` sitoo aina `0.0.0.0`:aan
   (yksi käynnistin, ei `start-lan.batia`); `TABTOOL_LAN_PIN` aktivoi
   portinvartijan (HttpOnly eväste, SHA-256-tiiviste, 10 yritystä/60 s),
   `TABTOOL_LAN_IP` kiinnittää QR-koodin osoitteen. **150 px QR on

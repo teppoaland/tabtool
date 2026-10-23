@@ -1,5 +1,11 @@
 # 📊 Projektin edistyminen – AI TABTOOL
 
+## v1.88 – Varoitus, kun TV-näkymä puuttuu (23.10.2026)
+- `/remote`: `#tv-hint` kertoo `TV-näkymä ei ole auki. Avaa
+  http://127.0.0.1:8000 tietokoneella.`, kun `tv_online: false`.
+- `start.bat` muistuttaa pitämään `/`-välilehden auki ja avaamaan
+  `/remote` toiseen välilehteen. 1 uusi testi → **180 testiä**.
+
 ## v1.87 – PAUSE-tila punaisella (23.10.2026)
 - `remote.js` togglaa `.is-playing`-luokan; CSS `#remote-play.is-playing`
   = `--error`-tausta + tumma teksti. 1 uusi testi → **179 testiä**.
@@ -290,7 +296,7 @@
 
 ## Testitilanne
 
-- `pytest -q` → **179 passed**
+- `pytest -q` → **180 passed**
 - `compileall` → OK
 - `node --check app.js` / `remote.js` / `remote-bridge.js` → OK
 - Headless-Edge/Chrome: alphaTab-render, cursor, fullscreen, GP5/MusicXML-
