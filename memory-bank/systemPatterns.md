@@ -34,7 +34,9 @@ Putki (app/pipeline/)
 - `app/tab_import.py` hoitaa GP3/GP4/GP5- ja MusicXML-tuonnin sekä
   metatiedot (PyGuitarPro/music21) ilman ML-putkea. GP3/GP4 kirjoitetaan
   tuonnissa aidoksi GP5:ksi, jotta alphaTab ja GP5-export toimivat
-  samalla formaatilla.
+  samalla formaatilla. Ennen GP5-kirjoitusta `_sanitize_for_gp5` korjaa
+  legacy-arvot, jotka GP5 tallentaa etumerkittöminä (v1.99: GP3:n
+  grace-fret −1 → `isDead`, fret 0). Testi: GP3 −1-grace → aito GP5.
 - `app/tab_download.py` hakee GP5/MusicXML-linkin palvelimella: vain
   julkinen http(s) (ei localhost/yksityisverkko), max 20 MB, redirectit
   validoitu. gprotab.netin HTML-sivu → automaattinen `?download`-retry.
@@ -81,7 +83,11 @@ Putki (app/pipeline/)
   Kolme tilaa (SOITA / LISÄÄ / SÄÄDÄ) pitävät yhden toiminnon kerrallaan:
   `jobs_running()` + TV:n `playing` estävät päällekkäisyyden 409:llä.
   Sivun auetessa silta lukitsee sekvenssin (`primeSequence`) eikä toista
-  aiempia komentoja (v1.90).
+  aiempia komentoja (v1.90). **v1.93–v1.98:** `/remote`-otsikko on
+  yhdellä rivillä ja yksi tila-indikaattori (`Online` / `Offline` /
+  `Offline-TV`); `«` lähettää `seek 0`, `+5 s` on poistettu; nopeus 1 %
+  askelet + 95–105 % → 100 %. `refresh` käsittelee API- ja TV-tilan
+  erikseen, joten lyhyt API-katkos ei väitä TV-näkymän olevan kiinni.
 - **Bulk-tuonti/vienti** (v1.66): `app/bulk.py` – `import_folder()`
   (SHA-256-manifesti `.tabtool-imported.json`) ja `export_tabs()`
   (GP5/MusicXML/MIDI + `manifest.json` + ZIP). Skriptit
@@ -317,4 +323,9 @@ resolvoitui työhakemistosta ja tabi menetti audionsa.
   BPM 142 → lataus 1,268 s ja 10 s → tahti 7. **Hyväksyntä tehdään
   käyttäjän kuuntelu-/tabsynkkitestillä** (ei automatisoitavissa), ja
   palvelin on käyttäjän CMD-ikkunassa (`stop.bat`/`start.bat`).
+- **Nopeus ≠ kohdistus (v1.96–v1.97):** `playbackRate` on
+  harjoittelunopeus; `syncTimeMs` lukee `audio.currentTime`ia eikä
+  `playbackRate` esiinny kellotuksessa, `bpmDrift`issä eikä
+  `seekTo`-inversiossa. Vartiotesti:
+  `test_playback_rate_never_enters_the_alignment_math`.
 - Ei committoituja modeleita/audioita `static/`-hakemistoon.

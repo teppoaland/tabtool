@@ -11,6 +11,25 @@
   SIIRTO −0,75 / BPM 142) ennen ja jälkeen.
 - Katso `.clinerules/07-playback-frozen.md`.
 
+## v1.93–v1.99 – Remote-UI, nopeus ja GP3-tuonti (23.10.2026)
+
+- **Remote (v1.93–v1.98):** otsikko yhdelle riville (AT-merkki,
+  DISPLAY/API-nav ja REMOTE-kicker pois); QR sivun alaosaan; `«` =
+  `seek 0`, `+5 s` pois; nopeus 1 % askelet + 95–105 % → 100 %; yksi
+  tila-indikaattori `Online` / `Offline` / `Offline-TV` (lyhyt
+  API-katkos ei enää väitä TV:n olevan kiinni); seek-sliderin
+  strict-mode `ReferenceError` korjattu (`forwardButton`-jäänne) +
+  regressiotesti.
+- **Päänäkymä (v1.96–v1.97):** `#rate-slider` step 0,01 + 10 %:n snap;
+  ei muutoksia `setPlaybackRate`iin; vartiotesti estää `playbackRate`n
+  päätymisen kohdistusmatematiikkaan.
+- **`start.bat` (v1.94):** yksi ajo pysäyttää vanhan Python/uvicorn-
+  instanssin ja käynnistää uuden; vierasta prosessia ei tapeta.
+- **GP3 → GP5 (v1.99):** `_sanitize_for_gp5` korjaa grace-fretin −1
+  (`isDead`, fret 0) ennen kirjoitusta; White Wedding (gprotab) toimii.
+  Testi: GP3 −1-grace → aito GP5.
+- Testit **192**; tagi `v1.99` = palautuspiste.
+
 ## v1.92 – Count-in ei siirrä alkukohdistusta (23.10.2026)
 
 - **Juurisyy (bisect):** count-inin 5→0-portinvartija (v1.55–v1.56) viivästytti
@@ -399,11 +418,12 @@
   studioversiota (esim. virallinen kanava) tai sulje selain / anna
   cookie-tiedosto.
 - Poisto ei poista MP3-kuunteluversiota eikä toisen tabin jakamaa audiota.
-- **Koko historia v1.23–v1.90 on pushattu `origin/main`iin** (käyttäjän
+- **Koko historia v1.23–v1.99 on pushattu `origin/main`iin** (käyttäjän
   pyynnöistä 20.10. ja 23.10.2026); `main` == `origin/main` pushin
-  jälkeen. `scripts/build_kiss_legend.py` on gitignorattu (koko
-  kappaleen nuottidata, tekijänoikeus). `data/` ja `docs/` eivät ole
-  gitissä, joten ne tarvitsevat erillisen varmuuskopion.
+  jälkeen. **Tagi `v1.99` = toimiva palautuspiste.** 
+  `scripts/build_kiss_legend.py` on gitignorattu (koko kappaleen
+  nuottidata, tekijänoikeus). `data/` ja `docs/` eivät ole gitissä,
+  joten ne tarvitsevat erillisen varmuuskopion.
 
 ## Seuraavaksi
 

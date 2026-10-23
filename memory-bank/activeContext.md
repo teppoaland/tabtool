@@ -1,8 +1,9 @@
 # 📍 Aktiivinen konteksti – AI TABTOOL
 
-> **Versio:** `v1.92` (23.10.2026)
-> **Git:** v1.23–v1.90 **pushattu** `origin/main`iin 23.10.2026 käyttäjän
-> pyynnöstä; v1.91 on **paikallinen** commit. Älä pinnaa hashia pysyvästi.
+> **Versio:** `v1.99` (23.10.2026)
+> **Git:** v1.23–v1.99 **pushattu** `origin/main`iin 23.10.2026 käyttäjän
+> pyynnöstä; **tagi `v1.99` = toimiva palautuspiste** (`git reset --hard
+> v1.99`). Älä pinnaa HEAD-hashia pysyvästi.
 > **Push:** vain erillisestä pyynnöstä (käyttäjä pyysi 20.10. ja 23.10.2026).
 > **Repo:** https://github.com/teppoaland/tabtool
 > **Palvelin:** käyttäjän hallinnassa (`start.bat` / `stop.bat`); Cline ei
@@ -18,6 +19,17 @@
   **pyydetään testaamaan soitto referenssikappaleella** (Seek & Destroy,
   SIIRTO −0,75 / BPM 142) ennen ja jälkeen. Katso
   `.clinerules/07-playback-frozen.md`.
+- **v1.93–v1.99 (23.10.2026) – UI/tuonti, ei soittoketjuun:**
+  - v1.93–v1.95: remote-otsikko yhdelle riville; `«` = `seek 0`,
+    `+5 s` pois; nopeus 1 % askelet + 95–105 % → 100 %; QR sivun alaosaan.
+  - v1.96: sama nopeusikkuna päänäkymään. v1.97: `playbackRate` todettu
+    harjoittelunopeudeksi + vartiotesti; remote saa yhden
+    tila-indikaattorin `Online` / `Offline` / `Offline-TV`.
+  - v1.98: puhelimen seek-slider jäi vasempaan laitaan, koska `render()`
+    viittasi poistettuun `forwardButton`iin (strict-mode ReferenceError);
+    viittaus pois + regressiotesti.
+  - v1.99: GP3-tuonti kaatui grace-nuotin fret −1:een; `_sanitize_for_gp5`
+    mappaa sen `isDead`-lipuksi ennen GP5-kirjoitusta. White Wedding toimii.
 - ✅ **RATKAISTU (23.10.2026, v1.92) – kursorin heitto tahdeissa 1–41.**
   Syy ei ollut audion tempo eikä synkka-koodi, vaan **count-inin
   portinvartija** (v1.55–v1.56): se viivästytti `togglePlayback()` →
@@ -315,12 +327,12 @@ Putki:
 - **Dr. Feelgood – valmis (v1.76–v1.78):** bar 2 soitetaan 17 kertaa
   kirjoitettuina tahteina (135 tahtia), 2 ylimääräistä lopputahtia ja
   1/16-pickup poistettu. Erillistä `set_repeat.py`tä ei tarvita.
-- **Session tilanne 23.10.2026:** v1.91 + v1.92 valmiit (kursorin
-  edestakainen heitto ja count-inin aiheuttama alkukohdistuksen siirto
-  korjattu; taustalla v1.83–v1.90: yksi start.bat, QR `/remote`ssa, kolme
-  tilaa + 409-esto, PAUSE punaisella, vanhojen komentojen toisto estetty),
-  189 testiä vihreänä. **Soitto kuitattu valmiiksi (99 %, riittää) →
-  ISO LUKKO.** Seuraava: pickup-korjaus / Settings-näkymä.
+- **Session tilanne 23.10.2026:** v1.93–v1.99 valmiit (remote-yhden rivin
+  UI, `«`-alkuun, nopeus 1 % + 10 % snap, yksi tila-indikaattori,
+  seek-sliderin strict-mode-korjaus, `start.bat` stop+start, GP3-grace-
+  korjaus). 192 testiä vihreänä. **Soitto kuitattu valmiiksi (99 %,
+  riittää) → ISO LUKKO; tagi `v1.99` = palautuspiste.** Seuraava:
+  pickup-korjaus / Settings-näkymä.
 - Soittotapa/refinger: asemaprofiilit, helpoin-arvio, turhien nuottien
   karsinta, per-tahti/fraasiasema; **ei koodia vielä**.
 - AI-transkription tarkkuus (Basic Pitch); referenssitabit ja ilmainen
@@ -334,19 +346,10 @@ Putki:
   `/remote` (150 px QR), `/lan` PIN, kolme tilaa (SOITA/LISÄÄ/SÄÄDÄ).
   Cline ei julista kaukosäätöä toimivaksi ilman käyttäjän puhelintestiä
   (sääntö #1:n ihmisvalidointi).
-- **Tablatuurisynkan hienosäätö (sääntö #1) – v1.91 toteutettu, odottaa
-  kuuntelutestiä.** Käyttäjän havainto 23.10.: soitossa oli pientä
-  edestakaista heittoa. Syy: alphaTab ei tarkista syötettyä aikaa
-  (`updatePosition` → `updateTimePosition` asettaa ajan suoraan), joten
-  selaimen ~250 ms paloina tuleva `audio.currentTime` (voi toistua tai
-  mennä hetken taakse) käänsi kursorin. Nyt syöttö on monotoninen toiston
-  aikana; **kelloon, inversioon ja audio-adapteriin ei koskettu**.
-  Jos heitto näkyy yhä: seuraavaksi mitataan (ei arvata) — lisää
-  väliaikainen laskuri, joka kirjaa montako kertaa syöttö jouduttiin
-  pitämään (`console.debug`), ja katso DevToolsista. Vasta sen jälkeen
-  harkitaan interpolaatiota (`performance.now()` + `playbackRate`) tai
-  `enableAnimatedBeatCursor`in uudelleenarviointia – **yksi muutos
-  kerrallaan**, koko regressiochecklist ja käyttäjän kuuntelutesti.
+- **Tablatuurisynkan hienosäätö – RATKAISTU v1.92, ISO LUKKO.** v1.91:n
+  monotoninen syöttö jäi voimaan; varsinainen tahdit 1–41 -heitto oli
+  count-inin viivästys, joka korjattiin v1.92:ssa. Soitto on käyttäjän
+  kuittaama 99 %; ei enää avoin ongelma.
 - **Seek & Destroy todistettu (19.10.):** toisto osuu 1:1 ainakin tahtiin
   149 asti asetuksilla **SIIRTO −0,75 / BPM 142**. GP5-datan korjaus ei
   ole prioriteetti: tabi on ohjelman lukemaa syötettä ja dataa korjataan

@@ -9,7 +9,7 @@
 - **Ei GPU:ta** (`nvidia-smi` tyhjä) → CPU-only
 - D: levytilaa ~147 GB vapaana
 
-## Python-paketit (v1.90)
+## Python-paketit (v1.99)
 
 Core:
 
@@ -41,7 +41,7 @@ ML / audio:
 ```bat
 setup.bat          :: core + dev
 install-ml.bat     :: Demucs + Basic Pitch + export/audio
-start.bat          :: uvicorn 127.0.0.1:8000 (ei käynnistä toista instanssia)
+start.bat          :: stop+start: uvicorn 0.0.0.0:8000 (vanha Python-instanssi alas)
 stop.bat           :: pysäyttää portin 8000 palvelimen
 status.bat         :: portin tila + /api/version
 test.bat           :: pytest + compileall + node --check
@@ -59,7 +59,7 @@ python -m venv .venv
 ## Testit
 
 ```powershell
-.venv\Scripts\python.exe -m pytest -q          # 189 passed
+.venv\Scripts\python.exe -m pytest -q          # 192 passed
 .venv\Scripts\python.exe -m compileall -q app scripts tests
 node --check app\static\app.js
 node --check app\static\remote.js
@@ -90,11 +90,12 @@ Hyödylliset valinnat: `--model htdemucs_6s`, `--stem guitar`, `--tuning`,
 - **Push vain erillisestä pyynnöstä.** Projektia ei julkaista; commitit
   ovat ensisijaisesti paikallisia palautuspisteitä (`git revert`).
 - Ankkurit: v1.38 `c74ccdd`, v1.39 `8237876`, v1.40 `30e2c0e`,
-  v1.41 = GP3/GP4-tuonti; tagi `v1.29` = `bb704e8`.
-- Koodi v1.23–v1.90 on **pushattu** `origin/main`iin käyttäjän pyynnöstä
-  23.10.2026 (aiempi push 20.10.2026). `main` == `origin/main` pushin
-  jälkeen. Push vain erillisestä pyynnöstä; `data/` ja `docs/` eivät ole
-  gitissä.
+  v1.41 = GP3/GP4-tuonti; tagi `v1.29` = `bb704e8`; tagi `v1.99` =
+  toimiva palautuspiste (23.10.2026).
+- Koodi v1.23–v1.99 on **pushattu** `origin/main`iin käyttäjän pyynnöstä
+  23.10.2026 (aiempi push 20.10.2026). **Tagi `v1.99` = toimiva
+  palautuspiste** (`git reset --hard v1.99`). Push vain erillisestä
+  pyynnöstä; `data/` ja `docs/` eivät ole gitissä.
 - `scripts/build_kiss_legend.py` on `.gitignore`ssa: se sisältää koko
   kappaleen nuottidatan (tekijänoikeus), joten sitä ei viedä julkiseen
   gitiin.
@@ -188,13 +189,14 @@ DB-tiedosto); vain tuotenimi on `AI TabTool`.
   (`bpm-status`, `sync-status`) saavat `.is-error`-luokan virheestä.
 - Uvicorn ajetaan ilman `--reload`ia: koodimuutoksen jälkeen palvelin
   on käynnistettävä uudelleen. **Palvelin on käyttäjän hallinnassa:**
-  `stop.bat` pysäyttää portin 8000 (myös taustalle jääneen) ja
-  `start.bat` käynnistää sen; `status.bat` näyttää tilan ja version.
+  `start.bat` pysäyttää vanhan Python/uvicorn-instanssin ja käynnistää
+  uuden yhdellä ajolla; `stop.bat` pysäyttää ja `status.bat` näyttää
+  tilan ja version. Vierasta prosessia portilla 8000 ei tapeta.
   Cline ei käynnistä palvelinta taustalle eikä pysäytä ilman pyyntöä.
   **Soiton/tabin synkka hyväksytään vain käyttäjän kuuntelutestillä**
   (`.clinerules/07-playback-frozen.md`): pytest, `node --check` ja
   headless eivät todista kohdistusta.
-  Staattisten tiedostojen `?v=1.92`-leimat pakottavat tuoreen CSS/JS:n;
+  Staattisten tiedostojen `?v=1.99`-leimat pakottavat tuoreen CSS/JS:n;
   selaimessa voi silti tarvita Ctrl+F5:n.
 - **LAN ja puhelin (v1.82–v1.90):** `start.bat` sitoo aina `0.0.0.0`:aan
   (yksi käynnistin, ei `start-lan.batia`); `TABTOOL_LAN_PIN` aktivoi
@@ -234,3 +236,19 @@ DB-tiedosto); vain tuotenimi on `AI TabTool`.
   v1.63–v1.68: kirjaston nimeäminen/lukitus/arkisto, kanava ja viritys
   renderöityivät oikein; tallennuspolut testattu pytestillä
   (TestClient), ei selaimessa.
+
+## v1.93–v1.99 (23.10.2026)
+
+- **Remote:** otsikko yhdellä rivillä (AT-merkki, DISPLAY/API-nav ja
+  REMOTE-kicker pois); yksi tila-indikaattori `Online` / `Offline` /
+  `Offline-TV`; `«` = `seek 0` ja `+5 s` pois; QR sivun alaosaan;
+  nopeus 1 % askelet + 95–105 % → 100 %; seek-sliderin strict-mode
+  `ReferenceError` korjattu (v1.98, `forwardButton`-jäänne).
+- **Päänäkymä:** `#rate-slider` step 0,01 + 10 %:n snap (v1.96).
+  `playbackRate` on harjoittelunopeus, ei kohdistus; vartiotesti
+  `test_playback_rate_never_enters_the_alignment_math` (v1.97).
+- **`start.bat`:** stop+start yhdellä ajolla (v1.94); vierasta prosessia
+  portilla 8000 ei tapeta.
+- **GP3-tuonti:** `_sanitize_for_gp5` (grace fret −1 → `isDead`, fret 0)
+  ennen GP5-kirjoitusta (v1.99); White Wedding (gprotab) toimii.
+- Testit **192**; tagi `v1.99` = toimiva palautuspiste.
