@@ -13,6 +13,7 @@ AI TabTool does not claim ownership of them.
 | HTTPX | HTTP client | BSD-3-Clause | https://www.python-httpx.org/ |
 | python-multipart | Form uploads | Apache-2.0 | https://github.com/Kludex/python-multipart |
 | python-dotenv | `.env` loading | BSD-3-Clause | https://github.com/theskumar/python-dotenv |
+| Segno | QR code for phone pairing | BSD-3-Clause | https://github.com/heuer/segno/ |
 | SQLite | Local database | Public domain | https://www.sqlite.org/ |
 
 ## Audio / ML pipeline

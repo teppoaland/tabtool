@@ -21,7 +21,7 @@ from fastapi import FastAPI, File, Form, HTTPException, Query, Request, UploadFi
 from fastapi.responses import FileResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 
-from app import __version__, db, jobs, library, tab_download, tab_import
+from app import __version__, db, jobs, library, remote, tab_download, tab_import
 from app.config import (
     APP_NAME,
     HOST,
@@ -45,6 +45,10 @@ app = FastAPI(
 )
 
 app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
+
+# LAN remote control, QR pairing and the optional LAN-PIN guard (v1.82).
+# The module owns its routes and middleware; this file keeps only the call.
+remote.install(app)
 
 EXPORT_FORMATS: dict[str, tuple[str, str]] = {
     "gp5": ("tab.gp5", "application/octet-stream"),

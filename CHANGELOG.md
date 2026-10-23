@@ -2,6 +2,31 @@
 
 > AI TabTool käyttää `1.x`-versiosarjaa. Aloitus `v1.00`.
 
+## v1.82 – 23.10.2026
+
+- **LAN-kaukosäädin ja QR-pariutus.** `start-lan.bat` (`start.bat lan`)
+  sitoo palvelimen `0.0.0.0`:aan, tulostaa koneen LAN-osoitteet ja avaa
+  QR-sivun. QR generoidaan pyydettäessä sen hetkisestä osoitteesta
+  (`segno`), joten DHCP-osoitteen vaihtuminen ei riko pariutusta; QR
+  osoittaa `/remote`iin tai PINin kanssa `/lan?t=<istuntotoken>`iin.
+- **Kaukosäätö ilman ydinmuutoksia.** `app/remote.py` pitää komentojonon
+  (`play`/`pause`/`toggle`, `seek`, `seek_rel`, `rate`, `select_tab`) ja
+  TV:n raportoiman tilan. `app/static/remote-bridge.js` pollaa komennot ja
+  klikkaa olemassa olevia transport-nappeja; `app.js`, `mediaHandler`,
+  `seekTo` ja `syncTimeMs` pysyvät koskemattomina (sääntö #1). Komento
+  vanhenee 60 s:ssa eikä jono toista vanhaa PLAYta.
+- **Puhelin-näkymä** (`/remote`): PLAY/PAUSE, ±5 s, toistokohta, Nopeus,
+  kirjaston kappalevalinta ja TV:n tila. Puhelin ei toista audiota.
+- **Valinnainen LAN-PIN** (`TABTOOL_LAN_PIN`): localhost ohittaa, muut
+  vaativat HttpOnly-evästeen (SHA-256-tiiviste, ei PINiä evästeeseen),
+  10 yritystä / 60 s. Ilman PINiä LAN sallitaan konsolivaroituksella.
+- `requirements.txt` + `THIRD_PARTY_NOTICES.md`: `segno==1.6.6`
+  (BSD-3-Clause, puhdas Python, ei npm/build-vaihetta).
+- 23 uutta testiä → **175 pytest-testiä**. `index.html` sai yhden
+  `remote-bridge.js`-script-rivin; transportin DOM-id:t, `.alphatab`-mitat
+  ja `style.css`n olemassa olevat säännöt pysyivät ennallaan. Vaatii
+  käyttäjän kuuntelu-/tabsynkkitestin (sääntö #1).
+
 ## v1.81 – 22.10.2026
 
 - **COUNT-IN-kytkin (ON/OFF).** FULLSCREEN-napin alle tuli pieni liukukytkin

@@ -6,14 +6,14 @@
   <meta name="color-scheme" content="dark">
   <title>AI TabTool · Remote</title>
   <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="/static/style.css?v=1.81">
+  <link rel="stylesheet" href="/static/style.css?v=1.82">
 </head>
 <body>
   <header class="topbar">
     <div class="brand">
       <span class="brand-mark" aria-hidden="true">AT</span>
       <span class="brand-name">AI TABTOOL</span>
-      <span id="version-tag" class="version">v1.81</span>
+      <span id="version-tag" class="version">v1.82</span>
     </div>
     <nav class="nav" aria-label="Päävalikko">
       <a href="/">DISPLAY</a>
@@ -21,38 +21,58 @@
     </nav>
   </header>
 
-  <main class="shell">
+  <main class="shell remote-shell">
     <section class="hero">
-      <p class="kicker">REMOTE · PHASE 4</p>
+      <p class="kicker">REMOTE</p>
       <h1>Kaukosäädin.</h1>
       <p class="lede">
-        Puhelin toimii TV-näkymän kaukosäätimenä. Haku, toisto ja
-        tabin generointi tulevat tähän näkymään Phase 4:ssä.
+        Pidä tämä sivu auki puhelimessa ja TV-näkymä tietokoneella.
+        Molemmat käyttävät samaa lokaalia palvelinta.
+      </p>
+      <p class="status-pill" id="api-status" aria-live="polite">Checking…</p>
+      <p class="muted" id="api-detail">
+        <span id="api-version">/api/health</span> · <span id="tv-status">TV</span>
       </p>
     </section>
 
-    <section class="grid" aria-label="Tila">
-      <article class="card">
-        <h2>Palvelin</h2>
-        <p class="status-pill" id="api-status" aria-live="polite">Checking…</p>
-        <p class="muted" id="api-detail">/api/health</p>
-      </article>
+    <section class="remote-panel" aria-label="Toiston hallinta">
+      <div class="remote-now">
+        <strong id="remote-title">–</strong>
+        <span id="remote-meta" class="muted">Tahti – · 0:00 / 0:00</span>
+      </div>
+      <div class="remote-controls">
+        <button id="remote-back" type="button" class="ghost">−5 s</button>
+        <button id="remote-play" type="button" class="primary play">PLAY</button>
+        <button id="remote-forward" type="button" class="ghost">+5 s</button>
+      </div>
+      <label class="remote-field">
+        <span>Toisto</span>
+        <input id="remote-seek" class="remote-slider" type="range"
+               min="0" max="0" step="0.1" value="0"
+               aria-label="Toistokohta">
+      </label>
+      <label class="remote-field">
+        <span>Nopeus</span>
+        <input id="remote-rate" class="remote-slider" type="range"
+               min="0.5" max="1.5" step="0.001" value="1"
+               aria-label="Audion nopeus">
+        <span id="remote-rate-readout" class="muted">100.0%</span>
+      </label>
+    </section>
 
-      <article class="card">
-        <h2>Käyttö</h2>
-        <p>
-          Pidä tämä sivu auki puhelimessa ja TV-näkymä tietokoneella.
-          Molemmat käyttävät samaa lokaalia palvelinta.
-        </p>
-      </article>
+    <section class="remote-library-card" aria-label="Kirjasto">
+      <h2>Kirjasto</h2>
+      <div id="remote-library" class="remote-library"></div>
+      <p id="remote-status" class="muted" aria-live="polite"></p>
     </section>
   </main>
 
   <footer class="footer">
-    <span>AI TabTool v1.81</span>
+    <span>AI TabTool v1.82</span>
     <span><a href="/">Takaisin näkymään</a></span>
   </footer>
 
-  <script src="/static/remote.js?v=1.81" defer></script>
+  <script src="/static/remote.js?v=1.82" defer></script>
 </body>
 </html>
+

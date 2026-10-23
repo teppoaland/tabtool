@@ -1139,6 +1139,176 @@ body.modal-open .at-cursors {
   color: var(--error);
 }
 
+
+/* === LAN pairing and phone remote (v1.82) ==============================
+   New classes only. The viewer, .transport and .alphatab dimensions stay
+   untouched (rule 07): nothing here selects an existing playback element. */
+
+.connect-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.9rem;
+  text-align: center;
+}
+
+.connect-qr {
+  width: min(320px, 72vw);
+  height: auto;
+  padding: 0.75rem;
+  border-radius: 14px;
+  background: #f6f8fb;
+}
+
+.connect-url {
+  margin: 0;
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: 0.9rem;
+  word-break: break-all;
+  color: var(--text);
+}
+
+.pin-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  width: min(22rem, 100%);
+  margin: 0 auto;
+}
+
+.pin-error {
+  margin: 0;
+  color: var(--error);
+  font-size: 0.82rem;
+}
+
+.remote-shell {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.remote-panel,
+.remote-library-card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1rem;
+  box-shadow: var(--shadow);
+}
+
+.remote-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.remote-now {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.remote-now strong {
+  font-size: 1.05rem;
+  line-height: 1.3;
+}
+
+.remote-controls {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.6rem;
+}
+
+.remote-controls button {
+  min-height: 3.25rem;
+  font-size: 1rem;
+}
+
+.remote-field {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.remote-field > span:first-child {
+  min-width: 3.6rem;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+}
+
+.remote-slider {
+  flex: 1 1 auto;
+  min-width: 0;
+  accent-color: var(--accent);
+}
+
+.remote-field output,
+.remote-field .muted {
+  min-width: 3.4rem;
+  text-align: right;
+}
+
+.remote-library-card h2 {
+  margin: 0 0 0.75rem;
+  font-size: 0.82rem;
+  letter-spacing: 0.16em;
+  color: var(--muted);
+}
+
+.remote-library {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-height: 50vh;
+  overflow-y: auto;
+}
+
+.remote-item {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.15rem;
+  width: 100%;
+  min-height: 3rem;
+  padding: 0.6rem 0.8rem;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--bg-soft);
+  color: var(--text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.remote-item:hover,
+.remote-item.is-active {
+  border-color: var(--accent);
+}
+
+.remote-item.is-active {
+  box-shadow: inset 0 0 0 1px var(--accent);
+}
+
+.remote-item-title {
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.remote-item-meta {
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+
+@media (min-width: 720px) {
+  .remote-controls {
+    grid-template-columns: repeat(3, minmax(6rem, 10rem));
+    justify-content: start;
+  }
+}
+
+
 .ghost.small {
   padding: 0.35rem 0.6rem;
   font-size: 0.68rem;
