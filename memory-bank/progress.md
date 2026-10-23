@@ -1,5 +1,11 @@
 # 📊 Projektin edistyminen – AI TABTOOL
 
+## v1.86 – PLAY ei himmene offline-tilassa (23.10.2026)
+- `remote.js`: `playButton.disabled` pois; komento jonoutuu ja toteutuu
+  kun TV-sivu on näkyvissä. Tilateksti `TV: Offline · avaa TV-näkymä`.
+- `TV_ONLINE_S` 10 → 30 s, koska selain hidastaa taustavälilehden
+  ajastimia. 2 uutta testiä → **178 testiä**.
+
 ## v1.85 – QR-palstan URL-rivi (23.10.2026)
 - `.remote-pair` 150 px levyiseksi ja `.remote-url` rivittymään samaan
   leveyteen (`word-break`); oikea reuna linjassa QR:n kanssa. Vain CSS.
@@ -280,7 +286,7 @@
 
 ## Testitilanne
 
-- `pytest -q` → **176 passed**
+- `pytest -q` → **178 passed**
 - `compileall` → OK
 - `node --check app.js` / `remote.js` / `remote-bridge.js` → OK
 - Headless-Edge/Chrome: alphaTab-render, cursor, fullscreen, GP5/MusicXML-

@@ -1,7 +1,7 @@
 # 📍 Aktiivinen konteksti – AI TABTOOL
 
-> **Versio:** `v1.85` (23.10.2026)
-> **Git:** v1.75–v1.85 committoitu lokaalisti (`main` ~22 committia
+> **Versio:** `v1.86` (23.10.2026)
+> **Git:** v1.75–v1.86 committoitu lokaalisti (`main` ~23 committia
 > `origin/main`in edellä = **ei pushattu**). Älä pinnaa hashia pysyvästi.
 > **Push:** vain erillisestä pyynnöstä (käyttäjä pyysi 20.10.2026).
 > **Repo:** https://github.com/teppoaland/tabtool
@@ -10,6 +10,11 @@
 
 ## Nyt
 
+- **v1.86 (23.10.2026): PLAY pysyy käytettävissä.**
+  - `remote.js` ei disabloi PLAYtä TV:n offline-tilassa; komento jonoutuu
+    (TTL 60 s) ja toteutuu kun TV-sivu on näkyvissä. Teksti:
+    `TV: Offline · avaa TV-näkymä`.
+  - `TV_ONLINE_S` 10 → **30 s** (taustavälilehden ajastinpihtaus).
 - **v1.85 (23.10.2026): QR-palstan URL sopii QR:n leveyteen.**
   - `.remote-pair` = 150 px; `.remote-url` rivittyy samaan leveyteen →
     oikea reuna linjassa QR:n kanssa. Vain CSS.
@@ -29,7 +34,7 @@
     `/lan?t=<istuntotoken>`.
   - `app/static/remote-bridge.js` pollaa komennot ja klikkaa olemassa
     olevia transport-nappeja → **app.js koskematon** (sääntö #1).
-  - **176 pytest-testiä**.
+  - **178 pytest-testiä**.
 - **v1.82 (23.10.2026): LAN-kaukosäädin.** `RemoteHub`, `/api/remote/*`,
   `/api/lan/info|qr.svg`, `/lan`-PIN, `/remote`-puhelinnäkymä, `segno`.
   (v1.83 yhdisti käynnistyksen ja siirsi QR:n `/remote`en.)
@@ -57,7 +62,7 @@
   - **v1.81** COUNT-IN ON/OFF -kytkin FULLSCREEN-napin alle
     (`.viewer-corner`, `#countin-toggle`, localStorage `tabtool:countIn`,
     oletus ON); luetaan vain `shouldRunCountIn`issa, soitoketju koskematon.
-  - **176 pytest-testiä** (v1.81:ssä 152).
+  - **178 pytest-testiä** (v1.81:ssä 152).
 - **Kirjaston data 22.10.2026:** 12 tabia. Dr. Feelgood 135 tahtia /
   2550 nuottia (17 toistoa, SYNC/SIIRTO 0). Volbeat 2 tabia samasta
   biisistä eri audioilla: `7f30610c…` `Drop D · DADGBE` (SIIRTO −0,25),
@@ -251,10 +256,11 @@ Putki:
 - **Dr. Feelgood – valmis (v1.76–v1.78):** bar 2 soitetaan 17 kertaa
   kirjoitettuina tahteina (135 tahtia), 2 ylimääräistä lopputahtia ja
   1/16-pickup poistettu. Erillistä `set_repeat.py`tä ei tarvita.
-- **Session tilanne 23.10.2026:** v1.85 valmis (yksi start.bat, QR
-  `/remote`ssa, SVG-xmlns- ja URL-rivikorjaukset), 176 testiä vihreänä.
-  Seuraava: käyttäjän puhelin-/kuuntelutesti (`start.bat` → `/remote` →
-  QR) ja sen jälkeen pickup-korjaus / Settings-näkymä / tuonnin laatuapurit.
+- **Session tilanne 23.10.2026:** v1.86 valmis (yksi start.bat, QR
+  `/remote`ssa, SVG-xmlns- ja URL-rivikorjaukset, PLAY ei himmene),
+  178 testiä vihreänä. Seuraava: käyttäjän puhelin-/kuuntelutesti
+  (`start.bat` → `/remote` → QR) ja sen jälkeen pickup-korjaus /
+  Settings-näkymä / tuonnin laatuapurit.
 - Soittotapa/refinger: asemaprofiilit, helpoin-arvio, turhien nuottien
   karsinta, per-tahti/fraasiasema; **ei koodia vielä**.
 - AI-transkription tarkkuus (Basic Pitch); referenssitabit ja ilmainen
