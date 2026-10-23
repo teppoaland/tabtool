@@ -2,6 +2,23 @@
 
 > AI TabTool käyttää `1.x`-versiosarjaa. Aloitus `v1.00`.
 
+## v1.92 – 23.10.2026
+
+- **Korjaus: count-in ei enää siirrä alkukohdistusta (sääntö #1).** Bisect
+  osoitti, että count-inin 5→0-portinvartija (v1.55–v1.56) viivästytti
+  `togglePlayback()` → `api.playPause()` noin 5,25 s; fullscreen-resize ehti
+  siirtää audion pois aloituspaikalta, joten viivästetty soitto alkoi
+  väärästä kohdasta (Seek & Destroy -referenssillä intro heitti tahdeissa
+  1–40, runko 41 eteenpäin 1:1).
+- **Muutos:** `handlePlayButton` tallentaa audion paikan lähdön hetkellä
+  (`countInAudioTime`) ja `finishCountIn` palauttaa sen juuri ennen
+  `togglePlayback()`ia. Paluu jo luettuun arvoon (no-op, jos audio ei
+  liikkunut) – ei kellotuksen muutos.
+- **Ei koskettu:** `togglePlayback`, `mediaHandler`, `seekTo`, `syncTimeMs`,
+  `syncPosition`, audio-eventit, DOM-id:t, CSS-mitat eikä tablatuureja.
+- Käyttäjän kuuntelutesti: Seek & Destroy / Mötley / Whiplash 1:1 alusta
+  (99 %). Tagi `v1.92` = rollback-piste.
+
 ## v1.91 – 23.10.2026
 
 - **Korjaus: kursorin edestakainen heitto soitossa (sääntö #1).** Selain

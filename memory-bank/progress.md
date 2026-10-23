@@ -1,5 +1,17 @@
 # 📊 Projektin edistyminen – AI TABTOOL
 
+## v1.92 – Count-in ei siirrä alkukohdistusta (23.10.2026)
+
+- **Juurisyy (bisect):** count-inin 5→0-portinvartija (v1.55–v1.56) viivästytti
+  `togglePlayback()` → `api.playPause()` ~5,25 s; fullscreen-resize siirsi
+  audion pois aloituspaikalta → intro heitti 1–40, runko 41+ 1:1. v1.48/v1.53
+  (ei count-in) 1:1, v1.68 (count-in) rikki; v1.48→v1.53 nettoero = 0.
+- **Korjaus:** `handlePlayButton` tallentaa audion paikan (`countInAudioTime`)
+  ja `finishCountIn` palauttaa sen ennen `togglePlayback()`ia. Synkka-ketju
+  koskematon. Sääntö 07 dokumentoitu (v1.92 palautus = no-op paluu).
+- Käyttäjän kuuntelutesti: Seek & Destroy / Mötley / Whiplash 1:1 alusta
+  (99 %). Tagi `v1.92`. 189 testiä.
+
 ## v1.91 – Kursorin edestakainen heitto (23.10.2026)
 - Syy: alphaTab asettaa jokaisen syötetyn ajan kursoriksi ilman
   tarkistusta (`output.updatePosition` → `updateTimePosition`), ja selain
@@ -15,6 +27,16 @@
   **189 testiä**. `syncPosition` ajettu Node-harnessilla (monotonisuus,
   forced-seek, aito taaksepäin-seek, pause-palautus, `audio.seeking`-esto).
 - **Odottaa käyttäjän kuuntelu-/tabsynkkitestiä.**
+- **HUOM (23.10.2026): tämä ei ratkaissut käyttäjän raportoimaa
+  ongelmaa** (heitto kasvaa tahdeissa 1–41 ja "katoaa" tahdissa 41).
+  v1.91 ei voi muuttaa kellon nopeutta, joten syy on muualla — katso
+  `activeContext.md`:n avoin ongelma. A/B: `git revert 1807688`.
+
+## ✅ Ratkaistu v1.92 – heitto tahdeissa 1–41 (count-in)
+
+- Syy: count-inin portinvartija, ei audio eikä synkka-koodi (katso v1.92 yllä).
+- Hypoteesit H0/H1/H2 kumottu: heitto ei ollut tallenteen tempo eikä
+  naamiointi, vaan viivästetyn lähdön siirto fullscreen-resizen vuoksi.
 
 ## v1.90 – Vanhojen remote-komentojen toisto (23.10.2026)
 - TV-silta aloitti jonon alusta → vanhat komennot laukesivat sivun

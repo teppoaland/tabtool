@@ -144,6 +144,11 @@
   let countInDone = false;
   let countInActive = false;
   let countInSkipped = false;
+  // Audio position captured when PLAY arms the countdown. The countdown waits
+  // while the fullscreen resize re-renders the score, which can move the audio
+  // off its start position; finishCountIn() restores it so the delayed PLAY
+  // starts from exactly where an immediate PLAY would have (v1.92).
+  let countInAudioTime = 0;
   let countInTimer = null;
   let countInZeroTimer = null;
   let countInValue = COUNT_IN_FROM;
@@ -1292,6 +1297,14 @@
     if (!countInActive) return;
     cancelCountIn();
     countInDone = true;
+    // Restore the audio position captured at PLAY: the fullscreen resize can
+    // re-render the score during the countdown and move the audio off the
+    // start, so the delayed PLAY would begin at the wrong spot. The restored
+    // value was read from the audio itself, so it is a no-op when nothing
+    // moved (v1.92).
+    if (Number.isFinite(countInAudioTime)) {
+      audio.currentTime = countInAudioTime;
+    }
     togglePlayback();
   }
 
@@ -1345,6 +1358,7 @@
       // Fullscreen is requested here, while the user gesture is still fresh.
       // The countdown itself only draws the overlay.
       enterViewerFullscreen();
+      countInAudioTime = Number(audio.currentTime) || 0;
       if (beginCountIn()) return;
     }
     countInDone = true;

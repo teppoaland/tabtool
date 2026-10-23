@@ -176,7 +176,12 @@ Count-in on sallittu, koska se ei kosketa soittoketjua:
   `#viewer-section`issä; **ei wrapperia** `#alphaTab`in ympärille eikä
   muutoksia `.viewer-section`in grid/flex-mittoihin
 - laskenta tekee vain DOM-muutoksia: ei `api.*`-kutsuja, ei
-  `audio.play`/`audio.pause`, ei `audio.currentTime`-kirjoituksia
+  `audio.play`/`audio.pause`, ei muita `audio.currentTime`-kirjoituksia kuin
+  **v1.92:n palautus**: `handlePlayButton` tallentaa audion paikan lähdön
+  hetkellä (`countInAudioTime`) ja `finishCountIn` palauttaa sen ennen
+  `togglePlayback()`ia, koska fullscreen-resize voi siirtää audion pois
+  aloituspaikalta laskennan aikana. Tämä on paluu jo luettuun arvoon
+  (no-op, jos audio ei liikkunut) – ei kellotuksen muutos.
 - toisto käynnistetään lopussa **muuttumattomalla** `togglePlayback()`illa
   täsmälleen kerran
 - fullscreen pyydetään PLAY-käsittelijässä heti (käyttäjän ele), ei

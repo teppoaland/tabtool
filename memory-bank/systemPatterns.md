@@ -279,8 +279,34 @@ resolvoitui työhakemistosta ja tabi menetti audionsa.
   selaimen ~250 ms paloina tuleva `audio.currentTime` (voi toistua tai
   mennä hetken taakse) käänsi kursorin. `syncPosition()` pitää syötön nyt
   monotonisena toiston aikana; kello (`syncTimeMs`), inversio
-  (`mediaHandler.seekTo`) ja audio-eventit eivät muuttuneet. Vaikutus
-  näkyy vain kursorin liikkeessä, ei kellotuksessa.
+- **Kursorin nopeus = TAB BPM (23.10.2026).** `bpmDrift() = bpm /
+  notatedTempo() − 1`, syöttö = `audioTime * (1 + drift)`, ja alphaTab
+  muuntaa ajan tikeiksi GP5:n tempolla → **tehollinen nopeus on täsmälleen
+  `tabs.bpm`**. Siksi BPM-kentän arvo on ainoa nopeussäädin: 142 vs audion
+  ~143,5 = 18 ms/tahti (0,7 s / 40 tahtia, 2,7 s / 148 tahtia). Tämä on
+  hyvä mittatikku, kun epäillään "kasvavaa heittoa".
+- **SIIRTO-askel on 0,25 tahtia = 1 isku** (`setSyncOffsetBars` pyöristää
+  neljännesosiksi, `syncOffsetBars * barDurationMs()`). Puolen iskun
+  (~0,2 s) heittoa **ei voi säätää pois** nykyisellä UI:lla. Hienompi askel
+  (esim. 1/16 tahtia) on sääntö #1:n ydintä → vaatii luvan.
+- **Seek & Destroy -tabin tempo-automaatiot (erillinen riski – EI selitä
+  tahteja 1–41):** `357dca53…` sisältää vain kaksi tempo-automaatiota –
+  **tahti 113 → 208 BPM** ja **tahti 165 → 140 BPM**. Ne vaikuttavat
+  **aikaisintaan tahdista 113 alkaen**, joten niillä ei voi olla osaa
+  tahdeissa 1–80 näkyvään heittoon. Ne ovat oma, myöhemmin tarkistettava
+  asiansa (jos alphaTab noudattaa niitä, kursori karkaa tahdista 113).
+  Älä käytä niitä 1–41-ongelman selityksenä.
+- **`api.score.tempo` kumoutuu – kursorin nopeus = BPM-kenttä.**
+  `notatedTempo()` palauttaa saman `api.score.tempo`n, joten syöttö on
+  `audio × bpm / tempo` ja alphaTabin score-time→tick käyttää samaa
+  tempoa → **tehollinen nopeus = `tabs.bpm` täsmälleen**. Sekä tempo-
+  automaatiot että `score.tempo` ovat siksi vain sanity check lokissa;
+  ne eivät aiheuta nopeusvirhettä.
+- **Onset-pohjainen tab↔audio-sovitus on monitulkintainen (23.10.2026).**
+  Riffi toistaa saman 8-osakuvion, joten sekä 0 ms että ±0,3 s tuottavat
+  lähes yhtä pienen virheen (`cost` 5–10 ms). **Älä yritä mitata intron
+  vaihetta onseteilla** – käytä sovelluksen omaa `Osoitin`-lukemaa
+  (`#sync-offset-readout`), joka mittaa suoraan kursorin ja audion eron.
 - **Sääntö #1 – koskematon ydin** (`.clinerules/07-playback-frozen.md`):
   soitto- ja kohdistusketju (`notatedTempo`/`bpmDrift`, `barDurationMs`/
   `syncTimeMs`/`scoreEndTimeMs`, `mediaHandler.seekTo`-inversio,

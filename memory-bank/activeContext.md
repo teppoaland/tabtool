@@ -1,6 +1,6 @@
 # 📍 Aktiivinen konteksti – AI TABTOOL
 
-> **Versio:** `v1.91` (23.10.2026)
+> **Versio:** `v1.92` (23.10.2026)
 > **Git:** v1.23–v1.90 **pushattu** `origin/main`iin 23.10.2026 käyttäjän
 > pyynnöstä; v1.91 on **paikallinen** commit. Älä pinnaa hashia pysyvästi.
 > **Push:** vain erillisestä pyynnöstä (käyttäjä pyysi 20.10. ja 23.10.2026).
@@ -10,8 +10,22 @@
 
 ## Nyt
 
-- **v1.91 (23.10.2026): kursorin edestakainen heitto – korjaus toteutettu,
-  odottaa käyttäjän kuuntelutestiä.**
+- ✅ **RATKAISTU (23.10.2026, v1.92) – kursorin heitto tahdeissa 1–41.**
+  Syy ei ollut audion tempo eikä synkka-koodi, vaan **count-inin
+  portinvartija** (v1.55–v1.56): se viivästytti `togglePlayback()` →
+  `api.playPause()` noin 5,25 s, ja fullscreen-resize ehti siirtää audion
+  pois aloituspaikalta laskennan aikana → viivästetty soitto alkoi väärästä
+  kohdasta. Bisect: v1.48/v1.53 (ei count-in) 1:1, v1.68 (count-in) rikki;
+  v1.48→v1.53 nettoero synkka-funktioissa = 0.
+  **Korjaus (v1.92):** `handlePlayButton` tallentaa audion paikan lähdön
+  hetkellä (`countInAudioTime`) ja `finishCountIn` palauttaa sen ennen
+  `togglePlayback()`ia. Synkka-ketju koskematon. Käyttäjän kuuntelutesti:
+  Seek & Destroy / Mötley / Whiplash 1:1 alusta (99 %). Tagi `v1.92`.
+  v1.91:n monotoninen syöttö pysyy (ei selittänyt tätä, mutta on oikea
+  korjaus edestakaiseen heittoon). Tahdin 113 tempo (208 BPM) on edelleen
+  erillinen, myöhemmin tarkistettava riski.
+- **v1.91 (23.10.2026): kursorin edestakainen heitto – tekninen korjaus
+  tehty (ei ratkaissut yllä olevaa ongelmaa).**
   - Syy: alphaTab asettaa jokaisen syötetyn ajan kursoriksi **ilman
     tarkistusta** (`updatePosition` → `updateTimePosition`), ja selain
     ilmoittaa `audio.currentTime`n ~250 ms paloina, jotka voivat toistua tai
