@@ -54,6 +54,24 @@ def test_commands_signal_reset_after_restart(
     assert payload["commands"] == []
 
 
+def test_commands_can_be_primed_without_replay(
+    api_client: TestClient, hub: remote.RemoteHub
+) -> None:
+    api_client.post("/api/remote/command", json={"action": "seek", "value": 30})
+    payload = api_client.get(
+        "/api/remote/commands?since=9007199254740991"
+    ).json()
+    assert payload["reset"] is True
+    assert payload["commands"] == []
+    assert payload["seq"] >= 1
+
+
+def test_remote_bridge_does_not_replay_old_commands() -> None:
+    source = (config.STATIC_DIR / "remote-bridge.js").read_text(encoding="utf-8")
+    assert "primeSequence" in source
+    assert "9007199254740991" in source
+
+
 @pytest.mark.parametrize(
     "payload",
     [

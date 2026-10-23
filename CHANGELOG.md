@@ -2,6 +2,20 @@
 
 > AI TabTool käyttää `1.x`-versiosarjaa. Aloitus `v1.00`.
 
+## v1.90 – 23.10.2026
+
+- **Korjaus: TV-sivu toisti vanhat remote-komennot avattaessa.** Silta
+  aloitti komennon jonon alusta (`since=0`), joten edellisen 60 sekunnin
+  aikana jonoon jääneet `seek`/`toggle`/`select_tab`/`rate`-komennot
+  laukesivat, kun TV-sivu avattiin uudelleen. Se näkyi eri soittokerroilla
+  eri aloituskohtana ja korjaantui palvelimen uudelleenkäynnistyksellä,
+  koska jono tyhjeni. Nyt silta lukitsee ensin nykyisen sekvenssin numeron
+  (`primeSequence`) eikä suorita aiempia komentoja.
+- Ei muutoksia `app.js`:ään, sync-arvoihin eikä tabidataan. Lukitus ei
+  nollaa SIIRTOA/SYNCiä, ja tarkistus osoitti kaikkien lukittujen tabien
+  arvot tallessa.
+- 2 uutta testiä → **188 pytest-testiä**.
+
 ## v1.89 – 23.10.2026
 
 - **Remote kolmessa tilassa, yksi toiminto kerrallaan:** SOITA / LISÄÄ /

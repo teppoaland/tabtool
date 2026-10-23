@@ -1,4 +1,4 @@
-/* AI TabTool remote bridge (v1.83) – phone commands for the TV view.
+/* AI TabTool remote bridge (v1.90) – phone commands for the TV view.
  *
  * Rule 07: this file never touches the playback chain. It only clicks the
  * existing transport controls and dispatches the same DOM events a user
@@ -197,6 +197,25 @@
     return false;
   }
 
+  const MAX_SEQ = 9007199254740991;
+
+  // A newly opened TV page must not replay commands that were queued while it
+  // was closed. Those belong to an earlier session and would move the
+  // playback position, change the rate or select another tab at startup,
+  // which looked like a different tab/audio offset on every start.
+  async function primeSequence() {
+    try {
+      const response = await fetch(`/api/remote/commands?since=${MAX_SEQ}`, {
+        cache: "no-store",
+      });
+      if (!response.ok) return;
+      const data = await response.json();
+      if (typeof data.seq === "number") lastSeq = data.seq;
+    } catch (error) {
+      /* polling retries later; a restarted server sends reset anyway */
+    }
+  }
+
   async function pollOnce() {
     try {
       const response = await fetch(`/api/remote/commands?since=${lastSeq}`, {
@@ -235,10 +254,13 @@
     }
   }
 
-  reportState();
-  window.setInterval(reportState, REPORT_MS);
-  document.addEventListener("visibilitychange", () => {
-    if (!document.hidden) reportState();
-  });
-  loop();
+  (async () => {
+    await primeSequence();
+    reportState();
+    window.setInterval(reportState, REPORT_MS);
+    document.addEventListener("visibilitychange", () => {
+      if (!document.hidden) reportState();
+    });
+    loop();
+  })();
 })();
