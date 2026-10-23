@@ -5,7 +5,7 @@ ja katseluun. Hae kappale Spotifysta tai käytä omaa MP3/YouTube-audioita,
 anna tekoälyn tehdä ensimmäinen tablatuuriluonnos ja katsele sitä
 alphaTabilla TV:stä tai tietokoneelta. Puhelin toimii kaukosäätimenä.
 
-**Versio:** `v1.84` (Phase 4 – LAN-kaukosäädin, QR `remote`-sivulla, valinnainen LAN-PIN)
+**Versio:** `v1.85` (Phase 4 – LAN-kaukosäädin, QR `remote`-sivulla, valinnainen LAN-PIN)
 
 ## Session aloitus
 

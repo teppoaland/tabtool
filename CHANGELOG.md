@@ -2,6 +2,13 @@
 
 > AI TabTool käyttää `1.x`-versiosarjaa. Aloitus `v1.00`.
 
+## v1.85 – 23.10.2026
+
+- **QR-palstan URL-rivi linjaan QR:n kanssa.** `.remote-pair` on nyt
+  150 px levyinen ja `.remote-url` rivittyy samaan leveyteen
+  (`word-break`), joten oikea reuna ei enää valu näkymän reunaan. Vain
+  CSS-muutos; 176 testiä.
+
 ## v1.84 – 23.10.2026
 
 - **Korjaus: QR näkyi rikkinäisenä kuvana.** `/api/lan/qr.svg` käytti

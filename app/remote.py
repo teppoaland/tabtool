@@ -1,4 +1,4 @@
-"""LAN remote control (v1.84).
+"""LAN remote control (v1.85).
 
 The phone opens ``/remote`` and sends commands; the TV page runs
 ``remote-bridge.js``, which polls the command queue and drives the existing

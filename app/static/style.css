@@ -1160,14 +1160,16 @@ body.modal-open .at-cursors {
 /* 150 px is enough when the TV sits on the desk; no need for a big panel. */
 .remote-pair {
   display: flex;
+  flex: 0 0 150px;
   flex-direction: column;
   align-items: flex-start;
   gap: 0.35rem;
+  width: 150px;
 }
 
 .remote-qr {
-  width: 150px;
-  height: 150px;
+  width: 100%;
+  height: auto;
   padding: 0.35rem;
   border-radius: 12px;
   background: #f6f8fb;
@@ -1175,9 +1177,10 @@ body.modal-open .at-cursors {
 
 .remote-url {
   margin: 0;
-  max-width: 15rem;
+  width: 100%;
   font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
-  font-size: 0.78rem;
+  font-size: 0.68rem;
+  line-height: 1.3;
   word-break: break-all;
   color: var(--text);
 }
