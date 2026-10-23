@@ -1,5 +1,21 @@
 # 📊 Projektin edistyminen – AI TABTOOL
 
+## v1.91 – Kursorin edestakainen heitto (23.10.2026)
+- Syy: alphaTab asettaa jokaisen syötetyn ajan kursoriksi ilman
+  tarkistusta (`output.updatePosition` → `updateTimePosition`), ja selain
+  ilmoittaa `audio.currentTime`n ~250 ms paloina, jotka voivat toistua tai
+  mennä hetken taaksepäin → kursori hyppäsi iskun eteen ja palasi.
+- Korjaus: `syncPosition()` pitää syötön monotonisena toiston aikana
+  (`lastFedScoreMs`, `lastFedAudioS`, `FEED_JITTER_S = 0,3 s`). Pidetty
+  arvo on aina oikean lukeman tuottama, joten kello ei mene audion edelle.
+  `force` (seek/pause/lataus/SIIRTO/SYNC), pysäytetty audio ja yli 0,3 s
+  taaksepäin menevä aito seek nollaavat vertailun → kelaus toimii.
+- Ei muutoksia `syncTimeMs`iin, `mediaHandler`iin, `togglePlayback`iin,
+  audio-eventteihin, DOM-id:ihin eikä CSS:ään. 1 uusi vartiotesti →
+  **189 testiä**. `syncPosition` ajettu Node-harnessilla (monotonisuus,
+  forced-seek, aito taaksepäin-seek, pause-palautus, `audio.seeking`-esto).
+- **Odottaa käyttäjän kuuntelu-/tabsynkkitestiä.**
+
 ## v1.90 – Vanhojen remote-komentojen toisto (23.10.2026)
 - TV-silta aloitti jonon alusta → vanhat komennot laukesivat sivun
   auetessa (eri aloituskohta eri startilla; restart korjasi). Nyt
@@ -323,13 +339,13 @@
 
 ## Tunnetut rajoitukset
 
-- **Kursorin pieni edestakainen heitto (käyttäjän havainto 23.10.2026).**
-  Soitossa kursori nykii hetken eteen ja palaa; ei iso virhe. Epäilty syy:
-  `syncPosition()` 50 ms välein suoraan `audio.currentTime`sta (selain
-  päivittää sen ~250 ms paloina) + `enableAnimatedBeatCursor: false` +
-  pause/seek-palautukset. Korjaus on sääntö #1:n ydintä → oma sessio,
-  yksi muutos, regressiochecklist ja kuuntelutesti. Katso
-  `activeContext.md` (Seuraava sessio).
+- **Kursorin pieni edestakainen heitto (käyttäjän havainto 23.10.2026) –
+  korjattu v1.91, odottaa kuuntelutestiä.** alphaTab asettaa jokaisen
+  syötetyn ajan kursoriksi ilman tarkistusta, joten selaimen ~250 ms
+  paloina tuleva `audio.currentTime` käänsi kursorin hetkeksi takaisin.
+  `syncPosition()` pitää syötön nyt monotonisena toiston aikana; kello,
+  `mediaHandler.seekTo`-inversio ja audio-eventit eivät muuttuneet.
+  Jos heitto näkyy yhä, mittaa ennen uutta arvausta (ks. `activeContext.md`).
 
 - AI-transkriptio on luonnos; särö/akordit/nopeat soolot virheellisiä.
 - Basic Pitch ei ole kitarakohtainen; otteet/asemat voivat poiketa
@@ -358,10 +374,10 @@
 
 ## Seuraavaksi
 
-0. **Tablatuurisynkan hienosäätö (sääntö #1):** pieni edestakainen heitto
-   soitossa (kursori eteen/palautuu). Epäilyt ja suunnat
-   `activeContext.md`:ssä (Seuraava sessio). Yksi muutos kerrallaan,
-   regressiochecklist ja käyttäjän kuuntelutesti.
+0. **Kursorin heitto (sääntö #1) – v1.91 toteutettu, odottaa kuuntelutestiä:**
+   syöttö on nyt monotoninen toiston aikana. Jos heitto näkyy yhä, mittaa
+   ensin (console.debug-laskuri) ja vasta sitten harkitse interpolaatiota tai
+   animoitua beat-kursoria. Yksi muutos kerrallaan + regressiochecklist.
 1. **Pickup-varotin soittokelloon** (`barDurationMs`/`ticksPerBar`):
    anacrusis-tabissa SIIRTO/KOHDISTA 8×/16× liian voimakas. Vaatii luvan
    (sääntö #1) + regressiochecklist + kuuntelutesti. Sitä ennen data-kierto

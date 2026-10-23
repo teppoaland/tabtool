@@ -1,8 +1,8 @@
 # 📍 Aktiivinen konteksti – AI TABTOOL
 
-> **Versio:** `v1.90` (23.10.2026)
+> **Versio:** `v1.91` (23.10.2026)
 > **Git:** v1.23–v1.90 **pushattu** `origin/main`iin 23.10.2026 käyttäjän
-> pyynnöstä; työpuu clean. Älä pinnaa hashia pysyvästi.
+> pyynnöstä; v1.91 on **paikallinen** commit. Älä pinnaa hashia pysyvästi.
 > **Push:** vain erillisestä pyynnöstä (käyttäjä pyysi 20.10. ja 23.10.2026).
 > **Repo:** https://github.com/teppoaland/tabtool
 > **Palvelin:** käyttäjän hallinnassa (`start.bat` / `stop.bat`); Cline ei
@@ -10,6 +10,19 @@
 
 ## Nyt
 
+- **v1.91 (23.10.2026): kursorin edestakainen heitto – korjaus toteutettu,
+  odottaa käyttäjän kuuntelutestiä.**
+  - Syy: alphaTab asettaa jokaisen syötetyn ajan kursoriksi **ilman
+    tarkistusta** (`updatePosition` → `updateTimePosition`), ja selain
+    ilmoittaa `audio.currentTime`n ~250 ms paloina, jotka voivat toistua tai
+    mennä hetken taaksepäin → kursori hyppäsi iskun eteen ja palasi.
+  - Korjaus vain `syncPosition`issa: syöttö pidetään monotonisena toiston
+    aikana (`lastFedScoreMs`, `lastFedAudioS`, `FEED_JITTER_S = 0,3 s`).
+    Pidetty arvo on aina oikean lukeman tuottama → kello ei mene audion
+    edelle. `force` (seek/pause/lataus/SIIRTO/SYNC), pysäytetty audio ja
+    yli 0,3 s taaksepäin menevä aito seek nollaavat vertailun.
+  - Koskematta: `syncTimeMs`, `mediaHandler.seekTo`, `togglePlayback`,
+    audio-eventit, DOM-id:t, CSS. 1 uusi vartiotesti → **189 testiä**.
 - **v1.90 (23.10.2026): vanhojen remote-komentojen toisto korjattu.**
   - TV-silta aloitti jonon alusta (`since=0`) → edellisen 60 s komennot
     (seek/play/select_tab/rate) laukesivat sivun auetessa. Eri startilla eri
@@ -280,11 +293,12 @@ Putki:
 - **Dr. Feelgood – valmis (v1.76–v1.78):** bar 2 soitetaan 17 kertaa
   kirjoitettuina tahteina (135 tahtia), 2 ylimääräistä lopputahtia ja
   1/16-pickup poistettu. Erillistä `set_repeat.py`tä ei tarvita.
-- **Session tilanne 23.10.2026:** v1.90 valmis (yksi start.bat, QR
-  `/remote`ssa, kolme tilaa + 409-esto, PAUSE punaisella, vanhojen
-  komentojen toisto estetty), 188 testiä vihreänä. Seuraava: käyttäjän
-  kuuntelu-/puhelintesti (erityisesti lukitut tabit: Seek & Destroy,
-  Whiplash) ja sen jälkeen pickup-korjaus / Settings-näkymä.
+- **Session tilanne 23.10.2026:** v1.91 valmis (kursorin edestakainen
+  heitto korjattu; taustalla v1.83–v1.90: yksi start.bat, QR `/remote`ssa,
+  kolme tilaa + 409-esto, PAUSE punaisella, vanhojen komentojen toisto
+  estetty), 189 testiä vihreänä. Seuraava: käyttäjän kuuntelu-/puhelintesti
+  (erityisesti lukitut tabit: Seek & Destroy, Whiplash) ja sen jälkeen
+  pickup-korjaus / Settings-näkymä.
 - Soittotapa/refinger: asemaprofiilit, helpoin-arvio, turhien nuottien
   karsinta, per-tahti/fraasiasema; **ei koodia vielä**.
 - AI-transkription tarkkuus (Basic Pitch); referenssitabit ja ilmainen
@@ -298,23 +312,19 @@ Putki:
   `/remote` (150 px QR), `/lan` PIN, kolme tilaa (SOITA/LISÄÄ/SÄÄDÄ).
   Cline ei julista kaukosäätöä toimivaksi ilman käyttäjän puhelintestiä
   (sääntö #1:n ihmisvalidointi).
-- **SEURAAVA SESSIO – tablatuurisynkan hienosäätö (sääntö #1).**
-  Käyttäjän havainto 23.10.: soitossa on **pientä edestakaista heittoa**
-  (kursori menee hetken eteen ja palaa); ei iso virhe, mutta näkyy.
-  Epäilyt, tarkistettava järjestyksessä:
-  1. `syncPosition()` syöttää `audio.currentTime`n alphaTabille **50 ms**
-     välein, mutta selain päivittää `currentTime`n karkeina paloina
-     (tyypillisesti ~250 ms) → kursori hyppii ja voi näyttää palaavan.
-  2. `enableAnimatedBeatCursor: false` (v1.47) poistaa pehmennyksen;
-     jokainen update näkyy hyppynä.
-  3. `playerStateChanged`/pause/seek kutsuu `syncPosition(true)`, joka voi
-     syöttää hetkellisesti vanhentuneen ajan (erityisesti `audio.seeking`).
-  Mahdolliset suunnat: interpolaatio `timeupdate`-tapahtumien välillä
-  (`performance.now()` + `playbackRate`), monotoninen clamp (kursori ei
-  mene taaksepäin toiston aikana) tai animoidun beat-kursorin
-  uudelleenarviointi. **Yksi muutos kerrallaan**, koko regressiochecklist
-  ja käyttäjän kuuntelutesti; älä koske `togglePlayback`/`mediaHandler`-
-  inversioon ilman erillistä lupaa.
+- **Tablatuurisynkan hienosäätö (sääntö #1) – v1.91 toteutettu, odottaa
+  kuuntelutestiä.** Käyttäjän havainto 23.10.: soitossa oli pientä
+  edestakaista heittoa. Syy: alphaTab ei tarkista syötettyä aikaa
+  (`updatePosition` → `updateTimePosition` asettaa ajan suoraan), joten
+  selaimen ~250 ms paloina tuleva `audio.currentTime` (voi toistua tai
+  mennä hetken taakse) käänsi kursorin. Nyt syöttö on monotoninen toiston
+  aikana; **kelloon, inversioon ja audio-adapteriin ei koskettu**.
+  Jos heitto näkyy yhä: seuraavaksi mitataan (ei arvata) — lisää
+  väliaikainen laskuri, joka kirjaa montako kertaa syöttö jouduttiin
+  pitämään (`console.debug`), ja katso DevToolsista. Vasta sen jälkeen
+  harkitaan interpolaatiota (`performance.now()` + `playbackRate`) tai
+  `enableAnimatedBeatCursor`in uudelleenarviointia – **yksi muutos
+  kerrallaan**, koko regressiochecklist ja käyttäjän kuuntelutesti.
 - **Seek & Destroy todistettu (19.10.):** toisto osuu 1:1 ainakin tahtiin
   149 asti asetuksilla **SIIRTO −0,75 / BPM 142**. GP5-datan korjaus ei
   ole prioriteetti: tabi on ohjelman lukemaa syötettä ja dataa korjataan
