@@ -1249,6 +1249,13 @@ body.modal-open .at-cursors {
   font-size: 1rem;
 }
 
+/* The same button toggles PLAY/PAUSE. While the TV is playing it turns red,
+   so the state is visible at a glance (the label changes to PAUSE). */
+#remote-play.is-playing {
+  background: var(--error);
+  color: #2a0b0b;
+}
+
 .remote-field {
   display: flex;
   align-items: center;

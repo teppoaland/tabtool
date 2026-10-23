@@ -233,6 +233,13 @@ def test_remote_js_keeps_play_enabled_when_tv_is_offline() -> None:
     assert "TV: Offline" in source
 
 
+def test_remote_play_button_turns_red_while_playing() -> None:
+    js = (config.STATIC_DIR / "remote.js").read_text(encoding="utf-8")
+    css = (config.STATIC_DIR / "style.css").read_text(encoding="utf-8")
+    assert 'classList.toggle("is-playing", playing)' in js
+    assert "#remote-play.is-playing" in css
+
+
 def test_lan_enabled_reads_uvicorn_arguments(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(config, "HOST", "127.0.0.1")
     monkeypatch.setattr(

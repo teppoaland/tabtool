@@ -85,6 +85,9 @@
     if (playButton) {
       playButton.textContent = playing ? "PAUSE" : "PLAY";
       playButton.dataset.state = playing ? "playing" : "paused";
+      // Red background while playback runs, so the phone shows the state at
+      // a glance even before reading the label.
+      playButton.classList.toggle("is-playing", playing);
     }
     if (seekSlider) {
       const duration = Number(data.duration) || 0;

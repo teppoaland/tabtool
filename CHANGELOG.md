@@ -2,6 +2,13 @@
 
 > AI TabTool käyttää `1.x`-versiosarjaa. Aloitus `v1.00`.
 
+## v1.87 – 23.10.2026
+
+- **PAUSE-tila punaisella.** Sama PLAY/PAUSE-nappi saa `.is-playing`-luokan,
+  kun TV soittaa: tausta `--error` (punainen) ja teksti tumma, joten tila
+  näkyy yhdellä silmäyksellä ennen kuin ehtii lukea tekstin. Vain
+  `remote.js` + CSS; 1 uusi testi → **179 pytest-testiä**.
+
 ## v1.86 – 23.10.2026
 
 - **PLAY ei enää himmene, vaikka TV olisi offline.** `remote.js` ei aseta
