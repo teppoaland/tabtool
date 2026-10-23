@@ -240,6 +240,15 @@ def test_remote_play_button_turns_red_while_playing() -> None:
     assert "#remote-play.is-playing" in css
 
 
+def test_remote_page_warns_when_tv_is_offline(api_client: TestClient) -> None:
+    response = api_client.get("/remote")
+    assert response.status_code == 200
+    assert 'id="tv-hint"' in response.text
+    assert "TV-näkymä ei ole auki" in response.text
+    js = (config.STATIC_DIR / "remote.js").read_text(encoding="utf-8")
+    assert "tvHintEl.hidden" in js
+
+
 def test_lan_enabled_reads_uvicorn_arguments(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(config, "HOST", "127.0.0.1")
     monkeypatch.setattr(

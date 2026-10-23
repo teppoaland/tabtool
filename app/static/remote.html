@@ -6,14 +6,14 @@
   <meta name="color-scheme" content="dark">
   <title>AI TabTool · Remote</title>
   <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="/static/style.css?v=1.87">
+  <link rel="stylesheet" href="/static/style.css?v=1.88">
 </head>
 <body>
   <header class="topbar">
     <div class="brand">
       <span class="brand-mark" aria-hidden="true">AT</span>
       <span class="brand-name">AI TABTOOL</span>
-      <span id="version-tag" class="version">v1.87</span>
+      <span id="version-tag" class="version">v1.88</span>
     </div>
     <nav class="nav" aria-label="Päävalikko">
       <a href="/">DISPLAY</a>
@@ -33,6 +33,9 @@
         <p class="status-pill" id="api-status" aria-live="polite">Checking…</p>
         <p class="muted" id="api-detail">
           <span id="api-version">/api/health</span> · <span id="tv-status">TV</span>
+        </p>
+        <p id="tv-hint" class="remote-hint" hidden>
+          TV-näkymä ei ole auki. Avaa http://127.0.0.1:8000 tietokoneella.
         </p>
       </div>
       <aside id="remote-pair" class="remote-pair" hidden
@@ -77,11 +80,11 @@
   </main>
 
   <footer class="footer">
-    <span>AI TabTool v1.87</span>
+    <span>AI TabTool v1.88</span>
     <span><a href="/">Takaisin näkymään</a></span>
   </footer>
 
-  <script src="/static/remote.js?v=1.87" defer></script>
+  <script src="/static/remote.js?v=1.88" defer></script>
 </body>
 </html>
 

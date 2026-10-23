@@ -2,6 +2,17 @@
 
 > AI TabTool käyttää `1.x`-versiosarjaa. Aloitus `v1.00`.
 
+## v1.88 – 23.10.2026
+
+- **Selkeä varoitus, kun TV-näkymä ei ole auki.** `/remote` näyttää
+  punaisen rivin `TV-näkymä ei ole auki. Avaa http://127.0.0.1:8000
+  tietokoneella.`, kun TV ei ole raportoinut (`tv_online: false`). PLAY
+  pysyy käytettävissä, mutta nyt näkee heti, miksi se ei tee mitään.
+- `start.bat` muistuttaa: pidä TV-näkymä auki ja avaa `/remote`
+  **toiseen välilehteen** (jos sen avaa samaan, TV-sivu katoaa eikä
+  mikään toista audiota).
+- 1 uusi testi → **180 pytest-testiä**.
+
 ## v1.87 – 23.10.2026
 
 - **PAUSE-tila punaisella.** Sama PLAY/PAUSE-nappi saa `.is-playing`-luokan,

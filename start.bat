@@ -27,6 +27,9 @@ set "TABTOOL_HOST=0.0.0.0"
 echo AI TabTool:      http://127.0.0.1:%PORT%
 echo Remote with QR:  http://127.0.0.1:%PORT%/remote
 echo.
+echo Keep the TV view open on this PC: http://127.0.0.1:%PORT%
+echo Open /remote in a second tab (it shows the QR) - do not replace the TV tab.
+echo.
 call powershell -NoProfile -ExecutionPolicy Bypass -File "scripts\lan_addresses.ps1" -Port %PORT%
 echo If the phone cannot connect, allow port %PORT% in Windows Defender Firewall for private networks.
 echo Optional PIN: set TABTOOL_LAN_PIN in .env before starting.

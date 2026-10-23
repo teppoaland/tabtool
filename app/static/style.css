@@ -1185,6 +1185,14 @@ body.modal-open .at-cursors {
   color: var(--text);
 }
 
+/* Shown when the TV page is not reporting; explains why PLAY has no effect. */
+.remote-hint {
+  margin: 0.35rem 0 0;
+  color: var(--error);
+  font-size: 0.78rem;
+  line-height: 1.35;
+}
+
 /* On a phone the remote itself is the screen; the QR would only take space. */
 @media (max-width: 719px) {
   .remote-pair {

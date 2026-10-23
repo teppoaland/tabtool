@@ -5,7 +5,7 @@ ja katseluun. Hae kappale Spotifysta tai käytä omaa MP3/YouTube-audioita,
 anna tekoälyn tehdä ensimmäinen tablatuuriluonnos ja katsele sitä
 alphaTabilla TV:stä tai tietokoneelta. Puhelin toimii kaukosäätimenä.
 
-**Versio:** `v1.87` (Phase 4 – LAN-kaukosäädin, QR `remote`-sivulla, valinnainen LAN-PIN)
+**Versio:** `v1.88` (Phase 4 – LAN-kaukosäädin, QR `remote`-sivulla, valinnainen LAN-PIN)
 
 ## Session aloitus
 
@@ -83,7 +83,9 @@ Se tulostaa koneen LAN-osoitteet.
    yläkulmassa on **150 × 150 px QR-koodi** ja sen alla osoite
    `http://192.168.1.44:8000/remote`.
 2. Skannaa QR puhelimen kameralla → puhelin avaa saman sivun LAN-osoitteesta.
-3. Pidä TV-näkymä auki tietokoneella (<http://127.0.0.1:8000>).
+3. Pidä TV-näkymä auki tietokoneella (<http://127.0.0.1:8000>). **Avaa
+   `/remote` erilliseen välilehteen** – jos korvaat TV-välilehden sillä,
+   PLAY ei tee mitään, koska mikään sivu ei enää toista audiota.
 4. Puhelin ohjaa: PLAY/PAUSE, ±5 s, toistokohta, Nopeus ja kirjaston
    kappalevalinta. Toisto tapahtuu tietokoneen omasta audiotiedostosta;
    puhelin ei toista eikä lataa audiota.

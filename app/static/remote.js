@@ -25,6 +25,7 @@
   const rateReadout = document.getElementById("remote-rate-readout");
   const libraryEl = document.getElementById("remote-library");
   const libraryStatus = document.getElementById("remote-status");
+  const tvHintEl = document.getElementById("tv-hint");
   const pairEl = document.getElementById("remote-pair");
   const qrEl = document.getElementById("remote-qr");
   const pairUrlEl = document.getElementById("remote-url");
@@ -160,12 +161,14 @@
           ? "TV: Online"
           : "TV: Offline · avaa TV-näkymä";
       }
+      if (tvHintEl) tvHintEl.hidden = tvOnline;
       if ((state.tab_id || "") !== (previousTab || "")) renderLibrary();
       render();
     } catch (error) {
       setStatus("Offline", false);
       tvOnline = false;
       if (tvEl) tvEl.textContent = "TV: Offline · avaa TV-näkymä";
+      if (tvHintEl) tvHintEl.hidden = false;
       render();
     }
   }
