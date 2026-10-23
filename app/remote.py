@@ -1,14 +1,14 @@
-"""LAN remote control (v1.82).
+"""LAN remote control (v1.83).
 
 The phone opens ``/remote`` and sends commands; the TV page runs
 ``remote-bridge.js``, which polls the command queue and drives the existing
 UI controls. Nothing in this module touches the playback chain: commands are
 plain data and the bridge only clicks buttons that a user could click.
 
-The same module adds optional LAN protection: when ``TABTOOL_LAN_PIN`` is
-set, clients outside loopback must present the PIN cookie. A QR code pairs a
-phone without typing anything; the QR points at ``/lan?t=<token>`` (or
-straight at ``/remote`` when no PIN is configured).
+``start.bat`` binds all interfaces, so the QR code on ``/remote`` encodes the
+current LAN address (never 127.0.0.1). When ``TABTOOL_LAN_PIN`` is set,
+clients outside loopback must present the PIN cookie; the QR pairs a phone
+without typing anything.
 """
 
 from __future__ import annotations
@@ -193,7 +193,7 @@ class RemoteHub:
 def lan_enabled() -> bool:
     """True when the server was started for the local network.
 
-    ``start-lan.bat`` sets ``TABTOOL_HOST=0.0.0.0`` before uvicorn starts, so
+    ``start.bat`` sets ``TABTOOL_HOST=0.0.0.0`` before uvicorn starts, so
     ``config.HOST`` is enough there. A manual
     ``uvicorn app.main:app --host 0.0.0.0`` does not touch the environment,
     so the bind address is read from the command line as a fallback.
@@ -461,16 +461,11 @@ def install(app: FastAPI) -> None:
     def remote_commands(since: int = Query(default=0, ge=0)) -> dict[str, Any]:
         return hub.poll(since)
 
-    @app.get("/connect", include_in_schema=False)
-    def connect_page() -> HTMLResponse:
-        return HTMLResponse(
-            (config.STATIC_DIR / "connect.html").read_text(encoding="utf-8")
-        )
-
     if lan_enabled():
-        target = pair_url()
-        if target:
-            print(f"AI TabTool LAN: {target}")
+        address = lan_ip()
+        if address:
+            print(f"AI TabTool phone remote: http://{address}:{config.PORT}/remote")
+        print(f"AI TabTool QR code:      http://127.0.0.1:{config.PORT}/remote")
         if not config.LAN_PIN.strip():
             print(
                 "AI TabTool LAN: TABTOOL_LAN_PIN is empty - "

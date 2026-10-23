@@ -41,7 +41,8 @@ Nämä eivät koskaan mene julkiseen gitiin:
 
 ## Palvelimen verkko
 
-- Oletus: `127.0.0.1:8000`.
-- `--lan` / `TABTOOL_HOST=0.0.0.0` vain luotetussa lähiverkossa.
-- Suositus: valinnainen `TABTOOL_LAN_PIN`.
+- `start.bat` sitoo `0.0.0.0:8000`:aan (v1.83, käyttäjän pyyntö), jotta
+  puhelinkaukosäädin toimii samassa verkossa; manuaalinen oletus on
+  `127.0.0.1:8000`. LAN vain luotetussa lähiverkossa.
+- Suositus: valinnainen `TABTOOL_LAN_PIN` (QR pariuttaa puhelimen).
 - Ei CORSia eikä julkista `data/`-static-mounttia.

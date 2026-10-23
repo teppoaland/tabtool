@@ -142,6 +142,7 @@ def test_qr_uses_current_lan_address(
     assert info["lan"] is True
     assert info["remote_url"] == f"{base}/remote"
     assert info["pair_url"] == f"{base}/remote"
+    assert "127.0.0.1" not in info["pair_url"]
 
 
 def test_pair_url_carries_session_token_with_pin(
@@ -202,11 +203,16 @@ def test_loopback_skips_pin(data_dir, monkeypatch: pytest.MonkeyPatch) -> None: 
     assert loop.get("/api/remote/state").status_code == 200
 
 
-def test_connect_page(api_client: TestClient) -> None:
-    response = api_client.get("/connect")
+def test_connect_page_is_gone(api_client: TestClient) -> None:
+    assert api_client.get("/connect").status_code == 404
+
+
+def test_remote_page_has_pairing_block(api_client: TestClient) -> None:
+    response = api_client.get("/remote")
     assert response.status_code == 200
-    assert "AI TABTOOL" in response.text
-    assert "connect-qr" in response.text
+    assert 'id="remote-qr"' in response.text
+    assert 'width="150"' in response.text
+    assert 'height="150"' in response.text
 
 
 def test_lan_enabled_reads_uvicorn_arguments(monkeypatch: pytest.MonkeyPatch) -> None:

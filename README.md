@@ -5,7 +5,7 @@ ja katseluun. Hae kappale Spotifysta tai käytä omaa MP3/YouTube-audioita,
 anna tekoälyn tehdä ensimmäinen tablatuuriluonnos ja katsele sitä
 alphaTabilla TV:stä tai tietokoneelta. Puhelin toimii kaukosäätimenä.
 
-**Versio:** `v1.82` (Phase 4 – LAN-kaukosäädin, QR-pariutus ja valinnainen LAN-PIN)
+**Versio:** `v1.83` (Phase 4 – LAN-kaukosäädin, QR `remote`-sivulla, valinnainen LAN-PIN)
 
 ## Session aloitus
 
@@ -70,31 +70,28 @@ käynnistä toista instanssia vaan neuvoo ajamaan `stop.bat`in.
 Avaa tarvittaessa käsin:
 
 - TV/näkymä: <http://127.0.0.1:8000>
-- Kaukosäädin: <http://127.0.0.1:8000/remote>
-- QR-pariutus: <http://127.0.0.1:8000/connect>
+- Kaukosäädin + QR: <http://127.0.0.1:8000/remote>
 - API-dokumentaatio: <http://127.0.0.1:8000/docs>
 
 ### Puhelin kaukosäätimenä (sisäverkko)
 
-Käynnistä palvelin sisäverkkoon:
+`start.bat` on ainoa käynnistin: se sitoo palvelimen `0.0.0.0:8000`:aan,
+joten sekä tämä kone että puhelin samassa verkossa voivat yhdistää.
+Se tulostaa koneen LAN-osoitteet.
 
-```bat
-start-lan.bat
-```
-
-(= `start.bat lan`.) Palvelin kuuntelee `0.0.0.0:8000`, tulostaa koneen
-LAN-osoitteet ja avaa selaimen QR-sivulle `http://127.0.0.1:8000/connect`.
-
-1. Skannaa QR-koodi puhelimen kameralla → puhelin avaa `/remote`.
-2. Pidä TV-näkymä auki tietokoneella (`http://127.0.0.1:8000`).
-3. Puhelin ohjaa: PLAY/PAUSE, ±5 s, toistokohta, Nopeus ja kirjaston
+1. Avaa koneella <http://127.0.0.1:8000/remote> → sivun oikeassa
+   yläkulmassa on **150 × 150 px QR-koodi** ja sen alla osoite
+   `http://192.168.1.44:8000/remote`.
+2. Skannaa QR puhelimen kameralla → puhelin avaa saman sivun LAN-osoitteesta.
+3. Pidä TV-näkymä auki tietokoneella (<http://127.0.0.1:8000>).
+4. Puhelin ohjaa: PLAY/PAUSE, ±5 s, toistokohta, Nopeus ja kirjaston
    kappalevalinta. Toisto tapahtuu tietokoneen omasta audiotiedostosta;
    puhelin ei toista eikä lataa audiota.
 
 IP-osoite ei ole kiinteä: QR generoidaan pyydettäessä sen hetkisestä
-osoitteesta, joten reitittimen DHCP ei haittaa. Jos koneella on useita
-verkkokortteja (VPN), `scripts\lan_addresses.ps1` listaa kaikki osoitteet
-ja `TABTOOL_LAN_IP` voi kiinnittää QR-koodin osoitteen.
+osoitteesta, joten reitittimen DHCP ei haittaa. `TABTOOL_LAN_IP` voi
+kiinnittää QR-koodin osoitteen (VPN / useita verkkokortteja) ja
+`scripts\lan_addresses.ps1` listaa ne.
 
 **Valinnainen LAN-PIN:** aseta `.env`iin `TABTOOL_LAN_PIN=1234` ja
 käynnistä uudelleen. Silloin muut kuin localhost-yhteydet vaativat PINin,
@@ -102,7 +99,7 @@ mutta QR-pariutus kirjaa puhelimen sisään ilman PINin kirjoittamista.
 Ilman PINiä kuka tahansa samassa verkossa voi ohjata sovellusta.
 
 Windowsin palomuuri: salli portti 8000 **yksityisessä** verkossa, jos
-puhelin ei saa yhteyttä. `stop.bat` pysäyttää palvelimen myös LAN-tilassa.
+puhelin ei saa yhteyttä. `stop.bat` pysäyttää palvelimen.
 
 ### Manuaalinen asennus
 
@@ -138,7 +135,6 @@ tai:
 node --check app\static\app.js
 node --check app\static\remote.js
 node --check app\static\remote-bridge.js
-node --check app\static\connect.js
 ```
 
 ---
@@ -504,7 +500,8 @@ docs/               GITIGNORED
 - **v1.43** ✅ – kursorin synkka: backing track -venytys pois, osoitin äänen tahdissa
 - **v1.42** ✅ – testiyhteenveto näkyviin (`pytest.ini`), sessioalustuksen tulosteet kapeaan konsoliin
 - **v1.41** ✅ – GP3/GP4-tuonti (konversio GP5:ksi), audiopolun rescan-korjaus
-- **v1.82** ✅ – LAN-kaukosäädin: `start-lan.bat`, QR-pariutus, valinnainen LAN-PIN
+- **v1.83** ✅ – yksi `start.bat` (LAN aina), 150 px QR `/remote`-sivulla
+- **v1.82** ✅ – LAN-kaukosäädin: QR-pariutus, valinnainen LAN-PIN
 - **v1.36** – Spotify-haku, OAuth, SDK/Connect-synkka
 - **1.x** – basso, laulu, rummut, bending
 

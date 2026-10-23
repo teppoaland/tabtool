@@ -1,4 +1,4 @@
-/* AI TabTool remote bridge (v1.82) – phone commands for the TV view.
+/* AI TabTool remote bridge (v1.83) – phone commands for the TV view.
  *
  * Rule 07: this file never touches the playback chain. It only clicks the
  * existing transport controls and dispatches the same DOM events a user

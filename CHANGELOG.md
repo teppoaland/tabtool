@@ -2,6 +2,24 @@
 
 > AI TabTool käyttää `1.x`-versiosarjaa. Aloitus `v1.00`.
 
+## v1.83 – 23.10.2026
+
+- **Yksi käynnistin.** `start-lan.bat` poistettu – se oli turha. `start.bat`
+  sitoo aina `0.0.0.0:8000`:aan, tulostaa koneen LAN-osoitteet ja avaa
+  TV-näkymän. Ei lippuja eikä toista skriptiä.
+- **QR suoraan `/remote`-sivulle.** 150 × 150 px QR ja sen alla osoite
+  `http://<LAN-IP>:8000/remote`; piilotettu kapeilla (puhelin) näytöillä,
+  jotta ohjaimet pysyvät selkeinä. QR encodaa aina sen hetkisen LAN-IP:n,
+  ei `127.0.0.1`:tä, joten DHCP-osoitteen vaihtuminen ei haittaa.
+- **`/connect`-sivu poistettu** (`connect.html`/`connect.js`): iso QR oli
+  ylimääräinen mutka. `GET /connect` → 404.
+- `scripts/lan_addresses.ps1` tulostaa vain `LAN: http://…/remote`.
+- `app.js` ei muuttunut; `index.html` sai vain `?v=1.83`-leimat.
+  `remote.html`, `remote.js` ja `style.css` (uudet `.remote-qr`-luokat)
+  muuttuivat → vaatii käyttäjän kuuntelu-/tabsynkkitestin (sääntö #1).
+- 1 uusi testi (remote-sivun QR-palsta), `/connect`-testi vaihdettu
+  404-testiksi → **176 pytest-testiä**.
+
 ## v1.82 – 23.10.2026
 
 - **LAN-kaukosäädin ja QR-pariutus.** `start-lan.bat` (`start.bat lan`)

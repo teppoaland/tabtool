@@ -20,7 +20,6 @@ if (-not $addresses -or $addresses.Count -eq 0) {
     exit 0
 }
 
-foreach ($address in $addresses) {
-    Write-Host ("LAN:     http://{0}:{1}/remote" -f $address, $Port)
+$addresses | ForEach-Object {
+    Write-Host ("LAN:             http://{0}:{1}/remote" -f $_, $Port)
 }
-Write-Host ("QR page: http://127.0.0.1:{0}/connect" -f $Port)

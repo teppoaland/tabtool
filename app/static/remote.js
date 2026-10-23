@@ -1,8 +1,9 @@
-/* AI TabTool remote control (v1.82).
+/* AI TabTool remote control (v1.83).
  *
  * The phone only sends commands and shows the state the TV reported. All
  * playback happens on the TV (remote-bridge.js), so this page never plays
- * audio and never touches tab data.
+ * audio and never touches tab data. The 150 px QR pairs a phone with the
+ * current LAN address; it is hidden on narrow (phone) screens.
  */
 (() => {
   "use strict";
@@ -24,6 +25,10 @@
   const rateReadout = document.getElementById("remote-rate-readout");
   const libraryEl = document.getElementById("remote-library");
   const libraryStatus = document.getElementById("remote-status");
+  const pairEl = document.getElementById("remote-pair");
+  const qrEl = document.getElementById("remote-qr");
+  const pairUrlEl = document.getElementById("remote-url");
+  const pairHintEl = document.getElementById("remote-hint");
 
   let state = null;
   let tvOnline = false;
@@ -96,6 +101,36 @@
     }
     if (rateSlider && !rating && data.rate) {
       rateSlider.value = String(Number(data.rate));
+    }
+  }
+
+  async function loadLanInfo() {
+    if (!pairEl) return;
+    try {
+      const response = await fetch("/api/lan/info", { cache: "no-store" });
+      if (!response.ok) return;
+      const info = await response.json();
+      pairEl.hidden = false;
+      if (info.lan && info.remote_url) {
+        if (qrEl) {
+          qrEl.hidden = false;
+          qrEl.src = `/api/lan/qr.svg?t=${Date.now()}`;
+        }
+        if (pairUrlEl) pairUrlEl.textContent = info.remote_url;
+        if (pairHintEl) pairHintEl.textContent = "";
+      } else {
+        // Loopback-only start: a QR would not work on the phone, so show the
+        // address and tell why it is not scannable.
+        if (qrEl) qrEl.hidden = true;
+        if (pairUrlEl) {
+          pairUrlEl.textContent = info.ip ? `${info.ip}:${info.port}` : "–";
+        }
+        if (pairHintEl) {
+          pairHintEl.textContent = "Palvelin kuuntelee vain tätä konetta.";
+        }
+      }
+    } catch (error) {
+      /* the status pill already tells about the connection */
     }
   }
 
@@ -236,8 +271,10 @@
 
   refresh();
   loadLibrary();
+  loadLanInfo();
   window.setInterval(refresh, REFRESH_MS);
   window.setInterval(loadLibrary, LIBRARY_MS);
+  window.setInterval(loadLanInfo, LIBRARY_MS);
   document.addEventListener("visibilitychange", () => {
     if (!document.hidden) refresh();
   });

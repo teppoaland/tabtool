@@ -1140,32 +1140,53 @@ body.modal-open .at-cursors {
 }
 
 
-/* === LAN pairing and phone remote (v1.82) ==============================
+/* === LAN pairing and phone remote (v1.83) ==============================
    New classes only. The viewer, .transport and .alphatab dimensions stay
    untouched (rule 07): nothing here selects an existing playback element. */
 
-.connect-card {
+.remote-hero {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.9rem;
-  text-align: center;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
 }
 
-.connect-qr {
-  width: min(320px, 72vw);
-  height: auto;
-  padding: 0.75rem;
-  border-radius: 14px;
+.remote-hero-text {
+  flex: 1 1 18rem;
+  min-width: 0;
+}
+
+/* 150 px is enough when the TV sits on the desk; no need for a big panel. */
+.remote-pair {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.35rem;
+}
+
+.remote-qr {
+  width: 150px;
+  height: 150px;
+  padding: 0.35rem;
+  border-radius: 12px;
   background: #f6f8fb;
 }
 
-.connect-url {
+.remote-url {
   margin: 0;
+  max-width: 15rem;
   font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
-  font-size: 0.9rem;
+  font-size: 0.78rem;
   word-break: break-all;
   color: var(--text);
+}
+
+/* On a phone the remote itself is the screen; the QR would only take space. */
+@media (max-width: 719px) {
+  .remote-pair {
+    display: none;
+  }
 }
 
 .pin-card {

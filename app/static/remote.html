@@ -6,14 +6,14 @@
   <meta name="color-scheme" content="dark">
   <title>AI TabTool · Remote</title>
   <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="/static/style.css?v=1.82">
+  <link rel="stylesheet" href="/static/style.css?v=1.83">
 </head>
 <body>
   <header class="topbar">
     <div class="brand">
       <span class="brand-mark" aria-hidden="true">AT</span>
       <span class="brand-name">AI TABTOOL</span>
-      <span id="version-tag" class="version">v1.82</span>
+      <span id="version-tag" class="version">v1.83</span>
     </div>
     <nav class="nav" aria-label="Päävalikko">
       <a href="/">DISPLAY</a>
@@ -22,17 +22,26 @@
   </header>
 
   <main class="shell remote-shell">
-    <section class="hero">
-      <p class="kicker">REMOTE</p>
-      <h1>Kaukosäädin.</h1>
-      <p class="lede">
-        Pidä tämä sivu auki puhelimessa ja TV-näkymä tietokoneella.
-        Molemmat käyttävät samaa lokaalia palvelinta.
-      </p>
-      <p class="status-pill" id="api-status" aria-live="polite">Checking…</p>
-      <p class="muted" id="api-detail">
-        <span id="api-version">/api/health</span> · <span id="tv-status">TV</span>
-      </p>
+    <section class="hero remote-hero">
+      <div class="remote-hero-text">
+        <p class="kicker">REMOTE</p>
+        <h1>Kaukosäädin.</h1>
+        <p class="lede">
+          Pidä tämä sivu auki puhelimessa ja TV-näkymä tietokoneella.
+          Molemmat käyttävät samaa lokaalia palvelinta.
+        </p>
+        <p class="status-pill" id="api-status" aria-live="polite">Checking…</p>
+        <p class="muted" id="api-detail">
+          <span id="api-version">/api/health</span> · <span id="tv-status">TV</span>
+        </p>
+      </div>
+      <aside id="remote-pair" class="remote-pair" hidden
+             aria-label="QR-koodi puhelimelle">
+        <img id="remote-qr" class="remote-qr" width="150" height="150"
+             alt="QR-koodi puhelimelle">
+        <p id="remote-url" class="remote-url">…</p>
+        <p id="remote-hint" class="muted"></p>
+      </aside>
     </section>
 
     <section class="remote-panel" aria-label="Toiston hallinta">
@@ -68,11 +77,11 @@
   </main>
 
   <footer class="footer">
-    <span>AI TabTool v1.82</span>
+    <span>AI TabTool v1.83</span>
     <span><a href="/">Takaisin näkymään</a></span>
   </footer>
 
-  <script src="/static/remote.js?v=1.82" defer></script>
+  <script src="/static/remote.js?v=1.83" defer></script>
 </body>
 </html>
 
