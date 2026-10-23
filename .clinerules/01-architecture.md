@@ -51,3 +51,5 @@ pyörii käyttäjän omalla koneella; ei pilveä, ei monikäyttäjätilejä.
 4. Älä lisää uusia riippuvuuksia ilman perustelua.
 5. `origin` = `teppoaland/tabtool` on totuus.
 6. Versiot: AI TabTool = `1.x`. Älä käytä GameHubin `10.x`-sarjaa.
+7. **Yksi toiminto kerrallaan:** kappaletta joko lisätään, säädetään tai
+   soitetaan. Palvelin estää päällekkäisyyden (409) eikä UI tarjoa sitä.

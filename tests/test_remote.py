@@ -227,9 +227,10 @@ def test_tv_stays_online_between_background_reports(
     assert payload["tv_online"] is True
 
 
-def test_remote_js_keeps_play_enabled_when_tv_is_offline() -> None:
+def test_remote_js_does_not_disable_play_when_tv_is_offline() -> None:
     source = (config.STATIC_DIR / "remote.js").read_text(encoding="utf-8")
-    assert "playButton.disabled" not in source
+    assert "playButton.disabled = !tvOnline" not in source
+    assert "playButton.disabled = jobActive" in source
     assert "TV: Offline" in source
 
 
@@ -247,6 +248,74 @@ def test_remote_page_warns_when_tv_is_offline(api_client: TestClient) -> None:
     assert "TV-näkymä ei ole auki" in response.text
     js = (config.STATIC_DIR / "remote.js").read_text(encoding="utf-8")
     assert "tvHintEl.hidden" in js
+
+
+def test_remote_page_has_modes_and_forms(api_client: TestClient) -> None:
+    response = api_client.get("/remote")
+    assert response.status_code == 200
+    for token in (
+        'id="mode-play"',
+        'id="mode-add"',
+        'id="mode-adjust"',
+        'id="panel-play"',
+        'id="panel-add"',
+        'id="panel-adjust"',
+        'id="add-form"',
+        'id="add-youtube"',
+        'id="add-gp5-url"',
+        'id="add-gp5-file"',
+        'id="adjust-form"',
+    ):
+        assert token in response.text
+
+
+def test_remote_state_reports_job_active(
+    api_client: TestClient, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(remote, "jobs_running", lambda: True)
+    payload = api_client.get("/api/remote/state").json()
+    assert payload["job_active"] is True
+
+
+def test_job_creation_blocked_while_playing(
+    api_client: TestClient, hub: remote.RemoteHub
+) -> None:
+    hub.report({"playing": True})
+    response = api_client.post(
+        "/api/jobs", data={"youtube_url": "https://youtu.be/abc"}
+    )
+    assert response.status_code == 409
+    assert "Pysäytä soitto" in response.json()["detail"]
+
+
+def test_job_creation_blocked_while_job_running(
+    api_client: TestClient, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(remote, "jobs_running", lambda: True)
+    response = api_client.post(
+        "/api/tabs/import",
+        files={"file": ("tab.gp5", b"data", "application/octet-stream")},
+    )
+    assert response.status_code == 409
+    assert "Tabia luodaan jo" in response.json()["detail"]
+
+
+def test_play_command_blocked_while_job_running(
+    api_client: TestClient, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(remote, "jobs_running", lambda: True)
+    blocked = api_client.post("/api/remote/command", json={"action": "toggle"})
+    assert blocked.status_code == 409
+    # Seeking is harmless and stays allowed.
+    allowed = api_client.post("/api/remote/command", json={"action": "seek", "value": 5})
+    assert allowed.status_code == 202
+
+
+def test_remote_js_enforces_one_operation_at_a_time() -> None:
+    source = (config.STATIC_DIR / "remote.js").read_text(encoding="utf-8")
+    assert "Pysäytä soitto ennen lisäystä." in source
+    assert "Tabia luodaan jo" in source
+    assert "job_active" in source
 
 
 def test_lan_enabled_reads_uvicorn_arguments(monkeypatch: pytest.MonkeyPatch) -> None:

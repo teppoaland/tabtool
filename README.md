@@ -5,7 +5,7 @@ ja katseluun. Hae kappale Spotifysta tai käytä omaa MP3/YouTube-audioita,
 anna tekoälyn tehdä ensimmäinen tablatuuriluonnos ja katsele sitä
 alphaTabilla TV:stä tai tietokoneelta. Puhelin toimii kaukosäätimenä.
 
-**Versio:** `v1.88` (Phase 4 – LAN-kaukosäädin, QR `remote`-sivulla, valinnainen LAN-PIN)
+**Versio:** `v1.89` (Phase 4 – LAN-kaukosäädin: soita / lisää / säädä, QR `remote`-sivulla)
 
 ## Session aloitus
 
@@ -86,9 +86,15 @@ Se tulostaa koneen LAN-osoitteet.
 3. Pidä TV-näkymä auki tietokoneella (<http://127.0.0.1:8000>). **Avaa
    `/remote` erilliseen välilehteen** – jos korvaat TV-välilehden sillä,
    PLAY ei tee mitään, koska mikään sivu ei enää toista audiota.
-4. Puhelin ohjaa: PLAY/PAUSE, ±5 s, toistokohta, Nopeus ja kirjaston
-   kappalevalinta. Toisto tapahtuu tietokoneen omasta audiotiedostosta;
-   puhelin ei toista eikä lataa audiota.
+4. Puhelin ohjaa kolmessa tilassa – **yksi toiminto kerrallaan**:
+   - **SOITA:** PLAY/PAUSE, ±5 s, toistokohta, Nopeus ja kirjastovalinta.
+   - **LISÄÄ:** YouTube-linkki ja valinnainen GP5-linkki tai GP5-tiedosto
+     puhelimesta → GENERATE TAB. Työn vaiheet ja edistyminen näkyvät;
+     valmis tabi ilmestyy kirjastoon (ei automaattista toistoa).
+   - **SÄÄDÄ:** nimi, viritys, lukitus ja arkistointi.
+   Lisäys on estetty soiton aikana ja soitto tabin luonnin aikana (myös
+   palvelin vastaa 409:llä). Toisto tapahtuu tietokoneen omasta
+   audiotiedostosta; puhelin ei toista eikä lataa audiota.
 
 IP-osoite ei ole kiinteä: QR generoidaan pyydettäessä sen hetkisestä
 osoitteesta, joten reitittimen DHCP ei haittaa. `TABTOOL_LAN_IP` voi

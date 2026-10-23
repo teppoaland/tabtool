@@ -6,14 +6,14 @@
   <meta name="color-scheme" content="dark">
   <title>AI TabTool · Remote</title>
   <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="/static/style.css?v=1.88">
+  <link rel="stylesheet" href="/static/style.css?v=1.89">
 </head>
 <body>
   <header class="topbar">
     <div class="brand">
       <span class="brand-mark" aria-hidden="true">AT</span>
       <span class="brand-name">AI TABTOOL</span>
-      <span id="version-tag" class="version">v1.88</span>
+      <span id="version-tag" class="version">v1.89</span>
     </div>
     <nav class="nav" aria-label="Päävalikko">
       <a href="/">DISPLAY</a>
@@ -47,44 +47,115 @@
       </aside>
     </section>
 
-    <section class="remote-panel" aria-label="Toiston hallinta">
-      <div class="remote-now">
-        <strong id="remote-title">–</strong>
-        <span id="remote-meta" class="muted">Tahti – · 0:00 / 0:00</span>
-      </div>
-      <div class="remote-controls">
-        <button id="remote-back" type="button" class="ghost">−5 s</button>
-        <button id="remote-play" type="button" class="primary play">PLAY</button>
-        <button id="remote-forward" type="button" class="ghost">+5 s</button>
-      </div>
-      <label class="remote-field">
-        <span>Toisto</span>
-        <input id="remote-seek" class="remote-slider" type="range"
-               min="0" max="0" step="0.1" value="0"
-               aria-label="Toistokohta">
-      </label>
-      <label class="remote-field">
-        <span>Nopeus</span>
-        <input id="remote-rate" class="remote-slider" type="range"
-               min="0.5" max="1.5" step="0.001" value="1"
-               aria-label="Audion nopeus">
-        <span id="remote-rate-readout" class="muted">100.0%</span>
-      </label>
+    <nav class="remote-modes" role="tablist" aria-label="Toiminto">
+      <button id="mode-play" type="button" class="remote-mode is-active"
+              role="tab" aria-selected="true" aria-controls="panel-play">SOITA</button>
+      <button id="mode-add" type="button" class="remote-mode"
+              role="tab" aria-selected="false" aria-controls="panel-add">LISÄÄ</button>
+      <button id="mode-adjust" type="button" class="remote-mode"
+              role="tab" aria-selected="false" aria-controls="panel-adjust">SÄÄDÄ</button>
+    </nav>
+
+    <div id="panel-play" class="remote-mode-panel" role="tabpanel"
+         aria-labelledby="mode-play">
+      <section class="remote-panel" aria-label="Toiston hallinta">
+        <div class="remote-now">
+          <strong id="remote-title">–</strong>
+          <span id="remote-meta" class="muted">Tahti – · 0:00 / 0:00</span>
+        </div>
+        <div class="remote-controls">
+          <button id="remote-back" type="button" class="ghost">−5 s</button>
+          <button id="remote-play" type="button" class="primary play">PLAY</button>
+          <button id="remote-forward" type="button" class="ghost">+5 s</button>
+        </div>
+        <label class="remote-field">
+          <span>Toisto</span>
+          <input id="remote-seek" class="remote-slider" type="range"
+                 min="0" max="0" step="0.1" value="0"
+                 aria-label="Toistokohta">
+        </label>
+        <label class="remote-field">
+          <span>Nopeus</span>
+          <input id="remote-rate" class="remote-slider" type="range"
+                 min="0.5" max="1.5" step="0.001" value="1"
+                 aria-label="Audion nopeus">
+          <span id="remote-rate-readout" class="muted">100.0%</span>
+        </label>
+        <p id="play-note" class="remote-hint" hidden>
+          Tabia luodaan… odota valmistumista.
+        </p>
+      </section>
+
+      <section class="remote-library-card" aria-label="Kirjasto">
+        <h2>Kirjasto</h2>
+        <div id="remote-library" class="remote-library"></div>
+        <p id="remote-status" class="muted" aria-live="polite"></p>
+      </section>
+    </div>
+
+    <section id="panel-add" class="remote-library-card remote-mode-panel"
+             role="tabpanel" aria-labelledby="mode-add" hidden>
+      <h2>Lisää kappale</h2>
+      <form id="add-form" class="remote-form">
+        <label class="remote-field">
+          <span>YouTube</span>
+          <input id="add-youtube" type="url" inputmode="url"
+                 placeholder="https://youtu.be/…" autocomplete="off">
+        </label>
+        <label class="remote-field">
+          <span>GP5-linkki</span>
+          <input id="add-gp5-url" type="url" inputmode="url"
+                 placeholder="Valinnainen" autocomplete="off">
+        </label>
+        <label class="remote-field">
+          <span>GP5-tiedosto</span>
+          <input id="add-gp5-file" type="file"
+                 accept=".gp5,.gp4,.gp3,.gp2,.musicxml,.xml">
+        </label>
+        <p id="add-note" class="remote-hint" hidden></p>
+        <button id="add-submit" type="submit" class="primary">GENERATE TAB</button>
+        <progress id="add-progress" class="job-progress" max="1" value="0" hidden></progress>
+        <p id="add-status" class="remote-status" aria-live="polite"></p>
+      </form>
     </section>
 
-    <section class="remote-library-card" aria-label="Kirjasto">
-      <h2>Kirjasto</h2>
-      <div id="remote-library" class="remote-library"></div>
-      <p id="remote-status" class="muted" aria-live="polite"></p>
+    <section id="panel-adjust" class="remote-library-card remote-mode-panel"
+             role="tabpanel" aria-labelledby="mode-adjust" hidden>
+      <h2>Säädä</h2>
+      <div id="adjust-list" class="remote-library"></div>
+      <form id="adjust-form" class="remote-form" hidden>
+        <p id="adjust-title" class="muted"></p>
+        <label class="remote-field">
+          <span>Nimi</span>
+          <input id="adjust-name" type="text" maxlength="200">
+        </label>
+        <label class="remote-field">
+          <span>Viritys</span>
+          <input id="adjust-tuning" type="text" maxlength="80"
+                 placeholder="Esim. Drop D · DADGBE">
+        </label>
+        <label class="remote-check">
+          <input id="adjust-locked" type="checkbox"><span>Lukitse</span>
+        </label>
+        <label class="remote-check">
+          <input id="adjust-archived" type="checkbox"><span>Arkistoi</span>
+        </label>
+        <p id="adjust-note" class="remote-hint" hidden>
+          Pysäytä soitto ennen säätämistä.
+        </p>
+        <button id="adjust-submit" type="submit" class="primary">TALLENNA</button>
+        <p id="adjust-status" class="remote-status" aria-live="polite"></p>
+      </form>
     </section>
   </main>
 
+
   <footer class="footer">
-    <span>AI TabTool v1.88</span>
+    <span>AI TabTool v1.89</span>
     <span><a href="/">Takaisin näkymään</a></span>
   </footer>
 
-  <script src="/static/remote.js?v=1.88" defer></script>
+  <script src="/static/remote.js?v=1.89" defer></script>
 </body>
 </html>
 

@@ -30,7 +30,7 @@ import segno
 from fastapi import FastAPI, Form, HTTPException, Query, Request
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse, Response
 
-from app import config
+from app import config, db
 from app.config import is_loopback
 
 # A queued command is meant for the TV that is open right now. Keeping the
@@ -50,7 +50,23 @@ COOKIE_MAX_AGE = 30 * 24 * 3600
 PAIR_TOKEN = secrets.token_urlsafe(12)
 
 ACTIONS = {"play", "pause", "toggle", "seek", "seek_rel", "rate", "select_tab"}
+# One operation at a time: these endpoints create a job, so they are refused
+# while the TV is playing or another job is still running.
+JOB_PATHS = {"/api/jobs", "/api/tabs/import", "/api/tabs/import-url"}
+BUSY_JOB = "Tabia luodaan jo – odota valmistumista."
+BUSY_PLAYING = "Pysäytä soitto ennen kuin lisäät kappaleen."
 MAX_TAB_ID = 64
+
+
+def creates_job(method: str, path: str) -> bool:
+    """True for POST routes that start a pipeline job."""
+    if method != "POST":
+        return False
+    if path in JOB_PATHS:
+        return True
+    return path.startswith("/api/tabs/") and path.endswith(
+        ("/attach-audio", "/section")
+    )
 MAX_TITLE = 200
 MAX_SECONDS = 24 * 3600.0
 
@@ -266,6 +282,25 @@ def pin_token(pin: str) -> str:
     return hashlib.sha256(f"tabtool-lan:{pin}".encode("utf-8")).hexdigest()
 
 
+def jobs_running() -> bool:
+    """True while any queued/running job exists (one operation at a time)."""
+    try:
+        rows = db.list_jobs(50)
+    except Exception:  # pragma: no cover - defensive, the DB is local
+        return False
+    return any(str(row.get("status") or "") not in {"ready", "failed"} for row in rows)
+
+
+def busy_reason(hub: "RemoteHub") -> str | None:
+    """Why a new job must wait, or None when the app is idle."""
+    if jobs_running():
+        return BUSY_JOB
+    snapshot = hub.snapshot()
+    if snapshot["tv_online"] and snapshot["state"].get("playing"):
+        return BUSY_PLAYING
+    return None
+
+
 def _cookie_ok(request: Request) -> bool:
     pin = config.LAN_PIN.strip()
     if not pin:
@@ -367,11 +402,18 @@ def install(app: FastAPI) -> None:
     @app.middleware("http")
     async def _lan_guard(request: Request, call_next):  # type: ignore[no-untyped-def]
         path = request.url.path
-        if _gate_open(request, path):
-            return await call_next(request)
-        if path.startswith("/api/"):
-            return JSONResponse({"detail": "LAN-PIN required"}, status_code=401)
-        return HTMLResponse(_login_page("LAN-PIN vaaditaan."), status_code=401)
+        if not _gate_open(request, path):
+            if path.startswith("/api/"):
+                return JSONResponse({"detail": "LAN-PIN required"}, status_code=401)
+            return HTMLResponse(_login_page("LAN-PIN vaaditaan."), status_code=401)
+        # One operation at a time: no new job while playing or while another
+        # job is still running. The UI shows the same rule, but the server
+        # enforces it so a stale tab cannot bypass it.
+        if creates_job(request.method, path):
+            reason = busy_reason(hub)
+            if reason:
+                return JSONResponse({"detail": reason}, status_code=409)
+        return await call_next(request)
 
     @app.get("/lan", include_in_schema=False)
     def lan_page(request: Request, t: str = Query(default="")) -> Response:
@@ -442,6 +484,9 @@ def install(app: FastAPI) -> None:
     def remote_state() -> dict[str, Any]:
         snapshot = hub.snapshot()
         snapshot["pin_required"] = bool(config.LAN_PIN.strip())
+        # Server-side truth for "one operation at a time": any queued or
+        # running job means playback is not allowed yet.
+        snapshot["job_active"] = jobs_running()
         return snapshot
 
     @app.post("/api/remote/state", status_code=204, tags=["remote"])
@@ -470,6 +515,8 @@ def install(app: FastAPI) -> None:
             command = clean_command(payload)
         except RemoteError as exc:
             raise HTTPException(status_code=422, detail=str(exc)) from exc
+        if command["action"] in {"play", "toggle"} and jobs_running():
+            raise HTTPException(status_code=409, detail=BUSY_JOB)
         return {"seq": hub.push(command)}
 
     @app.get("/api/remote/commands", tags=["remote"])
@@ -491,9 +538,12 @@ def install(app: FastAPI) -> None:
 __all__ = [
     "RemoteHub",
     "RemoteError",
+    "busy_reason",
     "clean_command",
     "clean_state",
+    "creates_job",
     "install",
+    "jobs_running",
     "lan_enabled",
     "lan_ip",
     "lan_url",

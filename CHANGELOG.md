@@ -2,6 +2,21 @@
 
 > AI TabTool käyttää `1.x`-versiosarjaa. Aloitus `v1.00`.
 
+## v1.89 – 23.10.2026
+
+- **Remote kolmessa tilassa, yksi toiminto kerrallaan:** SOITA / LISÄÄ /
+  SÄÄDÄ; vain yksi paneeli näkyvissä.
+- **LISÄÄ:** YouTube-URL + valinnainen GP5-linkki tai GP5-tiedosto
+  puhelimesta. Käyttää olemassa olevia reittejä (`/api/jobs`,
+  `/api/tabs/import`); työn vaiheet ja edistyminen näkyvät, kirjasto
+  päivittyy valmistuessa. Oletukset: Standard E, grid 1/16, MP3 päällä.
+- **SÄÄDÄ:** nimi, viritys, lukitus ja arkistointi
+  (`POST /api/tabs/{id}/library`); ei kosketa soittoketjuun.
+- **Ei päällekkäisyyttä:** palvelin hylkää job-pyynnöt soiton aikana ja
+  PLAY-komennon jobin aikana (409); UI näyttää saman säännön. Myös TV:n
+  oma lomake saa eston.
+- 6 uutta testiä → **186 pytest-testiä**.
+
 ## v1.88 – 23.10.2026
 
 - **Selkeä varoitus, kun TV-näkymä ei ole auki.** `/remote` näyttää

@@ -1,41 +1,90 @@
-/* AI TabTool remote control (v1.83).
+/* AI TabTool remote control (v1.89).
  *
- * The phone only sends commands and shows the state the TV reported. All
- * playback happens on the TV (remote-bridge.js), so this page never plays
- * audio and never touches tab data. The 150 px QR pairs a phone with the
- * current LAN address; it is hidden on narrow (phone) screens.
+ * Three modes, one operation at a time:
+ *   SOITA  – transport + library selection
+ *   LISÄÄ  – YouTube (+ optional GP5 link/file) -> job -> library
+ *   SÄÄDÄ  – library basics (name, tuning, lock, archive)
+ *
+ * The phone only sends commands; playback happens on the TV page
+ * (remote-bridge.js). The server enforces the same "one operation at a time"
+ * rule with 409 responses, so a stale tab cannot bypass it.
  */
 (() => {
   "use strict";
 
   const REFRESH_MS = 1000;
+  const JOB_POLL_MS = 1500;
   const LIBRARY_MS = 30000;
 
-  const statusEl = document.getElementById("api-status");
-  const detailEl = document.getElementById("api-version");
-  const tvEl = document.getElementById("tv-status");
-  const versionEl = document.getElementById("version-tag");
-  const titleEl = document.getElementById("remote-title");
-  const metaEl = document.getElementById("remote-meta");
-  const playButton = document.getElementById("remote-play");
-  const backButton = document.getElementById("remote-back");
-  const forwardButton = document.getElementById("remote-forward");
-  const seekSlider = document.getElementById("remote-seek");
-  const rateSlider = document.getElementById("remote-rate");
-  const rateReadout = document.getElementById("remote-rate-readout");
-  const libraryEl = document.getElementById("remote-library");
-  const libraryStatus = document.getElementById("remote-status");
-  const tvHintEl = document.getElementById("tv-hint");
-  const pairEl = document.getElementById("remote-pair");
-  const qrEl = document.getElementById("remote-qr");
-  const pairUrlEl = document.getElementById("remote-url");
-  const pairHintEl = document.getElementById("remote-hint");
+  const STATUS_TEXT = {
+    queued: "Queued",
+    downloading: "Downloading audio…",
+    separating: "Separating stems…",
+    transcribing: "Transcribing guitar…",
+    building: "Building tab…",
+    ready: "Ready",
+    failed: "Failed",
+  };
+
+  const byId = (id) => document.getElementById(id);
+
+  const statusEl = byId("api-status");
+  const detailEl = byId("api-version");
+  const tvEl = byId("tv-status");
+  const versionEl = byId("version-tag");
+  const tvHintEl = byId("tv-hint");
+
+  const titleEl = byId("remote-title");
+  const metaEl = byId("remote-meta");
+  const playButton = byId("remote-play");
+  const backButton = byId("remote-back");
+  const forwardButton = byId("remote-forward");
+  const seekSlider = byId("remote-seek");
+  const rateSlider = byId("remote-rate");
+  const rateReadout = byId("remote-rate-readout");
+  const playNote = byId("play-note");
+  const libraryEl = byId("remote-library");
+  const libraryStatus = byId("remote-status");
+
+  const pairEl = byId("remote-pair");
+  const qrEl = byId("remote-qr");
+  const pairUrlEl = byId("remote-url");
+  const pairHintEl = byId("remote-hint");
+
+  const modePlay = byId("mode-play");
+  const modeAdd = byId("mode-add");
+  const modeAdjust = byId("mode-adjust");
+  const panelPlay = byId("panel-play");
+  const panelAdd = byId("panel-add");
+  const panelAdjust = byId("panel-adjust");
+
+  const addForm = byId("add-form");
+  const addYoutube = byId("add-youtube");
+  const addGp5Url = byId("add-gp5-url");
+  const addGp5File = byId("add-gp5-file");
+  const addSubmit = byId("add-submit");
+  const addProgress = byId("add-progress");
+  const addStatus = byId("add-status");
+  const addNote = byId("add-note");
+
+  const adjustList = byId("adjust-list");
+  const adjustForm = byId("adjust-form");
+  const adjustTitle = byId("adjust-title");
+  const adjustName = byId("adjust-name");
+  const adjustTuning = byId("adjust-tuning");
+  const adjustLocked = byId("adjust-locked");
+  const adjustArchived = byId("adjust-archived");
+  const adjustStatus = byId("adjust-status");
+  const adjustNote = byId("adjust-note");
 
   let state = null;
   let tvOnline = false;
+  let jobActive = false;
+  let localJob = null;
   let tabs = [];
   let seeking = false;
   let rating = false;
+  let adjustTab = null;
 
   function formatTime(value) {
     const total = Math.max(0, Math.round(Number(value) || 0));
@@ -55,6 +104,28 @@
     if (libraryStatus) libraryStatus.textContent = text;
   }
 
+  function setAddStatus(text, isError) {
+    if (!addStatus) return;
+    addStatus.textContent = text || "";
+    addStatus.classList.toggle("is-error", Boolean(isError));
+  }
+
+  function setAdjustStatus(text, isError) {
+    if (!adjustStatus) return;
+    adjustStatus.textContent = text || "";
+    adjustStatus.classList.toggle("is-error", Boolean(isError));
+  }
+
+  async function readError(response) {
+    try {
+      const data = await response.json();
+      if (data && typeof data.detail === "string") return data.detail;
+    } catch (error) {
+      /* not JSON */
+    }
+    return `HTTP ${response.status}`;
+  }
+
   async function send(action, value) {
     try {
       const response = await fetch("/api/remote/command", {
@@ -67,10 +138,74 @@
         window.location.href = "/lan";
         return false;
       }
-      return response.ok;
+      if (!response.ok) {
+        setLibraryStatus(await readError(response));
+        return false;
+      }
+      return true;
     } catch (error) {
+      setLibraryStatus("Failed");
       return false;
     }
+  }
+
+  function setMode(mode) {
+    const modes = {
+      play: [modePlay, panelPlay],
+      add: [modeAdd, panelAdd],
+      adjust: [modeAdjust, panelAdjust],
+    };
+    for (const [key, [button, panel]] of Object.entries(modes)) {
+      const active = key === mode;
+      if (button) {
+        button.classList.toggle("is-active", active);
+        button.setAttribute("aria-selected", active ? "true" : "false");
+      }
+      if (panel) panel.hidden = !active;
+    }
+    if (mode === "adjust") renderAdjustList();
+  }
+
+  function setAdjustEnabled(enabled) {
+    if (!adjustForm) return;
+    const locked = Boolean(adjustTab && adjustTab.locked);
+    const unlockOnly = enabled && locked;
+    for (const element of adjustForm.querySelectorAll("input, button")) {
+      if (element === adjustLocked) {
+        element.disabled = !enabled;
+      } else {
+        element.disabled = !enabled || unlockOnly;
+      }
+    }
+  }
+
+  function applyGuards(playing) {
+    const canAdd = !jobActive && !playing;
+    if (addSubmit) addSubmit.disabled = !canAdd;
+    if (addNote) {
+      if (jobActive) {
+        addNote.textContent = "Tabia luodaan… odota valmistumista.";
+        addNote.hidden = false;
+      } else if (playing) {
+        addNote.textContent = "Pysäytä soitto ennen lisäystä.";
+        addNote.hidden = false;
+      } else {
+        addNote.hidden = true;
+      }
+    }
+    const canAdjust = !jobActive && !playing;
+    if (adjustNote) {
+      if (jobActive) {
+        adjustNote.textContent = "Tabia luodaan… odota valmistumista.";
+        adjustNote.hidden = false;
+      } else if (playing) {
+        adjustNote.textContent = "Pysäytä soitto ennen säätämistä.";
+        adjustNote.hidden = false;
+      } else {
+        adjustNote.hidden = true;
+      }
+    }
+    setAdjustEnabled(canAdjust);
   }
 
   function render() {
@@ -89,8 +224,12 @@
       // Red background while playback runs, so the phone shows the state at
       // a glance even before reading the label.
       playButton.classList.toggle("is-playing", playing);
+      playButton.disabled = jobActive;
     }
+    if (backButton) backButton.disabled = jobActive;
+    if (forwardButton) forwardButton.disabled = jobActive;
     if (seekSlider) {
+      seekSlider.disabled = jobActive;
       const duration = Number(data.duration) || 0;
       seekSlider.max = String(Math.max(0, duration));
       if (!seeking) {
@@ -99,11 +238,55 @@
         );
       }
     }
+    if (rateSlider) rateSlider.disabled = jobActive;
     if (rateReadout) {
       rateReadout.textContent = `${((Number(data.rate) || 1) * 100).toFixed(1)}%`;
     }
     if (rateSlider && !rating && data.rate) {
       rateSlider.value = String(Number(data.rate));
+    }
+    if (playNote) playNote.hidden = !jobActive;
+    applyGuards(playing);
+  }
+
+  async function refresh() {
+    try {
+      const [health, remote] = await Promise.all([
+        fetch("/api/health", { cache: "no-store" }),
+        fetch("/api/remote/state", { cache: "no-store" }),
+      ]);
+      if (remote.status === 401) {
+        window.location.href = "/lan";
+        return;
+      }
+      if (!health.ok || !remote.ok) throw new Error(`HTTP ${remote.status}`);
+      const healthData = await health.json();
+      const remoteData = await remote.json();
+      setStatus("Online", true);
+      if (detailEl) detailEl.textContent = `${healthData.app} v${healthData.version}`;
+      if (versionEl) versionEl.textContent = `v${healthData.version}`;
+      const previousTab = state && state.tab_id;
+      const wasBusy = jobActive;
+      state = remoteData.state || {};
+      tvOnline = Boolean(remoteData.tv_online);
+      jobActive = Boolean(remoteData.job_active);
+      if (tvEl) {
+        tvEl.textContent = tvOnline
+          ? "TV: Online"
+          : "TV: Offline · avaa TV-näkymä";
+      }
+      if (tvHintEl) tvHintEl.hidden = tvOnline;
+      if ((state.tab_id || "") !== (previousTab || "")) renderLibrary();
+      // A job that finished elsewhere (TV or another phone) also refreshes
+      // the library here.
+      if (wasBusy && !jobActive) loadLibrary();
+      render();
+    } catch (error) {
+      setStatus("Offline", false);
+      tvOnline = false;
+      if (tvEl) tvEl.textContent = "TV: Offline · avaa TV-näkymä";
+      if (tvHintEl) tvHintEl.hidden = false;
+      render();
     }
   }
 
@@ -137,47 +320,12 @@
     }
   }
 
-  async function refresh() {
-    try {
-      const [health, remote] = await Promise.all([
-        fetch("/api/health", { cache: "no-store" }),
-        fetch("/api/remote/state", { cache: "no-store" }),
-      ]);
-      if (remote.status === 401) {
-        window.location.href = "/lan";
-        return;
-      }
-      if (!health.ok || !remote.ok) throw new Error(`HTTP ${remote.status}`);
-      const healthData = await health.json();
-      const remoteData = await remote.json();
-      setStatus("Online", true);
-      if (detailEl) detailEl.textContent = `${healthData.app} v${healthData.version}`;
-      if (versionEl) versionEl.textContent = `v${healthData.version}`;
-      const previousTab = state && state.tab_id;
-      state = remoteData.state || {};
-      tvOnline = Boolean(remoteData.tv_online);
-      if (tvEl) {
-        tvEl.textContent = tvOnline
-          ? "TV: Online"
-          : "TV: Offline · avaa TV-näkymä";
-      }
-      if (tvHintEl) tvHintEl.hidden = tvOnline;
-      if ((state.tab_id || "") !== (previousTab || "")) renderLibrary();
-      render();
-    } catch (error) {
-      setStatus("Offline", false);
-      tvOnline = false;
-      if (tvEl) tvEl.textContent = "TV: Offline · avaa TV-näkymä";
-      if (tvHintEl) tvHintEl.hidden = false;
-      render();
-    }
-  }
-
   function renderLibrary() {
     if (!libraryEl) return;
     const active = state && state.tab_id;
     libraryEl.textContent = "";
-    for (const tab of tabs) {
+    const visible = tabs.filter((tab) => !tab.archived);
+    for (const tab of visible) {
       const item = document.createElement("button");
       item.type = "button";
       item.className = "remote-item";
@@ -198,11 +346,44 @@
       item.addEventListener("click", () => selectTab(tab.id));
       libraryEl.append(item);
     }
-    if (!tabs.length) {
+    if (!visible.length) {
       const empty = document.createElement("p");
       empty.className = "muted";
       empty.textContent = "Kirjasto on tyhjä.";
       libraryEl.append(empty);
+    }
+  }
+
+  function renderAdjustList() {
+    if (!adjustList) return;
+    adjustList.textContent = "";
+    for (const tab of tabs) {
+      const item = document.createElement("button");
+      item.type = "button";
+      item.className = "remote-item";
+      if (adjustTab && tab.id === adjustTab.id) item.classList.add("is-active");
+      const name = document.createElement("span");
+      name.className = "remote-item-title";
+      name.textContent = tab.title || "?";
+      const meta = document.createElement("span");
+      meta.className = "remote-item-meta";
+      meta.textContent = [
+        tab.artist,
+        tab.tuning_label,
+        tab.locked ? "lukittu" : "",
+        tab.archived ? "arkistoitu" : "",
+      ]
+        .filter(Boolean)
+        .join(" · ");
+      item.append(name, meta);
+      item.addEventListener("click", () => selectAdjust(tab));
+      adjustList.append(item);
+    }
+    if (!tabs.length) {
+      const empty = document.createElement("p");
+      empty.className = "muted";
+      empty.textContent = "Kirjasto on tyhjä.";
+      adjustList.append(empty);
     }
   }
 
@@ -215,8 +396,17 @@
       }
       if (!response.ok) return;
       const data = await response.json();
-      tabs = Array.isArray(data) ? data.filter((tab) => !tab.archived) : [];
+      tabs = Array.isArray(data) ? data : [];
       renderLibrary();
+      renderAdjustList();
+      if (adjustTab) {
+        const updated = tabs.find((tab) => tab.id === adjustTab.id);
+        if (updated) selectAdjust(updated, true);
+        else {
+          adjustTab = null;
+          if (adjustForm) adjustForm.hidden = true;
+        }
+      }
     } catch (error) {
       /* the status pill already shows the offline state */
     }
@@ -226,27 +416,182 @@
     if (!tabId) return;
     setLibraryStatus("");
     const ok = await send("select_tab", tabId);
-    setLibraryStatus(ok ? "" : "Failed");
-    if (ok) {
-      window.setTimeout(refresh, 600);
-      window.setTimeout(loadLibrary, 2500);
+    if (!ok) return;
+    window.setTimeout(refresh, 600);
+    window.setTimeout(loadLibrary, 2500);
+  }
+
+  function selectAdjust(tab, silent) {
+    adjustTab = tab;
+    if (adjustForm) adjustForm.hidden = false;
+    if (adjustTitle) adjustTitle.textContent = tab.title || "";
+    if (adjustName) adjustName.value = tab.title_override || tab.title || "";
+    if (adjustTuning) {
+      adjustTuning.value = tab.tuning_override || tab.tuning_label || "";
+    }
+    if (adjustLocked) adjustLocked.checked = Boolean(tab.locked);
+    if (adjustArchived) adjustArchived.checked = Boolean(tab.archived);
+    if (!silent) setAdjustStatus("");
+    renderAdjustList();
+    setAdjustEnabled(!jobActive && !(state && state.playing));
+  }
+
+  async function submitAdjust(event) {
+    event.preventDefault();
+    if (!adjustTab) return;
+    const data = new FormData();
+    if (adjustTab.locked) {
+      // A locked tab is read-only; the only allowed write is the unlock.
+      data.append("locked", "false");
+    } else {
+      data.append("title", adjustName ? adjustName.value : "");
+      data.append("locked", adjustLocked && adjustLocked.checked ? "true" : "false");
+      data.append(
+        "archived",
+        adjustArchived && adjustArchived.checked ? "true" : "false"
+      );
+      const tuning = adjustTuning ? adjustTuning.value.trim() : "";
+      if (tuning) data.append("tuning", tuning);
+      else data.append("tuning_clear", "true");
+    }
+    const response = await fetch(`/api/tabs/${adjustTab.id}/library`, {
+      method: "POST",
+      body: data,
+      cache: "no-store",
+    });
+    if (!response.ok) {
+      setAdjustStatus(await readError(response), true);
+      return;
+    }
+    setAdjustStatus("Tallennettu.");
+    await loadLibrary();
+    const updated = adjustTab ? tabs.find((tab) => tab.id === adjustTab.id) : null;
+    if (updated) selectAdjust(updated, true);
+  }
+
+  async function submitAdd(event) {
+    event.preventDefault();
+    if (jobActive) {
+      setAddStatus("Tabia luodaan jo – odota valmistumista.", true);
+      return;
+    }
+    if (state && state.playing) {
+      setAddStatus("Pysäytä soitto ennen lisäystä.", true);
+      return;
+    }
+    const youtube = addYoutube ? addYoutube.value.trim() : "";
+    const gp5Url = addGp5Url ? addGp5Url.value.trim() : "";
+    const file = addGp5File && addGp5File.files ? addGp5File.files[0] : null;
+    if (!youtube && !file) {
+      setAddStatus("Anna YouTube-linkki tai GP5-tiedosto.", true);
+      return;
+    }
+    if (gp5Url && !youtube) {
+      setAddStatus("GP5-linkki tarvitsee YouTube-linkin.", true);
+      return;
+    }
+    const data = new FormData();
+    data.append("options", "{}");
+    let endpoint = "/api/jobs";
+    if (file) {
+      endpoint = "/api/tabs/import";
+      data.append("file", file);
+      if (youtube) data.append("youtube_url", youtube);
+    } else if (gp5Url) {
+      data.append("gp5_url", gp5Url);
+      data.append("youtube_url", youtube);
+    } else {
+      data.append("youtube_url", youtube);
+    }
+    setAddStatus(STATUS_TEXT.queued);
+    if (addProgress) {
+      addProgress.hidden = false;
+      addProgress.value = 0;
+    }
+    let response;
+    try {
+      response = await fetch(endpoint, { method: "POST", body: data });
+    } catch (error) {
+      setAddStatus(STATUS_TEXT.failed, true);
+      if (addProgress) addProgress.hidden = true;
+      return;
+    }
+    if (!response.ok) {
+      setAddStatus(await readError(response), true);
+      if (addProgress) addProgress.hidden = true;
+      return;
+    }
+    const payload = await response.json();
+    if (payload && payload.id && payload.status) {
+      pollJob(payload.id);
+      return;
+    }
+    // A GP5 file without a YouTube link is imported directly (no audio job).
+    setAddStatus(STATUS_TEXT.ready);
+    if (addProgress) addProgress.hidden = true;
+    await loadLibrary();
+    refresh();
+  }
+
+  async function pollJob(jobId) {
+    localJob = jobId;
+    while (localJob === jobId) {
+      await new Promise((resolve) => window.setTimeout(resolve, JOB_POLL_MS));
+      let job = null;
+      try {
+        const response = await fetch(`/api/jobs/${jobId}`, { cache: "no-store" });
+        if (!response.ok) break;
+        job = await response.json();
+      } catch (error) {
+        continue;
+      }
+      const label = STATUS_TEXT[job.stage] || STATUS_TEXT[job.status] || job.status;
+      setAddStatus(label);
+      if (addProgress) {
+        addProgress.hidden = false;
+        addProgress.value = Number(job.progress) || 0;
+      }
+      if (job.status === "ready" || job.status === "failed") {
+        localJob = null;
+        if (addProgress) addProgress.hidden = true;
+        if (job.status === "ready") {
+          setAddStatus(STATUS_TEXT.ready);
+          await loadLibrary();
+          refresh();
+        } else {
+          setAddStatus(
+            job.error ? `${STATUS_TEXT.failed}: ${job.error}` : STATUS_TEXT.failed,
+            true
+          );
+        }
+        break;
+      }
     }
   }
 
+  if (modePlay) modePlay.addEventListener("click", () => setMode("play"));
+  if (modeAdd) modeAdd.addEventListener("click", () => setMode("add"));
+  if (modeAdjust) modeAdjust.addEventListener("click", () => setMode("adjust"));
+  if (addForm) addForm.addEventListener("submit", submitAdd);
+  if (adjustForm) adjustForm.addEventListener("submit", submitAdjust);
+
   if (playButton) {
     playButton.addEventListener("click", async () => {
+      if (jobActive) return;
       await send("toggle");
       window.setTimeout(refresh, 300);
     });
   }
   if (backButton) {
     backButton.addEventListener("click", async () => {
+      if (jobActive) return;
       await send("seek_rel", -5);
       window.setTimeout(refresh, 400);
     });
   }
   if (forwardButton) {
     forwardButton.addEventListener("click", async () => {
+      if (jobActive) return;
       await send("seek_rel", 5);
       window.setTimeout(refresh, 400);
     });
@@ -258,6 +603,7 @@
     const commitSeek = async () => {
       if (!seeking) return;
       seeking = false;
+      if (jobActive) return;
       await send("seek", Number(seekSlider.value));
       window.setTimeout(refresh, 300);
     };
@@ -273,11 +619,13 @@
     });
     rateSlider.addEventListener("change", async () => {
       rating = false;
+      if (jobActive) return;
       await send("rate", Number(rateSlider.value));
       window.setTimeout(refresh, 300);
     });
   }
 
+  setMode("play");
   refresh();
   loadLibrary();
   loadLanInfo();
@@ -288,4 +636,3 @@
     if (!document.hidden) refresh();
   });
 })();
-
