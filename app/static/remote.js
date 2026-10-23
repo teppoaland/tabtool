@@ -339,6 +339,20 @@
     }
   }
 
+  // Match the TV library: title first, artist as the tiebreaker.
+  function tabSortKey(tab) {
+    return `${String(tab.title || tab.id || "")} ${String(tab.artist || "")}`.trim();
+  }
+
+  function sortTabs(list) {
+    return list.slice().sort((left, right) =>
+      tabSortKey(left).localeCompare(tabSortKey(right), "fi", {
+        numeric: true,
+        sensitivity: "base",
+      })
+    );
+  }
+
   function renderLibrary() {
     if (!libraryEl) return;
     const active = state && state.tab_id;
@@ -415,7 +429,7 @@
       }
       if (!response.ok) return;
       const data = await response.json();
-      tabs = Array.isArray(data) ? data : [];
+      tabs = sortTabs(Array.isArray(data) ? data : []);
       renderLibrary();
       renderAdjustList();
       if (adjustTab) {

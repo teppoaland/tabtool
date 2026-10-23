@@ -7,7 +7,7 @@ from pathlib import Path
 
 from fastapi.testclient import TestClient
 
-from app import db
+from app import config, db
 
 
 def _make_tab(tab_id: str, *, title: str, artist: str = "Artist") -> None:
@@ -35,6 +35,12 @@ def _make_tab(tab_id: str, *, title: str, artist: str = "Artist") -> None:
         audio_path="",
         meta={"source_type": "import", "files": {"gp5": "tab.gp5"}},
     )
+
+
+def test_library_rows_are_sorted_by_title() -> None:
+    source = (config.STATIC_DIR / "app.js").read_text(encoding="utf-8")
+    assert "function librarySortKey" in source
+    assert "librarySortKey(left).localeCompare" in source
 
 
 def test_rename_keeps_original_title(client: TestClient, data_dir: Path) -> None:

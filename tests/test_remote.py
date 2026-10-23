@@ -252,6 +252,20 @@ def test_remote_js_does_not_disable_play_when_tv_is_offline() -> None:
     assert '"Offline-TV"' in source
 
 
+def test_remote_library_is_sorted_by_title() -> None:
+    js = (config.STATIC_DIR / "remote.js").read_text(encoding="utf-8")
+    assert "function sortTabs" in js
+    assert "tabs = sortTabs(" in js
+
+
+def test_remote_library_uses_the_page_scrollbar() -> None:
+    css = (config.STATIC_DIR / "style.css").read_text(encoding="utf-8")
+    block = css[css.index(".remote-library {"):]
+    block = block[: block.index("}")]
+    assert "max-height" not in block
+    assert "overflow-y" not in block
+
+
 def test_remote_js_does_not_reference_removed_forward_button() -> None:
     """v1.98: the +5 s button is gone; render() must not name it.
 

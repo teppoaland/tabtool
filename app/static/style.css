@@ -1393,8 +1393,8 @@ body.modal-open .at-cursors {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  max-height: 50vh;
-  overflow-y: auto;
+  /* v2.00: no inner scroll box. The list grows with the page, so the phone
+     has one scrollbar instead of two (the page and this list). */
 }
 
 .remote-item {

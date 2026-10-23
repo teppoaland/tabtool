@@ -1553,9 +1553,15 @@
     return parts.join(" · ");
   }
 
+  // Songs are listed by title first (artist as the tiebreaker), so the
+  // library reads alphabetically even when several artists are mixed.
+  function librarySortKey(tab) {
+    return `${String(tab.title || tab.id || "")} ${String(tab.artist || "")}`.trim();
+  }
+
   function sortLibraryTabs(tabs) {
     return tabs.slice().sort((left, right) =>
-      libraryItemLabel(left).localeCompare(libraryItemLabel(right), "fi", {
+      librarySortKey(left).localeCompare(librarySortKey(right), "fi", {
         numeric: true,
         sensitivity: "base",
       })

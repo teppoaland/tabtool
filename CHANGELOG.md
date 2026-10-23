@@ -2,6 +2,20 @@
 
 > AI TabTool käyttää `1.x`-versiosarjaa. Aloitus `v1.00`.
 
+## v2.00 – 23.10.2026
+
+- **Kirjastot aakkosjärjestykseen kappaleen nimellä.** Sekä TV-näkymän
+  LIBRARY että puhelimen SOITA- ja SÄÄDÄ-listat järjestetään
+  `localeCompare("fi", {numeric:true, sensitivity:"base"})`lla:
+  ensisijaisesti `title`, artisti tasapelin ratkaisijana (aiemmin
+  artisti — title).
+- **Remote-kirjastosta poistettu sisäinen scroll-ikkuna.**
+  `.remote-library` ei enää rajaa korkeutta (`max-height: 50vh`) eikä
+  vieritä itse, joten puhelimessa on yksi scrollbar (koko sivu) eikä
+  kahta päällekkäistä.
+- Testit: kirjaston järjestys (`app.js` + `remote.js`) ja yhden
+  scrollbarin sääntö.
+
 ## v1.99 – 23.10.2026
 
 - **GP3 → GP5 -muunnos korjattu.** Osa GP3-tabeista (esim. White Wedding,
