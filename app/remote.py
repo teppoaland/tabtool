@@ -1,4 +1,4 @@
-"""LAN remote control (v1.85).
+"""LAN remote control (v1.86).
 
 The phone opens ``/remote`` and sends commands; the TV page runs
 ``remote-bridge.js``, which polls the command queue and drives the existing
@@ -38,8 +38,10 @@ from app.config import is_loopback
 # start playing when it is reopened.
 COMMAND_TTL_S = 60.0
 COMMAND_QUEUE_SIZE = 50
-# The phone shows "TV online" only while the viewer keeps reporting.
-TV_ONLINE_S = 10.0
+# The phone shows "TV online" while the viewer keeps reporting. Browsers
+# throttle timers in background tabs, so a background TV page reports less
+# often; a short window would dim the phone controls for no real reason.
+TV_ONLINE_S = 30.0
 
 COOKIE_NAME = "tabtool_lan"
 COOKIE_MAX_AGE = 30 * 24 * 3600

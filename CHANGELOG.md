@@ -2,6 +2,17 @@
 
 > AI TabTool käyttää `1.x`-versiosarjaa. Aloitus `v1.00`.
 
+## v1.86 – 23.10.2026
+
+- **PLAY ei enää himmene, vaikka TV olisi offline.** `remote.js` ei aseta
+  `playButton.disabled`iä: komento jonoutuu ja toteutuu heti kun
+  TV-sivu on näkyvissä (TTL 60 s). Tilateksti kertoo syyn:
+  `TV: Offline · avaa TV-näkymä`.
+- **TV-online-ikkuna 10 s → 30 s** (`TV_ONLINE_S`). Selain hidastaa
+  taustavälilehden ajastimia, joten lyhyt ikkuna merkitsi TV:n offlineksi
+  ilman oikeaa syytä (esim. kun koneella oli auki `/remote` QR:n takia).
+- 2 uutta testiä → **178 pytest-testiä**.
+
 ## v1.85 – 23.10.2026
 
 - **QR-palstan URL-rivi linjaan QR:n kanssa.** `.remote-pair` on nyt

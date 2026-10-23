@@ -85,7 +85,6 @@
     if (playButton) {
       playButton.textContent = playing ? "PAUSE" : "PLAY";
       playButton.dataset.state = playing ? "playing" : "paused";
-      playButton.disabled = !tvOnline;
     }
     if (seekSlider) {
       const duration = Number(data.duration) || 0;
@@ -153,13 +152,17 @@
       const previousTab = state && state.tab_id;
       state = remoteData.state || {};
       tvOnline = Boolean(remoteData.tv_online);
-      if (tvEl) tvEl.textContent = tvOnline ? "TV: Online" : "TV: Offline";
+      if (tvEl) {
+        tvEl.textContent = tvOnline
+          ? "TV: Online"
+          : "TV: Offline · avaa TV-näkymä";
+      }
       if ((state.tab_id || "") !== (previousTab || "")) renderLibrary();
       render();
     } catch (error) {
       setStatus("Offline", false);
       tvOnline = false;
-      if (tvEl) tvEl.textContent = "TV: Offline";
+      if (tvEl) tvEl.textContent = "TV: Offline · avaa TV-näkymä";
       render();
     }
   }

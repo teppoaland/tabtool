@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import sys
+import time
 from typing import Iterator
 
 import pytest
@@ -215,6 +216,21 @@ def test_remote_page_has_pairing_block(api_client: TestClient) -> None:
     assert 'id="remote-qr"' in response.text
     assert 'width="150"' in response.text
     assert 'height="150"' in response.text
+
+
+def test_tv_stays_online_between_background_reports(
+    api_client: TestClient, hub: remote.RemoteHub
+) -> None:
+    hub.report({"playing": False})
+    hub._state_ts = time.monotonic() - 20  # type: ignore[attr-defined]
+    payload = api_client.get("/api/remote/state").json()
+    assert payload["tv_online"] is True
+
+
+def test_remote_js_keeps_play_enabled_when_tv_is_offline() -> None:
+    source = (config.STATIC_DIR / "remote.js").read_text(encoding="utf-8")
+    assert "playButton.disabled" not in source
+    assert "TV: Offline" in source
 
 
 def test_lan_enabled_reads_uvicorn_arguments(monkeypatch: pytest.MonkeyPatch) -> None:
