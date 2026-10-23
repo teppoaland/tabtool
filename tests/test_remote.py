@@ -136,6 +136,8 @@ def test_qr_uses_current_lan_address(
     assert response.status_code == 200
     assert response.headers["content-type"].startswith("image/svg+xml")
     assert "<svg" in response.text
+    # Standalone SVG needs the namespace; without it <img> shows a broken icon.
+    assert 'xmlns="http://www.w3.org/2000/svg"' in response.text
 
     info = api_client.get("/api/lan/info").json()
     base = f"http://192.168.1.50:{config.PORT}"

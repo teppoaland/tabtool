@@ -1,4 +1,4 @@
-"""LAN remote control (v1.83).
+"""LAN remote control (v1.84).
 
 The phone opens ``/remote`` and sends commands; the TV page runs
 ``remote-bridge.js``, which polls the command queue and drives the existing
@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import hashlib
 import hmac
+import io
 import json
 import os
 import secrets
@@ -416,9 +417,21 @@ def install(app: FastAPI) -> None:
         if url is None:
             raise HTTPException(status_code=404, detail="LAN is not enabled")
         qr = segno.make(url, error="m")
-        svg = qr.svg_inline(scale=8, border=3, dark="#0b0f14", light="#f6f8fb")
+        # svg_inline() leaves out xmlns because it is meant for inline HTML.
+        # Served as image/svg+xml the SVG must be a standalone document or
+        # the browser shows a broken image instead of the QR code.
+        buffer = io.BytesIO()
+        qr.save(
+            buffer,
+            kind="svg",
+            scale=8,
+            border=3,
+            dark="#0b0f14",
+            light="#f6f8fb",
+            xmldecl=False,
+        )
         return Response(
-            content=svg,
+            content=buffer.getvalue(),
             media_type="image/svg+xml",
             headers={"Cache-Control": "no-store"},
         )

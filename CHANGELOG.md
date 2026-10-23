@@ -2,6 +2,14 @@
 
 > AI TabTool käyttää `1.x`-versiosarjaa. Aloitus `v1.00`.
 
+## v1.84 – 23.10.2026
+
+- **Korjaus: QR näkyi rikkinäisenä kuvana.** `/api/lan/qr.svg` käytti
+  `svg_inline`-serialisointia, joka jättää SVG-nimiavaruuden (`xmlns`) pois.
+  Selain ei renderöi sellaista `<img>`nä. Nyt `segno` kirjoittaa
+  standalone-SVG:n (`save(kind="svg")`) `xmlns`-määreellä; testi valvoo,
+  että määre on mukana. Ei muita muutoksia – 176 testiä.
+
 ## v1.83 – 23.10.2026
 
 - **Yksi käynnistin.** `start-lan.bat` poistettu – se oli turha. `start.bat`
