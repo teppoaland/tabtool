@@ -1,5 +1,10 @@
 # 📊 Projektin edistyminen – AI TABTOOL
 
+## v1.85 – QR-palstan URL-rivi (23.10.2026)
+- `.remote-pair` 150 px levyiseksi ja `.remote-url` rivittymään samaan
+  leveyteen (`word-break`); oikea reuna linjassa QR:n kanssa. Vain CSS.
+  176 testiä.
+
 ## v1.84 – QR-SVG:n xmlns-korjaus (23.10.2026)
 - `/api/lan/qr.svg` käytti `svg_inline`iä, joka jättää `xmlns`:n pois →
   selain näytti rikkinäisen kuvan. Nyt `segno.save(kind="svg")` →
