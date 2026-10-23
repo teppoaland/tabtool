@@ -9,7 +9,7 @@
 - **Ei GPU:ta** (`nvidia-smi` tyhjä) → CPU-only
 - D: levytilaa ~147 GB vapaana
 
-## Python-paketit (v1.89)
+## Python-paketit (v1.90)
 
 Core:
 
@@ -59,7 +59,7 @@ python -m venv .venv
 ## Testit
 
 ```powershell
-.venv\Scripts\python.exe -m pytest -q          # 186 passed
+.venv\Scripts\python.exe -m pytest -q          # 188 passed
 .venv\Scripts\python.exe -m compileall -q app scripts tests
 node --check app\static\app.js
 node --check app\static\remote.js
@@ -196,9 +196,9 @@ DB-tiedosto); vain tuotenimi on `AI TabTool`.
   **Soiton/tabin synkka hyväksytään vain käyttäjän kuuntelutestillä**
   (`.clinerules/07-playback-frozen.md`): pytest, `node --check` ja
   headless eivät todista kohdistusta.
-  Staattisten tiedostojen `?v=1.89`-leimat pakottavat tuoreen CSS/JS:n;
+  Staattisten tiedostojen `?v=1.90`-leimat pakottavat tuoreen CSS/JS:n;
   selaimessa voi silti tarvita Ctrl+F5:n.
-- **LAN ja puhelin (v1.82–v1.89):** `start.bat` sitoo aina `0.0.0.0`:aan
+- **LAN ja puhelin (v1.82–v1.90):** `start.bat` sitoo aina `0.0.0.0`:aan
   (yksi käynnistin, ei `start-lan.batia`); `TABTOOL_LAN_PIN` aktivoi
   portinvartijan (HttpOnly eväste, SHA-256-tiiviste, 10 yritystä/60 s),
   `TABTOOL_LAN_IP` kiinnittää QR-koodin osoitteen. **150 px QR on
@@ -206,7 +206,9 @@ DB-tiedosto); vain tuotenimi on `AI TabTool`.
   LAN-IP); DHCP-osoitteen vaihtuminen ei riko pariutusta. TV:n
   `remote-bridge.js` pollaa `/api/remote/commands` 0,5 s välein ja
   klikkaa olemassa olevia nappeja; `app.js` pysyy koskemattomana
-  (sääntö #1).
+  (sääntö #1). Sivun auetessa silta lukitsee nykyisen sekvenssin
+  (`primeSequence`), joten ennen sitä jonoon jääneet komennot eivät
+  laukea (v1.90).
 - Modaalin pino: alphaTabin `.at-cursors` on `z-index: 1000`; modaali
   `2000`, dialogi `2100`, viewer `isolation: isolate`, cursor piiloon
   `body.modal-open`-tilassa. Modaalin tausta on peittävä.

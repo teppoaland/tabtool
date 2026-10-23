@@ -70,7 +70,7 @@ Putki (app/pipeline/)
   `retune_tracks` (viritys + nauhojen siirto, sävelet ennallaan) ja
   `resolve_tab_gp5`. Kutsujat: `scripts/expand_repeat.py`,
   `scripts/trim_bars.py`, `scripts/retune_tab.py`.
-- **LAN-kaukosäädin** (v1.82–v1.89): `app/remote.py` omistaa komentojonon
+- **LAN-kaukosäädin** (v1.82–v1.90): `app/remote.py` omistaa komentojonon
   (`RemoteHub`, 50 komentoa, TTL 60 s), TV:n tilan, QR-koodin
   (`segno`, aina sen hetkisestä IP:stä) ja valinnaisen PIN-portinvartijan.
   `app/main.py` kutsuu vain `remote.install(app)`. Selainpuolella
@@ -80,6 +80,8 @@ Putki (app/pipeline/)
   `/remote` pollaa tilan 1 s välein ja näyttää 150 px QR-koodin.
   Kolme tilaa (SOITA / LISÄÄ / SÄÄDÄ) pitävät yhden toiminnon kerrallaan:
   `jobs_running()` + TV:n `playing` estävät päällekkäisyyden 409:llä.
+  Sivun auetessa silta lukitsee sekvenssin (`primeSequence`) eikä toista
+  aiempia komentoja (v1.90).
 - **Bulk-tuonti/vienti** (v1.66): `app/bulk.py` – `import_folder()`
   (SHA-256-manifesti `.tabtool-imported.json`) ja `export_tabs()`
   (GP5/MusicXML/MIDI + `manifest.json` + ZIP). Skriptit

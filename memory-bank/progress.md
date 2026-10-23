@@ -1,5 +1,11 @@
 # 📊 Projektin edistyminen – AI TABTOOL
 
+## v1.90 – Vanhojen remote-komentojen toisto (23.10.2026)
+- TV-silta aloitti jonon alusta → vanhat komennot laukesivat sivun
+  auetessa (eri aloituskohta eri startilla; restart korjasi). Nyt
+  `primeSequence` lukitsee sekvenssin eikä suorita aiempia. 2 uutta
+  testiä → **188 testiä**. Tabidata tarkistettu: lukitut sync-arvot tallessa.
+
 ## v1.89 – Remote kolmessa tilassa (23.10.2026)
 - SOITA / LISÄÄ / SÄÄDÄ, vain yksi paneeli kerrallaan. Lisäys estetty
   soiton aikana ja soitto jobin aikana (palvelin 409 + UI).
@@ -303,7 +309,7 @@
 
 ## Testitilanne
 
-- `pytest -q` → **186 passed**
+- `pytest -q` → **188 passed**
 - `compileall` → OK
 - `node --check app.js` / `remote.js` / `remote-bridge.js` → OK
 - Headless-Edge/Chrome: alphaTab-render, cursor, fullscreen, GP5/MusicXML-
