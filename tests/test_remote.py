@@ -252,6 +252,19 @@ def test_remote_js_does_not_disable_play_when_tv_is_offline() -> None:
     assert '"Offline-TV"' in source
 
 
+def test_remote_js_does_not_reference_removed_forward_button() -> None:
+    """v1.98: the +5 s button is gone; render() must not name it.
+
+    A leftover `if (forwardButton)` inside the strict-mode IIFE threw a
+    ReferenceError on every render, so the Toisto slider never updated and
+    stayed at the left edge.
+    """
+    html = (config.STATIC_DIR / "remote.html").read_text(encoding="utf-8")
+    js = (config.STATIC_DIR / "remote.js").read_text(encoding="utf-8")
+    assert 'id="remote-forward"' not in html
+    assert "forwardButton" not in js
+
+
 def test_remote_play_button_turns_red_while_playing() -> None:
     js = (config.STATIC_DIR / "remote.js").read_text(encoding="utf-8")
     css = (config.STATIC_DIR / "style.css").read_text(encoding="utf-8")

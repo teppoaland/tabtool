@@ -224,7 +224,6 @@
       playButton.disabled = jobActive;
     }
     if (backButton) backButton.disabled = jobActive;
-    if (forwardButton) forwardButton.disabled = jobActive;
     if (seekSlider) {
       seekSlider.disabled = jobActive;
       const duration = Number(data.duration) || 0;

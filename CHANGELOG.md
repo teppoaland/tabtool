@@ -2,6 +2,17 @@
 
 > AI TabTool käyttää `1.x`-versiosarjaa. Aloitus `v1.00`.
 
+## v1.98 – 23.10.2026
+
+- **Korjaus: puhelimen Toisto-liukusäädin jäi vasempaan laitaan.**
+  v1.95 poisti `+5 s`-napin ja `forwardButton`-vakion, mutta `render()`
+  jäi viittaamaan poistettuun muuttujaan. Strict-tilassa se heitti
+  `ReferenceError`in joka renderöinnillä juuri ennen seek/rate-kenttien
+  päivitystä, joten liukusäädin ei koskaan seurannut kappaleen kohtaa.
+  Viittaus poistettu; uusi regressiotesti varmistaa, ettei
+  `remote-forward`/`forwardButton` palaa.
+- Ei muutoksia soittoketjuun (`app.js`).
+
 ## v1.97 – 23.10.2026
 
 - **Remote: yksi tilatieto kolmella tilalla.** Punainen varoitus
