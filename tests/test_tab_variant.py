@@ -1,4 +1,4 @@
-"""Finalizing a generated fingering variant (v1.72)."""
+"""Finalizing a generated fingering variant (v1.72, backup/restore v2.04)."""
 
 from __future__ import annotations
 
@@ -7,7 +7,7 @@ from pathlib import Path
 
 from fastapi.testclient import TestClient
 
-from app import db
+from app import config, db
 from app.pipeline.build import build_document
 from app.pipeline.export_gp5 import export_gp5_variants
 from app.pipeline.export_midi import export_midi
@@ -161,3 +161,120 @@ def test_finalize_unknown_variant(client: TestClient, data_dir: Path) -> None:
         "/api/tabs/variant-unknown/variant", data={"variant": "nope"}
     )
     assert response.status_code == 422
+
+
+# === Backup and restore (v2.04) ===========================================
+
+
+def test_finalize_backs_up_the_variants(client: TestClient, data_dir: Path) -> None:
+    """The other fingerings are deleted, so the pre-finalize state is kept."""
+    _make_variant_tab(data_dir, "variant-backup")
+    tab_dir = data_dir / "tabs" / "variant-backup"
+    original_gp5 = (tab_dir / "tab.gp5").read_bytes()
+    original_xml = (tab_dir / "tab.musicxml").read_bytes()
+
+    response = client.post(
+        "/api/tabs/variant-backup/variant", data={"variant": "v0"}
+    )
+    assert response.status_code == 200, response.text
+    assert response.json()["variant_backup"] == "backups/variant-variant-backup"
+
+    backup = data_dir / "backups" / "variant-variant-backup"
+    assert (backup / "tab.gp5").read_bytes() == original_gp5
+    assert (backup / "tab.musicxml").read_bytes() == original_xml
+    assert (backup / "tab.mid").is_file()
+    assert sorted(path.name for path in (backup / "variants").iterdir()) == [
+        "v0.json",
+        "v1.json",
+        "v2.json",
+    ]
+    manifest = json.loads((backup / "manifest.json").read_text(encoding="utf-8"))
+    assert manifest["tab_id"] == "variant-backup"
+    assert len(manifest["variants"]) == 3
+    assert manifest["note_count"] == 3
+
+    summary = {item["id"]: item for item in client.get("/api/tabs").json()}
+    assert summary["variant-backup"]["variant_backup"] == (
+        "backups/variant-variant-backup"
+    )
+
+
+def test_restore_brings_the_variants_back(
+    client: TestClient, data_dir: Path
+) -> None:
+    """The choice can be undone, so an unknown song can be tried by ear."""
+    _make_variant_tab(data_dir, "variant-restore")
+    tab_dir = data_dir / "tabs" / "variant-restore"
+    original_gp5 = (tab_dir / "tab.gp5").read_bytes()
+    stored = db.get_tab("variant-restore")
+    assert stored is not None
+    db.update_tab_finalize("variant-restore", stored["meta"], 99)
+
+    chosen = client.post(
+        "/api/tabs/variant-restore/variant", data={"variant": "v2"}
+    )
+    assert chosen.status_code == 200
+    assert db.get_tab("variant-restore")["note_count"] != 99
+    assert not (tab_dir / "variants").exists()
+
+    restored = client.post("/api/tabs/variant-restore/variant/restore")
+    assert restored.status_code == 200, restored.text
+    body = restored.json()
+    assert body["variant_finalized"] is False
+    assert body["selected_variant"] == ""
+    assert len(body["variants"]) == 3
+    assert body["note_count"] == 99
+
+    tab = client.get("/api/tabs/variant-restore").json()
+    assert tab["meta"]["variant_finalized"] is False
+    assert tab["meta"]["default_variant"] == "v0"
+    assert sorted(path.name for path in (tab_dir / "variants").iterdir()) == [
+        "v0.json",
+        "v1.json",
+        "v2.json",
+    ]
+    assert (tab_dir / "tab.gp5").read_bytes() == original_gp5
+
+    import guitarpro
+
+    song = guitarpro.parse(str(tab_dir / "tab.gp5"))
+    assert len(song.tracks) == 3
+
+    # The restored tab can be finalized again with another variant.
+    again = client.post(
+        "/api/tabs/variant-restore/variant", data={"variant": "v1"}
+    )
+    assert again.status_code == 200
+    assert again.json()["selected_variant"] == "v1"
+
+
+def test_restore_without_a_backup_is_rejected(
+    client: TestClient, data_dir: Path
+) -> None:
+    _make_variant_tab(data_dir, "variant-nobackup")
+    response = client.post("/api/tabs/variant-nobackup/variant/restore")
+    assert response.status_code == 422
+    assert "varmuuskopio" in response.json()["detail"].lower()
+
+
+def test_restore_requires_unlock(client: TestClient, data_dir: Path) -> None:
+    _make_variant_tab(data_dir, "variant-restore-locked")
+    client.post("/api/tabs/variant-restore-locked/variant", data={"variant": "v0"})
+    client.post("/api/tabs/variant-restore-locked/library", data={"locked": "true"})
+    response = client.post("/api/tabs/variant-restore-locked/variant/restore")
+    assert response.status_code == 409
+
+
+def test_variant_choice_asks_before_deleting() -> None:
+    """v2.04: the button confirms the choice and offers an undo."""
+    html = (config.STATIC_DIR / "index.html").read_text(encoding="utf-8")
+    source = (config.STATIC_DIR / "app.js").read_text(encoding="utf-8")
+    assert 'id="variant-dialog"' in html
+    assert 'id="variant-restore-button"' in html
+    assert 'id="variant-confirm"' in html
+    assert "openVariantDialog" in source
+    assert "restoreVariants" in source
+    assert 'variantButton.addEventListener("click", openVariantDialog)' in source
+    assert "/variant/restore" in source
+    assert "PALAUTA VERSIOT" in html
+

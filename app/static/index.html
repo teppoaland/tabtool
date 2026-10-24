@@ -6,14 +6,14 @@
   <meta name="color-scheme" content="dark">
   <title>AI TabTool</title>
   <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="/static/style.css?v=2.03">
+  <link rel="stylesheet" href="/static/style.css?v=2.04">
 </head>
 <body>
   <header class="topbar">
     <div class="brand">
       <span class="brand-mark" aria-hidden="true">AT</span>
       <span class="brand-name">AI TABTOOL</span>
-      <span id="version-tag" class="version">v2.03</span>
+      <span id="version-tag" class="version">v2.04</span>
     </div>
     <nav class="nav" aria-label="Päävalikko">
       <button id="open-search-top" type="button" class="ghost small nav-search"
@@ -62,7 +62,9 @@
                aria-label="Näytettävät raidat"
                title="Valitse näytettävät raidat."></div>
           <button id="variant-button" type="button" class="ghost small" hidden
-                  title="Valitse näkyvä versio pysyväksi tabiksi ja poista muut versiot.">VALITSE TÄMÄ</button>
+                  title="Valitse näkyvä versio pysyväksi tabiksi. Muut versiot poistetaan, mutta niistä tehdään varmuuskopio.">VALITSE TÄMÄ</button>
+          <button id="variant-restore-button" type="button" class="ghost small" hidden
+                  title="Palauta kaikki sormitusversiot (V1/V2/V3) takaisin ja kokeile toista.">PALAUTA VERSIOT</button>
           <button id="attach-audio-button" type="button" class="ghost small" hidden
                   title="Etsi samanniminen tabi, jolla on audio, ja liitä sen audio tähän tabiin.">LIITÄ AUDIO</button>
           <span id="attach-status" class="attach-status" aria-live="polite"></span>
@@ -238,7 +240,7 @@
               </label>
               <label class="field checkbox"
                      title="Tallentaa YouTube-audiosta MP3-kuunteluversion D:\tabtool_files\audio\mp3-kansioon.">
-                <input id="make-mp3-checkbox" type="checkbox" checked>
+                <input id="make-mp3-checkbox" type="checkbox">
                 <span>MP3-kuunteluversio</span>
               </label>
             </div>
@@ -319,14 +321,35 @@
   </div>
 
 
+  <!-- Versiovalinnan varmistus (v2.04): muut versiot poistetaan, joten valinta
+       kysytään ja varmuuskopio tehdään aina ennen kirjoitusta. -->
+  <div id="variant-dialog" class="modal-backdrop" hidden>
+    <div class="modal-panel modal-small" role="alertdialog" aria-modal="true"
+         aria-labelledby="variant-heading">
+      <h2 id="variant-heading">Valitaanko tämä versio?</h2>
+      <p id="variant-detail" class="muted"></p>
+      <p class="muted">
+        Valittu versio jää tabiin ja muut sormitusversiot poistetaan.
+        Ennen poistoa niistä tehdään varmuuskopio, ja voit palauttaa ne
+        painikkeella PALAUTA VERSIOT.
+      </p>
+      <p id="variant-status" class="bpm-status" aria-live="polite"></p>
+      <div class="actions">
+        <button id="variant-confirm" type="button" class="primary">VALITSE TÄMÄ</button>
+        <button id="variant-cancel" type="button" class="ghost">PERUUTA</button>
+      </div>
+    </div>
+  </div>
+
+
   <footer class="footer">
-    <span>AI TabTool v2.03</span>
+    <span>AI TabTool v2.04</span>
     <span>Local-first · <a href="/remote">Remote</a></span>
   </footer>
 
-  <script src="/static/vendor/alphaTab/alphaTab.min.js?v=2.03"></script>
-  <script src="/static/app.js?v=2.03" defer></script>
-  <script src="/static/remote-bridge.js?v=2.03" defer></script>
+  <script src="/static/vendor/alphaTab/alphaTab.min.js?v=2.04"></script>
+  <script src="/static/app.js?v=2.04" defer></script>
+  <script src="/static/remote-bridge.js?v=2.04" defer></script>
 </body>
 </html>
 

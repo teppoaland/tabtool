@@ -463,6 +463,11 @@ def _tab_summary(tab: dict[str, object]) -> dict[str, object]:
     summary["variant_finalized"] = (
         bool(meta.get("variant_finalized")) if isinstance(meta, dict) else False
     )
+    # v2.04: where the pre-finalize variants were backed up, so the selection
+    # can be undone from the viewer or the Tiedot dialog.
+    summary["variant_backup"] = (
+        str(meta.get("variant_backup") or "") if isinstance(meta, dict) else ""
+    )
     return summary
 
 
@@ -850,7 +855,13 @@ def tab_sync(
 
 @app.post("/api/tabs/{tab_id}/variant", tags=["tabs"])
 def tab_variant(tab_id: str, variant: str = Form(...)) -> dict[str, object]:
-    """Keep one generated fingering variant and delete the others (v1.72)."""
+    """Keep one generated fingering variant and delete the others (v1.72).
+
+    v2.04: the pre-finalize state (combined GP5/MusicXML/MIDI and the variant
+    snapshots) is copied to ``data/backups/variant-<tab_id>/`` first, so the
+    choice can be undone – the variants of an unknown song are compared by
+    listening, not guessed.
+    """
     from app.pipeline.export_gp5 import export_gp5
     from app.pipeline.export_midi import export_midi
     from app.pipeline.export_musicxml import export_musicxml
@@ -886,6 +897,7 @@ def tab_variant(tab_id: str, variant: str = Form(...)) -> dict[str, object]:
     # current BPM so the chosen variant keeps the correct tempo.
     document = replace(document, bpm=float(meta.get("bpm") or document.bpm))
 
+    backup_relative = _variant_backup(tab, directory, variants, meta)
     for name, exporter in (
         ("tab.gp5", export_gp5),
         ("tab.musicxml", export_musicxml),
@@ -904,10 +916,117 @@ def tab_variant(tab_id: str, variant: str = Form(...)) -> dict[str, object]:
     meta["variant_finalized"] = True
     meta["variants"] = [chosen]
     meta["playability"] = chosen.get("playability")
+    meta["variant_backup"] = backup_relative
     updated = db.update_tab_finalize(tab_id, meta, document.note_count)
     if updated is None:  # pragma: no cover - deleted between the two calls
         raise HTTPException(status_code=404, detail="Unknown tab")
     return _tab_summary(updated)
+
+
+@app.post("/api/tabs/{tab_id}/variant/restore", tags=["tabs"])
+def tab_variant_restore(tab_id: str) -> dict[str, object]:
+    """Undo a variant selection: bring the other variants back (v2.04)."""
+    tab = _load_tab(tab_id)
+    if tab is None:
+        raise HTTPException(status_code=404, detail="Unknown tab")
+    _require_unlocked(tab)
+    meta = dict(tab.get("meta") or {})
+    backup_relative = str(meta.get("variant_backup") or "")
+    if not backup_relative:
+        raise HTTPException(
+            status_code=422,
+            detail="Tälle tabille ei ole versioiden varmuuskopiota.",
+        )
+    try:
+        directory = db.resolve_under_data(str(tab["directory"]))
+        backup_dir = db.resolve_under_data(backup_relative)
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=404, detail="Varmuuskopiota ei löytynyt."
+        ) from exc
+    manifest_path = backup_dir / "manifest.json"
+    if not manifest_path.is_file():
+        raise HTTPException(status_code=404, detail="Varmuuskopiota ei löytynyt.")
+    try:
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    except (OSError, ValueError) as exc:
+        raise HTTPException(status_code=422, detail="Varmuuskopio on rikki.") from exc
+    variants = [
+        entry for entry in (manifest.get("variants") or []) if isinstance(entry, dict)
+    ]
+    if not variants:
+        raise HTTPException(status_code=422, detail="Varmuuskopiossa ei ole versioita.")
+
+    for name in ("tab.gp5", "tab.musicxml", "tab.mid"):
+        stored = backup_dir / name
+        if stored.is_file():
+            temporary = directory / (name + ".restore")
+            shutil.copy2(stored, temporary)
+            os.replace(temporary, directory / name)
+    target = directory / "variants"
+    if target.is_dir():
+        shutil.rmtree(target)
+    stored_variants = backup_dir / "variants"
+    if stored_variants.is_dir():
+        shutil.copytree(stored_variants, target)
+
+    meta["variants"] = variants
+    meta["default_variant"] = str(manifest.get("default_variant") or "")
+    meta["selected_variant"] = ""
+    meta["variant_finalized"] = False
+    if manifest.get("playability") is not None:
+        meta["playability"] = manifest["playability"]
+    updated = db.update_tab_finalize(
+        tab_id, meta, int(manifest.get("note_count") or 0)
+    )
+    if updated is None:  # pragma: no cover - deleted between the two calls
+        raise HTTPException(status_code=404, detail="Unknown tab")
+    return _tab_summary(updated)
+
+
+def _variant_backup(
+    tab: dict[str, object],
+    directory: Path,
+    variants: list[dict[str, object]],
+    meta: dict[str, object],
+) -> str:
+    """Copy the pre-finalize variant state to one backup slot (v2.04).
+
+    One slot per tab: the state before a finalize is always the same combined
+    tab, so overwriting the slot cannot lose an earlier good state. The path is
+    stored in the tab metadata (``meta.variant_backup``).
+    """
+    relative = f"backups/variant-{tab['id']}"
+    try:
+        backup_dir = db.resolve_under_data(relative)
+    except ValueError:
+        return ""
+    backup_dir.mkdir(parents=True, exist_ok=True)
+    for name in ("tab.gp5", "tab.musicxml", "tab.mid"):
+        stored = directory / name
+        if stored.is_file():
+            shutil.copy2(stored, backup_dir / name)
+    stored_variants = directory / "variants"
+    target = backup_dir / "variants"
+    if target.is_dir():
+        shutil.rmtree(target)
+    if stored_variants.is_dir():
+        shutil.copytree(stored_variants, target)
+    manifest = {
+        "tab_id": str(tab["id"]),
+        "created_at": db.utc_now(),
+        "note_count": int(tab.get("note_count") or 0),
+        "default_variant": str(meta.get("default_variant") or ""),
+        "playability": meta.get("playability"),
+        "variants": variants,
+    }
+    temporary = backup_dir / "manifest.json.tmp"
+    temporary.write_text(
+        json.dumps(manifest, indent=2, ensure_ascii=False), encoding="utf-8"
+    )
+    os.replace(temporary, backup_dir / "manifest.json")
+    return relative
+
 
 
 @app.get("/api/tabs/{tab_id}/audio", tags=["tabs"])

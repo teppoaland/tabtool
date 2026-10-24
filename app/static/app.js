@@ -99,6 +99,13 @@
   const staveSelect = document.getElementById("stave-select");
   const trackToggles = document.getElementById("track-toggles");
   const variantButton = document.getElementById("variant-button");
+  const variantRestoreButton = document.getElementById("variant-restore-button");
+  // Versiovalinnan varmistus (v2.04).
+  const variantDialog = document.getElementById("variant-dialog");
+  const variantDetail = document.getElementById("variant-detail");
+  const variantStatus = document.getElementById("variant-status");
+  const variantConfirm = document.getElementById("variant-confirm");
+  const variantCancel = document.getElementById("variant-cancel");
   const fullscreenButton = document.getElementById("fullscreen-button");
   const seekSlider = document.getElementById("seek-slider");
   const seekBack = document.getElementById("seek-back");
@@ -170,6 +177,7 @@
   let syncSaveTimer = null;
   let pendingDelete = null;
   let detailTab = null;
+  let pendingVariant = null;
   let libraryTabs = [];
   let showArchive = false;
   let alignArmed = false;
@@ -594,26 +602,82 @@
     const show = variants.length > 1 && !meta.variant_finalized;
     variantButton.hidden = !show;
     if (show) variantButton.disabled = tabIsLocked(activeTab);
+    if (variantRestoreButton) {
+      // v2.04: a finalized tab can always be restored from its backup.
+      const canRestore = Boolean(meta.variant_finalized && meta.variant_backup);
+      variantRestoreButton.hidden = !canRestore;
+      variantRestoreButton.disabled = tabIsLocked(activeTab);
+    }
   }
 
-  async function finalizeVariant() {
+  // The variant whose track is the only one visible (the one the user picked
+  // with the track chips).
+  function visibleVariantEntry() {
+    const variants = (activeTab && activeTab.meta && activeTab.meta.variants) || [];
+    const visible = Array.from(visibleTrackIndexes).filter((index) =>
+      variants.some((item) => Number(item.track) === index)
+    );
+    if (visible.length !== 1) return null;
+    return variants.find((item) => Number(item.track) === visible[0]) || null;
+  }
+
+  function setVariantStatus(text, isError) {
+    if (!variantStatus) return;
+    variantStatus.textContent = text || "";
+    variantStatus.classList.toggle("is-error", Boolean(isError));
+  }
+
+  function closeVariantDialog() {
+    if (!variantDialog) return;
+    variantDialog.hidden = true;
+    pendingVariant = null;
+    setVariantStatus("");
+    if (!searchModal || searchModal.hidden) {
+      document.body.classList.remove("modal-open");
+    }
+  }
+
+  // v2.04: finalizing deletes the other fingerings, so the choice is confirmed
+  // first. The server backs the deleted variants up before it writes anything.
+  function openVariantDialog() {
     if (!activeTab || !activeTab.id) return;
     if (tabIsLocked(activeTab)) {
       setAttachStatus(LOCKED_HINT);
       return;
     }
-    const variants = (activeTab.meta && activeTab.meta.variants) || [];
-    const visible = Array.from(visibleTrackIndexes).filter((index) =>
-      variants.some((item) => Number(item.track) === index)
-    );
-    if (visible.length !== 1) {
+    const entry = visibleVariantEntry();
+    if (!entry) {
       setAttachStatus("Valitse ensin yksi versio näkyviin.");
       return;
     }
-    const entry = variants.find((item) => Number(item.track) === visible[0]);
-    if (!entry) return;
-    if (variantButton) variantButton.disabled = true;
-    setAttachStatus("Valitaan…");
+    pendingVariant = entry;
+    if (variantDetail) {
+      variantDetail.textContent = `Pidettävä versio: ${entry.label}`;
+    }
+    setVariantStatus("");
+    if (variantConfirm) variantConfirm.disabled = false;
+    if (variantDialog) {
+      variantDialog.hidden = false;
+      document.body.classList.add("modal-open");
+    }
+    if (variantConfirm) variantConfirm.focus();
+  }
+
+  async function finalizeVariant() {
+    const entry = pendingVariant || visibleVariantEntry();
+    if (!activeTab || !activeTab.id) return;
+    if (tabIsLocked(activeTab)) {
+      setAttachStatus(LOCKED_HINT);
+      closeVariantDialog();
+      return;
+    }
+    if (!entry) {
+      closeVariantDialog();
+      setAttachStatus("Valitse ensin yksi versio näkyviin.");
+      return;
+    }
+    if (variantConfirm) variantConfirm.disabled = true;
+    setVariantStatus("Valitaan…");
     try {
       const data = new FormData();
       data.append("variant", String(entry.id));
@@ -622,17 +686,58 @@
         body: data,
       });
       if (!response.ok) {
+        setVariantStatus(await readError(response), true);
+        return;
+      }
+      const updated = await response.json();
+      const backup = (updated && updated.variant_backup) || "";
+      const tabId = activeTab.id;
+      closeVariantDialog();
+      await loadTab(tabId);
+      await loadLibrary();
+      setAttachStatus(
+        backup
+          ? `Valittu: ${entry.label} · varmuuskopio ${backup}`
+          : `Valittu: ${entry.label}`
+      );
+    } catch (error) {
+      setVariantStatus(
+        error instanceof Error ? error.message : String(error),
+        true
+      );
+    } finally {
+      if (variantConfirm) variantConfirm.disabled = false;
+      if (variantButton) variantButton.disabled = tabIsLocked(activeTab);
+    }
+  }
+
+  async function restoreVariants() {
+    if (!activeTab || !activeTab.id) return;
+    if (tabIsLocked(activeTab)) {
+      setAttachStatus(LOCKED_HINT);
+      return;
+    }
+    if (variantRestoreButton) variantRestoreButton.disabled = true;
+    setAttachStatus("Palautetaan versioita…");
+    try {
+      const response = await fetch(
+        `/api/tabs/${activeTab.id}/variant/restore`,
+        { method: "POST" }
+      );
+      if (!response.ok) {
         setAttachStatus(await readError(response));
         return;
       }
       const tabId = activeTab.id;
       await loadTab(tabId);
       await loadLibrary();
-      setAttachStatus(`Valittu: ${entry.label}`);
+      setAttachStatus("Versiot palautettu. Kokeile toista raitaa.");
     } catch (error) {
       setAttachStatus(error instanceof Error ? error.message : String(error));
     } finally {
-      if (variantButton) variantButton.disabled = tabIsLocked(activeTab);
+      if (variantRestoreButton) {
+        variantRestoreButton.disabled = tabIsLocked(activeTab);
+      }
     }
   }
 
@@ -1847,6 +1952,9 @@
     } else if (tab.tab_source_file) {
       appendDetailRow("Tablähde", tab.tab_source_file);
     }
+    if (tab.variant_backup) {
+      appendDetailRow("Versioiden varmuuskopio", tab.variant_backup);
+    }
     appendDetailRow("Lisätty", formatTimestamp(tab.created_at) || "–");
     appendDetailRow("ID", tab.id);
   }
@@ -2541,7 +2649,17 @@
     attachAudioButton.addEventListener("click", attachAudio);
   }
   if (variantButton) {
-    variantButton.addEventListener("click", finalizeVariant);
+    variantButton.addEventListener("click", openVariantDialog);
+  }
+  if (variantRestoreButton) {
+    variantRestoreButton.addEventListener("click", restoreVariants);
+  }
+  if (variantConfirm) variantConfirm.addEventListener("click", finalizeVariant);
+  if (variantCancel) variantCancel.addEventListener("click", closeVariantDialog);
+  if (variantDialog) {
+    variantDialog.addEventListener("click", (event) => {
+      if (event.target === variantDialog) closeVariantDialog();
+    });
   }
   if (rateSlider) {
     rateSlider.addEventListener("input", () => {
@@ -2608,6 +2726,10 @@
     applyDisplayScale();
   });
   document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && variantDialog && !variantDialog.hidden) {
+      closeVariantDialog();
+      return;
+    }
     if (event.key === "Escape" && searchModal && !searchModal.hidden) {
       if (deleteDialog && !deleteDialog.hidden) {
         cancelDelete();
