@@ -5,7 +5,7 @@ ja katseluun. Hae kappale Spotifysta tai käytä omaa MP3/YouTube-audioita,
 anna tekoälyn tehdä ensimmäinen tablatuuriluonnos ja katsele sitä
 alphaTabilla TV:stä tai tietokoneelta. Puhelin toimii kaukosäätimenä.
 
-**Versio:** `v2.02` (Phase 4 – LAN-kaukosäädin + Settings-näkymä: count-inin kesto, näkymän oletus ja toiminnot näkyviin/piiloon)
+**Versio:** `v2.03` (Phase 4 – LAN-kaukosäädin, Settings-näkymä ja kirjaston Tiedot: esittäjän korjaus + lähdelinkit)
 
 ## Session aloitus
 
@@ -236,6 +236,17 @@ Jos YouTube estää latauksen, käytetään paikallista MP3:aa.
    `data/tabs/<nimi>/`-tabit (joissa on `meta.json`) rekisteröityvät
    automaattisesti. Suora linkki: `/?tab=<tab_id>`.
 
+**Kirjaston Tiedot (v2.03):** kirjastorivin **Tiedot** avaa modaalin, jossa
+voi korjata **esittäjän**, kappaleen nimen ja virityksen sekä lukita tai
+arkistoida tabin. Esittäjän ylikirjoitus (`artist_override`) tarvitaan,
+koska YouTube-latauksen esittäjäksi tulee helposti kanava/uploader (esim.
+`Knight Rydazz`), ei artisti. Samassa ikkunassa näkyvät vain luku -tietoina
+BPM, tahtien ja nuottien määrä, YouTube-kanava, lisäysaika sekä
+**Audiolähde**- ja **Tablähde**-rivit: mistä YouTube-linkistä audio
+ladattiin ja mistä GP-linkistä tai tiedostosta tabi tuotiin. Tyhjä esittäjä
+palauttaa tiedostosta luetun esittäjän; lukittu tabi on vain luku -tilassa,
+kunnes lukitus avataan samasta ikkunasta.
+
 Valmis referenssitabi: valitse **LIBRARY**-modaalista **GP5-linkki** tai
 **GP-tiedosto** (GP3/GP4/GP5/MusicXML; GP3/GP4 muunnetaan GP5:ksi).
 Tabi avautuu suoraan katselimeen. Jos samannimisestä
@@ -336,6 +347,13 @@ Olemassa olevan kirjaston voi arkistoida kertaalleen:
 
 ```powershell
 .venv\Scripts\python.exe scripts\backfill_external.py
+```
+
+Vanhojen tabien lähdelinkit voi täydentää jälkikäteen (v2.03):
+
+```powershell
+.venv\Scripts\python.exe scripts\backfill_source_url.py --dry-run
+.venv\Scripts\python.exe scripts\backfill_source_url.py
 ```
 
 ---
@@ -540,6 +558,7 @@ docs/               GITIGNORED
 - **v1.43** ✅ – kursorin synkka: backing track -venytys pois, osoitin äänen tahdissa
 - **v1.42** ✅ – testiyhteenveto näkyviin (`pytest.ini`), sessioalustuksen tulosteet kapeaan konsoliin
 - **v1.41** ✅ – GP3/GP4-tuonti (konversio GP5:ksi), audiopolun rescan-korjaus
+- **v2.03** ✅ – kirjaston Tiedot-modali: esittäjän korjaus, lähdelinkit (YouTube/GP) ja metadata; puhelimen SÄÄDÄ saa esittäjän
 - **v2.02** ✅ – Settings-näkymä: count-inin kesto, näkymän oletus, toiminnot näkyviin/piiloon; puhelimen soitinvalinnat ja painikkeet sivun alaosaan
 - **v2.01** ✅ – kirjastot bändin nimellä, remote yksi scrollbar
 - **v1.83** ✅ – yksi `start.bat` (LAN aina), 150 px QR `/remote`-sivulla

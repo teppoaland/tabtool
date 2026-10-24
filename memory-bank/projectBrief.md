@@ -1,6 +1,6 @@
 # 🎯 Projektin lyhyt kuvaus – AI TABTOOL
 
-> **Versio:** `v2.02` (24.10.2026)
+> **Versio:** `v2.03` (24.10.2026)
 > **Repo:** https://github.com/teppoaland/tabtool
 > **Paikallinen:** `D:\AI\tabtool`
 
@@ -102,10 +102,20 @@ Lokaali web-palvelu, jossa voi:
   ulkopuolelta; QR-pariutus kirjaa puhelimen sisään istuntotokenilla.
   Kaukosäätö ei muuta soittoketjua: TV:n silta klikkaa olemassa olevia
   kontrolleja.
-- **Kirjaston metadata on käyttäjän dataa** (v1.63): oma nimi
-  (`title_override`, generaattorin nimi säilyy `original_title`ina),
-  lukitus (estää poiston) ja arkistointi (piiloon päälistalta,
-  `ARKISTO (n)` -linkki listan lopussa). Lista on aakkosjärjestyksessä.
+- **Kirjaston metadata on käyttäjän dataa** (v1.63, v2.03): oma nimi
+  (`title_override`, generaattorin nimi säilyy `original_title`ina) ja oma
+  esittäjä (`artist_override`, alkuperäinen `original_artist`ina; tyhjä
+  palauttaa generaattorin arvon), lukitus (estää poiston ja muutokset) ja
+  arkistointi (piiloon päälistalta, `ARKISTO (n)` -linkki listan lopussa).
+  Lista on aakkosjärjestyksessä ylikirjoitetun esittäjän mukaan.
+- **Tiedot-modaali (v2.03):** kirjastorivin **Tiedot** avaa modaalin, jossa
+  esittäjä, nimi, viritys, lukitus ja arkistointi ovat muokattavissa ja
+  absoluuttiset tiedot (BPM, tahtia, nuotteja, kanava, lisäysaika, ID)
+  näkyvät vain luku -tietoina. Samassa ikkunassa ovat **Audiolähde**- ja
+  **Tablähde**-linkit: `meta.audio_source_url` (YouTube-linkki, josta audio
+  ladattiin) ja `meta.tab_source_url` + `meta.tab_source_file` (GP-linkki /
+  tiedostonimi). Vanhat AI-tabit saavat audiolinkin `meta.source`-kentästä;
+  `scripts/backfill_source_url.py` täydentää puuttuvan job-riveistä.
 - **Oma tuontikirjasto (v1.66):** valmiit GP3/GP4/GP5- ja MusicXML-tabit
   tuodaan kansiosta kerralla (`scripts/import_folder.py`) ja viedään ulos
   (`scripts/export_tabs.py`: GP5/MusicXML/MIDI + `manifest.json` + ZIP).
@@ -133,7 +143,7 @@ Lokaali web-palvelu, jossa voi:
   audion (ei string/fret-dataa), ja GP/MIDI/MP3-lataus on Plus-ominaisuus
   (`songsterr.com/ai.txt`). Käyttäjän Android-osto on **kertamaksu**
   (vain Android, ei web). GP5:t haetaan laillisesta lähteestä käsin.
-- **Versiosarja `1.x`**, aloitus `v1.00`; nyt `v2.02`.
+- **Versiosarja `1.x`**, aloitus `v1.00`; nyt `v2.03`.
 - **Ei julkista julkaisua:** koodi pidetään lokaalina. Commitit tehdään
   paikalliseen repoon palautuspisteiksi (revert); push GitHubiin vain
   erillisestä pyynnöstä.
@@ -175,6 +185,6 @@ Sano Cline:lle **`lue membank`**. Sääntö on
 - `app/tab_edit.py` – tab-datan muokkaus (toisto, tahdin poisto, viritys)
 - `scripts/pipeline_smoke.py` – CLI-proof
 - `stop.bat` / `status.bat` – palvelimen pysäytys ja tilan tarkistus
-- `tests/` – 229 pytest-testiä
+- `tests/` – 239 pytest-testiä
 - `data/` – GITIGNORED: audio, stemmit, tabit, tokenit
 - `docs/` – GITIGNORED: henkilökohtainen suunnitelma

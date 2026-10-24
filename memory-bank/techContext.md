@@ -9,7 +9,7 @@
 - **Ei GPU:ta** (`nvidia-smi` tyhjä) → CPU-only
 - D: levytilaa ~147 GB vapaana
 
-## Python-paketit (v2.02)
+## Python-paketit (v2.03)
 
 Core:
 
@@ -59,7 +59,7 @@ python -m venv .venv
 ## Testit
 
 ```powershell
-.venv\Scripts\python.exe -m pytest -q          # 229 passed
+.venv\Scripts\python.exe -m pytest -q          # 239 passed
 .venv\Scripts\python.exe -m compileall -q app scripts tests
 node --check app\static\app.js
 node --check app\static\remote.js
@@ -214,16 +214,19 @@ DB-tiedosto); vain tuotenimi on `AI TabTool`.
 - Modaalin pino: alphaTabin `.at-cursors` on `z-index: 1000`; modaali
   `2000`, dialogi `2100`, viewer `isolation: isolate`, cursor piiloon
   `body.modal-open`-tilassa. Modaalin tausta on peittävä.
-- **Kirjasto ja työkalut (v1.63–v1.68):** `POST /api/tabs/{id}/library`
-  (`title`/`locked`/`archived`/`tuning`, tyhjä viritys `tuning_clear`),
-  `title_override` + `original_title`, `locked` estää poiston (409),
-  `archived` piilottaa päälistalta (`ARKISTO (n)`), aakkosjärjestys
-  `localeCompare("fi")`, NIMEÄ-lomake (nimi, viritys, Lukitse, Arkistoi)
+- **Kirjasto ja työkalut (v1.63–v2.03):** `POST /api/tabs/{id}/library`
+  (`artist`/`title`/`locked`/`archived`/`tuning`, tyhjä viritys
+  `tuning_clear`), `title_override`/`artist_override` +
+  `original_title`/`original_artist`, `locked` estää poiston (409) ja
+  muutokset, `archived` piilottaa päälistalta (`ARKISTO (n)`),
+  aakkosjärjestys `localeCompare("fi")`, **Tiedot**-modaali (esittäjä,
+  nimi, viritys, Lukitse, Arkistoi + vain luku -metadata ja lähdelinkit)
   ja punainen `×`-poisto. Modaalissa KIRJASTO vasemmalla.
   Kanava `meta.youtube_channel`, viritys `meta.tuning_label` +
   `tuning_notes` (GP5:n kielet, `app/tuning.py`).
 - **Skriptit:** `import_folder.py`, `export_tabs.py`,
   `adb_pull_gp.ps1` (puhelimen Download), `backfill_youtube_channel.py`,
+  `backfill_source_url.py` (v2.03: audiolinkki job-riveistä),
   `backfill_tuning.py` (`--force`), `backfill_external.py`,
   `backfill_gp5_utf8.py`, `pipeline_smoke.py` ja tab-datan työkalut
   `expand_repeat.py` (toisto tahdeiksi), `trim_bars.py` (tahdin poisto),
@@ -273,3 +276,24 @@ DB-tiedosto); vain tuotenimi on `AI TabTool`.
   `remote-bridge.js` (`readTracks`, `tracks`-kenttä, `action === "track"`),
   `remote.py` (`track`-komento 0–31, `clean_state` → `tracks`).
 - Testit **229**; `tests/test_settings.py` + raidat `tests/test_remote.py`.
+
+## v2.03 (24.10.2026)
+
+- **Kirjaston Tiedot:** `NIMEÄ` → `Tiedot` (`#detail-dialog`,
+  `app.js`: `openDetailDialog`/`saveDetail`/`renderDetailMeta`). Muokattavat:
+  esittäjä, nimi, viritys, lukitus, arkistointi; vain luku: BPM, tahtia,
+  nuotteja, kanava, lisäysaika, `Audiolähde`, `Tablähde`, ID. Lukittu tabi
+  aukeaa vain luku -tilaan (Lukitse-rasti avaa lukituksen).
+- **Skeema:** `tabs.artist_override` (+ migraatio), `_tab_row` vaihtaa
+  `artist`in ja palauttaa `original_artist`in; `list_tabs` järjestää
+  ylikirjoitetun artistin mukaan. `POST /api/tabs/{id}/library` hyväksyy
+  `artist`-kentän (tyhjä = palauta).
+- **Lähdemeta:** `meta.audio_source_url` / `audio_source_type`
+  (`jobs._process_audio_job`, AI-putki), `meta.tab_source_url` /
+  `tab_source_file` (`tab_import.import_tab_bytes(source_url, source_file)`,
+  `_download_tab`). `_tab_summary` → `source_url`, `tab_source_url`,
+  `tab_source_file` (vain http(s)); `scripts/backfill_source_url.py`
+  täydentää vanhat audiolinkit job-riveistä.
+- **Puhelin:** SÄÄDÄ-lomakkeessa `#adjust-artist`; `remote.js` lähettää
+  artistin samalla "tyhjä = alkuperäinen" -logiikalla.
+- Testit **239**.

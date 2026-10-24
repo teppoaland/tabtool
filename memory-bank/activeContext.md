@@ -1,6 +1,6 @@
 # 📍 Aktiivinen konteksti – AI TABTOOL
 
-> **Versio:** `v2.02` (24.10.2026)
+> **Versio:** `v2.03` (24.10.2026)
 > **Git:** v1.23–v1.99 **pushattu** `origin/main`iin 23.10.2026 käyttäjän
 > pyynnöstä; **tagi `v1.99` = viimeisin pushattu palautuspiste**
 > (`git reset --hard v1.99`); v2.00–v2.01 ovat paikallisia. Älä pinnaa
@@ -20,6 +20,19 @@
   **pyydetään testaamaan soitto referenssikappaleella** (Seek & Destroy,
   SIIRTO −0,75 / BPM 142) ennen ja jälkeen. Katso
   `.clinerules/07-playback-frozen.md`.
+- **v2.03 (24.10.2026) – Kirjaston Tiedot ja lähdemeta (ei soittoketjuun):**
+  - `NIMEÄ` → **Tiedot**: modaali (`#detail-dialog`) muokkaa esittäjän
+    (`tabs.artist_override` + migraatio, `original_artist` säilyy), nimen,
+    virityksen, lukituksen ja arkistoinnin. BPM/tahtia/nuotteja/kanava/
+    lisäysaika/ID sekä **Audiolähde**- ja **Tablähde**-linkit näkyvät vain
+    luku -tietoina. Lukittu tabi pysyy vain luku -tilassa.
+  - Lähdetiedot talteen: `meta.audio_source_url` (YouTube-linkki myös
+    GP5 + YouTube- ja LIITÄ AUDIO -tapauksissa) sekä `meta.tab_source_url`
+    ja `tab_source_file` (GP-linkki ja alkuperäinen tiedostonimi).
+    Vanha `meta.source` toimii fallbackina; `scripts/backfill_source_url.py`
+    täydentää vanhat audiolinkit job-riveistä.
+  - Puhelimen SÄÄDÄ saa Esittäjä-kentän.
+  - Testit **239**.
 - **v2.02 (24.10.2026) – Settings-näkymä ja puhelimen soittimet (ei
   soittoketjuun):**
   - `/settings` (SETTINGS yläpalkissa REMOTE- ja API-linkkien jälkeen)
@@ -347,13 +360,11 @@ Putki:
 - **Dr. Feelgood – valmis (v1.76–v1.78):** bar 2 soitetaan 17 kertaa
   kirjoitettuina tahteina (135 tahtia), 2 ylimääräistä lopputahtia ja
   1/16-pickup poistettu. Erillistä `set_repeat.py`tä ei tarvita.
-- **Session tilanne 24.10.2026:** v1.93–v2.02 valmiit (remote-yhden rivin
-  UI, `«`-alkuun, nopeus 1 % + 10 % snap, yksi tila-indikaattori,
-  seek-sliderin strict-mode-korjaus, `start.bat` stop+start, GP3-grace-
-  korjaus, kirjastot bändin nimellä, remote yksi scrollbar, Settings-näkymä
-  ja puhelimen soitinvalinnat). 229 testiä vihreänä. **Soitto kuitattu
-  valmiiksi (99 %, riittää) → ISO LUKKO; tagi `v1.99` = viimeisin pushattu
-  palautuspiste, v2.00–v2.02 paikallisia.**
+- **Session tilanne 24.10.2026:** v1.93–v2.03 valmiit (remote-UI, nopeus,
+  seek-slider, `start.bat`, GP3-grace, kirjastot bändin nimellä, Settings,
+  puhelimen soitinvalinnat, kirjaston Tiedot + lähdemeta). 239 testiä
+  vihreänä. **Soitto kuitattu valmiiksi (99 %, riittää) → ISO LUKKO; tagi
+  `v1.99` = viimeisin pushattu palautuspiste, v2.00–v2.03 paikallisia.**
   Seuraava: käyttäjän UI-/kuuntelutesti (rule 07) / pickup-korjaus.
 - Soittotapa/refinger: asemaprofiilit, helpoin-arvio, turhien nuottien
   karsinta, per-tahti/fraasiasema; **ei koodia vielä**.

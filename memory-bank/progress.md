@@ -11,6 +11,32 @@
   SIIRTO −0,75 / BPM 142) ennen ja jälkeen.
 - Katso `.clinerules/07-playback-frozen.md`.
 
+## v2.03 – Kirjaston Tiedot ja lähdemeta (24.10.2026)
+
+- **`NIMEÄ` → `Tiedot`:** kirjastorivi avaa modaalin
+  (`#detail-dialog`), joka muokkaa esittäjän, nimen, virityksen, lukituksen
+  ja arkistoinnin. Absoluuttiset tiedot (BPM, tahtia, nuotteja, kanava,
+  lisäysaika, ID) ja lähdelinkit näkyvät vain luku -tietoina. Lukittu tabi
+  on vain luku -tilassa, kunnes lukitus avataan samasta ikkunasta (myös
+  palvelin valvoo 409:llä).
+- **Esittäjän ylikirjoitus:** `tabs.artist_override` (+ `ALTER TABLE`
+  -migraatio), `original_artist` säilyy, tyhjä arvo palauttaa
+  generaattorin esittäjän. `db.list_tabs` järjestää ylikirjoitetun
+  artistin mukaan. YouTube-latauksen uploader (esim. "Knight Rydazz") on
+  nyt korjattavissa oikeaksi artistiksi (esim. Reino Nordin).
+- **Lähdemeta:** `meta.audio_source_url` (+ `audio_source_type`) kaikille
+  YouTube-audioille (AI-putki, GP5 + YouTube, LIITÄ AUDIO) sekä
+  `meta.tab_source_url` / `tab_source_file` GP-linkki- ja tiedostotuonnille.
+  `_tab_summary` palauttaa ne vain http(s)-linkkeinä; vanha `meta.source`
+  toimii fallbackina. `scripts/backfill_source_url.py` täydentää vanhat
+  audiolinkit `jobs`-riveistä.
+- **Puhelin:** SÄÄDÄ-lomakkeessa Esittäjä-kenttä (`#adjust-artist`),
+  sama "tyhjä = alkuperäinen" -logiikka.
+- **Testit 239** (10 uutta: esittäjän ylikirjoitus/tyhjennys/järjestys,
+  Reino Nordin -tapaus, lähdelinkit + http(s)-suodatus, `Tiedot`-modaalin
+  rakenne, URL-tuonnin ja GP5+YouTube-jobien lähdemeta). Soittoketjuun ei
+  koskettu.
+
 ## v2.02 – Settings-näkymä ja puhelimen soittimet (24.10.2026)
 
 - **`/settings`** (SETTINGS yläpalkissa REMOTE- ja API-linkkien jälkeen):

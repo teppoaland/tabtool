@@ -2,6 +2,30 @@
 
 > AI TabTool käyttää `1.x`-versiosarjaa. Aloitus `v1.00`.
 
+## v2.03 – 24.10.2026
+
+- **Kirjaston `NIMEÄ` → `Tiedot` -modali.** Kirjastorivi avaa nyt
+  modaali-ikkunan, jossa voi muokata **esittäjän** (`artist_override`,
+  uusi sarake + migraatio), kappaleen nimen, virityksen, lukituksen ja
+  arkistoinnin. Tyhjä esittäjä palauttaa tiedostosta luetun esittäjän;
+  lukittu tabi pysyy vain luku -tilassa, kunnes lukitus avataan samasta
+  ikkunasta (palvelin valvoo saman 409:llä). Absoluuttiset tiedot (BPM,
+  tahtia, nuotteja, YouTube-kanava, lisäysaika, lähdelinkit, ID) näkyvät
+  ikkunassa vain luku -tietoina. Kirjasto järjestetään esittäjän
+  ylikirjoituksen mukaan.
+- **Lähdetiedot talteen.** Tabin metaan tallentuu nyt
+  `audio_source_url` (YouTube-linkki, josta audio ladattiin – myös
+  GP5 + YouTube -liitoksissa ja `LIITÄ AUDIO`ssa) sekä `tab_source_url`
+  ja `tab_source_file` (GP3/GP4/GP5/MusicXML-linkki ja alkuperäinen
+  tiedostonimi). Vanhat AI-tabit saavat linkin `meta.source`-kentästä;
+  vanhojen GP-linkkituontien linkkiä ei voi palauttaa, mutta
+  `scripts/backfill_source_url.py` täydentää audiolinkin job-riveistä.
+- **Puhelimen SÄÄDÄ** saa Esittäjä-kentän samalla logiikalla.
+- **Testit:** 238 passed (9 uutta: esittäjän ylikirjoitus + tyhjennys +
+  järjestys, lähdelinkit ja niiden http(s)-suodatus, `Tiedot`-modaalin
+  rakenne, URL-tuonnin ja GP5+YouTube-jobien lähdemeta). Soittoketjuun ei
+  koskettu.
+
 ## v2.02 – 24.10.2026
 
 - **Settings-näkymä (`/settings`).** Yläpalkin **SETTINGS** on REMOTE- ja

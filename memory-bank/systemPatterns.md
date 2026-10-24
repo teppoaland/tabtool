@@ -43,15 +43,26 @@ Putki (app/pipeline/)
 - `app/library.py` hoitaa poiston: tab-hakemisto, stemmit sekä job/track-
   rivit. Jaettu audio säilyy, jos toinen tabi käyttää sitä; MP3 jää
   `EXTERNAL_DIR`iin. Poisto ei koske `data/`-juuren ulkopuolisiin polkuihin.
-- **Kirjaston metadata** (v1.63): `tabs.title_override` (näkyvä nimi),
-  `tabs.locked`, `tabs.archived`. `db._tab_row` palauttaa `title`nä
-  käyttäjän nimen ja `original_title`ina generaattorin nimen;
+- **Kirjaston metadata** (v1.63, v2.03): `tabs.title_override` (näkyvä nimi),
+  `tabs.artist_override` (näkyvä esittäjä; `original_artist` säilyy),
+  `tabs.locked`, `tabs.archived`. `db._tab_row` palauttaa ylikirjoitetut
+  `title`/`artist` ja alkuperäiset `original_title`/`original_artist`ina;
   `db._migrate_tab_columns` lisää sarakkeet vanhaan kantaan
   `init_db`ssä. Muutokset: `POST /api/tabs/{id}/library`
-  (Form `title`/`locked`/`archived`/`tuning`; `tuning_clear` poistaa
-  ylikirjoituksen). Lukittu tabi ei poistu (`DELETE` → 409).
-  `db.list_tabs` järjestää artistin ja nimen mukaan; UI lajittelee
-  lisäksi `localeCompare("fi")`lla.
+  (Form `artist`/`title`/`locked`/`archived`/`tuning`; `tuning_clear`
+  poistaa ylikirjoituksen; tyhjä `artist` palauttaa generaattorin arvon).
+  Lukittu tabi ei poistu (`DELETE` → 409) eikä muutu ennen avausta.
+  `db.list_tabs` järjestää ylikirjoitetun artistin ja nimen mukaan; UI
+  lajittelee lisäksi `localeCompare("fi")`lla.
+- **Lähdemeta** (v2.03): `meta.audio_source_url` (YouTube-linkki, josta
+  audio ladattiin; `_process_audio_job` ja AI-putki) sekä
+  `meta.tab_source_url` / `meta.tab_source_file` (GP3/GP4/GP5/MusicXML-
+  tuonnin linkki ja alkuperäinen tiedostonimi,
+  `tab_import.import_tab_bytes(source_url=…, source_file=…)`).
+  `_tab_summary` palauttaa `source_url`/`tab_source_url`/`tab_source_file`
+  vain http(s)-linkkeinä; `audio_source_url` puuttuessa käytetään vanhaa
+  `meta.source`-kenttää. Kirjaston **Tiedot**-modaali näyttää ne
+  (`app.js`: `openDetailDialog`).
 - **Kanava ja viritys metaan** (v1.67–v1.68): `meta.youtube_channel`
   (yt-dlp `%(channel)s`, fallback uploader) ja `meta.tuning_label` /
   `tuning_notes` (`app/tuning.py` lukee GP5:n kielet; presets
