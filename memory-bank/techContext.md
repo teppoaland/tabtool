@@ -9,7 +9,7 @@
 - **Ei GPU:ta** (`nvidia-smi` tyhjä) → CPU-only
 - D: levytilaa ~147 GB vapaana
 
-## Python-paketit (v2.03)
+## Python-paketit (v2.04)
 
 Core:
 
@@ -59,7 +59,7 @@ python -m venv .venv
 ## Testit
 
 ```powershell
-.venv\Scripts\python.exe -m pytest -q          # 239 passed
+.venv\Scripts\python.exe -m pytest -q          # 244 passed
 .venv\Scripts\python.exe -m compileall -q app scripts tests
 node --check app\static\app.js
 node --check app\static\remote.js
@@ -297,3 +297,17 @@ DB-tiedosto); vain tuotenimi on `AI TabTool`.
 - **Puhelin:** SÄÄDÄ-lomakkeessa `#adjust-artist`; `remote.js` lähettää
   artistin samalla "tyhjä = alkuperäinen" -logiikalla.
 - Testit **239**.
+
+## v2.04 (24.10.2026)
+
+- **Versiovalinnan varmistus ja palautus:** `#variant-dialog` kysyy
+  valinnan ennen `POST /api/tabs/{id}/variant`ia. Palvelin kopioi
+  finalisoimattoman tilan `data/backups/variant-<tab_id>/`iin
+  (`tab.gp5/musicxml/mid`, `variants/*.json`, `manifest.json`) ja
+  tallentaa polun `meta.variant_backup`iin (`_variant_backup`).
+  `POST /api/tabs/{id}/variant/restore` palauttaa tiedostot ja metan
+  (`variants`, `default_variant`, `note_count`, `variant_finalized=false`).
+- **UI:** `#variant-restore-button` (PALAUTA VERSIOT) näkyy vain
+  finalisoidulla tabilla; `openVariantDialog`/`restoreVariants` app.js:ssä;
+  Tiedot-dialogi näyttää "Versioiden varmuuskopio" -rivin.
+- Testit **244**.

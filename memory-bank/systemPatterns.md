@@ -140,11 +140,18 @@ Putki (app/pipeline/)
   vapaalle kielelle tai edellistä nuottia lyhennetään.
 - Viritykset: standard, drop D, Eb, D, open G, bass 4-string.
 - Standard E -alueen ulkopuoliset nuotit pudotetaan varoituksella.
-- **Sormitusversiot (v1.72):** `fretboard.py` tuottaa kolme profiilia
+- **Sormitusversiot (v1.72, varmistus + varmuuskopio v2.04):** `fretboard.py`
+  tuottaa kolme profiilia
   (`V1 · Avoimet kielet`, `V2 · Boksi`, `V3 · Vähän liikettä`),
   `playability.py` laskee 0–10-score; versiot kirjoitetaan raitoina samaan
   GP5:hen ja valitaan `VALITSE TÄMÄ`lla (`POST /api/tabs/{id}/variant`,
-  `variant_store.py` JSON-snapshotit). Jäljellä: parhaan version
+  `variant_store.py` JSON-snapshotit). **v2.04:** valinta kysytään
+  `#variant-dialog`issa, ja ennen kirjoitusta finalisoimaton tila
+  kopioidaan `data/backups/variant-<tab_id>/`iin (`manifest.json` +
+  `variants/` + tab-tiedostot); `meta.variant_backup` kertoo sijainnin.
+  `POST /api/tabs/{id}/variant/restore` kopioi varmuuskopion takaisin ja
+  palauttaa `variants`/`default_variant`/`note_count`/`variant_finalized`
+  → `PALAUTA VERSIOT` -nappi. Jäljellä: parhaan version
   automaattinen valinta, score näkyviin ja turhien nuottien karsinta
   per tahti/fraasi.
 

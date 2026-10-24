@@ -11,6 +11,26 @@
   SIIRTO −0,75 / BPM 142) ennen ja jälkeen.
 - Katso `.clinerules/07-playback-frozen.md`.
 
+## v2.04 – Versiovalinnan varmistus ja palautus (24.10.2026)
+
+- **Ongelma:** `VALITSE TÄMÄ` finalisoi suoraan – muut sormitusversiot
+  poistettiin ilman varmistusta, eikä paluuta ollut. Tuntemattoman
+  kappaleen kohdalla valinta on pakko tehdä kuuntelemalla.
+- **Varmistus:** `#variant-dialog` ("Valitaanko tämä versio?") ennen
+  `POST /api/tabs/{id}/variant`ia; peruminen `PERUUTA`/Esc/tausta.
+- **Varmuuskopio:** palvelin kopioi ennen kirjoitusta
+  `tab.gp5`/`tab.musicxml`/`tab.mid` + `variants/*.json` +
+  `manifest.json` hakemistoon `data/backups/variant-<tab_id>/`;
+  `meta.variant_backup` tallentuu ja näkyy Tiedot-dialogissa.
+- **Palautus:** `POST /api/tabs/{id}/variant/restore` kopioi
+  varmuuskopion takaisin ja palauttaa `variants`/`default_variant`/
+  `note_count`/`variant_finalized=false`; UI:ssa `PALAUTA VERSIOT`
+  (`#variant-restore-button`) näkyy vain finalisoidulla tabilla, jolla on
+  varmuuskopio. TAB BPM säilyy. Lukittu tabi → 409 molemmissa.
+- **Testit 244** (5 uutta: varmuuskopion sisältö, palautus +
+  uudelleenvalinta, 422 ilman varmuuskopiota, 409 lukitulle,
+  varmistusdialogin rakenne).
+
 ## v2.03 – Kirjaston Tiedot ja lähdemeta (24.10.2026)
 
 - **`NIMEÄ` → `Tiedot`:** kirjastorivi avaa modaalin

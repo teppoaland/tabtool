@@ -1,6 +1,6 @@
 # 📍 Aktiivinen konteksti – AI TABTOOL
 
-> **Versio:** `v2.03` (24.10.2026)
+> **Versio:** `v2.04` (24.10.2026)
 > **Git:** v1.23–v1.99 **pushattu** `origin/main`iin 23.10.2026 käyttäjän
 > pyynnöstä; **tagi `v1.99` = viimeisin pushattu palautuspiste**
 > (`git reset --hard v1.99`); v2.00–v2.01 ovat paikallisia. Älä pinnaa
@@ -20,6 +20,19 @@
   **pyydetään testaamaan soitto referenssikappaleella** (Seek & Destroy,
   SIIRTO −0,75 / BPM 142) ennen ja jälkeen. Katso
   `.clinerules/07-playback-frozen.md`.
+- **v2.04 (24.10.2026) – Sormitusversion valinta turvalliseksi (ei
+  soittoketjuun):**
+  - `VALITSE TÄMÄ` kysyy nyt varmistuksen (`#variant-dialog`) – ennen
+    painallus finalisoi suoraan ja poisti muut versiot ilman paluuta.
+  - Palvelin kopioi finalisoimattoman tilan
+    `data/backups/variant-<tab_id>/`iin (tab.gp5/musicxml/mid,
+    `variants/*.json`, `manifest.json`); `meta.variant_backup` kertoo
+    sijainnin.
+  - `POST /api/tabs/{id}/variant/restore` + `PALAUTA VERSIOT` -nappi
+    palauttavat V1/V2/V3:n, `default_variant`in ja `note_count`in.
+    TAB BPM säilyy valinnassa ja palautuksessa; lukittu tabi estää
+    molemmat (409).
+  - Testit **244** (5 uutta `tests/test_tab_variant.py`).
 - **v2.03 (24.10.2026) – Kirjaston Tiedot ja lähdemeta (ei soittoketjuun):**
   - `NIMEÄ` → **Tiedot**: modaali (`#detail-dialog`) muokkaa esittäjän
     (`tabs.artist_override` + migraatio, `original_artist` säilyy), nimen,
@@ -360,11 +373,12 @@ Putki:
 - **Dr. Feelgood – valmis (v1.76–v1.78):** bar 2 soitetaan 17 kertaa
   kirjoitettuina tahteina (135 tahtia), 2 ylimääräistä lopputahtia ja
   1/16-pickup poistettu. Erillistä `set_repeat.py`tä ei tarvita.
-- **Session tilanne 24.10.2026:** v1.93–v2.03 valmiit (remote-UI, nopeus,
+- **Session tilanne 24.10.2026:** v1.93–v2.04 valmiit (remote-UI, nopeus,
   seek-slider, `start.bat`, GP3-grace, kirjastot bändin nimellä, Settings,
-  puhelimen soitinvalinnat, kirjaston Tiedot + lähdemeta). 239 testiä
-  vihreänä. **Soitto kuitattu valmiiksi (99 %, riittää) → ISO LUKKO; tagi
-  `v1.99` = viimeisin pushattu palautuspiste, v2.00–v2.03 paikallisia.**
+  puhelimen soitinvalinnat, kirjaston Tiedot + lähdemeta, versiovalinnan
+  varmistus + palautus). 244 testiä vihreänä. **Soitto kuitattu valmiiksi
+  (99 %, riittää) → ISO LUKKO; tagi `v1.99` = viimeisin pushattu
+  palautuspiste, v2.00–v2.04 paikallisia.**
   Seuraava: käyttäjän UI-/kuuntelutesti (rule 07) / pickup-korjaus.
 - Soittotapa/refinger: asemaprofiilit, helpoin-arvio, turhien nuottien
   karsinta, per-tahti/fraasiasema; **ei koodia vielä**.

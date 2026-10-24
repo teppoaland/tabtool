@@ -2,6 +2,27 @@
 
 > AI TabTool käyttää `1.x`-versiosarjaa. Aloitus `v1.00`.
 
+## v2.04 – 24.10.2026
+
+- **`VALITSE TÄMÄ` varmistaa ja tekee varmuuskopion.** Aiemmin painike
+  finalisoi version suoraan: muut sormitusversiot poistettiin ilman
+  kysymystä eikä paluuta ollut. Nyt valinta kysytään
+  varmistusdialogissa (`#variant-dialog`: "Valitaanko tämä versio?"), ja
+  ennen kirjoitusta palvelin kopioi finalisoimattoman tilan
+  (`tab.gp5`, `tab.musicxml`, `tab.mid`, `variants/*.json` ja
+  `manifest.json`) hakemistoon `data/backups/variant-<tab_id>/`.
+  `meta.variant_backup` kertoo sijainnin ja se näkyy myös Tiedot-dialogissa.
+- **`PALAUTA VERSIOT` peruu valinnan.** Uusi reitti
+  `POST /api/tabs/{id}/variant/restore` kopioi varmuuskopion takaisin,
+  palauttaa `variants`-listan, `default_variant`in ja `note_count`in sekä
+  asettaa `variant_finalized=false`. Tämän jälkeen version voi valita
+  uudelleen. Valinta säilyttää nykyisen TAB BPM:n, joten temppokorjaus ei
+  katoa. Lukittu tabi estää sekä valinnan että palautuksen (409).
+- Testit: 5 uutta (`tests/test_tab_variant.py`: varmuuskopion sisältö,
+  palautus + uudelleenvalinta, palautus ilman varmuuskopiota → 422,
+  lukitus → 409, varmistusdialogin rakenne) → **244 passed**.
+- Soittoketjuun ei koskettu.
+
 ## v2.03 – 24.10.2026
 
 - **Kirjaston `NIMEÄ` → `Tiedot` -modali.** Kirjastorivi avaa nyt

@@ -5,7 +5,7 @@ ja katseluun. Hae kappale Spotifysta tai käytä omaa MP3/YouTube-audioita,
 anna tekoälyn tehdä ensimmäinen tablatuuriluonnos ja katsele sitä
 alphaTabilla TV:stä tai tietokoneelta. Puhelin toimii kaukosäätimenä.
 
-**Versio:** `v2.03` (Phase 4 – LAN-kaukosäädin, Settings-näkymä ja kirjaston Tiedot: esittäjän korjaus + lähdelinkit)
+**Versio:** `v2.04` (Phase 4 – LAN-kaukosäädin, Settings, kirjaston Tiedot ja sormitusversioiden varmistettu valinta)
 
 ## Session aloitus
 
@@ -235,6 +235,16 @@ Jos YouTube estää latauksen, käytetään paikallista MP3:aa.
 7. Kirjasto listaa aiemmat tabit; myös CLI:llä tehdyt
    `data/tabs/<nimi>/`-tabit (joissa on `meta.json`) rekisteröityvät
    automaattisesti. Suora linkki: `/?tab=<tab_id>`.
+
+**Sormitusversiot (V1/V2/V3, v1.72 / v2.04):** AI-tabi generoidaan kolmella
+otelautaprofiililla – **V1 · Avoimet kielet**, **V2 · Boksi** ja
+**V3 · Vähän liikettä**. Sävelet ja rytmit ovat kaikissa samat, vain
+kielten/nauhojen sijoittelu vaihtelee. Raitavalinnalla voi kuunnella ja
+vertailla; kun yksi versio tuntuu oikealta, valitse vain se näkyviin ja paina
+**VALITSE TÄMÄ**. Valinta kysytään varmistusdialogissa, ja ennen kirjoitusta
+kaikki versiot varmuuskopioidaan `data/backups/variant-<tab_id>/`iin.
+Virhevalinnan voi perua painikkeella **PALAUTA VERSIOT**, joka tuo V1/V2/V3
+takaisin (myös TAB BPM säilyy).
 
 **Kirjaston Tiedot (v2.03):** kirjastorivin **Tiedot** avaa modaalin, jossa
 voi korjata **esittäjän**, kappaleen nimen ja virityksen sekä lukita tai
@@ -558,6 +568,7 @@ docs/               GITIGNORED
 - **v1.43** ✅ – kursorin synkka: backing track -venytys pois, osoitin äänen tahdissa
 - **v1.42** ✅ – testiyhteenveto näkyviin (`pytest.ini`), sessioalustuksen tulosteet kapeaan konsoliin
 - **v1.41** ✅ – GP3/GP4-tuonti (konversio GP5:ksi), audiopolun rescan-korjaus
+- **v2.04** ✅ – VALITSE TÄMÄ kysyy varmistuksen, varmuuskopioi versiot ja PALAUTA VERSIOT peruu valinnan
 - **v2.03** ✅ – kirjaston Tiedot-modali: esittäjän korjaus, lähdelinkit (YouTube/GP) ja metadata; puhelimen SÄÄDÄ saa esittäjän
 - **v2.02** ✅ – Settings-näkymä: count-inin kesto, näkymän oletus, toiminnot näkyviin/piiloon; puhelimen soitinvalinnat ja painikkeet sivun alaosaan
 - **v2.01** ✅ – kirjastot bändin nimellä, remote yksi scrollbar
