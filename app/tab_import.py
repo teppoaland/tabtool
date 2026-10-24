@@ -234,8 +234,19 @@ def _write_meta(path: Path, meta: dict[str, Any]) -> None:
     os.replace(temporary, path)
 
 
-def import_tab_bytes(data: bytes, filename: str) -> dict[str, Any]:
-    """Store an uploaded tab, register it, and return its database row."""
+def import_tab_bytes(
+    data: bytes,
+    filename: str,
+    *,
+    source_url: str = "",
+    source_file: str = "",
+) -> dict[str, Any]:
+    """Store an uploaded tab, register it, and return its database row.
+
+    ``source_url`` is the link the file was downloaded from and
+    ``source_file`` the original file name (v2.03). Both are kept in the tab
+    metadata so the library can tell where a tab really came from.
+    """
     suffix = Path(filename).suffix.lower()
     if suffix in GP_SUFFIXES:
         kind = "gp5"
@@ -274,6 +285,9 @@ def import_tab_bytes(data: bytes, filename: str) -> dict[str, Any]:
             "artist": parsed["artist"],
             "source": f"import:{Path(filename).name}",
             "source_type": "import",
+            # v2.03: where the file really came from (link + original name).
+            "tab_source_url": str(source_url or "").strip(),
+            "tab_source_file": str(source_file or filename or "").strip()[:255],
             "duration_seconds": 0,
             "bpm": parsed["bpm"],
             "time_signature": parsed["time_signature"],

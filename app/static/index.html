@@ -6,14 +6,14 @@
   <meta name="color-scheme" content="dark">
   <title>AI TabTool</title>
   <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="/static/style.css?v=2.02">
+  <link rel="stylesheet" href="/static/style.css?v=2.03">
 </head>
 <body>
   <header class="topbar">
     <div class="brand">
       <span class="brand-mark" aria-hidden="true">AT</span>
       <span class="brand-name">AI TABTOOL</span>
-      <span id="version-tag" class="version">v2.02</span>
+      <span id="version-tag" class="version">v2.03</span>
     </div>
     <nav class="nav" aria-label="Päävalikko">
       <button id="open-search-top" type="button" class="ghost small nav-search"
@@ -276,14 +276,57 @@
   </div>
 
 
+  <!-- Tiedot (v2.03): every editable library field in one dialog. The
+       absolute metadata (BPM, bars, notes, channel, links) is read-only.
+       Nested above the library modal like the delete dialog. -->
+  <div id="detail-dialog" class="modal-backdrop modal-nested" hidden>
+    <div class="modal-panel modal-small detail-panel" role="dialog"
+         aria-modal="true" aria-labelledby="detail-heading">
+      <h2 id="detail-heading">Tiedot</h2>
+      <p id="detail-subject" class="detail-subject muted"></p>
+      <form id="detail-form" class="detail-form">
+        <label class="field">
+          <span>Esittäjä</span>
+          <input id="detail-artist" type="text" maxlength="200"
+                 autocomplete="off">
+        </label>
+        <label class="field">
+          <span>Kappale</span>
+          <input id="detail-name" type="text" maxlength="200"
+                 autocomplete="off">
+        </label>
+        <label class="field">
+          <span>Viritys</span>
+          <input id="detail-tuning" type="text" maxlength="80"
+                 autocomplete="off">
+        </label>
+        <div class="detail-flags">
+          <label class="library-flag">
+            <input id="detail-locked" type="checkbox"><span>Lukitse</span>
+          </label>
+          <label class="library-flag">
+            <input id="detail-archived" type="checkbox"><span>Arkistoi</span>
+          </label>
+        </div>
+        <dl id="detail-meta" class="detail-meta"></dl>
+        <p id="detail-status" class="bpm-status" aria-live="polite"></p>
+        <div class="actions">
+          <button id="detail-save" type="submit" class="primary">TALLENNA</button>
+          <button id="detail-cancel" type="button" class="ghost">PERUUTA</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+
   <footer class="footer">
-    <span>AI TabTool v2.02</span>
+    <span>AI TabTool v2.03</span>
     <span>Local-first · <a href="/remote">Remote</a></span>
   </footer>
 
-  <script src="/static/vendor/alphaTab/alphaTab.min.js?v=2.02"></script>
-  <script src="/static/app.js?v=2.02" defer></script>
-  <script src="/static/remote-bridge.js?v=2.02" defer></script>
+  <script src="/static/vendor/alphaTab/alphaTab.min.js?v=2.03"></script>
+  <script src="/static/app.js?v=2.03" defer></script>
+  <script src="/static/remote-bridge.js?v=2.03" defer></script>
 </body>
 </html>
 

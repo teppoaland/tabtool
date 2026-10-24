@@ -733,8 +733,12 @@ def _process_audio_job(job: dict[str, Any], options: JobOptions) -> None:
         meta["audio_path"] = audio_relative
         meta["duration_seconds"] = audio.duration
         meta["mp3_created"] = bool(options.archive_mp3)
-        if audio.source_type == "youtube" and audio.channel:
-            meta["youtube_channel"] = audio.channel
+        if audio.source_type == "youtube":
+            # v2.03: keep the exact link the audio was downloaded from.
+            meta["audio_source_url"] = audio.source_ref
+            meta["audio_source_type"] = "youtube"
+            if audio.channel:
+                meta["youtube_channel"] = audio.channel
         updated = db.update_tab_audio(tab_id, audio_relative, meta)
         if updated is None:
             raise RuntimeError("Audion liittäminen tabiin epäonnistui.")
@@ -850,6 +854,12 @@ def process_job(job_id: str) -> None:
             "artist": document.artist,
             "source": audio.source_ref,
             "source_type": audio.source_type,
+            # v2.03: the link the audio really came from (YouTube) is kept
+            # apart from the generic source field.
+            "audio_source_url": (
+                audio.source_ref if audio.source_type == "youtube" else ""
+            ),
+            "audio_source_type": audio.source_type,
             "youtube_channel": audio.channel if audio.source_type == "youtube" else "",
             "audio_path": db.to_data_relative(audio.path),
             "duration_seconds": audio.duration,

@@ -73,6 +73,7 @@
   const adjustList = byId("adjust-list");
   const adjustForm = byId("adjust-form");
   const adjustTitle = byId("adjust-title");
+  const adjustArtist = byId("adjust-artist");
   const adjustName = byId("adjust-name");
   const adjustTuning = byId("adjust-tuning");
   const adjustLocked = byId("adjust-locked");
@@ -552,6 +553,14 @@
     adjustTab = tab;
     if (adjustForm) adjustForm.hidden = false;
     if (adjustTitle) adjustTitle.textContent = tab.title || "";
+    if (adjustArtist) {
+      // v2.03: the uploader is often not the artist; the field shows the
+      // current value so it can be corrected.
+      adjustArtist.value = tab.artist_override || tab.artist || "";
+      adjustArtist.placeholder = tab.original_artist
+        ? `Esittäjä: ${tab.original_artist}`
+        : "Esittäjä";
+    }
     if (adjustName) adjustName.value = tab.title_override || tab.title || "";
     if (adjustTuning) {
       adjustTuning.value = tab.tuning_override || tab.tuning_label || "";
@@ -571,6 +580,9 @@
       // A locked tab is read-only; the only allowed write is the unlock.
       data.append("locked", "false");
     } else {
+      const artist = adjustArtist ? adjustArtist.value.trim() : "";
+      const original = String(adjustTab.original_artist || "");
+      data.append("artist", artist && artist !== original ? artist : "");
       data.append("title", adjustName ? adjustName.value : "");
       data.append("locked", adjustLocked && adjustLocked.checked ? "true" : "false");
       data.append(

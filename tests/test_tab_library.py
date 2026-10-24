@@ -93,6 +93,7 @@ def test_locked_tab_settings_are_read_only(
 
     blocked = (
         ("/api/tabs/tab-readonly/library", {"title": "Uusi nimi"}),
+        ("/api/tabs/tab-readonly/library", {"artist": "Uusi esittäjä"}),
         ("/api/tabs/tab-readonly/library", {"archived": "true"}),
         ("/api/tabs/tab-readonly/library", {"tuning": "Drop D · DADGBE"}),
         ("/api/tabs/tab-readonly/library", {"locked": "true"}),
@@ -268,5 +269,157 @@ def test_migration_adds_library_columns(data_dir: Path) -> None:
     assert tab is not None
     assert tab["title"] == "Legacy Song"
     assert tab["title_override"] == ""
+    assert tab["artist_override"] == ""
     assert tab["locked"] is False
     assert tab["archived"] is False
+
+
+def test_artist_override_roundtrip(client: TestClient, data_dir: Path) -> None:
+    """v2.03: a YouTube uploader is not necessarily the artist."""
+    _make_tab("tab-artist", title="Xsuaalisuuteen (Official audio)", artist="Knight Rydazz")
+
+    saved = client.post(
+        "/api/tabs/tab-artist/library", data={"artist": "Reino Nordin"}
+    )
+    assert saved.status_code == 200, saved.text
+    body = saved.json()
+    assert body["artist"] == "Reino Nordin"
+    assert body["artist_override"] == "Reino Nordin"
+    assert body["original_artist"] == "Knight Rydazz"
+
+    library = {entry["id"]: entry for entry in client.get("/api/tabs").json()}
+    assert library["tab-artist"]["artist"] == "Reino Nordin"
+
+    # A blank artist clears the override and restores the generated one.
+    cleared = client.post("/api/tabs/tab-artist/library", data={"artist": "  "})
+    assert cleared.json()["artist"] == "Knight Rydazz"
+    assert cleared.json()["artist_override"] == ""
+
+
+def test_artist_override_sorts_the_library(client: TestClient, data_dir: Path) -> None:
+    _make_tab("tab-a", title="Song A", artist="Zeta Uploader")
+    _make_tab("tab-b", title="Song B", artist="Alpha Band")
+
+    client.post("/api/tabs/tab-a/library", data={"artist": "Aalto"})
+    order = [entry["id"] for entry in client.get("/api/tabs").json()]
+    assert order == ["tab-a", "tab-b"]
+
+
+def test_summary_exposes_source_links(client: TestClient, data_dir: Path) -> None:
+    """The library can tell where the audio and the tab file came from."""
+    _make_tab("tab-source", title="Imported Song", artist="Imported Band")
+    db.update_tab_meta(
+        "tab-source",
+        {
+            "source_type": "import",
+            "youtube_channel": "Knight Rydazz",
+            "tab_source_url": "https://example.com/tabs/song.gp5",
+            "tab_source_file": "song.gp3",
+            "files": {"gp5": "tab.gp5"},
+        },
+    )
+    entry = client.get("/api/tabs/tab-source").json()
+    assert entry["meta"]["tab_source_url"] == "https://example.com/tabs/song.gp5"
+
+    summary = {item["id"]: item for item in client.get("/api/tabs").json()}["tab-source"]
+    assert summary["tab_source_url"] == "https://example.com/tabs/song.gp5"
+    assert summary["tab_source_file"] == "song.gp3"
+    assert summary["source_url"] == ""
+    assert summary["channel"] == "Knight Rydazz"
+
+
+def test_summary_falls_back_to_the_legacy_youtube_source(
+    client: TestClient, data_dir: Path
+) -> None:
+    """AI tabs from before v2.03 kept the link in meta.source."""
+    _make_tab("tab-legacy-source", title="Animal", artist="W.A.S.P.")
+    db.update_tab_meta(
+        "tab-legacy-source",
+        {
+            "source_type": "youtube",
+            "source": "https://youtu.be/7COTI8k-rgo",
+            "files": {"gp5": "tab.gp5"},
+        },
+    )
+    summary = {
+        item["id"]: item for item in client.get("/api/tabs").json()
+    }["tab-legacy-source"]
+    assert summary["source_url"] == "https://youtu.be/7COTI8k-rgo"
+
+
+def test_summary_never_links_a_local_path(client: TestClient, data_dir: Path) -> None:
+    _make_tab("tab-local", title="Local Song")
+    db.update_tab_meta(
+        "tab-local",
+        {
+            "source_type": "upload",
+            "source": "audio/local-song.wav",
+            "tab_source_url": "file:///C:/secret.gp5",
+            "files": {"gp5": "tab.gp5"},
+        },
+    )
+    summary = {item["id"]: item for item in client.get("/api/tabs").json()}["tab-local"]
+    assert summary["source_url"] == ""
+    assert summary["tab_source_url"] == ""
+
+
+def test_library_editor_is_a_details_dialog() -> None:
+    """v2.03: NIMEÄ became Tiedot and opens a modal with every editable field."""
+    html = (config.STATIC_DIR / "index.html").read_text(encoding="utf-8")
+    source = (config.STATIC_DIR / "app.js").read_text(encoding="utf-8")
+    remote_html = (config.STATIC_DIR / "remote.html").read_text(encoding="utf-8")
+
+    assert '"NIMEÄ"' not in source
+    assert '"Tiedot"' in source
+    assert 'id="detail-dialog"' in html
+    for field in ('id="detail-artist"', 'id="detail-name"', 'id="detail-tuning"'):
+        assert field in html
+    assert "openDetailDialog" in source
+    assert "artist_override" in source or "artist" in source
+    # The phone offers the same artist correction.
+    assert 'id="adjust-artist"' in remote_html
+
+
+def test_youtube_uploader_can_be_replaced_by_the_real_artist(
+    client: TestClient, data_dir: Path
+) -> None:
+    """The Reino Nordin case: the uploader was stored as the artist.
+
+    The channel stays visible as the YouTube upload, but the artist can be
+    corrected without losing where the audio came from.
+    """
+    _make_tab(
+        "tab-reino",
+        title="Xsuaalisuuteen (Official audio)",
+        artist="Knight Rydazz",
+    )
+    db.update_tab_meta(
+        "tab-reino",
+        {
+            "source_type": "youtube",
+            "source": "https://youtu.be/xyz",
+            "youtube_channel": "Knight Rydazz",
+            "files": {"gp5": "tab.gp5"},
+        },
+    )
+
+    fixed = client.post(
+        "/api/tabs/tab-reino/library",
+        data={
+            "artist": "Reino Nordin",
+            "title": "Xsuaalisuuteen (Official audio)",
+        },
+    )
+    assert fixed.status_code == 200, fixed.text
+    body = fixed.json()
+    assert body["artist"] == "Reino Nordin"
+    assert body["artist_override"] == "Reino Nordin"
+    assert body["original_artist"] == "Knight Rydazz"
+    assert body["channel"] == "Knight Rydazz"
+    assert body["source_url"] == "https://youtu.be/xyz"
+
+    row = {item["id"]: item for item in client.get("/api/tabs").json()}["tab-reino"]
+    assert row["artist"] == "Reino Nordin"
+    assert row["title"] == "Xsuaalisuuteen (Official audio)"
+
+

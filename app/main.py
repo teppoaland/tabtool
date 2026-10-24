@@ -157,10 +157,18 @@ def _is_youtube_url(url: str) -> bool:
     return host.endswith(("youtube.com", "youtu.be", "youtube-nocookie.com"))
 
 
-def _import_tab_payload(raw: bytes, filename: str) -> dict[str, object]:
+def _import_tab_payload(
+    raw: bytes,
+    filename: str,
+    *,
+    source_url: str = "",
+    source_file: str = "",
+) -> dict[str, object]:
     """Map tab import failures to HTTP errors."""
     try:
-        return tab_import.import_tab_bytes(raw, filename)
+        return tab_import.import_tab_bytes(
+            raw, filename, source_url=source_url, source_file=source_file
+        )
     except tab_import.TabTooLarge as exc:
         raise HTTPException(status_code=413, detail=str(exc)) from exc
     except tab_import.UnsupportedTab as exc:
@@ -181,7 +189,9 @@ def _download_tab(url: str) -> dict[str, object]:
         raise HTTPException(status_code=413, detail=str(exc)) from exc
     except tab_download.TabDownloadError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
-    return _import_tab_payload(raw, filename)
+    return _import_tab_payload(
+        raw, filename, source_url=url, source_file=filename
+    )
 
 
 def _queue_audio_job(
@@ -361,6 +371,27 @@ async def job_events(job_id: str) -> StreamingResponse:
     )
 
 
+def _http_url(value: object) -> str:
+    """Return a plain http(s) link, or "" for anything else."""
+    text = str(value or "").strip()
+    return text if text.startswith(("http://", "https://")) else ""
+
+
+def _source_url(meta: object) -> str:
+    """The link the audio was downloaded from (v2.03).
+
+    Tabs generated before v2.03 have no ``audio_source_url``; their YouTube
+    jobs stored the same link in ``meta.source``, so that is used as a
+    fallback instead of leaving an empty field.
+    """
+    if not isinstance(meta, dict):
+        return ""
+    url = _http_url(meta.get("audio_source_url"))
+    if url:
+        return url
+    return _http_url(meta.get("source"))
+
+
 def _tab_summary(tab: dict[str, object]) -> dict[str, object]:
     keys = (
         "id",
@@ -372,6 +403,8 @@ def _tab_summary(tab: dict[str, object]) -> dict[str, object]:
         "created_at",
         "title_override",
         "original_title",
+        "artist_override",
+        "original_artist",
         "locked",
         "archived",
     )
@@ -384,6 +417,14 @@ def _tab_summary(tab: dict[str, object]) -> dict[str, object]:
     # same song have different edits, so the GP5 may only fit one of them.
     summary["channel"] = (
         str(meta.get("youtube_channel") or "") if isinstance(meta, dict) else ""
+    )
+    # v2.03: where the audio and the tab file really came from.
+    summary["source_url"] = _source_url(meta)
+    summary["tab_source_url"] = (
+        _http_url(meta.get("tab_source_url")) if isinstance(meta, dict) else ""
+    )
+    summary["tab_source_file"] = (
+        str(meta.get("tab_source_file") or "") if isinstance(meta, dict) else ""
     )
     tuning_key = str(tab.get("tuning") or "")
     label = str(meta.get("tuning_label") or "") if isinstance(meta, dict) else ""
@@ -474,7 +515,8 @@ async def import_tab(
             status_code=422, detail="youtube_url must be a YouTube link"
         )
     raw = await file.read()
-    tab = _import_tab_payload(raw, file.filename or "tab.gp5")
+    name = file.filename or "tab.gp5"
+    tab = _import_tab_payload(raw, name, source_file=name)
     if youtube_url:
         return _queue_audio_job(tab, youtube_url, parsed)
     return _tab_summary(tab)
@@ -503,18 +545,19 @@ def delete_tab(tab_id: str) -> dict[str, object]:
 def tab_library(
     tab_id: str,
     title: str | None = Form(default=None),
+    artist: str | None = Form(default=None),
     locked: bool | None = Form(default=None),
     archived: bool | None = Form(default=None),
     tuning: str | None = Form(default=None),
     tuning_clear: bool = Form(default=False),
 ) -> dict[str, object]:
-    """Rename, lock, archive or annotate a tab without touching its tab data."""
+    """Edit a tab's library details without touching its tab data."""
     tab = _load_tab(tab_id)
     if tab is None:
         raise HTTPException(status_code=404, detail="Unknown tab")
     # A locked tab is read-only. Only an explicit unlock (locked=false) may
-    # write, and it may carry the new name/tuning/archive flag in the same
-    # request, so one save can unlock and edit at once.
+    # write, and it may carry the new artist/name/tuning/archive flag in the
+    # same request, so one save can unlock and edit at once.
     if tab.get("locked") and locked is not False:
         raise HTTPException(status_code=409, detail=_LOCKED_DETAIL)
     meta = None
@@ -532,6 +575,10 @@ def tab_library(
     changes: dict[str, object] = {}
     if title is not None:
         changes["title_override"] = title
+    if artist is not None:
+        # v2.03: the uploader is often not the artist; an empty value restores
+        # the generated artist.
+        changes["artist_override"] = artist
     if locked is not None:
         changes["locked"] = locked
     if archived is not None:
@@ -685,6 +732,9 @@ def tab_attach_audio(tab_id: str) -> dict[str, object]:
     source_meta = source.get("meta") or {}
     if isinstance(source_meta, dict) and source_meta.get("duration_seconds"):
         meta["duration_seconds"] = source_meta["duration_seconds"]
+    if isinstance(source_meta, dict) and _source_url(source_meta):
+        # v2.03: the attached audio keeps the link it was downloaded from.
+        meta["audio_source_url"] = _source_url(source_meta)
     meta["audio_source_tab"] = source.get("id")
 
     updated = db.update_tab_audio(tab_id, source_audio, meta)

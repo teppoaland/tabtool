@@ -215,3 +215,79 @@ def test_mp3_flag_does_not_change_the_cache_key() -> None:
     without_mp3 = jobs.JobOptions.from_mapping({"archive_mp3": False})
     assert with_mp3.as_cache_dict() == without_mp3.as_cache_dict()
     assert "archive_mp3" not in with_mp3.as_cache_dict()
+
+
+# === Source metadata (v2.03) ==============================================
+
+
+def test_import_url_keeps_the_link_and_file_name(
+    client, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    data = _gp5_bytes(tmp_path)
+    monkeypatch.setattr(
+        "app.main.tab_download.download_tab_bytes",
+        lambda url: (data, "imported.gp3"),
+    )
+    link = "https://example.com/tabs/imported?download"
+    response = client.post("/api/tabs/import-url", data={"url": link})
+    assert response.status_code == 200, response.text
+    summary = response.json()
+    assert summary["tab_source_url"] == link
+    assert summary["tab_source_file"] == "imported.gp3"
+
+    tab = client.get(f"/api/tabs/{summary['id']}").json()
+    assert tab["meta"]["tab_source_url"] == link
+    assert tab["meta"]["tab_source_file"] == "imported.gp3"
+
+
+def test_gp5_job_keeps_the_tab_and_audio_links(
+    client, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    data = _gp5_bytes(tmp_path)
+    monkeypatch.setattr(
+        "app.main.tab_download.download_tab_bytes",
+        lambda url: (data, "imported.gp5"),
+    )
+    fake_audio_job(monkeypatch)
+    gp5_link = "https://example.com/tabs/wasp/animal?download"
+    youtube_link = "https://youtu.be/Wh-btSHnblQ"
+
+    queued = client.post(
+        "/api/jobs",
+        data={
+            "youtube_url": youtube_link,
+            "gp5_url": gp5_link,
+            "options": '{"archive_mp3": false}',
+        },
+    ).json()
+    job = wait_for_job(client, queued["id"])
+    assert job["status"] == "ready", job.get("error")
+
+    tab = client.get(f"/api/tabs/{queued['tab_id']}").json()
+    assert tab["meta"]["tab_source_url"] == gp5_link
+    assert tab["meta"]["tab_source_file"] == "imported.gp5"
+    assert tab["meta"]["audio_source_url"] == youtube_link
+    assert tab["meta"]["audio_source_type"] == "youtube"
+
+
+def test_import_file_keeps_its_own_name_and_audio_link(
+    client, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    data = _gp5_bytes(tmp_path)
+    fake_audio_job(monkeypatch)
+    queued = client.post(
+        "/api/tabs/import",
+        files={"file": ("oma-tabi.gp3", data, "application/octet-stream")},
+        data={
+            "youtube_url": "https://youtu.be/beWvPkYHaic",
+            "options": '{"archive_mp3": false}',
+        },
+    ).json()
+    job = wait_for_job(client, queued["id"])
+    assert job["status"] == "ready", job.get("error")
+
+    tab = client.get(f"/api/tabs/{queued['tab_id']}").json()
+    assert tab["meta"]["tab_source_url"] == ""
+    assert tab["meta"]["tab_source_file"] == "oma-tabi.gp3"
+    assert tab["meta"]["audio_source_url"] == "https://youtu.be/beWvPkYHaic"
+

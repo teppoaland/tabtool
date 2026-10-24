@@ -65,6 +65,7 @@ CREATE TABLE IF NOT EXISTS tabs (
     meta_json TEXT NOT NULL DEFAULT '{}',
     created_at TEXT NOT NULL,
     title_override TEXT NOT NULL DEFAULT '',
+    artist_override TEXT NOT NULL DEFAULT '',
     locked INTEGER NOT NULL DEFAULT 0,
     archived INTEGER NOT NULL DEFAULT 0
 );
@@ -94,6 +95,8 @@ _UNSET = object()
 # Library metadata added in v1.63; older databases get them via ALTER TABLE.
 _TAB_LIBRARY_COLUMNS: dict[str, str] = {
     "title_override": "TEXT NOT NULL DEFAULT ''",
+    # v2.03: the uploader is often not the artist, so the user may correct it.
+    "artist_override": "TEXT NOT NULL DEFAULT ''",
     "locked": "INTEGER NOT NULL DEFAULT 0",
     "archived": "INTEGER NOT NULL DEFAULT 0",
 }
@@ -439,15 +442,18 @@ def update_tab_library(
     tab_id: str,
     *,
     title_override: str | object = _UNSET,
+    artist_override: str | object = _UNSET,
     locked: bool | object = _UNSET,
     archived: bool | object = _UNSET,
 ) -> dict[str, Any] | None:
-    """Rename, lock or archive a tab (user-owned library metadata)."""
+    """Rename, re-artist, lock or archive a tab (user-owned library metadata)."""
     if get_tab(tab_id) is None:
         return None
     fields: dict[str, Any] = {}
     if title_override is not _UNSET:
         fields["title_override"] = str(title_override or "").strip()[:200]
+    if artist_override is not _UNSET:
+        fields["artist_override"] = str(artist_override or "").strip()[:200]
     if locked is not _UNSET:
         fields["locked"] = 1 if locked else 0
     if archived is not _UNSET:
@@ -661,8 +667,10 @@ def list_tabs(limit: int = 20) -> list[dict[str, Any]]:
         rows = conn.execute(
             """
             SELECT * FROM tabs
-            ORDER BY artist COLLATE NOCASE ASC,
-                     COALESCE(NULLIF(title_override, ''), title) COLLATE NOCASE ASC,
+            ORDER BY COALESCE(NULLIF(artist_override, ''), artist)
+                         COLLATE NOCASE ASC,
+                     COALESCE(NULLIF(title_override, ''), title)
+                         COLLATE NOCASE ASC,
                      created_at DESC, rowid DESC
             LIMIT ?
             """,
@@ -738,12 +746,17 @@ def _job_row(row: sqlite3.Row) -> dict[str, Any]:
 def _tab_row(row: sqlite3.Row) -> dict[str, Any]:
     data = dict(row)
     data["meta"] = _loads(data.pop("meta_json", "{}"), {})
-    # Library metadata: the user's own name wins over the generated one.
+    # Library metadata: the user's own values win over the generated ones.
     override = str(data.get("title_override") or "").strip()
     data["title_override"] = override
     data["original_title"] = str(data.get("title") or "")
     if override:
         data["title"] = override
+    artist_override = str(data.get("artist_override") or "").strip()
+    data["artist_override"] = artist_override
+    data["original_artist"] = str(data.get("artist") or "")
+    if artist_override:
+        data["artist"] = artist_override
     data["locked"] = bool(data.get("locked"))
     data["archived"] = bool(data.get("archived"))
     return data

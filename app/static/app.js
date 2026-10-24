@@ -140,6 +140,19 @@
   const deleteStatus = document.getElementById("delete-status");
   const deleteConfirm = document.getElementById("delete-confirm");
   const deleteCancel = document.getElementById("delete-cancel");
+  // Tiedot-modali (v2.03): every editable library field plus read-only metadata.
+  const detailDialog = document.getElementById("detail-dialog");
+  const detailForm = document.getElementById("detail-form");
+  const detailSubject = document.getElementById("detail-subject");
+  const detailArtist = document.getElementById("detail-artist");
+  const detailName = document.getElementById("detail-name");
+  const detailTuning = document.getElementById("detail-tuning");
+  const detailLocked = document.getElementById("detail-locked");
+  const detailArchived = document.getElementById("detail-archived");
+  const detailMeta = document.getElementById("detail-meta");
+  const detailStatus = document.getElementById("detail-status");
+  const detailSave = document.getElementById("detail-save");
+  const detailCancel = document.getElementById("detail-cancel");
   const exportLinks = Array.from(
     document.querySelectorAll(".viewer-foot a[data-format]")
   );
@@ -156,6 +169,7 @@
   let syncOffsetBars = 0;
   let syncSaveTimer = null;
   let pendingDelete = null;
+  let detailTab = null;
   let libraryTabs = [];
   let showArchive = false;
   let alignArmed = false;
@@ -542,7 +556,7 @@
   // A locked tab is read-only (v1.70): the lock protects every stored setting
   // (name, tuning, archive flag, TAB BPM, SYNC, SIIRTO, attached audio), not
   // only deletion. Only the library editor may clear the lock itself.
-  const LOCKED_HINT = "Tabi on lukittu. Avaa lukitus kirjastossa (NIMEÄ).";
+  const LOCKED_HINT = "Tabi on lukittu. Avaa lukitus kirjastossa (Tiedot).";
 
   function tabIsLocked(tab) {
     return Boolean(tab && tab.locked);
@@ -783,6 +797,9 @@
       parts.push(`Lähde: ${label}`);
     }
     if (tab.channel) parts.push(`YouTube: ${tab.channel}`);
+    if (tab.source_url) parts.push(`Audio: ${tab.source_url}`);
+    if (tab.tab_source_url) parts.push(`Tabi: ${tab.tab_source_url}`);
+    else if (tab.tab_source_file) parts.push(`Tabi: ${tab.tab_source_file}`);
     parts.push(`ID: ${tab.id}`);
     return parts.join("\n");
   }
@@ -1741,12 +1758,14 @@
       lockIcon.setAttribute("aria-label", "Lukittu");
     }
 
-    const rename = libraryButton(
-      "NIMEÄ",
-      "ghost small library-rename",
-      `Nimeä ${libraryItemLabel(tab)} uudelleen.`
+    // v2.03: NIMEÄ became Tiedot – the dialog edits the artist as well, which
+    // is what a YouTube upload usually gets wrong.
+    const details = libraryButton(
+      "Tiedot",
+      "ghost small library-details",
+      `Tiedot: ${libraryItemLabel(tab)}.`
     );
-    rename.addEventListener("click", () => openLibraryEditor(row, tab));
+    details.addEventListener("click", () => openDetailDialog(tab));
 
     const remove = libraryButton(
       "×",
@@ -1761,7 +1780,7 @@
 
     row.append(open);
     if (lockIcon) row.append(lockIcon);
-    row.append(rename, remove);
+    row.append(details, remove);
     if (tab.archived) {
       row.append(
         libraryFlag(
@@ -1775,94 +1794,162 @@
     return row;
   }
 
-  function openLibraryEditor(row, tab) {
-    const form = document.createElement("form");
-    form.className = "library-edit";
+  // === TIEDOT-MODAALI (v2.03) ==========================================
+  // Every editable library field (artist, name, tuning, lock, archive) lives
+  // in one dialog. The absolute metadata (BPM, bars, notes, channel, date,
+  // source links) is shown read-only, because editing it would lie about the
+  // tab file. A locked tab stays read-only, exactly like the server rule.
+  function setDetailStatus(text, isError) {
+    if (!detailStatus) return;
+    detailStatus.textContent = text || "";
+    detailStatus.classList.toggle("is-error", Boolean(isError));
+  }
 
-    const input = document.createElement("input");
-    input.type = "text";
-    input.className = "library-edit-name";
-    input.maxLength = 200;
-    input.value = tab.title_override || tab.title || "";
-    input.placeholder = "Kappaleen nimi";
-    input.setAttribute("aria-label", "Kappaleen nimi");
+  function detailLink(url) {
+    const link = document.createElement("a");
+    link.href = url;
+    link.target = "_blank";
+    link.rel = "noopener noreferrer";
+    link.textContent = url;
+    return link;
+  }
 
-    const tuningInput = document.createElement("input");
-    tuningInput.type = "text";
-    tuningInput.className = "library-edit-tuning";
-    tuningInput.maxLength = 60;
-    tuningInput.value = tab.tuning_override || "";
-    tuningInput.placeholder = tab.tuning_label
-      ? `Viritys: ${tab.tuning_label}`
-      : "Viritys (esim. Drop D · DADGBE)";
-    tuningInput.setAttribute("aria-label", "Viritys");
-    tuningInput.title =
-      "Kappaleen viritys, esim. Drop D · DADGBE. Tyhjä kenttä palauttaa tiedostosta luetun virityksen.";
+  function appendDetailRow(label, value) {
+    if (!detailMeta) return;
+    const term = document.createElement("dt");
+    term.textContent = label;
+    const data = document.createElement("dd");
+    if (value instanceof Node) data.append(value);
+    else data.textContent = value || "–";
+    detailMeta.append(term, data);
+  }
 
-    const lockLabel = document.createElement("label");
-    lockLabel.className = "library-flag";
-    const lockBox = document.createElement("input");
-    lockBox.type = "checkbox";
-    lockBox.checked = Boolean(tab.locked);
-    lockLabel.append(lockBox, document.createTextNode("Lukitse"));
+  function renderDetailMeta(tab) {
+    if (!detailMeta) return;
+    detailMeta.textContent = "";
+    appendDetailRow("BPM", formatBpm(tab.bpm));
+    appendDetailRow("Tahtia", String(Number(tab.measure_count) || 0));
+    appendDetailRow("Nuotteja", String(Number(tab.note_count) || 0));
+    if (tab.channel) appendDetailRow("YouTube-kanava", tab.channel);
+    if (tab.artist_override) {
+      appendDetailRow("Alkuperäinen esittäjä", tab.original_artist || "–");
+    }
+    if (tab.title_override) {
+      appendDetailRow("Alkuperäinen nimi", tab.original_title || "–");
+    }
+    if (tab.source_url) {
+      appendDetailRow("Audiolähde", detailLink(tab.source_url));
+    } else if (tab.source_type) {
+      appendDetailRow("Audiolähde", `ei linkkiä (${tab.source_type})`);
+    }
+    if (tab.tab_source_url) {
+      appendDetailRow("Tablähde", detailLink(tab.tab_source_url));
+    } else if (tab.tab_source_file) {
+      appendDetailRow("Tablähde", tab.tab_source_file);
+    }
+    appendDetailRow("Lisätty", formatTimestamp(tab.created_at) || "–");
+    appendDetailRow("ID", tab.id);
+  }
 
-    const archiveLabel = document.createElement("label");
-    archiveLabel.className = "library-flag";
-    const archiveBox = document.createElement("input");
-    archiveBox.type = "checkbox";
-    archiveBox.checked = Boolean(tab.archived);
-    archiveLabel.append(archiveBox, document.createTextNode("Arkistoi"));
-
-    // A locked tab is read-only (v1.70): the name, tuning and archive flag are
-    // disabled here and the server rejects the same changes. Unticking
-    // "Lukitse" and saving is the one way to unlock.
+  function openDetailDialog(tab) {
+    if (!detailDialog || !detailForm) return;
+    detailTab = tab;
     const locked = Boolean(tab.locked);
-    if (locked) {
-      input.disabled = true;
-      tuningInput.disabled = true;
-      archiveBox.disabled = true;
-      form.title = LOCKED_HINT;
-      input.title = LOCKED_HINT;
-      tuningInput.title = LOCKED_HINT;
-      lockLabel.title =
-        "Poista rasti ja tallenna avataksesi lukituksen. Lukittuna nimi, viritys, arkistointi, TAB BPM, SYNC, SIIRTO ja audion liityntä ovat vain luku -tilassa.";
+    if (detailSubject) detailSubject.textContent = libraryItemLabel(tab);
+    if (detailArtist) {
+      detailArtist.value = tab.artist_override || tab.artist || "";
+      detailArtist.placeholder = tab.original_artist
+        ? `Esittäjä: ${tab.original_artist}`
+        : "Esittäjä";
+      detailArtist.disabled = locked;
+      detailArtist.title = locked
+        ? LOCKED_HINT
+        : "Esittäjä, esim. Reino Nordin. Tyhjä palauttaa tiedostosta luetun esittäjän.";
+    }
+    if (detailName) {
+      detailName.value = tab.title_override || tab.title || "";
+      detailName.placeholder = tab.original_title || "Kappaleen nimi";
+      detailName.disabled = locked;
+      detailName.title = locked
+        ? LOCKED_HINT
+        : "Kappaleen nimi, esim. Xsuaalisuuteen (Official audio). Tyhjä palauttaa tiedostosta luetun nimen.";
+    }
+    if (detailTuning) {
+      detailTuning.value = tab.tuning_override || "";
+      detailTuning.placeholder = tab.tuning_label
+        ? `Viritys: ${tab.tuning_label}`
+        : "Viritys (esim. Drop D · DADGBE)";
+      detailTuning.disabled = locked;
+      detailTuning.title = locked
+        ? LOCKED_HINT
+        : "Kappaleen viritys, esim. Drop D · DADGBE. Tyhjä palauttaa tiedostosta luetun virityksen.";
     }
 
-    const actions = document.createElement("div");
-    actions.className = "library-edit-actions";
-    const save = document.createElement("button");
-    save.type = "submit";
-    save.className = "ghost small";
-    save.textContent = "TALLENNA";
-    const cancel = libraryButton("PERUUTA", "ghost small", "Peru nimeäminen.");
-    cancel.addEventListener("click", () => renderLibrary());
-    actions.append(save, cancel);
-
-    form.append(input, tuningInput, lockLabel, archiveLabel, actions);
-    form.addEventListener("submit", (event) => {
-      event.preventDefault();
-      if (locked) {
-        // Read-only fields: a locked tab can only be unlocked from here.
-        if (lockBox.checked) {
-          setLibraryStatus(LOCKED_HINT, true);
-          return;
-        }
-        saveLibraryMeta(tab, { locked: false });
-        return;
-      }
-      saveLibraryMeta(tab, {
-        title: input.value.trim(),
-        tuning: tuningInput.value.trim(),
-        locked: lockBox.checked,
-        archived: archiveBox.checked,
-      });
-    });
-
-    row.textContent = "";
-    row.append(form);
-    input.focus();
-    input.select();
+    if (detailLocked) {
+      detailLocked.checked = locked;
+      detailLocked.title = locked
+        ? "Poista rasti ja tallenna avataksesi lukituksen. Lukittuna esittäjä, nimi, viritys, arkistointi, TAB BPM, SYNC, SIIRTO, audion liityntä ja poisto ovat vain luku -tilassa."
+        : "Lukitse: esittäjä, nimi, viritys, arkistointi, TAB BPM, SYNC, SIIRTO, audion liityntä ja poisto ovat vain luku -tilassa.";
+    }
+    if (detailArchived) {
+      detailArchived.checked = Boolean(tab.archived);
+      detailArchived.disabled = locked;
+    }
+    renderDetailMeta(tab);
+    setDetailStatus(locked ? LOCKED_HINT : "");
+    detailDialog.hidden = false;
+    document.body.classList.add("modal-open");
+    if (locked) {
+      if (detailLocked) detailLocked.focus();
+    } else if (detailArtist) {
+      detailArtist.focus();
+      detailArtist.select();
+    }
   }
+
+  function closeDetailDialog() {
+    if (!detailDialog) return;
+    detailDialog.hidden = true;
+    detailTab = null;
+    setDetailStatus("");
+  }
+
+  async function saveDetail(event) {
+    event.preventDefault();
+    if (!detailTab) return;
+    const tab = detailTab;
+    const locked = Boolean(tab.locked);
+    // A locked tab can only be unlocked from here (same rule as the server).
+    if (locked && detailLocked && detailLocked.checked) {
+      setDetailStatus(LOCKED_HINT, true);
+      return;
+    }
+    const artist = detailArtist ? detailArtist.value.trim() : "";
+    const original = String(tab.original_artist || "");
+    const patch = locked
+      ? { locked: false }
+      : {
+          // An artist that still matches the tab file stays unset, so the
+          // stored data does not pretend to be an override.
+          artist: artist && artist !== original ? artist : "",
+          title: detailName ? detailName.value.trim() : "",
+          tuning: detailTuning ? detailTuning.value.trim() : "",
+          locked: detailLocked ? detailLocked.checked : false,
+          archived: detailArchived ? detailArchived.checked : false,
+        };
+    if (detailSave) detailSave.disabled = true;
+    setDetailStatus("Tallennetaan…");
+    const updated = await saveLibraryMeta(tab, patch);
+    if (detailSave) detailSave.disabled = false;
+    if (!updated) {
+      setDetailStatus("Tallennus epäonnistui.", true);
+      return;
+    }
+    closeDetailDialog();
+    setLibraryStatus("Tallennettu.");
+  }
+  // === /TIEDOT =========================================================
+
 
   function renderLibrary() {
     if (!libraryEl) return;
@@ -1922,6 +2009,10 @@
     if (Object.prototype.hasOwnProperty.call(patch, "title")) {
       data.append("title", String(patch.title || ""));
     }
+    if (Object.prototype.hasOwnProperty.call(patch, "artist")) {
+      // v2.03: an empty artist restores the generated one on the server.
+      data.append("artist", String(patch.artist || ""));
+    }
     if (Object.prototype.hasOwnProperty.call(patch, "locked")) {
       data.append("locked", patch.locked ? "true" : "false");
     }
@@ -1950,6 +2041,10 @@
       if (activeTab && activeTab.id === tab.id) {
         activeTab.title = updated.title;
         activeTab.title_override = updated.title_override;
+        activeTab.artist = updated.artist;
+        activeTab.artist_override = updated.artist_override;
+        activeTab.original_artist = updated.original_artist;
+        activeTab.channel = updated.channel;
         activeTab.locked = updated.locked;
         activeTab.archived = updated.archived;
         activeTab.tuning = updated.tuning;
@@ -2005,6 +2100,7 @@
   function closeSearch() {
     if (!searchModal) return;
     searchModal.hidden = true;
+    closeDetailDialog();
     if (deleteDialog) deleteDialog.hidden = true;
     pendingDelete = null;
     document.body.classList.remove("modal-open");
@@ -2387,6 +2483,13 @@
       if (event.target === deleteDialog) cancelDelete();
     });
   }
+  if (detailForm) detailForm.addEventListener("submit", saveDetail);
+  if (detailCancel) detailCancel.addEventListener("click", closeDetailDialog);
+  if (detailDialog) {
+    detailDialog.addEventListener("click", (event) => {
+      if (event.target === detailDialog) closeDetailDialog();
+    });
+  }
   if (playButton) playButton.addEventListener("click", handlePlayButton);
   if (countInToggle) {
     countInToggle.addEventListener("change", () =>
@@ -2508,6 +2611,8 @@
     if (event.key === "Escape" && searchModal && !searchModal.hidden) {
       if (deleteDialog && !deleteDialog.hidden) {
         cancelDelete();
+      } else if (detailDialog && !detailDialog.hidden) {
+        closeDetailDialog();
       } else {
         closeSearch();
       }
