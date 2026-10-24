@@ -2,6 +2,37 @@
 
 > AI TabTool käyttää `1.x`-versiosarjaa. Aloitus `v1.00`.
 
+## v2.02 – 24.10.2026
+
+- **Settings-näkymä (`/settings`).** Yläpalkin **SETTINGS** on REMOTE- ja
+  API-linkkien jälkeen. Arvot tallennetaan SQLite-kantaan
+  (`app/settings.py`, `GET/POST /api/settings`), joten ne ovat yhteisiä
+  kaikille laitteille. Jokaisen kentän alla näkyy oletus ja OLETUS-nappi
+  palauttaa sen. Skeema validoi tyypit ja rajat; tuntematon avain tai
+  alueen ulkopuolinen arvo → 422.
+- **Count-inin kesto säädettäväksi.** `COUNT_IN_FROM` / `COUNT_IN_STEP_MS` /
+  `COUNT_IN_ZERO_MS` ovat nyt oletuksia, jotka `app.js` lukee
+  `/api/settings`istä (5 askelta, 1000 ms, 250 ms = entinen toiminta).
+  `beginCountIn()` lukee kestot omassa lohkossaan: ei uusia kutsuja
+  alphaTabiin eikä audio-elementtiin, `togglePlayback()` ennallaan.
+- **Näkymän oletus ja toistojen näkyvyys.** Näkymä-valinnan oletus (Tab /
+  Auto / Tab + nuotit / Nuotit) uudelle selaimelle; TV-näkymän oma valinta
+  ohittaa sen. Jokainen päänäkymän toiminto voidaan piilottaa
+  (`body.hide-ui-*`-luokat): LIBRARY, REMOTE, API, FULLSCREEN,
+  COUNT-IN-kytkin, Näkymä, raidat, VALITSE TÄMÄ, LIITÄ AUDIO,
+  TEE TAB TÄSTÄ, Nopeus, SYNC, SIIRTO, KOHDISTA, TAB BPM ja EXPORT.
+  Oletus on, että kaikki näkyvät. Myös puhelimen LISÄÄ/SÄÄDÄ-välilehdet,
+  Nopeussäädin ja soitinvalinta ovat kytkettävissä.
+- **Puhelin: soittimet SOITA/LISÄÄ/SÄÄDÄ-painikkeiden paikalle.** Mode-napit
+  siirtyivät sivun alaosaan; ylhäällä ovat avoimen tabin soittimet
+  (esim. 4 kitaraa + basso). Napautus näyttää/piilottaa raidan TV:n
+  tablatuurista kesken toiston. TV raportoi raidat tilassa
+  (`clean_state` → `tracks`), ja silta klikkaa samaa `.track-chip`-
+  painiketta kuin käyttäjä (uusi komento `track`). Kaksi soitinta menee
+  yhdelle riville, viisi kahteen riviin, joten sivun pituus ei kasva.
+- Testit: 31 uutta → **226 passed**. Soittoketjuun ei koskettu
+  (`.clinerules/07-playback-frozen.md`); kuuntelutesti on käyttäjän.
+
 ## v2.01 – 23.10.2026
 
 - **Kirjastojen järjestys korjattu: bändin nimi ensin.** v2.00:ssa

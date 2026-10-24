@@ -5,7 +5,7 @@ ja katseluun. Hae kappale Spotifysta tai käytä omaa MP3/YouTube-audioita,
 anna tekoälyn tehdä ensimmäinen tablatuuriluonnos ja katsele sitä
 alphaTabilla TV:stä tai tietokoneelta. Puhelin toimii kaukosäätimenä.
 
-**Versio:** `v2.01` (Phase 4 – LAN-kaukosäädin: soita / lisää / säädä, QR `remote`-sivulla)
+**Versio:** `v2.02` (Phase 4 – LAN-kaukosäädin + Settings-näkymä: count-inin kesto, näkymän oletus ja toiminnot näkyviin/piiloon)
 
 ## Session aloitus
 
@@ -90,7 +90,8 @@ Se tulostaa koneen LAN-osoitteet.
    `/remote` erilliseen välilehteen** – jos korvaat TV-välilehden sillä,
    PLAY ei tee mitään, koska mikään sivu ei enää toista audiota.
 4. Puhelin ohjaa kolmessa tilassa – **yksi toiminto kerrallaan**:
-   - **SOITA:** PLAY/PAUSE, ±5 s, toistokohta, Nopeus ja kirjastovalinta.
+   - **SOITA:** soitinten valinta, PLAY/PAUSE, « (alkuun), toistokohta,
+     Nopeus ja kirjastovalinta.
    - **LISÄÄ:** YouTube-linkki ja valinnainen GP5-linkki tai GP5-tiedosto
      puhelimesta → GENERATE TAB. Työn vaiheet ja edistyminen näkyvät;
      valmis tabi ilmestyy kirjastoon (ei automaattista toistoa).
@@ -98,6 +99,10 @@ Se tulostaa koneen LAN-osoitteet.
    Lisäys on estetty soiton aikana ja soitto tabin luonnin aikana (myös
    palvelin vastaa 409:llä). Toisto tapahtuu tietokoneen omasta
    audiotiedostosta; puhelin ei toista eikä lataa audiota.
+   **v2.02:** SOITA/LISÄÄ/SÄÄDÄ-painikkeet ovat sivun alaosassa ja niiden
+   paikalla ovat avoimen tabin **soittimet** (esim. neljä kitaraa ja basso).
+   Soittimen napautus näyttää tai piilottaa sen raidan TV:n tablatuurista
+   myös kesken toiston; valinta tallentuu kuten TV:ssä.
 
 IP-osoite ei ole kiinteä: QR generoidaan pyydettäessä sen hetkisestä
 osoitteesta, joten reitittimen DHCP ei haittaa. `TABTOOL_LAN_IP` voi
@@ -111,6 +116,29 @@ Ilman PINiä kuka tahansa samassa verkossa voi ohjata sovellusta.
 
 Windowsin palomuuri: salli portti 8000 **yksityisessä** verkossa, jos
 puhelin ei saa yhteyttä. `stop.bat` pysäyttää palvelimen.
+
+### Settings-näkymä (v2.02)
+
+Yläpalkin **SETTINGS** (REMOTE- ja API-linkkien jälkeen) avaa `/settings`.
+Arvot tallennetaan SQLite-kantaan, joten ne ovat yhteisiä kaikille laitteille;
+jokaisen kentän alla näkyy oletus ja **OLETUS**-napilla arvon voi palauttaa.
+TALLENNA kirjoittaa arvot palvelimelle (rajat ja tyypit validoi
+`app/settings.py`).
+
+- **Toisto:** lähtölaskennan askelmat (1–12), askeleen kesto (200–3000 ms) ja
+  nollan kesto (0–2000 ms) sekä lähtölaskenta oletuksena päälle/pois.
+  Oletukset ovat samat kuin ennen: 5 askelta × 1000 ms + 250 ms.
+- **Näkymä:** Näkymän oletus (Tab / Auto / Tab + nuotit / Nuotit) uudelle
+  selaimelle; TV-näkymän oma valinta ohittaa sen.
+- **Toiminnot näkyvissä:** jokainen päänäkymän toiminto (LIBRARY, REMOTE, API,
+  FULLSCREEN, COUNT-IN-kytkin, Näkymä, raidat, VALITSE TÄMÄ, LIITÄ AUDIO,
+  TEE TAB TÄSTÄ, Nopeus, SYNC, SIIRTO, KOHDISTA, TAB BPM, EXPORT) voidaan
+  piilottaa. Oletus on, että kaikki näkyvät.
+- **Puhelin (REMOTE):** LISÄÄ- ja SÄÄDÄ-välilehdet, Nopeussäädin ja
+  soitinten valinta.
+
+Asetukset eivät vaikuta soittoketjuun: ne luetaan sivun latauksessa ja
+lähtölaskenta lukee kestonsa omassa lohkossaan (`.clinerules/07-playback-frozen.md`).
 
 ### Manuaalinen asennus
 
@@ -462,6 +490,7 @@ app/
 ├─ main.py          FastAPI, reitit, static
 ├─ config.py        polut ja ympäristömuuttujat
 ├─ db.py            SQLite: tracks, jobs, tabs, settings
+├─ settings.py      /api/settings: oletukset, rajat ja tallennus
 ├─ jobs.py          job-jono, worker, cache, SSE-eventit
 ├─ external_store.py  YouTube-audion ja tuotujen tabien arkistointi
 ├─ static/          TV- ja remote-näkymät
@@ -511,6 +540,8 @@ docs/               GITIGNORED
 - **v1.43** ✅ – kursorin synkka: backing track -venytys pois, osoitin äänen tahdissa
 - **v1.42** ✅ – testiyhteenveto näkyviin (`pytest.ini`), sessioalustuksen tulosteet kapeaan konsoliin
 - **v1.41** ✅ – GP3/GP4-tuonti (konversio GP5:ksi), audiopolun rescan-korjaus
+- **v2.02** ✅ – Settings-näkymä: count-inin kesto, näkymän oletus, toiminnot näkyviin/piiloon; puhelimen soitinvalinnat ja painikkeet sivun alaosaan
+- **v2.01** ✅ – kirjastot bändin nimellä, remote yksi scrollbar
 - **v1.83** ✅ – yksi `start.bat` (LAN aina), 150 px QR `/remote`-sivulla
 - **v1.82** ✅ – LAN-kaukosäädin: QR-pariutus, valinnainen LAN-PIN
 - **v1.36** – Spotify-haku, OAuth, SDK/Connect-synkka

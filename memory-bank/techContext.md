@@ -9,7 +9,7 @@
 - **Ei GPU:ta** (`nvidia-smi` tyhjä) → CPU-only
 - D: levytilaa ~147 GB vapaana
 
-## Python-paketit (v2.01)
+## Python-paketit (v2.02)
 
 Core:
 
@@ -59,11 +59,12 @@ python -m venv .venv
 ## Testit
 
 ```powershell
-.venv\Scripts\python.exe -m pytest -q          # 195 passed
+.venv\Scripts\python.exe -m pytest -q          # 229 passed
 .venv\Scripts\python.exe -m compileall -q app scripts tests
 node --check app\static\app.js
 node --check app\static\remote.js
 node --check app\static\remote-bridge.js
+node --check app\static\settings.js
 ```
 
 Konsoli voi olla hyvin kapea (agentin kuori ~12 merkkiä, CP437) ja
@@ -256,3 +257,19 @@ DB-tiedosto); vain tuotenimi on `AI TabTool`.
   järjestetään `artist` → `title` (`localeCompare("fi")`); remote-kirjaston
   sisäinen `max-height`/`overflow` poistettu → yksi sivun scrollbar.
 - Testit **195**; tagi `v1.99` = viimeisin pushattu palautuspiste.
+
+## v2.02 (24.10.2026)
+
+- **Settings-näkymä:** `/settings` + `GET/POST /api/settings`
+  (`app/settings.py`, 25 kenttää: count-in, Näkymän oletus, 16 päänäkymän
+  toimintoa, 4 puhelimen toimintoa). Arvot `settings`-taulussa JSONina;
+  lukukelvoton tai rajan ulkopuolinen arvo palautuu oletukseen.
+- **`app.js`:** `SETTINGS_URL`, `UI_FEATURES`, `applyRuntimeSettings`,
+  `applyUiVisibility` (body-luokat `hide-ui-*`), `loadRuntimeSettings`
+  käynnistyksen alussa. Count-in lukee `countInSteps` / `countInStepMs` /
+  `countInZeroMs`; oletukset ennallaan (5 / 1000 / 250).
+- **Puhelin:** `remote.html` (soittimet ylhäällä, mode-napit alhaalla),
+  `remote.js` (`renderTracks`, `send("track")`, `features`),
+  `remote-bridge.js` (`readTracks`, `tracks`-kenttä, `action === "track"`),
+  `remote.py` (`track`-komento 0–31, `clean_state` → `tracks`).
+- Testit **229**; `tests/test_settings.py` + raidat `tests/test_remote.py`.

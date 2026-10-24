@@ -11,6 +11,27 @@
   SIIRTO −0,75 / BPM 142) ennen ja jälkeen.
 - Katso `.clinerules/07-playback-frozen.md`.
 
+## v2.02 – Settings-näkymä ja puhelimen soittimet (24.10.2026)
+
+- **`/settings`** (SETTINGS yläpalkissa REMOTE- ja API-linkkien jälkeen):
+  count-inin askelmat (1–12), askeleen kesto (200–3000 ms), nollan kesto
+  (0–2000 ms), lähtölaskennan oletus, Näkymän oletus ja 16 päänäkymän
+  toiminnon näkyvyys (oletus: näkyvissä) sekä puhelimen LISÄÄ/SÄÄDÄ-,
+  Nopeus- ja soitinvalinta. Arvot `settings`-taulussa; `app/settings.py`
+  validoi tyypit ja rajat (`GET/POST /api/settings`, virhe → 422).
+- **Count-inin kesto säädettäväksi:** `COUNT_IN_FROM` / `COUNT_IN_STEP_MS` /
+  `COUNT_IN_ZERO_MS` toimivat oletuksina (5 × 1000 ms + 250 ms = entinen
+  5,25 s). `beginCountIn()` lukee `countInSteps` / `countInStepMs` /
+  `countInZeroMs`; ei uusia audio-/alphaTab-kutsuja, `togglePlayback()`
+  ennallaan. `tests/test_playback_guard.py` valvoo edelleen rajaa.
+- **Puhelin:** SOITA/LISÄÄ/SÄÄDÄ -painikkeet sivun alaosaan; ylhäällä
+  avoimen tabin soittimet. TV raportoi raidat tilassa (`clean_state` →
+  `tracks`), silta klikkaa samaa `.track-chip`iä (uusi komento `track`,
+  indeksi 0–31). 2 soitinta = 1 rivi, 5 = 2 riviä.
+- **Testit 229** (31 uutta: `tests/test_settings.py` + raidat
+  `tests/test_remote.py`). Soittoketjuun ei koskettu; kuuntelutesti on
+  käyttäjän (rule 07).
+
 ## v1.93–v2.01 – Remote-UI, nopeus, GP3 ja kirjastot (23.10.2026)
 
 - **Remote (v1.93–v1.98):** otsikko yhdelle riville (AT-merkki,

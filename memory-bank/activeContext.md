@@ -1,6 +1,6 @@
 # 📍 Aktiivinen konteksti – AI TABTOOL
 
-> **Versio:** `v2.01` (23.10.2026)
+> **Versio:** `v2.02` (24.10.2026)
 > **Git:** v1.23–v1.99 **pushattu** `origin/main`iin 23.10.2026 käyttäjän
 > pyynnöstä; **tagi `v1.99` = viimeisin pushattu palautuspiste**
 > (`git reset --hard v1.99`); v2.00–v2.01 ovat paikallisia. Älä pinnaa
@@ -20,6 +20,22 @@
   **pyydetään testaamaan soitto referenssikappaleella** (Seek & Destroy,
   SIIRTO −0,75 / BPM 142) ennen ja jälkeen. Katso
   `.clinerules/07-playback-frozen.md`.
+- **v2.02 (24.10.2026) – Settings-näkymä ja puhelimen soittimet (ei
+  soittoketjuun):**
+  - `/settings` (SETTINGS yläpalkissa REMOTE- ja API-linkkien jälkeen)
+    säätää count-inin askelmat ja kestot (oletus 5 × 1000 ms + 250 ms =
+    entinen toiminta), Näkymän oletuksen, 16 päänäkymän toiminnon
+    näkyvyyden (oletus: kaikki näkyvät) sekä puhelimen LISÄÄ/SÄÄDÄ-,
+    Nopeus- ja soitinvalinnan.
+  - Arvot ovat SQLite `settings`-taulussa: `app/settings.py`, `GET/POST
+    /api/settings` (tyypit ja rajat validoitu, virhe → 422). `app.js` lukee
+    ne latauksessa `applyRuntimeSettings`issa; `beginCountIn()` lukee kestot
+    omassa lohkossaan eikä kutsu audiota eikä alphaTabia.
+  - Puhelimessa SOITA/LISÄÄ/SÄÄDÄ siirtyivät sivun alaosaan ja niiden
+    paikalle tulivat avoimen tabin soittimet: TV raportoi raidat
+    (`clean_state` → `tracks`) ja silta klikkaa samaa `.track-chip`iä
+    (uusi komento `track`). 2 soitinta = 1 rivi, 5 = 2 riviä.
+  - Testit **229**; kuuntelutesti (rule 07) on käyttäjän.
 - **v1.93–v2.01 (23.10.2026) – UI/tuonti, ei soittoketjuun:**
   - v1.93–v1.95: remote-otsikko yhdelle riville; `«` = `seek 0`,
     `+5 s` pois; nopeus 1 % askelet + 95–105 % → 100 %; QR sivun alaosaan.
@@ -331,13 +347,14 @@ Putki:
 - **Dr. Feelgood – valmis (v1.76–v1.78):** bar 2 soitetaan 17 kertaa
   kirjoitettuina tahteina (135 tahtia), 2 ylimääräistä lopputahtia ja
   1/16-pickup poistettu. Erillistä `set_repeat.py`tä ei tarvita.
-- **Session tilanne 23.10.2026:** v1.93–v2.01 valmiit (remote-yhden rivin
+- **Session tilanne 24.10.2026:** v1.93–v2.02 valmiit (remote-yhden rivin
   UI, `«`-alkuun, nopeus 1 % + 10 % snap, yksi tila-indikaattori,
   seek-sliderin strict-mode-korjaus, `start.bat` stop+start, GP3-grace-
-  korjaus, kirjastot bändin nimellä, remote yksi scrollbar). 195 testiä
-  vihreänä. **Soitto kuitattu valmiiksi (99 %, riittää) → ISO LUKKO;
-  tagi `v1.99` = viimeisin pushattu palautuspiste, v2.01 paikallinen.**
-  Seuraava: pickup-korjaus / Settings-näkymä.
+  korjaus, kirjastot bändin nimellä, remote yksi scrollbar, Settings-näkymä
+  ja puhelimen soitinvalinnat). 229 testiä vihreänä. **Soitto kuitattu
+  valmiiksi (99 %, riittää) → ISO LUKKO; tagi `v1.99` = viimeisin pushattu
+  palautuspiste, v2.00–v2.02 paikallisia.**
+  Seuraava: käyttäjän UI-/kuuntelutesti (rule 07) / pickup-korjaus.
 - Soittotapa/refinger: asemaprofiilit, helpoin-arvio, turhien nuottien
   karsinta, per-tahti/fraasiasema; **ei koodia vielä**.
 - AI-transkription tarkkuus (Basic Pitch); referenssitabit ja ilmainen
