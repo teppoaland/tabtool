@@ -11,6 +11,31 @@
   SIIRTO −0,75 / BPM 142) ennen ja jälkeen.
 - Katso `.clinerules/07-playback-frozen.md`.
 
+## Sanat Reino Nordin -tabiin (24.10.2026, vain dataa)
+
+- **Tavoite:** kappale on laulubiisi, joten sanat leivottiin tabiin luettavaksi
+  soiton aikana. Ei koodimuutoksia – kaikki `data/`ssa (gitignored).
+- **Muoto:** GP5:n `beat.text` (alphaTab renderöi sen tahtirivin yläpuolelle).
+  Kokeiltiin myös GP:n omia lyriikoita (sana/isku): ne törmäävät tiheissä
+  16-osakohdissa, joten `beat.text` valittiin.
+- **Ajoitus:** 97 riviä, tahdit 1–99; tauot 82–83 ja 100–101. Kiintopisteet
+  käyttäjän kuuntelusta (M 1/1, "Mun sydän palaa" tahti 10, kertosäkeet
+  22/30/59/84) + Demucs-vokaalistemman (`yt-7d7871495b/vocals.wav`)
+  frasialut. Sanat osuvat oikeille tahdeille, eivät jokaiselle iskulle.
+- **Rakenne:** sanat siirrettiin V3:lta **4. raidalle `Vocals`** (ei nuotteja,
+  tauot + tekstit). V1/V2/V3 ennallaan 1681 nuottia/raita → mitä tahansa
+  niistä voi soittaa sanojen kanssa.
+- **Suojaus:** erillinen lukittu kirjastotabi `33cbc8bf…`
+  *Xsuaalisuuteen (sanat)*, arkistokopio
+  `D:\tabtool_files\tabs\Reino Nordin - Xsuaalisuuteen (sanat).gp5` ja
+  `data/backups/668d62…-vocals-20261024-155850/`.
+- **Rajoite:** `VALITSE TÄMÄ` kirjoittaa GP5:n versio-JSON:sta → Vocals-raita
+  katoaa; siksi lukittu kopio. Sanoitusten tekstiä ei viedä gitiin eikä
+  memory bankiin (tekijänoikeus).
+- **Validointi:** PyGuitarPro-luku takaisin (raidat/tahdit/nuotit), alphaTab
+  (`ScoreLoader.loadScoreFromBytes`) `beat.text`-tarkistus ja headless
+  Edge -renderöinti temp-HTML:stä.
+
 ## v2.04 – Versiovalinnan varmistus ja palautus (24.10.2026)
 
 - **Ongelma:** `VALITSE TÄMÄ` finalisoi suoraan – muut sormitusversiot

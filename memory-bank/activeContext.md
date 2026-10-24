@@ -3,7 +3,7 @@
 > **Versio:** `v2.04` (24.10.2026)
 > **Git:** v1.23–v1.99 **pushattu** `origin/main`iin 23.10.2026 käyttäjän
 > pyynnöstä; **tagi `v1.99` = viimeisin pushattu palautuspiste**
-> (`git reset --hard v1.99`); v2.00–v2.01 ovat paikallisia. Älä pinnaa
+> (`git reset --hard v1.99`); v2.00–v2.04 ovat paikallisia. Älä pinnaa
 > HEAD-hashia pysyvästi.
 > **Push:** vain erillisestä pyynnöstä (käyttäjä pyysi 20.10. ja 23.10.2026).
 > **Repo:** https://github.com/teppoaland/tabtool
@@ -20,6 +20,23 @@
   **pyydetään testaamaan soitto referenssikappaleella** (Seek & Destroy,
   SIIRTO −0,75 / BPM 142) ennen ja jälkeen. Katso
   `.clinerules/07-playback-frozen.md`.
+- **Sanat tabiin (24.10.2026, vain dataa – ei koodimuutosta):**
+  - Reino Nordin `668d62…` (*Xsuaalisuuteen*): **97 riviä sanoja** GP5:n
+    `beat.text`-kenttinä, tahdit 1–99 (tauot 82–83 ja 100–101). Ajoitus
+    sovitettiin käyttäjän korvakiintopisteisiin (M 1/1, "Mun sydän palaa"
+    tahti 10, kertosäkeet 22/30/59/84) ja Demucs-vokaalistemman
+    frasialkuihin. Sanat ovat oikeilla tahdeilla mutta eivät iskuilleen.
+  - Sanat siirrettiin **omalle 4. raidalle `Vocals`**: V1/V2/V3 pysyivät
+    muuttumattomina (1681 nuottia/raita), joten mitä tahansa niistä voi
+    soittaa sanojen kanssa. Vocals on opasraita (taukoja + tekstit).
+  - Suojaus: erillinen **lukittu** kirjastotabi `33cbc8bf…`
+    *Xsuaalisuuteen (sanat)* (sama audio, ei versio-metadataa) +
+    arkistokopio `D:\tabtool_files\tabs\Reino Nordin - Xsuaalisuuteen (sanat).gp5`
+    + `data/backups/668d62…-vocals-20261024-155850/`.
+  - **Rajoite:** `VALITSE TÄMÄ` kirjoittaa GP5:n versio-JSON:sta, jolloin
+    Vocals-raita katoaa siitä tabista. Siksi lukittu kopio; sanat voi
+    lisätä takaisin temp-skriptillä (skriptiä ei viedä gitiin).
+  - Sanoitukset eivät ole gitissä eivätkä memory bankissa (tekijänoikeus).
 - **v2.04 (24.10.2026) – Sormitusversion valinta turvalliseksi (ei
   soittoketjuun):**
   - `VALITSE TÄMÄ` kysyy nyt varmistuksen (`#variant-dialog`) – ennen
@@ -376,9 +393,10 @@ Putki:
 - **Session tilanne 24.10.2026:** v1.93–v2.04 valmiit (remote-UI, nopeus,
   seek-slider, `start.bat`, GP3-grace, kirjastot bändin nimellä, Settings,
   puhelimen soitinvalinnat, kirjaston Tiedot + lähdemeta, versiovalinnan
-  varmistus + palautus). 244 testiä vihreänä. **Soitto kuitattu valmiiksi
-  (99 %, riittää) → ISO LUKKO; tagi `v1.99` = viimeisin pushattu
-  palautuspiste, v2.00–v2.04 paikallisia.**
+  varmistus + palautus). Lisäksi data-työnä Reino Nordin -tabin sanoitus
+  omalla Vocals-raidalla + lukittu sanakopio. 244 testiä vihreänä. **Soitto
+  kuitattu valmiiksi (99 %, riittää) → ISO LUKKO; tagi `v1.99` = viimeisin
+  pushattu palautuspiste, v2.00–v2.04 paikallisia.**
   Seuraava: käyttäjän UI-/kuuntelutesti (rule 07) / pickup-korjaus.
 - Soittotapa/refinger: asemaprofiilit, helpoin-arvio, turhien nuottien
   karsinta, per-tahti/fraasiasema; **ei koodia vielä**.

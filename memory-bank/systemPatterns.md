@@ -151,7 +151,10 @@ Putki (app/pipeline/)
   `variants/` + tab-tiedostot); `meta.variant_backup` kertoo sijainnin.
   `POST /api/tabs/{id}/variant/restore` kopioi varmuuskopion takaisin ja
   palauttaa `variants`/`default_variant`/`note_count`/`variant_finalized`
-  → `PALAUTA VERSIOT` -nappi. Jäljellä: parhaan version
+  → `PALAUTA VERSIOT` -nappi. **Sanat eivät säily versiovalinnassa**
+  (GP5 kirjoitetaan JSON-snapshotista), joten sanoitus pidetään erillisellä
+  `Vocals`-raidalla ja lukitussa kopiotabissa (`… (sanat)`).
+  Jäljellä: parhaan version
   automaattinen valinta, score näkyviin ja turhien nuottien karsinta
   per tahti/fraasi.
 

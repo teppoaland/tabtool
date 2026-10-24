@@ -311,3 +311,19 @@ DB-tiedosto); vain tuotenimi on `AI TabTool`.
   finalisoidulla tabilla; `openVariantDialog`/`restoreVariants` app.js:ssä;
   Tiedot-dialogi näyttää "Versioiden varmuuskopio" -rivin.
 - Testit **244**.
+
+## Sanat GP5:ssä – työtapa (24.10.2026)
+
+- **`beat.text` on paras paikka sanoille:** alphaTab piirtää sen tahtirivin
+  yläpuolelle. GP:n omat lyriikat (`song.lyrics`, sana per isku) renderöityvät
+  raidan alle, mutta menevät päällekkäin tiheissä 16-osakohdissa.
+- **Tarkistus ilman selainta:** `node` + vendoroitu alphaTab
+  (`alphaTab.importer.ScoreLoader.loadScoreFromBytes(bytes, new Settings())`)
+  lukee `beat.text` / `beat.lyrics` ja raitojen nimet; visuaalinen tarkistus
+  headless Edgellä (`msedge --headless=new --screenshot`) temp-HTML:stä,
+  johon alphaTab ja GP5 upotetaan base64:nä (fontDirectory `file:///…/font/`).
+- **Tyhjä raita toimii:** kopioi raita, tyhjennä nuotit
+  (`beat.notes=[]`, `beat.status=BeatStatus.rest`) ja kirjoita tekstit.
+  0 kielellä alphaTab ei osaa renderöidä raitaa (pidä kitaran kielet).
+- **Sanoitukset eivät ole gitissä eivätkä memory bankissa** (tekijänoikeus);
+  ne elävät vain `data/`ssa ja arkistossa.
