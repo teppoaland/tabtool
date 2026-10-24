@@ -118,6 +118,13 @@
     const box = document.createElement("span");
     box.className = "settings-control";
     box.append(control.element);
+    if (field.kind === "bool") {
+      // The checkbox means "shown" for a function and "on" for a default.
+      const state = document.createElement("span");
+      state.className = "settings-switch-label";
+      state.textContent = field.group === "ui" ? "Näytä" : "Päällä";
+      box.append(state);
+    }
     if (field.unit) {
       const unit = document.createElement("span");
       unit.className = "settings-unit";

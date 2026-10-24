@@ -1716,7 +1716,9 @@ body.hide-ui-export .viewer-foot {
 
 .remote-tracks {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(5.5rem, 1fr));
+  /* 4.5rem keeps three chips on one row even on a 320 px phone, so five
+     tracks never need more than two rows. */
+  grid-template-columns: repeat(auto-fit, minmax(4.5rem, 1fr));
   gap: 0.35rem;
 }
 
@@ -1840,6 +1842,12 @@ body.hide-ui-export .viewer-foot {
 
 .settings-unit {
   min-width: 1.6rem;
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+
+.settings-switch-label {
+  min-width: 2.6rem;
   font-size: 0.72rem;
   color: var(--muted);
 }
