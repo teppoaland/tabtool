@@ -6,13 +6,13 @@
   <meta name="color-scheme" content="dark">
   <title>AI TabTool · Remote</title>
   <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="/static/style.css?v=2.01">
+  <link rel="stylesheet" href="/static/style.css?v=2.02">
 </head>
 <body>
   <header class="topbar remote-topbar">
     <div class="brand">
       <span class="brand-name">AI TABTOOL</span>
-      <span id="version-tag" class="version">v2.01</span>
+      <span id="version-tag" class="version">v2.02</span>
     </div>
     <div class="remote-statusline">
       <p class="status-pill" id="api-status" aria-live="polite">Checking…</p>
@@ -20,14 +20,14 @@
   </header>
 
   <main class="shell remote-shell">
-    <nav class="remote-modes" role="tablist" aria-label="Toiminto">
-      <button id="mode-play" type="button" class="remote-mode is-active"
-              role="tab" aria-selected="true" aria-controls="panel-play">SOITA</button>
-      <button id="mode-add" type="button" class="remote-mode"
-              role="tab" aria-selected="false" aria-controls="panel-add">LISÄÄ</button>
-      <button id="mode-adjust" type="button" class="remote-mode"
-              role="tab" aria-selected="false" aria-controls="panel-adjust">SÄÄDÄ</button>
-    </nav>
+    <!-- v2.02: the mode buttons moved to the end of the page; the top of the
+         screen belongs to the instruments of the open tab. -->
+    <section id="remote-tracks" class="remote-tracks-card" aria-label="Soittimet"
+             hidden>
+      <p class="remote-tracks-title">Soittimet</p>
+      <div id="remote-track-list" class="remote-tracks" role="group"
+           aria-label="Tablatuurissa näytettävät soittimet"></div>
+    </section>
 
     <div id="panel-play" class="remote-mode-panel" role="tabpanel"
          aria-labelledby="mode-play">
@@ -47,7 +47,7 @@
                  min="0" max="0" step="0.1" value="0"
                  aria-label="Toistokohta">
         </label>
-        <label class="remote-field">
+        <label id="remote-rate-field" class="remote-field">
           <span>Nopeus</span>
           <input id="remote-rate" class="remote-slider" type="range"
                  min="0.5" max="1.5" step="0.01" value="1"
@@ -130,15 +130,24 @@
         <p id="remote-hint" class="muted"></p>
       </aside>
     </section>
+
+    <nav class="remote-modes" role="tablist" aria-label="Toiminto">
+      <button id="mode-play" type="button" class="remote-mode is-active"
+              role="tab" aria-selected="true" aria-controls="panel-play">SOITA</button>
+      <button id="mode-add" type="button" class="remote-mode"
+              role="tab" aria-selected="false" aria-controls="panel-add">LISÄÄ</button>
+      <button id="mode-adjust" type="button" class="remote-mode"
+              role="tab" aria-selected="false" aria-controls="panel-adjust">SÄÄDÄ</button>
+    </nav>
   </main>
 
 
   <footer class="footer">
-    <span>AI TabTool v2.01</span>
+    <span>AI TabTool v2.02</span>
     <span><a href="/">Takaisin näkymään</a></span>
   </footer>
 
-  <script src="/static/remote.js?v=2.01" defer></script>
+  <script src="/static/remote.js?v=2.02" defer></script>
 </body>
 </html>
 

@@ -49,7 +49,20 @@ COOKIE_MAX_AGE = 30 * 24 * 3600
 # earlier session stops working and no PIN is ever written into a URL.
 PAIR_TOKEN = secrets.token_urlsafe(12)
 
-ACTIONS = {"play", "pause", "toggle", "seek", "seek_rel", "rate", "select_tab"}
+ACTIONS = {
+    "play",
+    "pause",
+    "toggle",
+    "seek",
+    "seek_rel",
+    "rate",
+    "select_tab",
+    "track",
+}
+# The phone lists the tracks shown in the tab (v2.02); a tab with more than
+# this many tracks is not a guitar tab anyone needs on a phone screen.
+MAX_TRACKS = 32
+MAX_TRACK_NAME = 40
 # One operation at a time: these endpoints create a job, so they are refused
 # while the TV is playing or another job is still running.
 JOB_PATHS = {"/api/jobs", "/api/tabs/import", "/api/tabs/import-url"}
@@ -90,6 +103,22 @@ def _as_float(value: Any, name: str, low: float, high: float) -> float:
     return number
 
 
+def _as_index(value: Any, limit: int) -> int:
+    """Whole-number index with an upper bound (track selection, v2.02)."""
+    if isinstance(value, bool):
+        raise RemoteError("value must be an integer")
+    try:
+        number = float(value)
+    except (TypeError, ValueError) as exc:
+        raise RemoteError("value must be an integer") from exc
+    if not number.is_integer():
+        raise RemoteError("value must be an integer")
+    index = int(number)
+    if index < 0 or index >= limit:
+        raise RemoteError(f"value must be between 0 and {limit - 1}")
+    return index
+
+
 def _clean_tab_id(value: Any) -> str:
     text = str(value or "").strip()
     if not text or len(text) > MAX_TAB_ID:
@@ -116,6 +145,8 @@ def clean_command(payload: dict[str, Any]) -> dict[str, Any]:
         value = _as_float(payload.get("value"), "value", 0.5, 1.5)
     elif action == "select_tab":
         value = _clean_tab_id(payload.get("value"))
+    elif action == "track":
+        value = _as_index(payload.get("value"), MAX_TRACKS)
     return {"action": action, "value": value}
 
 
@@ -144,6 +175,29 @@ def clean_state(payload: dict[str, Any]) -> dict[str, Any]:
     bpm = payload.get("bpm")
     if isinstance(bpm, (int, float)) and not isinstance(bpm, bool):
         state["bpm"] = round(float(bpm), 2)
+    # The tracks of the open tab (v2.02). The phone shows them as instrument
+    # buttons; each entry is only a label plus the visible flag, so nothing from
+    # the score itself travels over the network.
+    tracks = payload.get("tracks")
+    if isinstance(tracks, list):
+        rows: list[dict[str, Any]] = []
+        for item in tracks[:MAX_TRACKS]:
+            if not isinstance(item, dict):
+                continue
+            index = item.get("index")
+            if isinstance(index, bool) or not isinstance(index, int):
+                continue
+            if index < 0 or index >= MAX_TRACKS:
+                continue
+            name = item.get("name")
+            rows.append(
+                {
+                    "index": index,
+                    "name": str(name)[:MAX_TRACK_NAME] if isinstance(name, str) else "",
+                    "visible": bool(item.get("visible")),
+                }
+            )
+        state["tracks"] = rows
     state["visible"] = bool(payload.get("visible"))
     return state
 

@@ -48,6 +48,12 @@
   const pairUrlEl = byId("remote-url");
   const pairHintEl = byId("remote-hint");
 
+  // v2.02: the instruments of the open tab. The mode buttons moved to the end
+  // of the page, so these chips take their place at the top.
+  const tracksCard = byId("remote-tracks");
+  const trackList = byId("remote-track-list");
+  const rateField = byId("remote-rate-field");
+
   const modePlay = byId("mode-play");
   const modeAdd = byId("mode-add");
   const modeAdjust = byId("mode-adjust");
@@ -82,6 +88,17 @@
   let seeking = false;
   let rating = false;
   let adjustTab = null;
+  let activeMode = "play";
+  let trackSignature = "";
+
+  // Settings (v2.02). Everything is visible by default; a failed request or an
+  // older server leaves these as they are.
+  const features = {
+    tracks: true,
+    addMode: true,
+    adjustMode: true,
+    rate: true,
+  };
 
   function formatTime(value) {
     const total = Math.max(0, Math.round(Number(value) || 0));
@@ -147,6 +164,7 @@
   }
 
   function setMode(mode) {
+    activeMode = mode;
     const modes = {
       play: [modePlay, panelPlay],
       add: [modeAdd, panelAdd],
@@ -161,6 +179,81 @@
       if (panel) panel.hidden = !active;
     }
     if (mode === "adjust") renderAdjustList();
+  }
+
+  // Hide the modes and the speed slider the Settings view turned off. The
+  // active panel always falls back to SOITA, so a hidden tab cannot stay open.
+  function applyFeatures() {
+    if (modeAdd) modeAdd.hidden = !features.addMode;
+    if (modeAdjust) modeAdjust.hidden = !features.adjustMode;
+    if (rateField) rateField.hidden = !features.rate;
+    if (
+      (activeMode === "add" && !features.addMode) ||
+      (activeMode === "adjust" && !features.adjustMode)
+    ) {
+      setMode("play");
+    }
+  }
+
+  // The instrument chips of the open tab. The TV reports the track list and its
+  // visible flags (remote-bridge.js); a tap sends the track command, which
+  // clicks the same chip on the TV.
+  function renderTracks() {
+    if (!tracksCard || !trackList) return;
+    const list = Array.isArray(state && state.tracks) ? state.tracks : [];
+    const show =
+      features.tracks && Boolean(state && state.tab_id) && list.length > 1;
+    tracksCard.hidden = !show;
+    if (!show) {
+      trackList.textContent = "";
+      trackSignature = "";
+      return;
+    }
+    const signature = `${jobActive ? 1 : 0}|${list
+      .map((track) => `${track.index}:${track.name}:${track.visible ? 1 : 0}`)
+      .join("|")}`;
+    if (signature === trackSignature) return;
+    trackSignature = signature;
+    trackList.textContent = "";
+    for (const track of list) {
+      const item = document.createElement("button");
+      item.type = "button";
+      item.className = "remote-track";
+      item.dataset.trackIndex = String(track.index);
+      item.textContent = track.name || `Raita ${Number(track.index) + 1}`;
+      item.setAttribute("aria-pressed", track.visible ? "true" : "false");
+      item.title = `${item.textContent} · ${
+        track.visible ? "näkyy tablatuurissa" : "piilotettu"
+      }`;
+      item.disabled = Boolean(jobActive);
+      item.addEventListener("click", () => toggleTrack(track.index));
+      trackList.append(item);
+    }
+  }
+
+  async function toggleTrack(index) {
+    if (jobActive) return;
+    await send("track", Number(index));
+    // The TV reports the new visible flag right after the click, so a short
+    // delay is enough to redraw the chips from the real state.
+    window.setTimeout(refresh, 300);
+  }
+
+  async function loadSettings() {
+    try {
+      const response = await fetch("/api/settings", { cache: "no-store" });
+      if (!response.ok) return;
+      const data = await response.json();
+      const values = (data && data.values) || {};
+      features.tracks = values["remote.tracks"] !== false;
+      features.addMode = values["remote.modes.add"] !== false;
+      features.adjustMode = values["remote.modes.adjust"] !== false;
+      features.rate = values["remote.rate"] !== false;
+      applyFeatures();
+      renderTracks();
+    } catch (error) {
+      /* the defaults keep every control visible */
+    }
   }
 
   function setAdjustEnabled(enabled) {
@@ -243,6 +336,7 @@
     }
     if (playNote) playNote.hidden = !jobActive;
     applyGuards(playing);
+    renderTracks();
   }
 
   async function refresh() {
@@ -692,10 +786,14 @@
   refresh();
   loadLibrary();
   loadLanInfo();
+  loadSettings();
   window.setInterval(refresh, REFRESH_MS);
   window.setInterval(loadLibrary, LIBRARY_MS);
   window.setInterval(loadLanInfo, LIBRARY_MS);
   document.addEventListener("visibilitychange", () => {
-    if (!document.hidden) refresh();
+    if (!document.hidden) {
+      refresh();
+      loadSettings();
+    }
   });
 })();

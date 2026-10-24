@@ -71,6 +71,29 @@
     return Number.isFinite(value) && value > 0 ? value : null;
   }
 
+  // v2.02: the tracks shown in the tab. The phone lists the instruments and
+  // toggles them by clicking the same chips the TV user would click, so the
+  // track selection itself stays in app.js (rule 07: nothing here touches the
+  // playback chain).
+  function readTracks() {
+    const host = byId("track-toggles");
+    if (!host) return [];
+    const chips = Array.from(host.querySelectorAll(".track-chip"));
+    return chips
+      .slice(0, 32)
+      .map((chip) => ({
+        index: Number(chip.dataset.trackIndex),
+        name: String(chip.textContent || "").trim().slice(0, 40),
+        visible: chip.getAttribute("aria-pressed") === "true",
+      }))
+      .filter(
+        (track) =>
+          Number.isInteger(track.index) &&
+          track.index >= 0 &&
+          track.index < 32
+      );
+  }
+
   function currentState() {
     const audio = audioEl();
     const titleEl = byId("tab-title");
@@ -84,6 +107,7 @@
       bar: readBar(),
       rate: readRate(),
       bpm: readBpm(),
+      tracks: readTracks(),
       visible: Boolean(viewer && !viewer.hidden),
     };
   }
@@ -193,6 +217,19 @@
         Number(slider.max) || 1.5
       );
       return setRange("rate-slider", target);
+    }
+    if (action === "track") {
+      // Clicking the chip runs app.js's own toggleTrack(), so the stored
+      // selection and the rendered score stay exactly as on the TV.
+      const index = Number(command.value);
+      if (!Number.isInteger(index) || index < 0) return false;
+      const chip = document.querySelector(
+        `#track-toggles .track-chip[data-track-index="${index}"]`
+      );
+      if (!chip || chip.disabled) return false;
+      chip.click();
+      reportState();
+      return true;
     }
     return false;
   }

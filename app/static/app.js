@@ -46,6 +46,35 @@
   // the baseline (v1.91).
   const FEED_JITTER_S = 0.3;
 
+  // === SETTINGS (v2.02) =================================================
+  // The Settings view (/settings) owns these values and app/settings.py serves
+  // them. Everything is clamped here, so a broken stored value cannot stall
+  // the count-in or hide a control that is needed to bring it back. The UI
+  // switches only add body classes; the playback chain is not involved and
+  // every feature is visible by default.
+  const SETTINGS_URL = "/api/settings";
+  const UI_FEATURES = [
+    "nav_library",
+    "nav_remote",
+    "nav_api",
+    "fullscreen",
+    "countin_switch",
+    "view_select",
+    "track_toggles",
+    "variant",
+    "attach_audio",
+    "section",
+    "rate",
+    "sync",
+    "shift",
+    "align",
+    "bpm",
+    "export",
+  ];
+  // Defaults used only when the browser has no local choice of its own.
+  let defaultCountInEnabled = true;
+  let defaultStaveProfile = null;
+
   const form = document.getElementById("source-form");
   const fileInput = document.getElementById("file-input");
   const urlInput = document.getElementById("url-input");
@@ -141,6 +170,11 @@
   const COUNT_IN_FROM = 5;
   const COUNT_IN_STEP_MS = 1000;
   const COUNT_IN_ZERO_MS = 250;
+  // v2.02: the Settings view may override the duration. These start from the
+  // documented defaults and are replaced (and clamped) by applyRuntimeSettings.
+  let countInSteps = COUNT_IN_FROM;
+  let countInStepMs = COUNT_IN_STEP_MS;
+  let countInZeroMs = COUNT_IN_ZERO_MS;
   let countInDone = false;
   let countInActive = false;
   let countInSkipped = false;
@@ -673,11 +707,15 @@
   }
 
   function readStaveProfile() {
+    // A saved local choice wins; the Settings default fills in only when this
+    // browser has no stave choice yet (v2.02).
     try {
-      return normalizeStaveProfile(localStorage.getItem(STAVE_STORAGE_KEY));
+      const stored = localStorage.getItem(STAVE_STORAGE_KEY);
+      if (stored) return normalizeStaveProfile(stored);
     } catch (error) {
-      return "tab";
+      /* storage disabled */
     }
+    return normalizeStaveProfile(defaultStaveProfile || "tab");
   }
 
   function writeStaveProfile(value) {
@@ -902,6 +940,79 @@
       console.warn("view change failed", error);
     }
   }
+
+  // === SETTINGS (v2.02) =================================================
+  // Values arrive from /api/settings. These functions only read numbers and
+  // toggle body classes: the clock, the seek inverse and the audio adapter
+  // never learn about them, and the count-in reads its duration inside
+  // beginCountIn() alone (rule 07).
+  function clampSetting(value, low, high, fallback) {
+    const number = Number(value);
+    if (!Number.isFinite(number)) return fallback;
+    return Math.min(high, Math.max(low, number));
+  }
+
+  function applyUiVisibility(values) {
+    for (const feature of UI_FEATURES) {
+      const shown = values[`ui.${feature}`] !== false;
+      document.body.classList.toggle(`hide-ui-${feature}`, !shown);
+    }
+  }
+
+  function applyRuntimeSettings(values) {
+    const settings = values || {};
+    countInSteps = Math.round(
+      clampSetting(settings["countin.steps"], 1, 12, COUNT_IN_FROM)
+    );
+    countInStepMs = Math.round(
+      clampSetting(settings["countin.step_ms"], 200, 3000, COUNT_IN_STEP_MS)
+    );
+    countInZeroMs = Math.round(
+      clampSetting(settings["countin.zero_ms"], 0, 2000, COUNT_IN_ZERO_MS)
+    );
+    defaultCountInEnabled = settings["countin.enabled"] !== false;
+    defaultStaveProfile = Object.prototype.hasOwnProperty.call(
+      STAVE_PROFILES,
+      settings["view.stave"]
+    )
+      ? settings["view.stave"]
+      : null;
+    applyUiVisibility(settings);
+  }
+
+  function applyStoredDefaults() {
+    // A saved local choice always wins; the Settings value is only the default
+    // for a browser that has never chosen (v2.02).
+    try {
+      if (localStorage.getItem(COUNT_IN_STORAGE_KEY) === null) {
+        setCountInEnabled(defaultCountInEnabled, { persist: false });
+      }
+      if (
+        localStorage.getItem(STAVE_STORAGE_KEY) === null &&
+        defaultStaveProfile
+      ) {
+        applyStaveProfile(defaultStaveProfile, {
+          persist: false,
+          render: false,
+        });
+      }
+    } catch (error) {
+      /* storage disabled */
+    }
+  }
+
+  async function loadRuntimeSettings() {
+    try {
+      const response = await fetch(SETTINGS_URL, { cache: "no-store" });
+      if (!response.ok) return;
+      const payload = await response.json();
+      applyRuntimeSettings(payload && payload.values);
+      applyStoredDefaults();
+    } catch (error) {
+      /* the built-in defaults keep the viewer usable */
+    }
+  }
+  // === /SETTINGS ========================================================
 
   function viewerFullscreenActive() {
     if (!viewerSection) return false;
@@ -1270,11 +1381,16 @@
   }
 
   function readCountInEnabled() {
+    // The ON/OFF switch stores its own value; the Settings view only supplies
+    // the default for a browser that has never touched the switch (v2.02).
     try {
-      return localStorage.getItem(COUNT_IN_STORAGE_KEY) !== "off";
+      const stored = localStorage.getItem(COUNT_IN_STORAGE_KEY);
+      if (stored === "on") return true;
+      if (stored === "off") return false;
     } catch (error) {
-      return true;
+      return defaultCountInEnabled;
     }
+    return defaultCountInEnabled;
   }
 
   function setCountInEnabled(enabled, options) {
@@ -1314,7 +1430,7 @@
     if (!playCountdown) return false;
     cancelCountIn();
     countInActive = true;
-    countInValue = COUNT_IN_FROM;
+    countInValue = countInSteps;
     drawCountIn(countInValue);
     countInTimer = window.setInterval(() => {
       countInValue -= 1;
@@ -1325,8 +1441,8 @@
       window.clearInterval(countInTimer);
       countInTimer = null;
       drawCountIn(0);
-      countInZeroTimer = window.setTimeout(finishCountIn, COUNT_IN_ZERO_MS);
-    }, COUNT_IN_STEP_MS);
+      countInZeroTimer = window.setTimeout(finishCountIn, countInZeroMs);
+    }, countInStepMs);
     return true;
   }
 
@@ -2471,6 +2587,7 @@
   setFullscreenButtonState();
 
   (async () => {
+    await loadRuntimeSettings();
     await loadLibrary();
     let target = null;
     try {

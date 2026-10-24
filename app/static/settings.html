@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="fi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <title>AI TabTool · Settings</title>
+  <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/static/style.css?v=2.02">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">AT</span>
+      <span class="brand-name">AI TABTOOL</span>
+      <span id="version-tag" class="version">v2.02</span>
+    </div>
+    <nav class="nav" aria-label="Päävalikko">
+      <a href="/">DISPLAY</a>
+      <a href="/remote">REMOTE</a>
+      <a href="/docs">API</a>
+    </nav>
+  </header>
+
+  <main class="shell settings-shell">
+    <section class="hero">
+      <p class="kicker">SETTINGS</p>
+      <h1>Toisto ja näkymä</h1>
+      <p class="muted">
+        Arvot tallennetaan palvelimelle ja ne ovat oletuksia kaikille
+        laitteille. TV-näkymän omat kytkimet (esimerkiksi COUNT-IN ON/OFF)
+        ohittavat oletuksen siinä selaimessa. Jokaisen kentän oletus näkyy
+        rivin alla.
+      </p>
+    </section>
+
+    <form id="settings-form" class="card settings-form">
+      <div id="settings-groups"></div>
+      <div class="settings-actions">
+        <button id="settings-save" type="submit" class="primary">TALLENNA</button>
+        <button id="settings-reload" type="button" class="ghost small"
+                title="Hylkää tallentamattomat muutokset ja lue tallennetut arvot uudelleen.">PALAUTA TALLENNETUT</button>
+        <p id="settings-status" class="settings-status" aria-live="polite"></p>
+      </div>
+    </form>
+  </main>
+
+  <footer class="footer">
+    <span>AI TabTool v2.02</span>
+    <span><a href="/">Takaisin näkymään</a></span>
+  </footer>
+
+  <script src="/static/settings.js?v=2.02" defer></script>
+</body>
+</html>

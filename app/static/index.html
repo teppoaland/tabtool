@@ -6,20 +6,21 @@
   <meta name="color-scheme" content="dark">
   <title>AI TabTool</title>
   <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="/static/style.css?v=2.01">
+  <link rel="stylesheet" href="/static/style.css?v=2.02">
 </head>
 <body>
   <header class="topbar">
     <div class="brand">
       <span class="brand-mark" aria-hidden="true">AT</span>
       <span class="brand-name">AI TABTOOL</span>
-      <span id="version-tag" class="version">v2.01</span>
+      <span id="version-tag" class="version">v2.02</span>
     </div>
     <nav class="nav" aria-label="Päävalikko">
       <button id="open-search-top" type="button" class="ghost small nav-search"
               title="Avaa kirjasto ja generaattori.">LIBRARY</button>
       <a href="/remote">REMOTE</a>
       <a href="/docs">API</a>
+      <a href="/settings" id="nav-settings" title="Toisto-oletukset, count-inin kesto ja näytettävät toiminnot.">SETTINGS</a>
     </nav>
   </header>
 
@@ -276,13 +277,13 @@
 
 
   <footer class="footer">
-    <span>AI TabTool v2.01</span>
+    <span>AI TabTool v2.02</span>
     <span>Local-first · <a href="/remote">Remote</a></span>
   </footer>
 
-  <script src="/static/vendor/alphaTab/alphaTab.min.js?v=2.01"></script>
-  <script src="/static/app.js?v=2.01" defer></script>
-  <script src="/static/remote-bridge.js?v=2.01" defer></script>
+  <script src="/static/vendor/alphaTab/alphaTab.min.js?v=2.02"></script>
+  <script src="/static/app.js?v=2.02" defer></script>
+  <script src="/static/remote-bridge.js?v=2.02" defer></script>
 </body>
 </html>
 

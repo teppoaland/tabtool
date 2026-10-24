@@ -385,3 +385,72 @@ def test_lan_disabled_for_loopback_arguments(monkeypatch: pytest.MonkeyPatch) ->
         sys, "argv", ["python", "-m", "uvicorn", "app.main:app", "--host", "127.0.0.1"]
     )
     assert remote.lan_enabled() is False
+
+
+# === Track selection (v2.02) =============================================
+
+
+def test_track_command_roundtrip(
+    api_client: TestClient, hub: remote.RemoteHub
+) -> None:
+    response = api_client.post(
+        "/api/remote/command", json={"action": "track", "value": 2}
+    )
+    assert response.status_code == 202
+    seq = response.json()["seq"]
+    payload = api_client.get(f"/api/remote/commands?since={seq - 1}").json()
+    assert payload["commands"] == [{"seq": seq, "action": "track", "value": 2}]
+
+
+@pytest.mark.parametrize("value", [-1, 32, 1.5, "two", None, True])
+def test_track_command_rejects_a_bad_index(
+    api_client: TestClient, value: object
+) -> None:
+    response = api_client.post(
+        "/api/remote/command", json={"action": "track", "value": value}
+    )
+    assert response.status_code == 422
+
+
+def test_state_reports_the_track_list(
+    api_client: TestClient, hub: remote.RemoteHub
+) -> None:
+    response = api_client.post(
+        "/api/remote/state",
+        json={
+            "tab_id": "abc-123",
+            "tracks": [
+                {"index": 0, "name": "Guitar", "visible": True},
+                {"index": 3, "name": "Bass", "visible": False},
+                {"index": -1, "name": "Bad", "visible": True},
+                {"index": 99, "name": "Bad", "visible": True},
+                {"index": 2, "name": "x" * 80, "visible": True},
+                {"index": "1", "name": "Bad", "visible": True},
+                "nonsense",
+            ],
+        },
+    )
+    assert response.status_code == 204
+    state = api_client.get("/api/remote/state").json()["state"]
+    tracks = state["tracks"]
+    assert [track["index"] for track in tracks] == [0, 3, 2]
+    assert tracks[0]["visible"] is True
+    assert tracks[1]["visible"] is False
+    assert len(tracks[2]["name"]) == remote.MAX_TRACK_NAME
+
+
+def test_state_without_tracks_stays_quiet(api_client: TestClient) -> None:
+    response = api_client.post("/api/remote/state", json={"tab_id": "abc-123"})
+    assert response.status_code == 204
+    state = api_client.get("/api/remote/state").json()["state"]
+    assert "tracks" not in state
+
+
+def test_track_command_is_not_a_playback_gate() -> None:
+    """Only play/toggle are refused while a job runs; track selection is not."""
+    source = (config.STATIC_DIR / "remote-bridge.js").read_text(encoding="utf-8")
+    assert 'action === "track"' in source
+    assert "toggleTrack" in (
+        config.STATIC_DIR / "remote.js"
+    ).read_text(encoding="utf-8")
+
