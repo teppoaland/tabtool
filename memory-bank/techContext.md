@@ -9,7 +9,7 @@
 - **Ei GPU:ta** (`nvidia-smi` tyhjä) → CPU-only
 - D: levytilaa ~147 GB vapaana
 
-## Python-paketit (v2.04; ei uusia riippuvuuksia v2.05–v2.14)
+## Python-paketit (v2.04; ei uusia riippuvuuksia v2.05–v2.18)
 
 Core:
 
@@ -59,7 +59,7 @@ python -m venv .venv
 ## Testit
 
 ```powershell
-.venv\Scripts\python.exe -m pytest -q          # 270 passed (v2.15)
+.venv\Scripts\python.exe -m pytest -q          # 275 passed (v2.18)
 .venv\Scripts\python.exe -m compileall -q app scripts tests
 node --check app\static\app.js
 node --check app\static\remote.js
@@ -93,9 +93,9 @@ Hyödylliset valinnat: `--model htdemucs_6s`, `--stem guitar`, `--tuning`,
 - Ankkurit: v1.38 `c74ccdd`, v1.39 `8237876`, v1.40 `30e2c0e`,
   v1.41 = GP3/GP4-tuonti; tagi `v1.29` = `bb704e8`; tagi `v1.99` =
   toimiva palautuspiste (23.10.2026).
-- Koodi v1.23–v2.14 on **pushattu** `origin/main`iin käyttäjän pyynnöistä
+- Koodi v1.23–v2.18 on **pushattu** `origin/main`iin käyttäjän pyynnöistä
   (20.10., 23.10. ja 25.10.2026). **Tagi `v1.99` = vanhempi palautuspiste**
-  (`git reset --hard v1.99`); viimeisin pushattu HEAD 25.10.2026 oli v2.15.
+  (`git reset --hard v1.99`); viimeisin pushattu HEAD 25.10.2026 oli v2.18.
   Push vain erillisestä pyynnöstä; `data/` ja `docs/` eivät ole gitissä.
 - `scripts/build_kiss_legend.py` on `.gitignore`ssa: se sisältää koko
   kappaleen nuottidatan (tekijänoikeus), joten sitä ei viedä julkiseen
@@ -312,6 +312,26 @@ DB-tiedosto); vain tuotenimi on `AI TabTool`.
   finalisoidulla tabilla; `openVariantDialog`/`restoreVariants` app.js:ssä;
   Tiedot-dialogi näyttää "Versioiden varmuuskopio" -rivin.
 - Testit **244**.
+
+## v2.16–v2.18 (25.10.2026)
+
+- **Sanat-editori (v2.16–v2.17):** `«` siirrettiin PLAYn eteen
+  (`#lyrics-start` ennen `#lyrics-play`). Tahtiklikki valitsee saman rivin
+  (`focusLyricsBarLine`, `lyricsBarLineRange` palauttaa `numbered`-lipun),
+  ja maalatut sanat siirretään tahtiin (`assignLyricsSelectionToBar`,
+  `normalizeLyricChunk`, `expandLyricsSelection`); `Ctrl+Enter`
+  (`handleLyricsAssignKey`) käyttää ankkuritahtia ja siirtää sitä +1.
+- **Sanojen lukitus (v2.18):** `lyrics.read/write` käsittelevät `locked`-
+  lipun; `lyrics.set_locked` + `PUT /api/tabs/{id}/lyrics/lock`. Lukittu
+  sidecar → `LyricsLocked` → **409**. UI: `#lyrics-lock` (`Lukittu`),
+  `applyLyricsLock` (readOnly + TALLENNA pois), `toggleLyricsLock`
+  (tallentaa rivit ennen lukitusta, `saveLyricsField`).
+- **Overlay (v2.18):** `lyricForBar` ei hae taaksepäin; `nextLyricBar` →
+  lähtölaskenta (`String(next - start)`), ja `renderLyricsStrip` asettaa
+  `is-cue`-luokan (CSS: vain väri). Tyhjät rivit pudotetaan jo
+  `clean_measures`issa, joten niitä ei tallenneta.
+- Testit **275** (`tests/test_lyrics.py`: lukitus 409/avaus/validointi,
+  overlay-laskenta, sanojen siirto).
 
 ## Sanat GP5:ssä – työtapa (24.10.2026)
 

@@ -1,6 +1,6 @@
 # 🎯 Projektin lyhyt kuvaus – AI TABTOOL
 
-> **Versio:** `v2.15` (25.10.2026)
+> **Versio:** `v2.18` (25.10.2026)
 > **Repo:** https://github.com/teppoaland/tabtool
 > **Paikallinen:** `D:\AI\tabtool`
 
@@ -144,34 +144,32 @@ Lokaali web-palvelu, jossa voi:
   ja `retune_tab.py` (virityksen vaihto). Kaikki varmuuskopioivat GP5:n
   `data/backups/`iin, validoivat tuloksen lukemalla tiedoston takaisin ja
   palauttavat varmuuskopion, jos jokin ei täsmää.
-- **Sanat sidecarina (v2.06):** laulun sanat eivät mene GP5/MusicXML/MIDIin
-  eivätkä tabin metadataan, vaan omaan tiedostoon
-  `data/lyrics/<tab_id>.json` (`{"tab_id", "updated_at", "measures":
-  {"10": "…"}}`). `app/lyrics.py` validoi ja kirjoittaa atomaarisesti;
-  `GET/PUT /api/tabs/{id}/lyrics`. Katselimen SANAT-editori kirjoittaa vain
-  tämän tiedoston, ja overlay näyttää kuluvan tahdin rivin lukemalla
-  `#bar-readout`-tekstiä (`MutationObserver`) – ei kelloa, ei
-  alphaTab-kutsuja, ei audion kirjoituksia. Editori on **kelluva, raahattava
-  ja kooltaan säädettävä paneeli** (ei modaalia, ei `body.modal-open`ia),
-  joten soitto toimii sen takaa; otsikko näyttää kuluvan tahdin. Soiton
-  aikana näkyvän rivin koko tulee Settingsistä (`lyrics.scale`, oletus
-  200 % = tuplat, CSS-muuttuja `--lyrics-scale`) ja koko näytön nosto
-  alareunasta (`lyrics.offset_px`, oletus 100 px, `--lyrics-offset`);
-  fullscreenissa rivi on 96vw leveä → yksi rivi isommallakin koolla.
-  Rivin tausta on **täysin musta** (`#000`) ja sivupadding 3ch, joten
-  liikkuva tabi ei häiritse lukemista. Editorissa on kaukosäätimen
-  perussoitto (PLAY/PAUSE, «, −5 s, +5 s) ja **tahtinumeron klikkaus hyppää
-  siihen tahtiin** `api.tickPosition`-tick-seekillä (alphaTabin tempokartta,
-  myös tempo-automaatiot; ei omaa aikamatematiikkaa). Tahtilista on
-  oletuksena 14rem ja sen ja sanoituskentän välissä on jakokahva
-  (`#lyrics-split`): listan kasvaessa tekstikenttä pienenee, ja jako
-  muistetaan. Tabin poisto poistaa sidecarin; lukittu tabi saa silti sanat.
+- **Sanat sidecarina (v2.06–v2.18):** laulun sanat eivät mene
+  GP5/MusicXML/MIDIin eivätkä tabin metadataan, vaan omaan tiedostoon
+  `data/lyrics/<tab_id>.json` (`{"tab_id", "updated_at", "locked",
+  "measures": {"10": "…"}}`). `app/lyrics.py` validoi ja kirjoittaa
+  atomaarisesti; `GET/PUT /api/tabs/{id}/lyrics` ja
+  `PUT /api/tabs/{id}/lyrics/lock`. **Lukittu sidecar** (v2.18,
+  `Lukittu`-rasti editorissa) tallentaa rivit ja estää muutokset (409) –
+  tabin lukitus on eri asia. Editori on **kelluva, raahattava ja kooltaan
+  säädettävä paneeli** (ei modaalia; `«` ennen PLAYtä, PLAY/PAUSE, ±5 s),
+  jossa tahtinumeron klikkaus hyppää tahtiin ja **valitsee saman rivin**;
+  maalatut sanat voi **siirtää tahtiin** klikkauksella tai `Ctrl+Enter`illä
+  (numero tulee klikkauksesta, ankkuri +1 per siirto). Overlay näyttää
+  kuluvan tahdin rivin lukemalla `#bar-readout`-tekstiä
+  (`MutationObserver`) – ei kelloa, ei alphaTab-kutsuja, ei audion
+  kirjoituksia. **Tyhjä tahti tyhjennetään**; jos myöhempi rivi on olemassa,
+  näytetään lähtölaskenta seuraavaan riviin (9…1, korostusväri), ja viimeisen
+  rivin jälkeen strip piiloutuu. Sanoitusrivin koko (`lyrics.scale`, oletus
+  200 %) ja fullscreen-nosto (`lyrics.offset_px`, 100 px) tulevat
+  Settingsistä. Tabin poisto poistaa sidecarin; lukittu tabi saa silti
+  sanat.
 - **Songsterr / Ultimate Guitar:** ei scrapea eikä kiertämistä.
   Songsterr-appin cache sisältää vain SVG-renderin, beat-ajastuksen ja
   audion (ei string/fret-dataa), ja GP/MIDI/MP3-lataus on Plus-ominaisuus
   (`songsterr.com/ai.txt`). Käyttäjän Android-osto on **kertamaksu**
   (vain Android, ei web). GP5:t haetaan laillisesta lähteestä käsin.
-- **Versiosarja `1.x`**, aloitus `v1.00`; nyt `v2.15`.
+- **Versiosarja `1.x`**, aloitus `v1.00`; nyt `v2.18`.
 - **Ei julkista julkaisua:** koodi pidetään lokaalina. Commitit tehdään
   paikalliseen repoon palautuspisteiksi (revert); push GitHubiin vain
   erillisestä pyynnöstä.
@@ -214,6 +212,6 @@ Sano Cline:lle **`lue membank`**. Sääntö on
 - `app/lyrics.py` – sanojen sidecar (`data/lyrics/<tab_id>.json`)
 - `scripts/pipeline_smoke.py` – CLI-proof
 - `stop.bat` / `status.bat` – palvelimen pysäytys ja tilan tarkistus
-- `tests/` – 270 pytest-testiä
+- `tests/` – 275 pytest-testiä
 - `data/` – GITIGNORED: audio, stemmit, tabit, tokenit
 - `docs/` – GITIGNORED: henkilökohtainen suunnitelma

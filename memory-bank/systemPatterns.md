@@ -8,7 +8,8 @@ FastAPI (app/main.py)
   ├─ /api/jobs, /api/jobs/{id}, /api/jobs/{id}/events (SSE)
   ├─ /api/tabs, /api/tabs/{id} (GET/DELETE)
   ├─ /api/tabs/import, /api/tabs/import-url
-  ├─ /api/tabs/{id}/section, /attach-audio, /tempo, /sync, /library
+  ├─ /api/tabs/{id}/section, /attach-audio, /tempo, /sync, /library,
+  │  /lyrics, /lyrics/lock
   ├─ /api/remote/command|state|commands, /api/lan/info|qr.svg
   ├─ score/export/audio
   ├─ /lan (PIN-kirjautuminen)
@@ -64,6 +65,19 @@ Putki (app/pipeline/)
   itse** (`ticks * 60000 / (tempo * 960)`): Seek & Destroy vaihtaa tempon
   tahdissa 113 (208 BPM), jolloin vakiotempo heittää tahti tahdilta
   (v2.14-bugi: 220 → 235). Tabin poisto poistaa sidecarin.
+  **Editorin työnkulku (v2.16–v2.18):** `«` on PLAYn vasemmalla puolella;
+  tahtiklikki valitsee saman rivin ja maalatut sanat **siirretään tahtiin**
+  (`assignLyricsSelectionToBar`: vanha `N |` siivotaan, rivinvaihdot
+  litistetään; `Ctrl+Enter` = ankkuritahti +1). `Lukittu`-rasti tallentaa ja
+  lukitsee sidecarin (`PUT /api/tabs/{id}/lyrics/lock`); lukittu sidecar
+  vastaa tallennukseen **409** ja kenttä on read-only. Overlay **ei enää
+  pidä edellistä riviä**: tyhjä tahti näyttää lähtölaskennan seuraavaan
+  riviin (`nextLyricBar`, 9…1, `is-cue` = vain väri) ja viimeisen rivin
+  jälkeen strip piiloutuu. Vartiotestit:
+  `test_bar_click_selects_the_matching_lyric_line`,
+  `test_selected_words_move_into_the_pressed_bar`,
+  `test_lyrics_gap_counts_down_and_finished_lyrics_can_be_locked`,
+  `test_lyrics_lock_blocks_saves_until_it_is_opened`.
 - `app/library.py` hoitaa poiston: tab-hakemisto, stemmit sekä job/track-
   rivit. Jaettu audio säilyy, jos toinen tabi käyttää sitä; MP3 jää
   `EXTERNAL_DIR`iin. Poisto ei koske `data/`-juuren ulkopuolisiin polkuihin.
