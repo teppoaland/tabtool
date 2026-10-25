@@ -6,14 +6,14 @@
   <meta name="color-scheme" content="dark">
   <title>AI TabTool</title>
   <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="/static/style.css?v=2.21">
+  <link rel="stylesheet" href="/static/style.css?v=2.22">
 </head>
 <body>
   <header class="topbar">
     <div class="brand">
       <span class="brand-mark" aria-hidden="true">AT</span>
       <span class="brand-name">AI TABTOOL</span>
-      <span id="version-tag" class="version">v2.21</span>
+      <span id="version-tag" class="version">v2.22</span>
     </div>
     <nav class="nav" aria-label="Päävalikko">
       <button id="open-search-top" type="button" class="primary nav-library"
@@ -392,7 +392,8 @@
       <label class="field">
         <span>Yksi rivi per tahti: <code>tahti | teksti</code>. Maalaa sanat ja
           klikkaa tahtia, niin numero tulee klikkauksesta (Ctrl+Enter =
-          aseta valinta viimeksi valittuun tahtiin).</span>
+          aseta valinta viimeksi valittuun tahtiin; Ctrl+Shift+Enter =
+          numeroi koko lohko, yksi rivi per tahti).</span>
         <textarea id="lyrics-input" class="lyrics-input" rows="10"
                   spellcheck="false"
                   placeholder="10 | Ensimmäinen rivi&#10;11 | ja jatkuu…"></textarea>
@@ -409,6 +410,9 @@
       <div class="actions">
         <button id="lyrics-save" type="submit" class="primary">TALLENNA</button>
         <button id="lyrics-close" type="button" class="ghost">SULJE</button>
+        <!-- Jaa rivit (v2.22): koko liitetty lohko tahdeiksi yhdellä kertaa. -->
+        <button id="lyrics-fill" type="button" class="ghost small"
+                title="Numeroi valitut rivit (tai kaikki numeroimattomat rivit) tahdeiksi alkaen viimeksi valitusta tahdista. Ctrl+Shift+Enter.">JAA RIVIT</button>
         <!-- Lukitus (v2.18): valmis sanoitus ei muutu vahingossa. -->
         <label class="lyrics-lock"
                title="Lukitse sanat: tallennus ja muokkaus estetään, kunnes lukitus avataan.">
@@ -422,13 +426,13 @@
 
 
   <footer class="footer">
-    <span>AI TabTool v2.21</span>
+    <span>AI TabTool v2.22</span>
     <span>Local-first · <a href="/remote">Remote</a></span>
   </footer>
 
-  <script src="/static/vendor/alphaTab/alphaTab.min.js?v=2.21"></script>
-  <script src="/static/app.js?v=2.21" defer></script>
-  <script src="/static/remote-bridge.js?v=2.21" defer></script>
+  <script src="/static/vendor/alphaTab/alphaTab.min.js?v=2.22"></script>
+  <script src="/static/app.js?v=2.22" defer></script>
+  <script src="/static/remote-bridge.js?v=2.22" defer></script>
 </body>
 </html>
 

@@ -155,6 +155,8 @@
   const lyricsStatus = document.getElementById("lyrics-status");
   const lyricsSave = document.getElementById("lyrics-save");
   const lyricsClose = document.getElementById("lyrics-close");
+  // v2.22: bulk numbering of a pasted block, one line per bar.
+  const lyricsFillButton = document.getElementById("lyrics-fill");
   // Lukitus (v2.18): valmis sanoitus pysyy muuttumattomana.
   const lyricsLockInput = document.getElementById("lyrics-lock");
   const rateSlider = document.getElementById("rate-slider");
@@ -2116,6 +2118,53 @@
     return true;
   }
 
+  function lyricsLineRecords(text) {
+    // One record per editor line. `numbered` is true only when the line really
+    // starts with a bar number; a bare line continues the previous number
+    // (same rule as parseLyricsText). Offsets let the bulk fill delete whole
+    // lines without leaving empty gaps.
+    const records = [];
+    let nextBar = 0;
+    let offset = 0;
+    for (const line of String(text == null ? "" : text).split("\n")) {
+      const lineStart = offset;
+      offset += line.length + 1;
+      const raw = line.trim();
+      const match = raw ? /^(\d+)\s*[|:=\t]\s*(.+)$/.exec(raw) : null;
+      const bar = match ? Number(match[1]) : raw && nextBar ? nextBar : 0;
+      if (bar) nextBar = bar + 1;
+      records.push({
+        lineStart: lineStart,
+        lineEnd: lineStart + line.length,
+        raw: raw,
+        numbered: Boolean(match),
+        bar: bar,
+      });
+    }
+    return records;
+  }
+
+  function wholeLineRange(record, length) {
+    // Take the trailing newline with the line, so deleting it leaves no hole.
+    if (record.lineEnd < length) {
+      return { start: record.lineStart, end: record.lineEnd + 1 };
+    }
+    if (record.lineStart > 0) {
+      return { start: record.lineStart - 1, end: record.lineEnd };
+    }
+    return { start: record.lineStart, end: record.lineEnd };
+  }
+
+  function removeTextRanges(text, ranges) {
+    let out = "";
+    let cursor = 0;
+    ranges.forEach((range) => {
+      out += text.slice(cursor, range.start);
+      cursor = range.end;
+    });
+    return out + text.slice(cursor);
+  }
+
   function handleLyricsBarClick(bar) {
     // A bar press is the anchor for Ctrl+Enter; with a selection it also
     // writes the words into that bar and moves the anchor one bar ahead.
@@ -2127,11 +2176,111 @@
     focusLyricsBarLine(bar);
   }
 
+  function assignLyricsBlockToBars(bar) {
+    // v2.22: one selected line per bar, numbered from the pressed bar. A
+    // pasted block becomes a draft in one go; Ctrl+Enter still writes one
+    // phrase into one bar. Already numbered lines of the target bars are
+    // replaced, so no bar gets two lines. DOM/string work only.
+    if (!lyricsInput || lyricsLocked) return false;
+    const first = Math.round(Number(bar) || 0);
+    if (first < 1) return false;
+    const value = lyricsInput.value;
+    const length = value.length;
+    const records = lyricsLineRecords(value);
+    const hasSelection = lyricsInput.selectionEnd > lyricsInput.selectionStart;
+    const selStart = hasSelection ? lyricsInput.selectionStart : 0;
+    const selEnd = hasSelection ? lyricsInput.selectionEnd : 0;
+    const consumed = [];
+    let lines = [];
+    if (hasSelection) {
+      consumed.push(expandLyricsSelection(value, selStart, selEnd));
+      lines = value
+        .slice(selStart, selEnd)
+        .split(/\r?\n/)
+        .map((line) => normalizeLyricChunk(line))
+        .filter(Boolean);
+    } else {
+      records.forEach((record) => {
+        if (record.numbered || !record.raw || record.raw.startsWith("#")) return;
+        lines.push(normalizeLyricChunk(record.raw));
+        consumed.push(wholeLineRange(record, length));
+      });
+    }
+    lines = lines.filter(Boolean);
+    if (!lines.length) return false;
+    const last = first + lines.length - 1;
+    if (last > 10000) return false;
+    const insertAt = consumed.length ? consumed[0].start : 0;
+    const ranges = consumed.slice();
+    records.forEach((record) => {
+      if (!record.numbered) return;
+      if (record.bar < first || record.bar > last) return;
+      // A line that overlaps the picked text is already being consumed; any
+      // other line for a target bar is replaced by the new block.
+      if (hasSelection && record.lineStart < selEnd && selStart < record.lineEnd) {
+        return;
+      }
+      ranges.push(wholeLineRange(record, length));
+    });
+    ranges.sort((left, right) => left.start - right.start);
+    const merged = [];
+    ranges.forEach((range) => {
+      const previous = merged[merged.length - 1];
+      if (previous && range.start <= previous.end) {
+        previous.end = Math.max(previous.end, range.end);
+      } else {
+        merged.push({ start: range.start, end: range.end });
+      }
+    });
+    let at = insertAt;
+    let removed = 0;
+    merged.forEach((range) => {
+      if (range.end <= at) {
+        removed += range.end - range.start;
+        return;
+      }
+      if (range.start < at) at = range.start;
+    });
+    at = Math.max(0, at - removed);
+    const stripped = removeTextRanges(value, merged);
+    const block = lines
+      .map((text, index) => `${first + index} | ${text}`)
+      .join("\n");
+    const before = stripped.slice(0, at);
+    const after = stripped.slice(at);
+    const lead = before && !before.endsWith("\n") ? "\n" : "";
+    const tail = after && !after.startsWith("\n") ? "\n" : "";
+    lyricsInput.value = `${before}${lead}${block}${tail}${after}`;
+    lyricsDirty = true;
+    lyricsLineSelection = null;
+    lyricsAnchorBar = last + 1;
+    markLyricsBars();
+    lyricsInput.focus({ preventScroll: true });
+    const caret = before.length + lead.length + block.length;
+    lyricsInput.setSelectionRange(caret, caret);
+    return true;
+  }
+
+  function fillLyricsFromSelection() {
+    const bar = lyricsAnchorBar || currentLyricsBar() || 1;
+    if (assignLyricsBlockToBars(bar)) return true;
+    setLyricsStatus(
+      "Ei numeroimattomia rivejä. Maalaa rivit tai liitä teksti kenttään.",
+      true
+    );
+    return false;
+  }
+
   function handleLyricsAssignKey(event) {
     // Ctrl+Enter: the same as pressing the anchor bar, so consecutive phrases
-    // get consecutive numbers without leaving the keyboard.
+    // get consecutive numbers without leaving the keyboard. Ctrl+Shift+Enter
+    // numbers a whole block, one line per bar (v2.22).
     if (event.key !== "Enter" || !(event.ctrlKey || event.metaKey)) return;
     event.preventDefault();
+    if (event.shiftKey) {
+      fillLyricsFromSelection();
+      return;
+    }
     const bar = lyricsAnchorBar || currentLyricsBar() || 1;
     if (assignLyricsSelectionToBar(bar)) lyricsAnchorBar = bar + 1;
   }
@@ -3637,6 +3786,9 @@
   // Lukitus (v2.18): rasti tallentaa nykyiset rivit ja lukitsee sidecarin.
   if (lyricsLockInput) {
     lyricsLockInput.addEventListener("change", toggleLyricsLock);
+  }
+  if (lyricsFillButton) {
+    lyricsFillButton.addEventListener("click", fillLyricsFromSelection);
   }
   // Playback for placing lyrics (v2.12): the same calls the transport and
   // the remote already use. Nothing here changes them.

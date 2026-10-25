@@ -2,6 +2,26 @@
 
 > AI TabTool käyttää `1.x`-versiosarjaa. Aloitus `v1.00`.
 
+## v2.22 – 25.10.2026
+
+- **JAA RIVIT: koko liitetty lohko tahdeiksi yhdellä kertaa.** Sanoituskentän
+  alarivillä on uusi `JAA RIVIT` -painike (ja `Ctrl+Shift+Enter`). Maalaa
+  jäljellä olevat rivit (tai liitä koko teksti kenttään) ja paina tahdin
+  numeroa, josta numerointi alkaa → jokainen ei-tyhjä rivi saa oman tahtinsa
+  peräkkäin (`30 | …`, `31 | …`, `32 | …`). Valittu lähdeteksti kuluu pois ja
+  ankkuri siirtyy seuraavaan vapaaseen tahtiin, joten seuraava erä jatkuu
+  suoraan. Jos kohdetahdilla on jo numeroitu rivi, se korvataan – yhteen
+  tahtiin ei tule kahta riviä.
+- **Ilman valintaa** painike numeroi kaikki kentän numeroimattomat rivit
+  ankkuritahdista alkaen (esim. liitetty lohko yhdellä klikkauksella).
+  `Ctrl+Enter` säilyy edelleen yhden lauseen siirtona yhteen tahtiin.
+- **Rajaus:** apurit (`assignLyricsBlockToBars`, `lyricsLineRecords`,
+  `wholeLineRange`, `removeTextRanges`, `fillLyricsFromSelection`) ovat
+  merkkijono-/DOM-työtä: ei alphaTab-kutsuja, ei audion kirjoituksia eikä
+  kellofunktioita. Vartiotesti
+  `test_bulk_fill_numbers_a_pasted_block`.
+- **Testit:** 280 passed.
+
 ## v2.21 – 25.10.2026
 
 - **Sneak peek siirretty sanojen yläpuolelle.** Esikatselurivi luetaan nyt

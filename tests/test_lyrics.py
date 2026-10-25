@@ -784,6 +784,60 @@ def test_lyrics_editor_has_a_notes_field():
     assert 'class="field lyrics-notes-field"' in html
 
 
+def test_bulk_fill_numbers_a_pasted_block():
+    """v2.22: JAA RIVIT turns a pasted block into one line per bar.
+
+    Select the remaining lyrics (or paste them), press the starting bar and
+    hit the button / Ctrl+Shift+Enter: every non-empty line becomes
+    "N | text" with consecutive numbers, the source lines are consumed and an
+    existing line for a target bar is replaced. Pure DOM/string work, so rule
+    07's playback chain is untouched.
+    """
+    html = INDEX_HTML.read_text(encoding="utf-8")
+    assert 'id="lyrics-fill"' in html
+    assert "JAA RIVIT" in html
+
+    source = APP_JS.read_text(encoding="utf-8")
+    assert (
+        'lyricsFillButton.addEventListener("click", fillLyricsFromSelection)'
+        in source
+    )
+    key = _js_code(source, "handleLyricsAssignKey")
+    assert "event.shiftKey" in key and "fillLyricsFromSelection" in key
+
+    fill = _js_code(source, "fillLyricsFromSelection")
+    assert "assignLyricsBlockToBars" in fill
+    for marker in ("audio", "api.", "syncTimeMs", "barDurationMs", "playbackRate"):
+        assert marker not in fill
+
+    bulk = _js_code(source, "assignLyricsBlockToBars")
+    for marker in (
+        "selectionStart",
+        "selectionEnd",
+        "lyricsLineRecords",
+        "wholeLineRange",
+        "removeTextRanges",
+        "lyricsLocked",
+    ):
+        assert marker in bulk
+    for marker in (
+        "audio",
+        "api.",
+        "syncTimeMs",
+        "bpmDrift",
+        "barDurationMs",
+        "playbackRate",
+        "60000",
+        "960",
+    ):
+        assert marker not in bulk, f"the bulk fill must stay DOM only: {marker}"
+
+    records = _js_code(source, "lyricsLineRecords")
+    assert "numbered" in records
+    for marker in ("audio", "api."):
+        assert marker not in records
+
+
 def test_bar_seek_uses_the_tempo_aware_tick_path():
     """v2.14: a tempo automation must not shift the bar seek.
 
