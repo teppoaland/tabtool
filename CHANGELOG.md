@@ -2,6 +2,23 @@
 
 > AI TabTool käyttää `1.x`-versiosarjaa. Aloitus `v1.00`.
 
+## v2.20 – 25.10.2026
+
+- **Sanat-editoriin muistiinpanokenttä.** Lomitettu vapaa teksti (`#lyrics-notes`,
+  "Muistiinpanot (lähde, kesken, korjattavaa)") tallentuu **samaan
+  sidecariin** kuin sanat: `data/lyrics/<tab_id>.json` → `"notes": "…"`.
+  Kenttään voi merkitä mistä sanat on ladattu (esim. Songsterr-linkki ja
+  päiväys) ja mitä on vielä kesken tai korjattavaa; se on luettavissa, kun
+  tabin avaa myöhemmin. Rivinvaihdot säilyvät, pituus enintään 4000 merkkiä.
+- **Tallennus TALLENNA-painikkeella** yhdessä sanojen kanssa; jos pyyntö ei
+  sisällä `notes`-kenttää, tallennettu muistiinpano säilyy (vanhat clientit
+  eivät voi tyhjentää sitä). Tyhjäksi jätetty kenttä tallentuu tyhjänä.
+- **Lukitus kattaa muistiinpanot:** lukittuna kenttä on read-only ja
+  palvelin vastaa 409:llä, kuten sanoillekin. Tabi, sen toistoasetukset ja
+  GP5/MusicXML/MIDI pysyvät ennallaan.
+- **Testit:** 279 passed (muistiinpanon round-trip, säilyminen ja validointi,
+  editorin kenttä + lukitus).
+
 ## v2.19 – 25.10.2026
 
 - **Sneak peek: seuraava rivi yhtä tahtia etukäteen.** Sanoitusoverlayhin

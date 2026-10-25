@@ -6,14 +6,14 @@
   <meta name="color-scheme" content="dark">
   <title>AI TabTool</title>
   <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="/static/style.css?v=2.19">
+  <link rel="stylesheet" href="/static/style.css?v=2.20">
 </head>
 <body>
   <header class="topbar">
     <div class="brand">
       <span class="brand-mark" aria-hidden="true">AT</span>
       <span class="brand-name">AI TABTOOL</span>
-      <span id="version-tag" class="version">v2.19</span>
+      <span id="version-tag" class="version">v2.20</span>
     </div>
     <nav class="nav" aria-label="Päävalikko">
       <button id="open-search-top" type="button" class="primary nav-library"
@@ -396,6 +396,14 @@
                   spellcheck="false"
                   placeholder="10 | Ensimmäinen rivi&#10;11 | ja jatkuu…"></textarea>
       </label>
+      <!-- Muistiinpanot (v2.20): lähde ja avoimet korjaukset, tallentuvat
+           samaan sidecariin kuin sanat. -->
+      <label class="field lyrics-notes-field">
+        <span>Muistiinpanot (lähde, kesken, korjattavaa)</span>
+        <textarea id="lyrics-notes" class="lyrics-notes" rows="3"
+                  spellcheck="false"
+                  placeholder="Esim. Sanat: Songsterr 25.10.2026. Tahdit 41–44 tarkistettava."></textarea>
+      </label>
       <p id="lyrics-status" class="bpm-status" aria-live="polite"></p>
       <div class="actions">
         <button id="lyrics-save" type="submit" class="primary">TALLENNA</button>
@@ -413,13 +421,13 @@
 
 
   <footer class="footer">
-    <span>AI TabTool v2.19</span>
+    <span>AI TabTool v2.20</span>
     <span>Local-first · <a href="/remote">Remote</a></span>
   </footer>
 
-  <script src="/static/vendor/alphaTab/alphaTab.min.js?v=2.19"></script>
-  <script src="/static/app.js?v=2.19" defer></script>
-  <script src="/static/remote-bridge.js?v=2.19" defer></script>
+  <script src="/static/vendor/alphaTab/alphaTab.min.js?v=2.20"></script>
+  <script src="/static/app.js?v=2.20" defer></script>
+  <script src="/static/remote-bridge.js?v=2.20" defer></script>
 </body>
 </html>
 

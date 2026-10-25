@@ -5,6 +5,7 @@ Lyrics live **next to** the tab, never inside it::
     data/lyrics/<tab_id>.json
 
     {"tab_id": "...", "updated_at": "...", "locked": false,
+     "notes": "Lähde: Songsterr 25.10.",
      "measures": {"10": "Mun sydän palaa", "11": "ja jatkuu..."}}
 
 The GP5/MusicXML/MIDI files and the tab metadata stay byte-for-byte
@@ -15,6 +16,9 @@ for the current bar in its own overlay.
 A finished lyric can be locked (v2.18): the flag lives in this file only, and
 a locked sidecar refuses writes until it is opened again. The tab lock and
 the playback settings are a different feature.
+
+``notes`` is free text (v2.20) for the source of the lyrics and anything that
+still needs fixing. It rides in this file, so it never touches the tab.
 
 A save goes through a temp file and ``os.replace`` (pipeline invariant 5):
 a failed write never leaves a half-written JSON behind. The tab id is the
@@ -38,6 +42,8 @@ from app import config
 MAX_BAR = 10000
 MAX_LINES = 2000
 MAX_LINE_CHARS = 300
+# Free-text notes (v2.20): a source link and a few reminders, not a novel.
+MAX_NOTES_CHARS = 4000
 
 _BAR_KEY = re.compile(r"^[0-9]{1,5}$")
 
@@ -102,6 +108,24 @@ def clean_measures(raw: Any) -> dict[str, str]:
     return {str(bar): cleaned[bar] for bar in sorted(cleaned)}
 
 
+def clean_notes(raw: Any) -> str:
+    """Validate the free-text notes; newlines are kept, the length is bounded.
+
+    Raises ``ValueError`` with a user-readable message, which the route turns
+    into a 422. A missing value means an empty note.
+    """
+    if raw is None:
+        return ""
+    if not isinstance(raw, str):
+        raise ValueError("Muistiinpanot pitää antaa tekstinä.")
+    text = raw.replace("\r\n", "\n").replace("\r", "\n").strip()
+    if len(text) > MAX_NOTES_CHARS:
+        raise ValueError(
+            f"Muistiinpanot ovat liian pitkät (max {MAX_NOTES_CHARS} merkkiä)."
+        )
+    return text
+
+
 def read(tab_id: str) -> dict[str, Any]:
     """Return the stored lyrics; a missing or unreadable file means no lyrics."""
     path = lyrics_path(tab_id)
@@ -110,6 +134,7 @@ def read(tab_id: str) -> dict[str, Any]:
         "measures": {},
         "updated_at": "",
         "locked": False,
+        "notes": "",
     }
     try:
         raw = json.loads(path.read_text(encoding="utf-8"))
@@ -125,6 +150,11 @@ def read(tab_id: str) -> dict[str, Any]:
         payload["measures"] = {}
     payload["updated_at"] = str(raw.get("updated_at") or "")
     payload["locked"] = raw.get("locked") is True
+    try:
+        payload["notes"] = clean_notes(raw.get("notes"))
+    except ValueError:
+        # A hand-edited or oversized note must not break the editor.
+        payload["notes"] = ""
     return payload
 
 
@@ -148,34 +178,42 @@ def _store(tab_id: str, payload: dict[str, Any]) -> None:
         raise
 
 
-def write(tab_id: str, measures: Any) -> dict[str, Any]:
+def write(tab_id: str, measures: Any, notes: Any = None) -> dict[str, Any]:
     """Store the lyrics atomically and return what was saved.
 
     Raises ``LyricsLocked`` when the sidecar is locked: a finished lyric may
     not be rewritten by a stray bar click or a late paste (v2.18).
+
+    ``notes`` is the free-text memo (v2.20). When it is omitted the stored
+    note is kept, so a save that only sends measures cannot wipe it.
     """
-    if read(tab_id).get("locked"):
+    existing = read(tab_id)
+    if existing.get("locked"):
         raise LyricsLocked("Sanat on lukittu. Avaa lukitus ennen tallennusta.")
     cleaned = clean_measures(measures)
+    stored_notes = existing.get("notes") if notes is None else clean_notes(notes)
     payload = {
         "tab_id": tab_id,
         "updated_at": _now(),
         "measures": cleaned,
         "locked": False,
+        "notes": stored_notes if isinstance(stored_notes, str) else "",
     }
     _store(tab_id, payload)
     return payload
 
 
 def set_locked(tab_id: str, locked: bool) -> dict[str, Any]:
-    """Lock or unlock the sidecar; the stored lines are kept as they are."""
+    """Lock or unlock the sidecar; the stored lines and notes are kept."""
     existing = read(tab_id)
     measures = existing.get("measures")
+    notes = existing.get("notes")
     payload = {
         "tab_id": tab_id,
         "updated_at": _now(),
         "measures": measures if isinstance(measures, dict) else {},
         "locked": bool(locked),
+        "notes": notes if isinstance(notes, str) else "",
     }
     _store(tab_id, payload)
     return payload

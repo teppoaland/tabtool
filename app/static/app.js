@@ -148,6 +148,8 @@
   const lyricsForm = document.getElementById("lyrics-form");
   const lyricsSubject = document.getElementById("lyrics-subject");
   const lyricsInput = document.getElementById("lyrics-input");
+  // Muistiinpanot (v2.20): free text in the same sidecar.
+  const lyricsNotesInput = document.getElementById("lyrics-notes");
   const lyricsBars = document.getElementById("lyrics-bars");
   const lyricsSplitter = document.getElementById("lyrics-split");
   const lyricsStatus = document.getElementById("lyrics-status");
@@ -267,6 +269,8 @@
   // field is read-only and the bar handlers refuse to write; viewing and
   // seeking keep working.
   let lyricsLocked = false;
+  // v2.20: the free-text note from the sidecar (source, open fixes).
+  let lyricsNotes = "";
   // Sanoitusrivin koko prosentteina (v2.08) ja nosto pikseleinä (v2.09),
   // molemmat tulevat /api/settingsistä.
   let lyricsScale = LYRICS_SCALE_DEFAULT;
@@ -1820,6 +1824,8 @@
     lyricsBarsTotal = 0;
     lyricsShownBar = -1;
     lyricsLocked = false;
+    lyricsNotes = "";
+    if (lyricsNotesInput) lyricsNotesInput.value = "";
     applyLyricsLock();
     renderLyricsStrip(true);
   }
@@ -1859,6 +1865,7 @@
       lyricsBarsTotal = Number(payload && payload.bars) || 0;
       lyricsShownBar = -1;
       lyricsLocked = Boolean(payload && payload.locked);
+      lyricsNotes = String((payload && payload.notes) || "");
       applyLyricsLock();
       renderLyricsStrip(true);
       // A fetch that lands after the user started typing must not overwrite
@@ -1872,6 +1879,8 @@
       lyricsMeasures = {};
       lyricsShownBar = -1;
       lyricsLocked = false;
+      lyricsNotes = "";
+      if (lyricsNotesInput && !lyricsDirty) lyricsNotesInput.value = "";
       applyLyricsLock();
       renderLyricsStrip(true);
     } finally {
@@ -2193,6 +2202,7 @@
     lyricsDirty = false;
     lyricsAnchorBar = 0;
     lyricsLineSelection = null;
+    if (lyricsNotesInput) lyricsNotesInput.value = lyricsNotes;
     if (lyricsSubject) {
       lyricsSubject.textContent = activeTab
         ? activeTab.artist
@@ -2464,6 +2474,8 @@
     // and TALLENNA is off until the box is cleared again.
     if (lyricsLockInput) lyricsLockInput.checked = lyricsLocked;
     if (lyricsInput) lyricsInput.readOnly = lyricsLocked;
+    // The note belongs to the same sidecar, so the lock covers it too.
+    if (lyricsNotesInput) lyricsNotesInput.readOnly = lyricsLocked;
     if (lyricsSave) lyricsSave.disabled = lyricsLocked;
     if (lyricsDialog) lyricsDialog.classList.toggle("is-locked", lyricsLocked);
   }
@@ -2486,7 +2498,11 @@
       const response = await fetch(`/api/tabs/${activeTab.id}/lyrics`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ measures: parsed.measures }),
+        body: JSON.stringify({
+          measures: parsed.measures,
+          // v2.20: the memo travels with the lines (and is kept when omitted).
+          notes: lyricsNotesInput ? lyricsNotesInput.value : lyricsNotes,
+        }),
       });
       if (!response.ok) {
         const payload = await response.json().catch(() => ({}));
@@ -2503,6 +2519,12 @@
           ? saved.measures
           : parsed.measures;
       lyricsBarsTotal = Number(saved && saved.bars) || lyricsBarsTotal;
+      // v2.20: the server trims the note, so the field shows the stored text.
+      lyricsNotes =
+        saved && typeof saved.notes === "string"
+          ? saved.notes
+          : String(lyricsNotesInput ? lyricsNotesInput.value : lyricsNotes);
+      if (lyricsNotesInput) lyricsNotesInput.value = lyricsNotes;
       lyricsLocked = Boolean(saved && saved.locked);
       lyricsShownBar = -1;
       lyricsDirty = false;
@@ -3680,6 +3702,13 @@
     });
     // v2.17: Ctrl+Enter writes the selection into the anchor bar.
     lyricsInput.addEventListener("keydown", handleLyricsAssignKey);
+  }
+  if (lyricsNotesInput) {
+    // v2.20: a note edit counts as unsaved work, so a late load cannot
+    // overwrite it before TALLENNA.
+    lyricsNotesInput.addEventListener("input", () => {
+      lyricsDirty = true;
+    });
   }
   watchLyrics();
   if (playButton) playButton.addEventListener("click", handlePlayButton);

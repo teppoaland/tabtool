@@ -2073,6 +2073,12 @@ body.hide-ui-export .viewer-foot {
   flex: 1 1 auto;
 }
 
+/* Muistiinpanot (v2.20): the memo keeps its natural height, so the lyric
+   field still takes whatever is left of the panel. */
+.lyrics-form .lyrics-notes-field {
+  flex: 0 0 auto;
+}
+
 /* Resize grips (v2.08–v2.11): one in the top-left corner (the primary one,
    next to the drag handle) and one in the bottom-right. Pointer events only;
    the panel keeps its size in tabtool:lyricsPos. */
@@ -2156,6 +2162,34 @@ body.hide-ui-export .viewer-foot {
 }
 
 .lyrics-input[readonly] {
+  opacity: 0.72;
+}
+
+/* Muistiinpanot (v2.20): free text for the source and open fixes. It keeps
+   its own height (flex: 0 0 auto), so the lyric textarea still takes the
+   rest of the panel; a locked lyric makes it read-only as well. */
+.lyrics-notes {
+  width: 100%;
+  flex: 0 0 auto;
+  min-height: 3.6rem;
+  max-height: 9rem;
+  resize: vertical;
+  background: var(--bg-soft);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 0.55rem 0.85rem;
+  color: var(--text);
+  font-family: inherit;
+  font-size: 0.8rem;
+  line-height: 1.4;
+}
+
+.lyrics-notes:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.lyrics-notes[readonly] {
   opacity: 0.72;
 }
 

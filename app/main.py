@@ -642,12 +642,17 @@ def tab_lyrics_save(
     A locked tab may still receive lyrics: the tab lock protects the tab and its
     stored playback settings, and lyrics live outside both. A **locked lyric**
     (v2.18) is different: it refuses the save with 409 until it is opened.
+
+    The optional ``notes`` field is free text (v2.20). When the request omits
+    it the stored note is kept, so old clients cannot wipe it.
     """
     tab = _load_tab(tab_id)
     if tab is None:
         raise HTTPException(status_code=404, detail="Unknown tab")
     try:
-        saved = lyrics.write(tab_id, payload.get("measures"))
+        saved = lyrics.write(
+            tab_id, payload.get("measures"), notes=payload.get("notes")
+        )
     except lyrics.LyricsLocked as error:
         raise HTTPException(status_code=409, detail=str(error)) from error
     except ValueError as error:

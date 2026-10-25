@@ -7,7 +7,7 @@
 
 ## Nykyinen versio
 
-`v2.19` – `app/__init__.py`:n `__version__`, `app/static/index.html`:n
+`v2.20` – `app/__init__.py`:n `__version__`, `app/static/index.html`:n
 `#version-tag` ja kaikki `?v=`-leimat. Tagi `v1.99` = vanhempi toimiva
 palautuspiste (23.10.2026); v1.23–v2.14 on pushattu `origin/main`iin
 25.10.2026.

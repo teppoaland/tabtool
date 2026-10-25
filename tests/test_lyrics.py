@@ -74,6 +74,7 @@ def test_lyrics_default_to_empty(client: TestClient, data_dir: Path) -> None:
     payload = response.json()
     assert payload["tab_id"] == "lyrics-empty"
     assert payload["measures"] == {}
+    assert payload["notes"] == ""
     assert payload["bars"] == 4
     assert not (data_dir / "lyrics" / "lyrics-empty.json").exists()
 
@@ -676,6 +677,110 @@ def test_sneak_peek_shows_the_next_line_one_bar_early():
     # The band keeps its space while the setting is on (no jumping main line).
     assert "has-peek" in html
     assert ".lyrics-strip:not(.has-peek) .lyrics-next" in css
+
+
+def test_lyrics_notes_are_saved_with_the_sidecar(
+    client: TestClient, data_dir: Path
+) -> None:
+    """v2.20: a free-text memo keeps the source and the open questions.
+
+    Notes ride in the same sidecar as the lines, so a half-finished lyric can
+    say where it came from and what still needs fixing. The tab files stay
+    untouched, an absent notes field keeps the stored note, and a locked
+    sidecar refuses both with 409.
+    """
+    tab_dir = _make_tab(data_dir, "lyrics-notes")
+    gp5_before = (tab_dir / "tab.gp5").read_bytes()
+    memo = "Lähde: Songsterr 25.10.\nTahdit 41–44 kesken."
+    saved = client.put(
+        "/api/tabs/lyrics-notes/lyrics",
+        json={"measures": {"1": "eka"}, "notes": memo},
+    )
+    assert saved.status_code == 200, saved.text
+    payload = saved.json()
+    assert payload["notes"] == memo
+    assert payload["measures"] == {"1": "eka"}
+
+    # A save that only sends measures keeps the stored note.
+    again = client.put(
+        "/api/tabs/lyrics-notes/lyrics", json={"measures": {"2": "toka"}}
+    )
+    assert again.status_code == 200
+    assert again.json()["notes"] == memo
+
+    stored = json.loads(
+        (data_dir / "lyrics" / "lyrics-notes.json").read_text(encoding="utf-8")
+    )
+    assert stored["notes"] == memo
+
+    # Locking keeps the note and blocks both the lines and the memo.
+    assert (
+        client.put(
+            "/api/tabs/lyrics-notes/lyrics/lock", json={"locked": True}
+        ).status_code
+        == 200
+    )
+    blocked = client.put(
+        "/api/tabs/lyrics-notes/lyrics",
+        json={"measures": {"3": "kolmas"}, "notes": "uusi"},
+    )
+    assert blocked.status_code == 409
+    read_back = client.get("/api/tabs/lyrics-notes/lyrics").json()
+    assert read_back["notes"] == memo
+    assert read_back["measures"] == {"2": "toka"}
+    assert (tab_dir / "tab.gp5").read_bytes() == gp5_before
+
+
+def test_lyrics_notes_are_validated(client: TestClient, data_dir: Path) -> None:
+    _make_tab(data_dir, "lyrics-notes-bad")
+    assert (
+        client.put(
+            "/api/tabs/lyrics-notes-bad/lyrics",
+            json={"measures": {}, "notes": 42},
+        ).status_code
+        == 422
+    )
+    assert (
+        client.put(
+            "/api/tabs/lyrics-notes-bad/lyrics",
+            json={"measures": {}, "notes": "x" * 4001},
+        ).status_code
+        == 422
+    )
+    # A whitespace-only note is stored as empty text.
+    saved = client.put(
+        "/api/tabs/lyrics-notes-bad/lyrics",
+        json={"measures": {}, "notes": "  \n "},
+    )
+    assert saved.status_code == 200
+    assert saved.json()["notes"] == ""
+
+
+def test_lyrics_editor_has_a_notes_field():
+    """v2.20: the memo is a plain textarea saved with TALLENNA.
+
+    It lives in the same form, follows the lyric lock (read-only) and is
+    loaded with the sidecar, so an unfinished job can be picked up later.
+    """
+    html = INDEX_HTML.read_text(encoding="utf-8")
+    assert 'id="lyrics-notes"' in html
+    assert "Muistiinpanot" in html
+
+    source = APP_JS.read_text(encoding="utf-8")
+    save_fn = _js_code(source, "saveLyricsField")
+    assert "lyricsNotesInput" in save_fn
+    assert "notes:" in save_fn
+    assert "lyricsNotes" in _js_code(source, "fillLyricsDialog")
+    assert "lyricsNotes" in _js_code(source, "loadLyrics")
+    assert "lyricsNotesInput.readOnly" in _js_code(source, "applyLyricsLock")
+    assert 'lyricsNotesInput.addEventListener("input"' in source
+
+    css = (INDEX_HTML.parent / "style.css").read_text(encoding="utf-8")
+    assert ".lyrics-notes {" in css
+    assert ".lyrics-notes[readonly]" in css
+    # The memo must not steal height from the lyric textarea.
+    assert ".lyrics-form .lyrics-notes-field" in css
+    assert 'class="field lyrics-notes-field"' in html
 
 
 def test_bar_seek_uses_the_tempo_aware_tick_path():
