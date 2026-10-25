@@ -1589,10 +1589,10 @@ body.viewer-fullscreen {
   right: 0;
   bottom: 1.1rem;
   display: flex;
-  /* v2.21: the sneak peek renders above the main line (column-reverse), which
-     reads more naturally; the column keeps the same bottom edge, so the main
-     line stays anchored. */
-  flex-direction: column-reverse;
+  /* v2.23: the sneak peek sits below the main line by default (reading order
+     chosen by the user); Settings `lyrics.sneak_position` = above flips it
+     with .peek-above. The column keeps the same bottom edge. */
+  flex-direction: column;
   align-items: center;
   justify-content: flex-end;
   gap: 0.4rem;
@@ -1603,6 +1603,12 @@ body.viewer-fullscreen {
 
 .lyrics-strip[hidden] {
   display: none;
+}
+
+/* Sneak peek position (v2.23): Settings `lyrics.sneak_position` = above puts
+   the peek over the main line; the default (below) needs no class. */
+.lyrics-strip.peek-above {
+  flex-direction: column-reverse;
 }
 
 .lyrics-current {
@@ -1628,10 +1634,10 @@ body.viewer-fullscreen {
   color: var(--accent);
 }
 
-/* Sneak peek (v2.19, above the main line since v2.21): the next line one bar
-   early, half the size of the main band. Same black band and colour-only
-   styling, so it reads the same in fullscreen and never changes the frozen
-   layout. */
+/* Sneak peek (v2.19): the next line one bar early, half the size of the main
+   band. Same black band and colour-only styling, so it reads the same in
+   fullscreen and never changes the frozen layout. Its place is a Settings
+   choice (v2.23): under the main line by default, over it on request. */
 .lyrics-next {
   max-width: min(1100px, 92vw);
   padding: 0.35em 2.4ch;

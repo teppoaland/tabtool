@@ -40,6 +40,7 @@ ydintekstit:
 - `Seuraavan rivin esikatselu (Sneak peek)` (v2.19, Settings-kytkin)
 - `Muistiinpanot (lähde, kesken, korjattavaa)` (v2.20, Sanat-editorin kenttä)
 - `JAA RIVIT` (v2.22, Sanat-editorin bulk-numerointi)
+- `Sneak peek -sijainti` (v2.23, Settings-valinta: alla / yllä)
 
 Hyväksytyt poikkeukset: LIBRARY-modaali (aiemmin SEARCH) ja kappaleen
 poiston varoitusdialogi (v1.38) ovat sallittuja. Muita uusia modaaleja,

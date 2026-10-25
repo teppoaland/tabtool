@@ -640,8 +640,14 @@ def test_sneak_peek_shows_the_next_line_one_bar_early():
     """
     defaults = {field.key: field.default for field in settings.FIELDS}
     assert defaults["lyrics.sneak"] is True
+    assert defaults["lyrics.sneak_position"] == "below"
     sneak = next(item for item in settings.FIELDS if item.key == "lyrics.sneak")
     assert sneak.kind == "bool" and sneak.group == "lyrics"
+    position = next(
+        item for item in settings.FIELDS if item.key == "lyrics.sneak_position"
+    )
+    assert position.kind == "choice" and position.group == "lyrics"
+    assert [value for value, _label in position.options] == ["below", "above"]
 
     html = INDEX_HTML.read_text(encoding="utf-8")
     assert 'id="lyrics-next"' in html
@@ -652,8 +658,11 @@ def test_sneak_peek_shows_the_next_line_one_bar_early():
     css = (INDEX_HTML.parent / "style.css").read_text(encoding="utf-8")
     container = css[css.index(".lyrics-strip {"):]
     container = container[: container.index("}")]
-    # v2.21: the peek renders above the main line (column-reverse).
-    assert "flex-direction: column-reverse" in container
+    # v2.23: below by default; .peek-above flips it when the setting says so.
+    assert "flex-direction: column;" in container
+    above = css[css.index(".lyrics-strip.peek-above {"):]
+    above = above[: above.index("}")]
+    assert "flex-direction: column-reverse" in above
     peek = css[css.index(".lyrics-next {"):]
     peek = peek[: peek.index("}")]
     assert "#000" in peek
@@ -662,6 +671,7 @@ def test_sneak_peek_shows_the_next_line_one_bar_early():
     source = APP_JS.read_text(encoding="utf-8")
     runtime = _js_function(source, "applyRuntimeSettings")
     assert '"lyrics.sneak"' in runtime
+    assert '"lyrics.sneak_position"' in runtime
     peek_fn = _js_code(source, "lyricPeekForBar")
     assert "nextLyricBar" in peek_fn
     assert "next - start !== 1" in peek_fn
@@ -675,6 +685,7 @@ def test_sneak_peek_shows_the_next_line_one_bar_early():
         assert marker not in strip_fn
     sneak_fn = _js_code(source, "applyLyricsSneak")
     assert "has-peek" in sneak_fn and "lyricsSneak" in sneak_fn
+    assert "peek-above" in sneak_fn and "lyricsSneakPosition" in sneak_fn
     # The band keeps its space while the setting is on (no jumping main line).
     assert "has-peek" in html
     assert ".lyrics-strip:not(.has-peek) .lyrics-next" in css

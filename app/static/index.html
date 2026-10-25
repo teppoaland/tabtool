@@ -6,14 +6,14 @@
   <meta name="color-scheme" content="dark">
   <title>AI TabTool</title>
   <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="/static/style.css?v=2.22">
+  <link rel="stylesheet" href="/static/style.css?v=2.23">
 </head>
 <body>
   <header class="topbar">
     <div class="brand">
       <span class="brand-mark" aria-hidden="true">AT</span>
       <span class="brand-name">AI TABTOOL</span>
-      <span id="version-tag" class="version">v2.22</span>
+      <span id="version-tag" class="version">v2.23</span>
     </div>
     <nav class="nav" aria-label="Päävalikko">
       <button id="open-search-top" type="button" class="primary nav-library"
@@ -148,10 +148,10 @@
            never touches the audio, the clock or alphaTab. -->
       <div id="lyrics-strip" class="lyrics-strip has-peek" hidden>
         <span id="lyrics-current" class="lyrics-current"></span>
-        <!-- Sneak peek (v2.19, yläpuolella v2.21): seuraava rivi yhtä tahtia
-             etukäteen, 50 % pienempänä nykyisen rivin yläpuolella. Tila
-             varataan aina, jotta päärivi ei hyppää tahdista toiseen
-             (is-empty = näkymätön). -->
+        <!-- Sneak peek (v2.19): seuraava rivi yhtä tahtia etukäteen,
+             50 % pienempänä. Sijainti tulee Settingsistä (v2.23):
+             oletus nykyisen rivin alla, valinnainen yllä. Tila varataan aina,
+             jotta päärivi ei hyppää tahdista toiseen (is-empty = näkymätön). -->
         <span id="lyrics-next" class="lyrics-next is-empty"></span>
       </div>
     </section>
@@ -426,13 +426,13 @@
 
 
   <footer class="footer">
-    <span>AI TabTool v2.22</span>
+    <span>AI TabTool v2.23</span>
     <span>Local-first · <a href="/remote">Remote</a></span>
   </footer>
 
-  <script src="/static/vendor/alphaTab/alphaTab.min.js?v=2.22"></script>
-  <script src="/static/app.js?v=2.22" defer></script>
-  <script src="/static/remote-bridge.js?v=2.22" defer></script>
+  <script src="/static/vendor/alphaTab/alphaTab.min.js?v=2.23"></script>
+  <script src="/static/app.js?v=2.23" defer></script>
+  <script src="/static/remote-bridge.js?v=2.23" defer></script>
 </body>
 </html>
 

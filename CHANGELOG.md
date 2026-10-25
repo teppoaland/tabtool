@@ -2,6 +2,21 @@
 
 > AI TabTool käyttää `1.x`-versiosarjaa. Aloitus `v1.00`.
 
+## v2.23 – 25.10.2026
+
+- **Sneak peek takaisin sanojen alle – ja sijainti Settingsiin.** Oletus on
+  nyt **nykyisen rivin alla** (kuten v2.19–v2.20). Uusi Settings-valinta
+  `Sneak peek -sijainti` (`lyrics.sneak_position`, Sanat-ryhmä) vaihtaa sen
+  **nykyisen rivin ylle**, joten laulajan kanssa voi helposti testata kumpi
+  luetaan luontevammin. Toteutus on CSS-luokka `peek-above` samassa
+  `#lyrics-strip`-overlayssa; DOM-järjestys, varattu tila, koko, väri ja
+  lukitus pysyvät ennallaan.
+- **Asetus:** `below` (oletus) = esikatselu alla, `above` = yllä. `app.js`
+  lukee valinnan `applyRuntimeSettings`issa ja `applyLyricsSneak` asettaa
+  luokan; katselin soveltaa arvon seuraavalla latauksella.
+- **Testit:** 280 passed (sijainnin oletus, vaihtoehdot ja CSS-luokka
+  vartioidaan olemassa olevassa sneak peek -testissä).
+
 ## v2.22 – 25.10.2026
 
 - **JAA RIVIT: koko liitetty lohko tahdeiksi yhdellä kertaa.** Sanoituskentän

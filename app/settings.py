@@ -159,6 +159,21 @@ FIELDS: tuple[Setting, ...] = (
         ),
     ),
     Setting(
+        "lyrics.sneak_position",
+        "lyrics",
+        "Sneak peek -sijainti",
+        "choice",
+        "below",
+        options=(
+            ("below", "Nykyisen rivin alla"),
+            ("above", "Nykyisen rivin yllä"),
+        ),
+        help=(
+            "Kumpi järjestys sopii laulajalle: esikatselu nykyisen rivin alla "
+            "vai sen yllä. Helppo testata molemmat."
+        ),
+    ),
+    Setting(
         "view.stave",
         "view",
         "Näkymän oletus",

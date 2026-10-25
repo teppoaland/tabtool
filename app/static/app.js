@@ -279,6 +279,8 @@
   let lyricsOffset = LYRICS_OFFSET_DEFAULT;
   // Sneak peek on/off (v2.19), Settings `lyrics.sneak` (oletus päällä).
   let lyricsSneak = true;
+  // Peek position (v2.23), Settings `lyrics.sneak_position`: below | above.
+  let lyricsSneakPosition = "below";
   // Floating editor drag state (v2.07): DOM only, no audio/api involvement.
   let lyricsDrag = null;
   // Resize state for the floating editor (v2.08): DOM only as well.
@@ -1209,6 +1211,9 @@
     );
     // Sneak peek (v2.19): on unless the stored value is exactly false.
     lyricsSneak = settings["lyrics.sneak"] !== false;
+    // v2.23: below by default; anything else than "above" means below.
+    lyricsSneakPosition =
+      settings["lyrics.sneak_position"] === "above" ? "above" : "below";
     applyLyricsStyle();
     applyLyricsSneak();
     renderLyricsStrip(true);
@@ -1840,8 +1845,14 @@
 
   function applyLyricsSneak() {
     // v2.19: the peek band reserves its space only when the setting is on, so
-    // switching it off returns the strip to the pre-v2.19 height. DOM only.
-    if (lyricsStrip) lyricsStrip.classList.toggle("has-peek", lyricsSneak);
+    // switching it off returns the strip to the pre-v2.19 height. v2.23 adds
+    // the position: below the main line by default, above when chosen.
+    if (!lyricsStrip) return;
+    lyricsStrip.classList.toggle("has-peek", lyricsSneak);
+    lyricsStrip.classList.toggle(
+      "peek-above",
+      lyricsSneak && lyricsSneakPosition === "above"
+    );
   }
 
   async function loadLyrics(tabId) {
