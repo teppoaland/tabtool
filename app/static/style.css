@@ -1946,6 +1946,7 @@ body.hide-ui-export .viewer-foot {
   z-index: 2200;
   width: min(46rem, calc(100vw - 2rem));
   max-width: calc(100vw - 1rem);
+  height: min(46rem, calc(100vh - 3rem));
   max-height: calc(100vh - 3rem);
   display: flex;
   flex-direction: column;
@@ -2017,7 +2018,7 @@ body.hide-ui-export .viewer-foot {
   display: flex;
   flex-direction: column;
   gap: 0.6rem;
-  min-height: 0;
+  min-height: 4.5rem;
   flex: 1 1 auto;
   overflow-y: auto;
   padding-right: 0.2rem;
@@ -2079,7 +2080,7 @@ body.hide-ui-export .viewer-foot {
 .lyrics-input {
   width: 100%;
   flex: 1 1 auto;
-  min-height: 8rem;
+  min-height: 5rem;
   resize: vertical;
   background: var(--bg-soft);
   border: 1px solid var(--border);
@@ -2100,12 +2101,49 @@ body.hide-ui-export .viewer-foot {
   display: flex;
   flex-wrap: wrap;
   gap: 0.3rem;
-  max-height: 6.4rem;
+  /* v2.13: taller by default and adjustable from the splitter below; the
+     lyrics textarea takes whatever is left (see .lyrics-split). */
+  height: 14rem;
+  min-height: 5rem;
+  flex: 0 0 auto;
   overflow-y: auto;
   padding: 0.4rem;
   border: 1px solid var(--border);
   border-radius: 12px;
   background: rgba(6, 8, 12, 0.35);
+}
+
+/* Tahtilistan ja sanoituskentän välinen jakokahva (v2.13). Pointer events
+   only; the split is stored with the panel position. */
+.lyrics-split {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  height: 0.75rem;
+  margin: -0.15rem 0;
+  border-radius: 999px;
+  cursor: row-resize;
+  touch-action: none;
+  background: transparent;
+}
+
+.lyrics-split::after {
+  content: "";
+  width: 3.5rem;
+  height: 0.28rem;
+  border-radius: 999px;
+  background: var(--border);
+}
+
+.lyrics-split:hover::after,
+.lyrics-split:focus-visible::after {
+  background: var(--accent);
+}
+
+.lyrics-split:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 
 .lyrics-bar {

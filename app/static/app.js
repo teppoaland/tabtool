@@ -29,6 +29,8 @@
   const LYRICS_SCALE_DEFAULT = 200;
   // Koko näytön nosto alareunasta pikseleinä (v2.09), default 100 px.
   const LYRICS_OFFSET_DEFAULT = 100;
+  // Tahtilistan oletuskorkeus pikseleinä (v2.13) = CSS:n 14rem.
+  const LYRICS_BARS_DEFAULT = 224;
   const SYNC_LIMIT = 0.1;
   // SIIRTO (whole-bar shift) may have to bridge a large structure difference
   // in the tab data, so its range is generous (v1.75). syncTimeMs() still
@@ -145,6 +147,7 @@
   const lyricsSubject = document.getElementById("lyrics-subject");
   const lyricsInput = document.getElementById("lyrics-input");
   const lyricsBars = document.getElementById("lyrics-bars");
+  const lyricsSplitter = document.getElementById("lyrics-split");
   const lyricsStatus = document.getElementById("lyrics-status");
   const lyricsSave = document.getElementById("lyrics-save");
   const lyricsClose = document.getElementById("lyrics-close");
@@ -258,6 +261,8 @@
   let lyricsDrag = null;
   // Resize state for the floating editor (v2.08): DOM only as well.
   let lyricsResize = null;
+  // Splitter between the bar list and the text field (v2.13).
+  let lyricsSplitDrag = null;
 
   function setPlayLabel(playing) {
     if (!playButton) return;
@@ -1993,6 +1998,9 @@
           top: Math.round(lyricsDialog.offsetTop),
           width: Math.round(lyricsDialog.offsetWidth),
           height: Math.round(lyricsDialog.offsetHeight),
+          barsHeight: lyricsBars
+            ? Math.round(lyricsBars.getBoundingClientRect().height)
+            : LYRICS_BARS_DEFAULT,
         })
       );
     } catch (error) {
@@ -2079,13 +2087,64 @@
       height = clampPixels(lyricsResize.height + dy, 280, maxHeight);
     }
     sizeLyricsPanel(width, height);
-    // Clamping the position also keeps a grown panel inside the window.
+    // Clamping the position also keeps a grown panel inside the window, and
+    // a shrunk panel must not keep an oversized bar list.
+    if (lyricsBars) {
+      setLyricsBarsHeight(lyricsBars.getBoundingClientRect().height);
+    }
     placeLyricsPanel(left, top);
   }
 
   function endLyricsResize() {
     if (!lyricsResize) return;
     lyricsResize = null;
+    // A shrunken panel may no longer fit the stored bar-list height.
+    if (lyricsBars) {
+      setLyricsBarsHeight(lyricsBars.getBoundingClientRect().height);
+    }
+    saveLyricsPanelPosition();
+  }
+
+  function setLyricsBarsHeight(height) {
+    // The bar list and the text field share the panel height: a taller list
+    // means a shorter textarea (v2.13). Only a style is written.
+    if (!lyricsBars || !lyricsDialog) return;
+    const available = Math.max(120, lyricsDialog.clientHeight - 220);
+    const next = clampPixels(
+      Number(height) || LYRICS_BARS_DEFAULT,
+      80,
+      available
+    );
+    lyricsBars.style.height = `${Math.round(next)}px`;
+  }
+
+  function startLyricsSplit(event) {
+    if (!lyricsBars || !lyricsDialog) return;
+    if (event.button !== undefined && event.button !== 0) return;
+    event.preventDefault();
+    lyricsSplitDrag = {
+      startY: event.clientY,
+      height: lyricsBars.getBoundingClientRect().height,
+    };
+    if (lyricsSplitter && typeof lyricsSplitter.setPointerCapture === "function") {
+      try {
+        lyricsSplitter.setPointerCapture(event.pointerId);
+      } catch (error) {
+        /* the pointer may already be gone */
+      }
+    }
+  }
+
+  function moveLyricsSplit(event) {
+    if (!lyricsSplitDrag) return;
+    setLyricsBarsHeight(
+      lyricsSplitDrag.height + (event.clientY - lyricsSplitDrag.startY)
+    );
+  }
+
+  function endLyricsSplit() {
+    if (!lyricsSplitDrag) return;
+    lyricsSplitDrag = null;
     saveLyricsPanelPosition();
   }
 
@@ -2102,10 +2161,16 @@
         sizeLyricsPanel(saved.width, saved.height);
       }
       placeLyricsPanel(saved.left, saved.top);
+      setLyricsBarsHeight(
+        Number.isFinite(saved.barsHeight)
+          ? saved.barsHeight
+          : LYRICS_BARS_DEFAULT
+      );
       return;
     }
     const width = lyricsDialog.offsetWidth || 640;
     placeLyricsPanel((window.innerWidth - width) / 2, 88);
+    setLyricsBarsHeight(LYRICS_BARS_DEFAULT);
   }
 
   function openLyricsDialog() {
@@ -3246,6 +3311,22 @@
     window.addEventListener("pointerup", endLyricsResize);
     window.addEventListener("pointercancel", endLyricsResize);
   }
+  if (lyricsSplitter) {
+    // Splitter: bar list ↔ lyric field (v2.13). DOM only.
+    lyricsSplitter.addEventListener("pointerdown", startLyricsSplit);
+    window.addEventListener("pointermove", moveLyricsSplit);
+    window.addEventListener("pointerup", endLyricsSplit);
+    window.addEventListener("pointercancel", endLyricsSplit);
+    lyricsSplitter.addEventListener("keydown", (event) => {
+      if (event.key !== "ArrowUp" && event.key !== "ArrowDown") return;
+      event.preventDefault();
+      const current = lyricsBars
+        ? lyricsBars.getBoundingClientRect().height
+        : LYRICS_BARS_DEFAULT;
+      setLyricsBarsHeight(current + (event.key === "ArrowDown" ? 24 : -24));
+      saveLyricsPanelPosition();
+    });
+  }
   window.addEventListener("resize", () => {
     // Keep the floating editor inside the viewport after a resize/fullscreen.
     if (lyricsDialog && !lyricsDialog.hidden) {
@@ -3253,6 +3334,9 @@
         sizeLyricsPanel(lyricsDialog.offsetWidth, lyricsDialog.offsetHeight);
       }
       placeLyricsPanel(lyricsDialog.offsetLeft, lyricsDialog.offsetTop);
+      if (lyricsBars) {
+        setLyricsBarsHeight(lyricsBars.getBoundingClientRect().height);
+      }
     }
   });
   if (lyricsInput) {

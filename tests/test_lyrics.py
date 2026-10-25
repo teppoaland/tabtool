@@ -379,6 +379,38 @@ def test_lyrics_editor_has_playback_controls():
     assert "audio" not in label
 
 
+def test_lyrics_bar_list_and_editor_share_the_panel_height():
+    """v2.13: taller bar list by default and a splitter that trades height.
+
+    The bar list and the lyric textarea share the panel: growing the list
+    shrinks the textarea, so a 258-bar song stays usable.
+    """
+    html = INDEX_HTML.read_text(encoding="utf-8")
+    assert 'id="lyrics-split"' in html
+
+    css = (INDEX_HTML.parent / "style.css").read_text(encoding="utf-8")
+    start = css.index(".lyrics-bars {")
+    bars = css[start : css.index("}", start)]
+    assert "height: 14rem" in bars
+    assert "max-height: 6.4rem" not in css
+    form = css[css.index(".lyrics-form {"):]
+    form_block = form[: form.index("}")]
+    assert "flex: 1 1 auto" in form_block
+
+    source = APP_JS.read_text(encoding="utf-8")
+    split = _js_code(source, "moveLyricsSplit")
+    assert "setLyricsBarsHeight" in split
+    assert "audio" not in split and "api." not in split
+    height = _js_code(source, "setLyricsBarsHeight")
+    assert "lyricsBars.style.height" in height
+    assert "audio" not in height and "api." not in height
+    assert "barsHeight" in _js_function(source, "saveLyricsPanelPosition")
+    assert "setLyricsBarsHeight" in _js_function(source, "showLyricsPanel")
+    assert (
+        'lyricsSplitter.addEventListener("pointerdown", startLyricsSplit)' in source
+    )
+
+
 def test_corrupt_sidecar_reads_as_no_lyrics(
     client: TestClient, data_dir: Path
 ) -> None:

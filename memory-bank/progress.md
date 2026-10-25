@@ -1,5 +1,16 @@
 # 📊 Projektin edistyminen – AI TABTOOL
 
+## v2.13 – Tahtilista isommaksi + jakokahva (25.10.2026)
+
+- `#lyrics-bars` oletuskorkeus **14rem** (ennen max 6.4rem) ja paneelin
+  oletuskorkeus 46rem, jotta jako toimii ilman venyttämistä.
+- `#lyrics-split` tahtilistan ja sanoituskentän välissä: listan kasvaessa
+  tekstikenttä pienenee (`.lyrics-form` `flex: 1 1 auto`,
+  `.lyrics-input` min 5rem). Jako tallentuu `barsHeight`-arvona
+  `tabtool:lyricsPos`-tietueeseen ja klampataan 80 px … paneeli−220 px;
+  ↑/↓ säätää 24 px, kun kahva on fokusoituna.
+- Pelkkää DOMia/CSS:ää. Testit **269**.
+
 ## v2.12 – Soittoeditori sanoitusikkunaan (25.10.2026)
 
 - Paneelin otsikon alla: PLAY/PAUSE (`handlePlayButton`), « (`seekTo(0)`),

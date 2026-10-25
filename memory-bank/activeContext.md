@@ -1,9 +1,9 @@
 # 📍 Aktiivinen konteksti – AI TABTOOL
 
-> **Versio:** `v2.12` (25.10.2026)
+> **Versio:** `v2.13` (25.10.2026)
 > **Git:** v1.23–v1.99 **pushattu** `origin/main`iin 23.10.2026 käyttäjän
 > pyynnöstä; **tagi `v1.99` = viimeisin pushattu palautuspiste**
-> (`git reset --hard v1.99`); v2.00–v2.12 ovat paikallisia. Älä pinnaa
+> (`git reset --hard v1.99`); v2.00–v2.13 ovat paikallisia. Älä pinnaa
 > HEAD-hashia pysyvästi.
 > **Push:** vain erillisestä pyynnöstä (käyttäjä pyysi 20.10. ja 23.10.2026).
 > **Repo:** https://github.com/teppoaland/tabtool
@@ -20,6 +20,14 @@
   **pyydetään testaamaan soitto referenssikappaleella** (Seek & Destroy,
   SIIRTO −0,75 / BPM 142) ennen ja jälkeen. Katso
   `.clinerules/07-playback-frozen.md`.
+- **v2.13 (25.10.2026) – Tahtilista isommaksi + jakokahva:**
+  - `#lyrics-bars` oletus 14rem (ennen 6.4rem max) ja `#lyrics-split`
+    tahtilistan ja sanoituskentän välissä: listan kasvaessa tekstikenttä
+    pienenee (`.lyrics-form` `flex: 1 1 auto`). Paneelin oletuskorkeus 46rem.
+  - Jako tallentuu `tabtool:lyricsPos`-tietueeseen (`barsHeight`), klampataan
+    paneelin resize/fullscreenissa (80 px … paneeli−220 px); ↑/↓ säätää
+    24 px kahvan ollessa fokusoituna.
+  - Testit **269**.
 - **v2.12 (25.10.2026) – Soittoeditori sanoitusikkunaan:**
   - PLAY/PAUSE (`handlePlayButton`), « (`seekTo(0)`), −5 s / +5 s
     (`seekBy`); editorin PLAY peilaa katselimen nappia `MutationObserver`illa

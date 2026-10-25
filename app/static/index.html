@@ -6,14 +6,14 @@
   <meta name="color-scheme" content="dark">
   <title>AI TabTool</title>
   <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="/static/style.css?v=2.12">
+  <link rel="stylesheet" href="/static/style.css?v=2.13">
 </head>
 <body>
   <header class="topbar">
     <div class="brand">
       <span class="brand-mark" aria-hidden="true">AT</span>
       <span class="brand-name">AI TABTOOL</span>
-      <span id="version-tag" class="version">v2.12</span>
+      <span id="version-tag" class="version">v2.13</span>
     </div>
     <nav class="nav" aria-label="Päävalikko">
       <button id="open-search-top" type="button" class="primary nav-library"
@@ -375,6 +375,13 @@
     <p id="lyrics-subject" class="detail-subject muted"></p>
     <div id="lyrics-bars" class="lyrics-bars" role="group"
          aria-label="Tahdit: paina hypätäksesi tahtiin, kaksoisklikkaa lisätäksesi rivin"></div>
+    <!-- Jako (v2.13): tahtilistan ja sanoituskentän korkeus on sidottu
+         toisiinsa; kahvaa raahaamalla näkee joko enemmän tahteja tai
+         enemmän tekstiä. -->
+    <div id="lyrics-split" class="lyrics-split" role="separator"
+         aria-orientation="horizontal" tabindex="0"
+         aria-label="Tahtilistan ja sanoituskentän jako"
+         title="Raahaa: tahdit ↔ sanoitus. Nuolinäppäimet hienosäätävät."></div>
     <form id="lyrics-form" class="lyrics-form">
       <label class="field">
         <span>Yksi rivi per tahti: <code>tahti | teksti</code></span>
@@ -394,13 +401,13 @@
 
 
   <footer class="footer">
-    <span>AI TabTool v2.12</span>
+    <span>AI TabTool v2.13</span>
     <span>Local-first · <a href="/remote">Remote</a></span>
   </footer>
 
-  <script src="/static/vendor/alphaTab/alphaTab.min.js?v=2.12"></script>
-  <script src="/static/app.js?v=2.12" defer></script>
-  <script src="/static/remote-bridge.js?v=2.12" defer></script>
+  <script src="/static/vendor/alphaTab/alphaTab.min.js?v=2.13"></script>
+  <script src="/static/app.js?v=2.13" defer></script>
+  <script src="/static/remote-bridge.js?v=2.13" defer></script>
 </body>
 </html>
 

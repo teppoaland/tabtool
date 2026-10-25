@@ -2,6 +2,24 @@
 
 > AI TabTool käyttää `1.x`-versiosarjaa. Aloitus `v1.00`.
 
+## v2.13 – 25.10.2026
+
+- **Tahtilista isommaksi ja säädettäväksi.** `#lyrics-bars` on oletuksena
+  14rem korkea (ennen 6.4rem max), ja tahtilistan sekä sanoituskentän välissä
+  on **jakokahva** (`#lyrics-split`). Kahvaa raahaamalla tahtilista kasvaa ja
+  **sanoituskenttä pienenee** (tai päinvastoin), koska tekstikenttä ottaa
+  jäljelle jäävän tilan (`flex: 1 1 auto`). Näin 258 tahdin kappaleen
+  selaus ja tekstin muokkaus saadaan samaan näkymään sopivassa suhteessa.
+- **Paneelin oletuskorkeus** on nyt 46rem (aiemmin sisällön mukaan), jotta
+  jako toimii myös ennen kuin paneelia on venytetty.
+- Jako tallentuu paneelin sijainnin ja koon kanssa samaan
+  `tabtool:lyricsPos`-tietueeseen (`barsHeight`) ja klampataan paneelin
+  resize/fullscreenissa (min 80 px, max paneelin korkeus − 220 px).
+  Nuolinäppäimet (↑/↓) säätävät jakoa 24 px, kun jakokahva on fokusoituna.
+- Pelkkää DOMia/CSS:ää – ei audion kirjoituksia eikä alphaTab-kutsuja.
+- **Testit:** 269 passed (1 uusi: tahtilistan oletuskorkeus, jakokahva ja
+  sanoituskentän `flex`-sidonta).
+
 ## v2.12 – 25.10.2026
 
 - **Soittoeditori sanoitusikkunaan.** Paneelin otsikon alla on nyt samat
