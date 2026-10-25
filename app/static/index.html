@@ -6,14 +6,14 @@
   <meta name="color-scheme" content="dark">
   <title>AI TabTool</title>
   <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="/static/style.css?v=2.23">
+  <link rel="stylesheet" href="/static/style.css?v=2.24">
 </head>
 <body>
   <header class="topbar">
     <div class="brand">
       <span class="brand-mark" aria-hidden="true">AT</span>
       <span class="brand-name">AI TABTOOL</span>
-      <span id="version-tag" class="version">v2.23</span>
+      <span id="version-tag" class="version">v2.24</span>
     </div>
     <nav class="nav" aria-label="Päävalikko">
       <button id="open-search-top" type="button" class="primary nav-library"
@@ -27,8 +27,15 @@
   <main class="shell">
     <section id="viewer-section" class="viewer-section" hidden>
       <div class="viewer-bar">
-        <button id="play-button" type="button" class="primary play"
-                title="Toista tai pysäytä audio. Koko näyttö avataan FULLSCREEN-painikkeesta.">PLAY</button>
+        <!-- v2.24: « siirtää toistokohdan kappaleen alkuun. Nappi on PLAYn
+             vasemmalla puolella samassa ruudukon solussa (.viewer-start),
+             joten kolmen sarakkeen jako ja otsikkosarake eivät muutu. -->
+        <div class="viewer-start">
+          <button id="seek-start" type="button" class="ghost small"
+                  title="Siirry kappaleen alkuun.">«</button>
+          <button id="play-button" type="button" class="primary play"
+                  title="Toista tai pysäytä audio. Koko näyttö avataan FULLSCREEN-painikkeesta.">PLAY</button>
+        </div>
         <div class="viewer-meta">
           <strong id="tab-title"></strong>
           <span id="tab-meta" class="tab-meta"></span>
@@ -426,13 +433,13 @@
 
 
   <footer class="footer">
-    <span>AI TabTool v2.23</span>
+    <span>AI TabTool v2.24</span>
     <span>Local-first · <a href="/remote">Remote</a></span>
   </footer>
 
-  <script src="/static/vendor/alphaTab/alphaTab.min.js?v=2.23"></script>
-  <script src="/static/app.js?v=2.23" defer></script>
-  <script src="/static/remote-bridge.js?v=2.23" defer></script>
+  <script src="/static/vendor/alphaTab/alphaTab.min.js?v=2.24"></script>
+  <script src="/static/app.js?v=2.24" defer></script>
+  <script src="/static/remote-bridge.js?v=2.24" defer></script>
 </body>
 </html>
 

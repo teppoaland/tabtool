@@ -2,6 +2,28 @@
 
 > AI TabTool käyttää `1.x`-versiosarjaa. Aloitus `v1.00`.
 
+## v2.24 – 25.10.2026
+
+- **`«` katselimen PLAYn vasemmalla puolella.** Päänäkymän soittokortissa on
+  nyt **`«`** (siirry kappaleen alkuun), joten biisin alkuun pääsee yhdellä
+  klikkauksella ilman seek-sliderin raahausta. Nappi kutsuu samaa olemassa
+  olevaa `seekTo(0)`a kuin sanoituseditori (`#lyrics-start`) ja
+  kaukosäädin: kelloon, `seekTo`-inversioon, `mediaHandler`iin, audio-
+  elementtiin eikä alphaTab-kytkentöihin ei tullut uusia kirjoituksia.
+  Count-in jää tarkoituksella päälle – alusta soitettaessa lähtölaskenta on
+  hyödyllinen.
+- **Layout ilman ruudukon muutosta.** `«` ja PLAY ovat samassa
+  `.viewer-start`-flex-solussa, joten `.viewer-bar`in grid
+  (`auto minmax(0, 1fr) auto`), otsikkosarake ja työkalurivi pysyvät
+  ennallaan. Uusi CSS-sääntö on vain `.viewer-start { display: flex; gap:
+  0.5rem }`. Lukitut elementit (`#play-button`, `#seek-back`,
+  `#seek-forward`, `#seek-slider`, transportin id:t) säilyivät
+  muuttumattomina.
+- **Testit:** 284 passed (`tests/test_viewer_seek_start.py` valvoo
+  järjestyksen, flex-solun, grid-mitan ja yhden `seekTo(0)`-kutsun sekä
+  sen, ettei käsittelijä koske audioon, `api`in, `playbackRate`en eikä
+  count-in-lippuun).
+
 ## v2.23 – 25.10.2026
 
 - **Sneak peek takaisin sanojen alle – ja sijainti Settingsiin.** Oletus on

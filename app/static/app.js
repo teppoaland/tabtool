@@ -117,6 +117,8 @@
   const variantCancel = document.getElementById("variant-cancel");
   const fullscreenButton = document.getElementById("fullscreen-button");
   const seekSlider = document.getElementById("seek-slider");
+  // v2.24: « katselimen palkissa – sama hyppy alkuun kuin sanoituseditorissa.
+  const seekStart = document.getElementById("seek-start");
   const seekBack = document.getElementById("seek-back");
   const seekForward = document.getElementById("seek-forward");
   const timeCurrent = document.getElementById("time-current");
@@ -3905,6 +3907,12 @@
     seekSlider.addEventListener("keyup", finishSeeking);
     document.addEventListener("pointerup", finishSeeking);
     window.addEventListener("blur", finishSeeking);
+  }
+  if (seekStart) {
+    // v2.24: the same call the lyrics editor and the remote already make;
+    // seekTo() clamps and forces one sync. The count-in stays armed on
+    // purpose: playing from the very start is when the countdown helps.
+    seekStart.addEventListener("click", () => seekTo(0));
   }
   if (seekBack) {
     seekBack.addEventListener("click", () => {

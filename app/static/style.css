@@ -719,6 +719,14 @@ body.modal-open .at-cursors {
   box-shadow: var(--shadow);
 }
 
+/* v2.24: « (siirry alkuun) istuu samassa ruudukon solussa PLAYn kanssa, joten
+   .viewer-bar säilyttää kolme sarakettaan eikä otsikko siirry. */
+.viewer-start {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
 .viewer-meta {
   display: grid;
   gap: 0.15rem;
