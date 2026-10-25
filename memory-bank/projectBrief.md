@@ -1,6 +1,6 @@
 # 🎯 Projektin lyhyt kuvaus – AI TABTOOL
 
-> **Versio:** `v2.18` (25.10.2026)
+> **Versio:** `v2.23` (25.10.2026)
 > **Repo:** https://github.com/teppoaland/tabtool
 > **Paikallinen:** `D:\AI\tabtool`
 
@@ -144,32 +144,35 @@ Lokaali web-palvelu, jossa voi:
   ja `retune_tab.py` (virityksen vaihto). Kaikki varmuuskopioivat GP5:n
   `data/backups/`iin, validoivat tuloksen lukemalla tiedoston takaisin ja
   palauttavat varmuuskopion, jos jokin ei täsmää.
-- **Sanat sidecarina (v2.06–v2.18):** laulun sanat eivät mene
+- **Sanat sidecarina (v2.06–v2.23):** laulun sanat eivät mene
   GP5/MusicXML/MIDIin eivätkä tabin metadataan, vaan omaan tiedostoon
-  `data/lyrics/<tab_id>.json` (`{"tab_id", "updated_at", "locked",
+  `data/lyrics/<tab_id>.json` (`{"tab_id", "updated_at", "locked", "notes",
   "measures": {"10": "…"}}`). `app/lyrics.py` validoi ja kirjoittaa
   atomaarisesti; `GET/PUT /api/tabs/{id}/lyrics` ja
   `PUT /api/tabs/{id}/lyrics/lock`. **Lukittu sidecar** (v2.18,
-  `Lukittu`-rasti editorissa) tallentaa rivit ja estää muutokset (409) –
-  tabin lukitus on eri asia. Editori on **kelluva, raahattava ja kooltaan
-  säädettävä paneeli** (ei modaalia; `«` ennen PLAYtä, PLAY/PAUSE, ±5 s),
-  jossa tahtinumeron klikkaus hyppää tahtiin ja **valitsee saman rivin**;
-  maalatut sanat voi **siirtää tahtiin** klikkauksella tai `Ctrl+Enter`illä
-  (numero tulee klikkauksesta, ankkuri +1 per siirto). Overlay näyttää
-  kuluvan tahdin rivin lukemalla `#bar-readout`-tekstiä
+  `Lukittu`-rasti) tallentaa rivit ja estää muutokset (409) – tabin lukitus
+  on eri asia. **Muistiinpanot** (v2.20) ovat vapaa teksti samassa
+  tiedostossa (lähde, kesken, korjattavaa; max 4000 merkkiä).
+  Editori on **kelluva, raahattava ja kooltaan säädettävä paneeli** (ei
+  modaalia; `«` ennen PLAYtä, PLAY/PAUSE, ±5 s). Tahtiklikkaus hyppää ja
+  **valitsee saman rivin**; maalatut sanat voi **siirtää tahtiin**
+  klikkauksella tai `Ctrl+Enter`illä, ja **`JAA RIVIT`** (v2.22,
+  `Ctrl+Shift+Enter`) numeroi koko liitetyn lohkon yhdeksi riviksi per tahti.
+  Overlay näyttää kuluvan tahdin rivin lukemalla `#bar-readout`-tekstiä
   (`MutationObserver`) – ei kelloa, ei alphaTab-kutsuja, ei audion
-  kirjoituksia. **Tyhjä tahti tyhjennetään**; jos myöhempi rivi on olemassa,
-  näytetään lähtölaskenta seuraavaan riviin (9…1, korostusväri), ja viimeisen
-  rivin jälkeen strip piiloutuu. Sanoitusrivin koko (`lyrics.scale`, oletus
-  200 %) ja fullscreen-nosto (`lyrics.offset_px`, 100 px) tulevat
-  Settingsistä. Tabin poisto poistaa sidecarin; lukittu tabi saa silti
-  sanat.
+  kirjoituksia. Tyhjä tahti tyhjennetään ja lähtölaskenta (9…1) näyttää
+  seuraavaan riviin; **sneak peek** (v2.19) näyttää seuraavan rivin 50 %
+  pienempänä yhtä tahtia etukäteen, sijainti Settingsistä
+  (`lyrics.sneak_position`, oletus `below`). Sanoitusrivin koko
+  (`lyrics.scale`, 200 %) ja fullscreen-nosto (`lyrics.offset_px`, 100 px)
+  tulevat Settingsistä. Tabin poisto poistaa sidecarin; lukittu tabi saa
+  silti sanat.
 - **Songsterr / Ultimate Guitar:** ei scrapea eikä kiertämistä.
   Songsterr-appin cache sisältää vain SVG-renderin, beat-ajastuksen ja
   audion (ei string/fret-dataa), ja GP/MIDI/MP3-lataus on Plus-ominaisuus
   (`songsterr.com/ai.txt`). Käyttäjän Android-osto on **kertamaksu**
   (vain Android, ei web). GP5:t haetaan laillisesta lähteestä käsin.
-- **Versiosarja `1.x`**, aloitus `v1.00`; nyt `v2.18`.
+- **Versiosarja `1.x`**, aloitus `v1.00`; nyt `v2.23`.
 - **Ei julkista julkaisua:** koodi pidetään lokaalina. Commitit tehdään
   paikalliseen repoon palautuspisteiksi (revert); push GitHubiin vain
   erillisestä pyynnöstä.
@@ -212,6 +215,6 @@ Sano Cline:lle **`lue membank`**. Sääntö on
 - `app/lyrics.py` – sanojen sidecar (`data/lyrics/<tab_id>.json`)
 - `scripts/pipeline_smoke.py` – CLI-proof
 - `stop.bat` / `status.bat` – palvelimen pysäytys ja tilan tarkistus
-- `tests/` – 275 pytest-testiä
+- `tests/` – 280 pytest-testiä
 - `data/` – GITIGNORED: audio, stemmit, tabit, tokenit
 - `docs/` – GITIGNORED: henkilökohtainen suunnitelma

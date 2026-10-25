@@ -41,10 +41,10 @@ Putki (app/pipeline/)
 - `app/tab_download.py` hakee GP5/MusicXML-linkin palvelimella: vain
   julkinen http(s) (ei localhost/yksityisverkko), max 20 MB, redirectit
   validoitu. gprotab.netin HTML-sivu → automaattinen `?download`-retry.
-- **Sanat sidecarina** (v2.06–v2.07): `app/lyrics.py` pitää sanoitukset
+- **Sanat sidecarina** (v2.06–v2.23): `app/lyrics.py` pitää sanoitukset
   tiedostossa `data/lyrics/<tab_id>.json` (`{"tab_id", "updated_at",
-  "measures": {"10": "…"}}`), joten GP5/MusicXML/MIDI ja tabin meta pysyvät
-  tavu-tasolla ennallaan. `GET/PUT /api/tabs/{tab_id}/lyrics`; lukittu tabi
+  "locked", "notes", "measures": {"10": "…"}}`), joten GP5/MusicXML/MIDI ja
+  tabin meta pysyvät tavu-tasolla ennallaan. `GET/PUT /api/tabs/{tab_id}/lyrics`; lukittu tabi
   saa silti sanat. Katselimen `SANAT` avaa **kelluvan, raahattavan** paneelin
   (`#lyrics-dialog.lyrics-float`, z-index 2200, ei `body.modal-open`ia), ja
   `#lyrics-strip` lukee kuluvan tahdin `#bar-readout`-tekstistä
@@ -78,6 +78,18 @@ Putki (app/pipeline/)
   `test_selected_words_move_into_the_pressed_bar`,
   `test_lyrics_gap_counts_down_and_finished_lyrics_can_be_locked`,
   `test_lyrics_lock_blocks_saves_until_it_is_opened`.
+  **Sanojen työkalut (v2.19–v2.23):** `lyricPeekForBar` näyttää seuraavan
+  rivin `#lyrics-next`-bandissa (50 % koko); `lyrics.sneak` ja
+  `lyrics.sneak_position` (`below`/`above`) tulevat Settingsistä ja
+  `applyLyricsSneak` asettaa `has-peek`/`peek-above`-luokat. `notes` on
+  vapaata tekstiä samassa sidecarissa (`clean_notes`, max 4000), TALLENNA
+  lähettää sen ja lukitus tekee kentästä read-onlyn. `assignLyricsBlockToBars`
+  (`lyricsLineRecords`, `wholeLineRange`, `removeTextRanges`,
+  `fillLyricsFromSelection`) numeroi lohkon yhdeksi riviksi per tahti ja
+  korvaa kohdetahdin rivin. Testit:
+  `test_sneak_peek_shows_the_next_line_one_bar_early`,
+  `test_lyrics_notes_are_saved_with_the_sidecar`,
+  `test_bulk_fill_numbers_a_pasted_block`.
 - `app/library.py` hoitaa poiston: tab-hakemisto, stemmit sekä job/track-
   rivit. Jaettu audio säilyy, jos toinen tabi käyttää sitä; MP3 jää
   `EXTERNAL_DIR`iin. Poisto ei koske `data/`-juuren ulkopuolisiin polkuihin.
