@@ -5,7 +5,7 @@ ja katseluun. Hae kappale Spotifysta tai käytä omaa MP3/YouTube-audioita,
 anna tekoälyn tehdä ensimmäinen tablatuuriluonnos ja katsele sitä
 alphaTabilla TV:stä tai tietokoneelta. Puhelin toimii kaukosäätimenä.
 
-**Versio:** `v2.04` (Phase 4 – LAN-kaukosäädin, Settings, kirjaston Tiedot ja sormitusversioiden varmistettu valinta)
+**Versio:** `v2.05` (Phase 4 – LAN-kaukosäädin, Settings, kirjaston Tiedot ja sormitusversioiden varmistettu valinta)
 
 ## Session aloitus
 
@@ -230,7 +230,10 @@ Jos YouTube estää latauksen, käytetään paikallista MP3:aa.
    `Separating stems…` → `Transcribing guitar…` → `Building tab…` →
    `Ready` (tai `Failed` + virhe).
 5. Valmis tabi renderöityy alphaTabilla. `PLAY`/`PAUSE` soittaa samaa
-   paikallista audiota ja kursori seuraa tahtia 50 ms synkalla.
+   paikallista audiota ja kursori seuraa tahtia 50 ms synkalla. `PLAY` on
+   pelkkä toisto (v2.05): se ei avaa koko näyttöä vaan vaihtuu soiton ajaksi
+   `PAUSE`ksi; koko näyttö otetaan `FULLSCREEN`-painikkeesta. Kirjasto
+   avataan yläpalkin oranssista `LIBRARY`-painikkeesta.
 6. `EXPORT` lataa GP5-, MusicXML- ja MIDI-tiedostot.
 7. Kirjasto listaa aiemmat tabit; myös CLI:llä tehdyt
    `data/tabs/<nimi>/`-tabit (joissa on `meta.json`) rekisteröityvät

@@ -163,9 +163,8 @@
     if (readTabId() === tabId) return true;
     const modal = byId("search-modal");
     if (modal && modal.hidden) {
-      const inner = byId("open-search");
-      const top = byId("open-search-top");
-      const opener = inner && inner.offsetParent ? inner : top;
+      // v2.05: LIBRARY is the topbar button only (no in-card duplicate).
+      const opener = byId("open-search-top");
       if (!opener) return false;
       opener.click();
     }
@@ -193,8 +192,8 @@
       const playing = isPlaying();
       if (action === "play" && playing) return true;
       if (action === "pause" && !playing) return true;
-      // Clicking the real button keeps count-in and fullscreen behaviour
-      // identical to a user pressing PLAY on the TV.
+      // Clicking the real button keeps count-in behaviour identical to a user
+      // pressing PLAY on the TV (v2.05: PLAY no longer opens fullscreen).
       button.click();
       return true;
     }

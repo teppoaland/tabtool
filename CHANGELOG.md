@@ -2,6 +2,28 @@
 
 > AI TabTool käyttää `1.x`-versiosarjaa. Aloitus `v1.00`.
 
+## v2.05 – 25.10.2026
+
+- **Yläpalkin `LIBRARY` on nyt päätoiminto.** Painike sai oranssin
+  accent-täytön (`primary nav-library`) ja tiiviimmän mitoituksen, jotta se
+  erottuu REMOTE/API/SETTINGS-linkeistä.
+- **Katselimen `LIBRARY` poistettu.** Kirjasto avautuu vain yläpalkista, joten
+  vierekkäinen `LIBRARY`/`PLAY`-pari poistui turhana toistona. `.viewer-bar`
+  on nyt kolme saraketta (`PLAY`, otsikko, `FULLSCREEN` + COUNT-IN);
+  `openSearch()` käyttää ankkurina yläpalkin painiketta ja
+  `remote-bridge.js` avaa modaalin samasta painikkeesta.
+- **`PLAY` on pelkkä toisto.** Se ei enää avaa koko näyttöä automaattisesti
+  vaan käynnistää/pysäyttää soiton ja vaihtuu soiton ajaksi `PAUSE`ksi
+  (labeli tulee edelleen `setPlayLabel`ista). Koko näyttö avataan
+  `FULLSCREEN`-painikkeesta. Poisto koskee vain `togglePlayback`in ja
+  `handlePlayButton`in fullscreen-kutsua: kello, `seekTo`-inversio,
+  `syncPosition`, audio-eventit ja count-inin kulku (5→0, `togglePlayback`
+  kerran) ovat ennallaan. Count-inin audion paikan palautus (v1.92) jäi
+  voimaan, koska `FULLSCREEN` voidaan painaa kesken laskennan.
+- **Testit:** 246 passed (2 uutta: `test_play_is_playback_only_and_never_steals_the_screen`,
+  `test_library_lives_in_the_topbar_only`). Soittoketjun kellotukseen ei
+  koskettu.
+
 ## v2.04 – 24.10.2026
 
 - **`VALITSE TÄMÄ` varmistaa ja tekee varmuuskopion.** Aiemmin painike

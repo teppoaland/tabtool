@@ -137,7 +137,7 @@
   const gp5FileInput = document.getElementById("gp5-file-input");
   const makeMp3Checkbox = document.getElementById("make-mp3-checkbox");
   const searchModal = document.getElementById("search-modal");
-  const openSearchButton = document.getElementById("open-search");
+  // v2.05: LIBRARY lives in the topbar only; the in-card duplicate is gone.
   const openSearchTopButton = document.getElementById("open-search-top");
   const closeSearchButton = document.getElementById("close-search");
   const libraryStatus = document.getElementById("library-status");
@@ -200,10 +200,10 @@
   let countInDone = false;
   let countInActive = false;
   let countInSkipped = false;
-  // Audio position captured when PLAY arms the countdown. The countdown waits
-  // while the fullscreen resize re-renders the score, which can move the audio
-  // off its start position; finishCountIn() restores it so the delayed PLAY
-  // starts from exactly where an immediate PLAY would have (v1.92).
+  // Audio position captured when PLAY arms the countdown. Pressing FULLSCREEN
+  // during the countdown re-renders the score, which can move the audio off its
+  // start position; finishCountIn() restores it so the delayed PLAY starts from
+  // exactly where an immediate PLAY would have (v1.92).
   let countInAudioTime = 0;
   let countInTimer = null;
   let countInZeroTimer = null;
@@ -549,7 +549,7 @@
     if (playButton) {
       playButton.disabled = !available;
       playButton.title = available
-        ? "Toista tai pysäytä audio. Koko näyttö avautuu toistettaessa; Esc palaa."
+        ? "Toista tai pysäytä audio. Koko näyttö avataan FULLSCREEN-painikkeesta."
         : "Tälle tabille ei ole audiota. Tabi näytetään ilman toistoa.";
     }
     if (attachAudioButton) attachAudioButton.hidden = available;
@@ -1446,10 +1446,9 @@
 
   function togglePlayback() {
     if (playButton && playButton.disabled) return;
-    const willPlay = playButton
-      ? playButton.dataset.state !== "playing"
-      : audio.paused;
-    if (willPlay) enterViewerFullscreen();
+    // v2.05: PLAY only starts or pauses playback. Fullscreen is the separate
+    // FULLSCREEN button, so the play path never changes the viewport (the
+    // clock, seekTo inverse and audio events stay untouched).
     if (api && activeTab) {
       try {
         api.playPause();
@@ -1535,11 +1534,10 @@
     if (!countInActive) return;
     cancelCountIn();
     countInDone = true;
-    // Restore the audio position captured at PLAY: the fullscreen resize can
-    // re-render the score during the countdown and move the audio off the
-    // start, so the delayed PLAY would begin at the wrong spot. The restored
-    // value was read from the audio itself, so it is a no-op when nothing
-    // moved (v1.92).
+    // Restore the audio position captured at PLAY: a FULLSCREEN press during
+    // the countdown can re-render the score and move the audio off the start,
+    // so the delayed PLAY would begin at the wrong spot. The restored value was
+    // read from the audio itself, so it is a no-op when nothing moved (v1.92).
     if (Number.isFinite(countInAudioTime)) {
       audio.currentTime = countInAudioTime;
     }
@@ -1593,9 +1591,9 @@
       return;
     }
     if (shouldRunCountIn()) {
-      // Fullscreen is requested here, while the user gesture is still fresh.
-      // The countdown itself only draws the overlay.
-      enterViewerFullscreen();
+      // v2.05: the countdown no longer starts fullscreen. The audio position is
+      // still captured, because pressing FULLSCREEN during the countdown
+      // re-renders the score and can move the audio (v1.92 restore).
       countInAudioTime = Number(audio.currentTime) || 0;
       if (beginCountIn()) return;
     }
@@ -2186,12 +2184,9 @@
   function openSearch() {
     if (!searchModal) return;
     // The panel opens at the LIBRARY button's height instead of jumping to
-    // the middle of the screen. The in-card button is the anchor; the topbar
-    // button is used when no tab is open (the viewer is hidden then).
-    const anchor =
-      openSearchButton && openSearchButton.offsetParent
-        ? openSearchButton
-        : openSearchTopButton;
+    // the middle of the screen. Since v2.05 the topbar button is the only
+    // entry point (the in-card duplicate was removed).
+    const anchor = openSearchTopButton;
     if (anchor) {
       const rect = anchor.getBoundingClientRect();
       const top = Math.max(8, Math.round(rect.top));
@@ -2572,7 +2567,6 @@
   }
 
   if (form) form.addEventListener("submit", submitJob);
-  if (openSearchButton) openSearchButton.addEventListener("click", openSearch);
   if (openSearchTopButton) {
     openSearchTopButton.addEventListener("click", openSearch);
   }

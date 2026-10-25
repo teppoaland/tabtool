@@ -1,9 +1,9 @@
 # 📍 Aktiivinen konteksti – AI TABTOOL
 
-> **Versio:** `v2.04` (24.10.2026)
+> **Versio:** `v2.05` (25.10.2026)
 > **Git:** v1.23–v1.99 **pushattu** `origin/main`iin 23.10.2026 käyttäjän
 > pyynnöstä; **tagi `v1.99` = viimeisin pushattu palautuspiste**
-> (`git reset --hard v1.99`); v2.00–v2.04 ovat paikallisia. Älä pinnaa
+> (`git reset --hard v1.99`); v2.00–v2.05 ovat paikallisia. Älä pinnaa
 > HEAD-hashia pysyvästi.
 > **Push:** vain erillisestä pyynnöstä (käyttäjä pyysi 20.10. ja 23.10.2026).
 > **Repo:** https://github.com/teppoaland/tabtool
@@ -20,6 +20,19 @@
   **pyydetään testaamaan soitto referenssikappaleella** (Seek & Destroy,
   SIIRTO −0,75 / BPM 142) ennen ja jälkeen. Katso
   `.clinerules/07-playback-frozen.md`.
+- **v2.05 (25.10.2026) – LIBRARY yläpalkkiin, PLAY pelkäksi toistoksi:**
+  - Yläpalkin `LIBRARY` (`#open-search-top`) on oranssi päätoiminto
+    (`primary nav-library`).
+  - Katselimen `#open-search` poistettu (turha toisto PLAYn vieressä);
+    `.viewer-bar` 3 saraketta, `openSearch()`/`remote-bridge.js` käyttävät
+    yläpalkin painiketta.
+  - `PLAY` ei enää avaa koko näyttöä (`enterViewerFullscreen` poistettu
+    `togglePlayback`ista ja `handlePlayButton`ista); label vaihtuu
+    `PAUSE`ksi kuten ennen. FULLSCREEN on oma painike. Kello, seek-inversio,
+    `syncPosition` ja count-in (5→0 + `togglePlayback` kerran) ennallaan;
+    v1.92:n audiopaikan palautus jäi (FULLSCREEN kesken laskennan).
+  - Testit **246** (2 uutta: PLAY ei koske fullscreeniin, LIBRARY vain
+    yläpalkissa). Vaatii käyttäjän kuuntelu-/UI-testin (sääntö 07).
 - **Sanat tabiin (24.10.2026, vain dataa – ei koodimuutosta):**
   - Reino Nordin `668d62…` (*Xsuaalisuuteen*): **97 riviä sanoja** GP5:n
     `beat.text`-kenttinä, tahdit 1–99 (tauot 82–83 ja 100–101). Ajoitus

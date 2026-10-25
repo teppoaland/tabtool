@@ -662,8 +662,13 @@ body.modal-open {
   font-weight: 700;
 }
 
-.nav-search {
-  padding: 0.4rem 0.8rem;
+/* LIBRARY is the main entry point (v2.05), so the topbar button carries the
+   accent fill. Slightly tighter than a page-level .primary button so the
+   navigation stays on one line. */
+.nav-library {
+  padding: 0.45rem 0.95rem;
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
 }
 
 @media (max-width: 900px) {
@@ -700,10 +705,11 @@ body.modal-open .at-cursors {
 }
 
 .viewer-bar {
-  /* LIBRARY, PLAY, title and FULLSCREEN share the first row; the tools wrap
-     onto their own row starting at the left edge. */
+  /* PLAY, title and FULLSCREEN share the first row; the tools wrap onto their
+     own row starting at the left edge. LIBRARY lives in the topbar only
+     (v2.05), so the bar has three columns. */
   display: grid;
-  grid-template-columns: auto auto minmax(0, 1fr) auto;
+  grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
   gap: 0.9rem 1rem;
   background: var(--panel);
@@ -1532,18 +1538,9 @@ body.modal-open .at-cursors {
   display: none;
 }
 
-/* In fullscreen the library entry point is hidden; PLAY / FULLSCREEN / Esc
-   take the screen. The bar keeps FULLSCREEN at the right edge. */
-.viewer-section:fullscreen #open-search,
-.viewer-section.is-fullscreen #open-search {
-  display: none;
-}
-
-.viewer-section:fullscreen .viewer-bar,
-.viewer-section.is-fullscreen .viewer-bar {
-  grid-template-columns: auto minmax(0, 1fr) auto;
-}
-
+/* In fullscreen PLAY / FULLSCREEN / Esc take the screen; the bar keeps the
+   same three columns and FULLSCREEN at the right edge. The library entry
+   point is the topbar button only (v2.05), so nothing is hidden here. */
 body.viewer-fullscreen {
   overflow: hidden;
 }
@@ -1619,7 +1616,6 @@ body.viewer-fullscreen {
    element from the flow; it never resizes .alphatab, .transport or the cursor
    stack (rule 07). */
 
-body.hide-ui-nav_library #open-search,
 body.hide-ui-nav_library #open-search-top,
 body.hide-ui-nav_remote .topbar .nav a[href="/remote"],
 body.hide-ui-nav_api .topbar .nav a[href="/docs"],

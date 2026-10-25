@@ -90,8 +90,10 @@ def test_count_in_finishes_through_the_unchanged_playback_path():
     assert "audio.play" not in finish
 
     handler = _function_body(source, "handlePlayButton")
-    # Fullscreen is requested on the user gesture, not at the end of the count.
-    assert "enterViewerFullscreen()" in handler
+    # v2.05: PLAY is playback only; fullscreen belongs to the FULLSCREEN
+    # button. The count-in still starts on the user gesture and playback still
+    # goes through togglePlayback() exactly once.
+    assert "enterViewerFullscreen" not in handler
     assert "beginCountIn()" in handler
     assert "togglePlayback()" in handler
 
@@ -199,6 +201,48 @@ def test_score_end_guard_keeps_the_audio_playing():
     assert "api.stop()" in handler
     assert "togglePlayback()" in handler
     assert "beginCountIn()" in handler
+
+
+def test_play_is_playback_only_and_never_steals_the_screen():
+    """v2.05: PLAY starts/stops playback and nothing else.
+
+    Fullscreen used to be part of the play path (togglePlayback() and the
+    count-in branch of handlePlayButton), so every PLAY replaced the browser
+    view and made debugging awkward. The user asked for a plain PLAY/PAUSE
+    button, so the play path may not call enterViewerFullscreen() again;
+    FULLSCREEN keeps its own button.
+    """
+    source = _source()
+    for name in ("togglePlayback", "handlePlayButton", "finishCountIn"):
+        body = _function_body(source, name)
+        assert (
+            "enterViewerFullscreen" not in body
+        ), f"{name} must not enter fullscreen"
+        assert "requestFullscreen" not in body, f"{name} must not request fullscreen"
+        assert (
+            "is-fullscreen" not in body
+        ), f"{name} must not fake the fullscreen class"
+
+
+def test_library_lives_in_the_topbar_only():
+    """v2.05: one LIBRARY button, and it is the accent (primary) action.
+
+    The viewer bar repeated LIBRARY next to PLAY although the topbar already
+    opens the library, so the duplicate was removed. The topbar button carries
+    the accent fill because it is the main entry point.
+    """
+    html = INDEX_HTML.read_text(encoding="utf-8")
+    assert 'id="open-search"' not in html
+
+    topbar_start = html.index('id="open-search-top"')
+    topbar_tag = html[topbar_start : html.index(">", topbar_start)]
+    assert "primary" in topbar_tag, "the topbar LIBRARY must be the accent action"
+    assert "nav-library" in topbar_tag
+
+    # PLAY keeps its id and no longer promises fullscreen in its tooltip.
+    play_start = html.index('id="play-button"')
+    play_tag = html[play_start : html.index(">", play_start)]
+    assert "FULLSCREEN-painikkeesta" in play_tag
 
 
 def test_playback_rate_never_enters_the_alignment_math():

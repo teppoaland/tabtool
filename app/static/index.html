@@ -6,18 +6,18 @@
   <meta name="color-scheme" content="dark">
   <title>AI TabTool</title>
   <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="/static/style.css?v=2.04">
+  <link rel="stylesheet" href="/static/style.css?v=2.05">
 </head>
 <body>
   <header class="topbar">
     <div class="brand">
       <span class="brand-mark" aria-hidden="true">AT</span>
       <span class="brand-name">AI TABTOOL</span>
-      <span id="version-tag" class="version">v2.04</span>
+      <span id="version-tag" class="version">v2.05</span>
     </div>
     <nav class="nav" aria-label="Päävalikko">
-      <button id="open-search-top" type="button" class="ghost small nav-search"
-              title="Avaa kirjasto ja generaattori.">LIBRARY</button>
+      <button id="open-search-top" type="button" class="primary nav-library"
+              title="Avaa kirjasto ja generaattori. Päätoiminto.">LIBRARY</button>
       <a href="/remote">REMOTE</a>
       <a href="/docs">API</a>
       <a href="/settings" id="nav-settings" title="Toisto-oletukset, count-inin kesto ja näytettävät toiminnot.">SETTINGS</a>
@@ -27,10 +27,8 @@
   <main class="shell">
     <section id="viewer-section" class="viewer-section" hidden>
       <div class="viewer-bar">
-        <button id="open-search" type="button" class="primary"
-                title="Avaa kirjasto ja generaattori: YouTube-linkki, GP5-linkki ja kirjasto.">LIBRARY</button>
         <button id="play-button" type="button" class="primary play"
-                title="Toista tai pysäytä audio. Koko näyttö avautuu toistettaessa; Esc palaa.">PLAY</button>
+                title="Toista tai pysäytä audio. Koko näyttö avataan FULLSCREEN-painikkeesta.">PLAY</button>
         <div class="viewer-meta">
           <strong id="tab-title"></strong>
           <span id="tab-meta" class="tab-meta"></span>
@@ -343,13 +341,13 @@
 
 
   <footer class="footer">
-    <span>AI TabTool v2.04</span>
+    <span>AI TabTool v2.05</span>
     <span>Local-first · <a href="/remote">Remote</a></span>
   </footer>
 
-  <script src="/static/vendor/alphaTab/alphaTab.min.js?v=2.04"></script>
-  <script src="/static/app.js?v=2.04" defer></script>
-  <script src="/static/remote-bridge.js?v=2.04" defer></script>
+  <script src="/static/vendor/alphaTab/alphaTab.min.js?v=2.05"></script>
+  <script src="/static/app.js?v=2.05" defer></script>
+  <script src="/static/remote-bridge.js?v=2.05" defer></script>
 </body>
 </html>
 

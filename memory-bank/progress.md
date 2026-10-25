@@ -1,5 +1,29 @@
 # 📊 Projektin edistyminen – AI TABTOOL
 
+## v2.05 – LIBRARY yläpalkkiin, PLAY pelkäksi toistoksi (25.10.2026)
+
+- **Yläpalkin `LIBRARY` oranssiksi:** `ghost small nav-search` →
+  `primary nav-library` (accent-täyttö, tiiviimpi mitoitus). Painike on
+  `#open-search-top`, joten Settingsin `ui.nav_library` piilottaa edelleen
+  oikean elementin.
+- **Katselimen `LIBRARY` poistettu:** kirjasto aukeaa vain yläpalkista.
+  `.viewer-bar` siirtyi 4 → 3 sarakkeeseen (`PLAY`, otsikko, FULLSCREEN +
+  COUNT-IN); fullscreenin erillinen grid-sääntö ja `#open-search`-piilotus
+  poistuivat. `openSearch()` ankkuroi yläpalkin painikkeeseen ja
+  `remote-bridge.js` avaa modaalin siitä (ei enää `#open-search`-fallbackia).
+- **`PLAY` = pelkkä toisto:** `enterViewerFullscreen()` poistui
+  `togglePlayback`ista ja `handlePlayButton`ista, joten PLAY ei enää vaihda
+  koko näyttöön. Label vaihtuu `PAUSE`ksi edelleen `setPlayLabel`in kautta
+  (audio `play`/`pause`/`ended` + `api.playerStateChanged`). Kellotus,
+  `seekTo`-inversio, `syncPosition`, audio-eventit ja count-inin kulku ovat
+  ennallaan; `countInAudioTime`-palautus (v1.92) säilyi, koska FULLSCREEN
+  voidaan painaa kesken laskennan.
+- **Testit 246** (2 uutta `tests/test_playback_guard.py`ssa:
+  `test_play_is_playback_only_and_never_steals_the_screen`,
+  `test_library_lives_in_the_topbar_only`). Soittoketjuun ei koskettu
+  muuten kuin poistamalla fullscreen-kutsu; käyttäjän kuuntelutesti
+  (Seek & Destroy, SIIRTO −0,75 / BPM 142) tarvitaan ennen kuittausta.
+
 ## 🔒 ISO LUKKO – soitto valmis ja jäädytetty (23.10.2026)
 
 - Käyttäjä kuitannut: **kaikki soittoviat on korjattu** ja soitto toimii
