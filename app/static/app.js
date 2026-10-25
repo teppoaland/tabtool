@@ -1876,9 +1876,11 @@
 
   function jumpToBar(bar) {
     // Press a bar number to put the song, the tab and the cursor there.
-    // The score time is converted to audio seconds by the frozen inverse in
-    // mediaHandler.seekTo (the same one alphaTab uses), so the lyrics code
-    // does not keep a second copy of the drift/offset math (rule 07).
+    // alphaTab owns the tempo map (Seek & Destroy changes tempo at bar 113),
+    // so the bar is given to it as a *tick*: the engine converts the tick to
+    // score time with the tempo changes, maps that onto the backing track and
+    // calls the frozen mediaHandler.seekTo() inverse itself (v2.14). A time
+    // computed here from a constant tempo drifted after any automation.
     if (!api || !activeTab) return false;
     const bars =
       api.score && Array.isArray(api.score.masterBars)
@@ -1888,10 +1890,12 @@
     const number = Math.max(1, Math.round(Number(bar) || 1));
     const index = Math.min(number, bars.length) - 1;
     const startTick = Number(bars[index].start) || 0;
-    const tempo = notatedTempo() || 120;
-    const scoreMs = (startTick * 60000) / (tempo * 960);
     clearPlaybackRange();
-    mediaHandler.seekTo(scoreMs);
+    try {
+      api.tickPosition = startTick;
+    } catch (error) {
+      return false;
+    }
     syncPosition(true);
     updateTransport();
     window.setTimeout(scrollScoreToCursor, 80);

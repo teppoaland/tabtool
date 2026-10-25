@@ -2,6 +2,23 @@
 
 > AI TabTool käyttää `1.x`-versiosarjaa. Aloitus `v1.00`.
 
+## v2.14 – 25.10.2026
+
+- **Korjattu: sanoitusnäkymän tahtihyppy vääristyi tempo-automaatioiden
+  jälkeen.** Klikkaus tahtiin 116 meni tahtiin 117 ja heitto kasvoi (220 →
+  235). Syy: hyppy laski tahdin score-ajan **yhdellä temmolla**
+  (`startTick * 60000 / (tempo * 960)`), mutta Seek & Destroy vaihtaa tempon
+  tahdissa 113 (208 BPM). Reno Nordin -tabissa ei ole automaatioita, siksi
+  se toimi 1:1.
+- **Korjaus:** tahti annetaan alphaTabille **tickinä**
+  (`api.tickPosition = startTick`). AlphaTabin setteri muuntaa tickin
+  score-ajaksi tempokartan kanssa, kuvaa sen backing track -ajaksi ja kutsuu
+  itse jäädytettyä `mediaHandler.seekTo`-inversiota – täsmälleen sama polku,
+  jota tablatuurin klikkaus jo käyttää. `jumpToBar`ista poistuivat
+  `notatedTempo`, `60000` ja `960`; vartiotesti
+  `test_bar_seek_uses_the_tempo_aware_tick_path` estää paluun.
+- **Testit:** 270 passed (uusi regressiotesti tempo-automaatio-tapaukselle).
+
 ## v2.13 – 25.10.2026
 
 - **Tahtilista isommaksi ja säädettäväksi.** `#lyrics-bars` on oletuksena

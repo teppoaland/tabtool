@@ -58,8 +58,12 @@ Putki (app/pipeline/)
   fullscreenissa). Fullscreenissa rivi on 96vw leveä, joten se pysyy yhdellä
   rivillä. Tausta on musta (`#000`) ja sivupadding 3ch. Editorissa on
   PLAY/PAUSE, «, −5 s ja +5 s, ja **tahtinumeron klikkaus hyppää siihen
-  tahtiin** hyödyntäen `mediaHandler.seekTo`-inversiota (ei omaa
-  kellomatematiikkaa). Tabin poisto poistaa sidecarin.
+  tahtiin** `api.tickPosition`-tick-seekillä – alphaTab muuntaa tickin
+  tempokartalla (myös tempo-automaatiot), kuvaa sen backing track -ajaksi ja
+  kutsuu itse `mediaHandler.seekTo`-inversiota. **Älä laske tahdin aikaa
+  itse** (`ticks * 60000 / (tempo * 960)`): Seek & Destroy vaihtaa tempon
+  tahdissa 113 (208 BPM), jolloin vakiotempo heittää tahti tahdilta
+  (v2.14-bugi: 220 → 235). Tabin poisto poistaa sidecarin.
 - `app/library.py` hoitaa poiston: tab-hakemisto, stemmit sekä job/track-
   rivit. Jaettu audio säilyy, jos toinen tabi käyttää sitä; MP3 jää
   `EXTERNAL_DIR`iin. Poisto ei koske `data/`-juuren ulkopuolisiin polkuihin.

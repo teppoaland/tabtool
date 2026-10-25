@@ -1,9 +1,9 @@
 # 📍 Aktiivinen konteksti – AI TABTOOL
 
-> **Versio:** `v2.13` (25.10.2026)
+> **Versio:** `v2.14` (25.10.2026)
 > **Git:** v1.23–v1.99 **pushattu** `origin/main`iin 23.10.2026 käyttäjän
 > pyynnöstä; **tagi `v1.99` = viimeisin pushattu palautuspiste**
-> (`git reset --hard v1.99`); v2.00–v2.13 ovat paikallisia. Älä pinnaa
+> (`git reset --hard v1.99`); v2.00–v2.14 ovat paikallisia. Älä pinnaa
 > HEAD-hashia pysyvästi.
 > **Push:** vain erillisestä pyynnöstä (käyttäjä pyysi 20.10. ja 23.10.2026).
 > **Repo:** https://github.com/teppoaland/tabtool
@@ -20,6 +20,17 @@
   **pyydetään testaamaan soitto referenssikappaleella** (Seek & Destroy,
   SIIRTO −0,75 / BPM 142) ennen ja jälkeen. Katso
   `.clinerules/07-playback-frozen.md`.
+- **v2.14 (25.10.2026) – Tahtihyppy tempo-automaatioilla (bugikorjaus):**
+  - Oire: Seek & Destroy, klikkaus 116 → kursori 117, 220 → 235. Syy:
+    `jumpToBar` laski score-ajan yhdellä temmolla; tabissa on automaatiot
+    (tahti 113 → 208 BPM, 165 → 140 BPM). Reno Nordinissa ei automaatioita
+    → toimi 1:1.
+  - Korjaus: `api.tickPosition = startTick` – alphaTab muuntaa tickin
+    tempokartalla, kuvaa backing track -ajaksi ja kutsuu itse
+    `mediaHandler.seekTo`-inversiota (sama polku kuin tablatuurin klikkaus).
+    Vartiotesti `test_bar_seek_uses_the_tempo_aware_tick_path` kieltää
+    `60000`/`960`/`notatedTempo`-laskennan `jumpToBar`issa.
+  - Testit **270**.
 - **v2.13 (25.10.2026) – Tahtilista isommaksi + jakokahva:**
   - `#lyrics-bars` oletus 14rem (ennen 6.4rem max) ja `#lyrics-split`
     tahtilistan ja sanoituskentän välissä: listan kasvaessa tekstikenttä

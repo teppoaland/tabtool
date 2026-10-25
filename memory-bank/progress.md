@@ -1,5 +1,20 @@
 # 📊 Projektin edistyminen – AI TABTOOL
 
+## v2.14 – Tahtihyppy tempo-automaatioilla (bugikorjaus, 25.10.2026)
+
+- Oire: Seek & Destroy -tabissa klikkaus tahtiin 116 meni 117 ja heitto
+  kasvoi (220 → 235). Syy: `jumpToBar` laski tahdin score-ajan **yhdellä
+  temmolla** (`startTick * 60000 / (tempo * 960)`), mutta tabissa on
+  tempo-automaatiot (tahti 113 → 208 BPM, tahti 165 → 140 BPM). Reno
+  Nordinissa ei ole automaatioita, siksi se toimi 1:1.
+- Korjaus: hyppy annetaan alphaTabille tickinä (`api.tickPosition =
+  startTick`). Sen setteri muuntaa tickin score-ajaksi tempokartalla, kuvaa
+  score-ajan backing track -ajaksi ja kutsuu itse
+  `mediaHandler.seekTo`-inversiota – sama polku kuin tablatuurin klikkaus.
+- Vartiotesti `test_bar_seek_uses_the_tempo_aware_tick_path`: `jumpToBar`
+  ei saa sisältää `60000`/`960`/`notatedTempo`-laskentaa.
+- Testit **270**.
+
 ## v2.13 – Tahtilista isommaksi + jakokahva (25.10.2026)
 
 - `#lyrics-bars` oletuskorkeus **14rem** (ennen max 6.4rem) ja paneelin

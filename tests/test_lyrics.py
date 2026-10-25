@@ -357,11 +357,18 @@ def test_lyrics_editor_has_playback_controls():
 
     source = APP_JS.read_text(encoding="utf-8")
     jump = _js_code(source, "jumpToBar")
-    assert "mediaHandler.seekTo(scoreMs)" in jump
-    assert "notatedTempo()" in jump
+    # alphaTab's tick setter owns the tempo map (see the regression test).
+    assert "api.tickPosition = startTick" in jump
     assert "masterBars" in jump
-    for marker in ("syncDrift", "bpmDrift", "barDurationMs", "audio"):
-        assert marker not in jump, f"jumpToBar must not re-implement {marker}"
+    for marker in (
+        "syncDrift",
+        "bpmDrift",
+        "barDurationMs",
+        "audio",
+        "60000",
+        "960",
+    ):
+        assert marker not in jump, f"jumpToBar must not compute the time itself: {marker}"
 
     assert (
         'lyricsPlayButton.addEventListener("click", () => handlePlayButton())'
@@ -409,6 +416,24 @@ def test_lyrics_bar_list_and_editor_share_the_panel_height():
     assert (
         'lyricsSplitter.addEventListener("pointerdown", startLyricsSplit)' in source
     )
+
+
+def test_bar_seek_uses_the_tempo_aware_tick_path():
+    """v2.14: a tempo automation must not shift the bar seek.
+
+    Seek & Destroy changes tempo at bar 113 (208 BPM). The first bar jump
+    computed the score time from a single tempo, so every bar after ~116
+    landed later and later (bar 220 showed bar 235). alphaTab's tickPosition
+    setter converts the tick with the score's tempo map, maps it onto the
+    backing track and calls the frozen mediaHandler.seekTo() inverse - the
+    same path a click on the score already uses.
+    """
+    jump = _js_code(APP_JS.read_text(encoding="utf-8"), "jumpToBar")
+    assert "api.tickPosition = startTick" in jump
+    assert "mediaHandler.seekTo" not in jump
+    assert "notatedTempo" not in jump
+    assert "60000" not in jump
+    assert "960" not in jump
 
 
 def test_corrupt_sidecar_reads_as_no_lyrics(
