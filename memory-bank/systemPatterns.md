@@ -49,7 +49,10 @@ Putki (app/pipeline/)
   `#lyrics-strip` lukee kuluvan tahdin `#bar-readout`-tekstistä
   (`MutationObserver`) – ei kelloa, ei `api`-kutsuja, ei audio-kirjoituksia.
   Otsikon `#lyrics-bar-badge` ja tahtilistan `is-current` auttavat
-  asettamaan rivit kuuntelemalla. Tabin poisto poistaa sidecarin.
+  asettamaan rivit kuuntelemalla. Paneeli on myös **kooltaan säädettävä**
+  (`#lyrics-resize`, koko talletetaan) ja sanoitusrivin koko tulee
+  Settingsistä (`lyrics.scale`, 100–400 %, oletus 200 % → CSS-muuttuja
+  `--lyrics-scale`). Tabin poisto poistaa sidecarin.
 - `app/library.py` hoitaa poiston: tab-hakemisto, stemmit sekä job/track-
   rivit. Jaettu audio säilyy, jos toinen tabi käyttää sitä; MP3 jää
   `EXTERNAL_DIR`iin. Poisto ei koske `data/`-juuren ulkopuolisiin polkuihin.

@@ -24,6 +24,9 @@
   const COUNT_IN_STORAGE_KEY = "tabtool:countIn";
   // Sanat-editorin kelluva sijainti muistetaan selaimessa (v2.07).
   const LYRICS_POS_KEY = "tabtool:lyricsPos";
+  // Sanoitusrivin koko on kerroin (v2.08): 200 % = tuplat entisestä, ja
+  // sama oletus on app/settings.py:ssä (lyrics.scale).
+  const LYRICS_SCALE_DEFAULT = 200;
   const SYNC_LIMIT = 0.1;
   // SIIRTO (whole-bar shift) may have to bridge a large structure difference
   // in the tab data, so its range is generous (v1.75). syncTimeMs() still
@@ -126,6 +129,7 @@
   const lyricsCurrent = document.getElementById("lyrics-current");
   const lyricsDialog = document.getElementById("lyrics-dialog");
   const lyricsHandle = document.getElementById("lyrics-handle");
+  const lyricsResizer = document.getElementById("lyrics-resize");
   const lyricsBarBadge = document.getElementById("lyrics-bar-badge");
   const lyricsForm = document.getElementById("lyrics-form");
   const lyricsSubject = document.getElementById("lyrics-subject");
@@ -236,8 +240,12 @@
   let lyricsLoadingFor = "";
   let lyricsShownBar = -1;
   let lyricsDirty = false;
+  // Sanoitusrivin koko prosentteina (v2.08), tulee /api/settingsistä.
+  let lyricsScale = LYRICS_SCALE_DEFAULT;
   // Floating editor drag state (v2.07): DOM only, no audio/api involvement.
   let lyricsDrag = null;
+  // Resize state for the floating editor (v2.08): DOM only as well.
+  let lyricsResize = null;
 
   function setPlayLabel(playing) {
     if (!playButton) return;
@@ -1103,6 +1111,20 @@
     return Math.min(high, Math.max(low, number));
   }
 
+  function applyLyricsScale() {
+    // Multiplies the clamp() in .lyrics-current, so the line keeps scaling
+    // with the screen and the Settings percentage only changes the factor
+    // (100 % = the old size, 200 % = the default double). A document style
+    // only: no audio write, no alphaTab call (rule 07).
+    const factor = Math.min(4, Math.max(1, lyricsScale / 100));
+    if (document.documentElement) {
+      document.documentElement.style.setProperty(
+        "--lyrics-scale",
+        String(factor)
+      );
+    }
+  }
+
   function applyUiVisibility(values) {
     for (const feature of UI_FEATURES) {
       const shown = values[`ui.${feature}`] !== false;
@@ -1122,6 +1144,17 @@
       clampSetting(settings["countin.zero_ms"], 0, 2000, COUNT_IN_ZERO_MS)
     );
     defaultCountInEnabled = settings["countin.enabled"] !== false;
+    // The lyric strip font is a CSS variable (v2.08); the default doubles the
+    // old size. Only a document style is written, never an audio/api value.
+    lyricsScale = Math.round(
+      clampSetting(
+        settings["lyrics.scale"],
+        100,
+        400,
+        LYRICS_SCALE_DEFAULT
+      )
+    );
+    applyLyricsScale();
     defaultStaveProfile = Object.prototype.hasOwnProperty.call(
       STAVE_PROFILES,
       settings["view.stave"]
@@ -1865,6 +1898,18 @@
     lyricsDialog.style.top = `${Math.round(clampPixels(top, 8, maxTop))}px`;
   }
 
+  function sizeLyricsPanel(width, height) {
+    if (!lyricsDialog) return;
+    const maxWidth = Math.max(320, window.innerWidth - 16);
+    const maxHeight = Math.max(260, window.innerHeight - 16);
+    lyricsDialog.style.width = `${Math.round(
+      clampPixels(width, 360, maxWidth)
+    )}px`;
+    lyricsDialog.style.height = `${Math.round(
+      clampPixels(height, 280, maxHeight)
+    )}px`;
+  }
+
   function readLyricsPanelPosition() {
     try {
       const raw = JSON.parse(localStorage.getItem(LYRICS_POS_KEY) || "null");
@@ -1885,6 +1930,8 @@
         JSON.stringify({
           left: Math.round(lyricsDialog.offsetLeft),
           top: Math.round(lyricsDialog.offsetTop),
+          width: Math.round(lyricsDialog.offsetWidth),
+          height: Math.round(lyricsDialog.offsetHeight),
         })
       );
     } catch (error) {
@@ -1924,10 +1971,54 @@
     saveLyricsPanelPosition();
   }
 
+  function startLyricsResize(event) {
+    if (!lyricsDialog) return;
+    if (event.button !== undefined && event.button !== 0) return;
+    event.preventDefault();
+    const rect = lyricsDialog.getBoundingClientRect();
+    lyricsResize = {
+      startX: event.clientX,
+      startY: event.clientY,
+      width: rect.width,
+      height: rect.height,
+    };
+    if (lyricsResizer && typeof lyricsResizer.setPointerCapture === "function") {
+      try {
+        lyricsResizer.setPointerCapture(event.pointerId);
+      } catch (error) {
+        /* the pointer may already be gone */
+      }
+    }
+  }
+
+  function moveLyricsResize(event) {
+    if (!lyricsResize) return;
+    sizeLyricsPanel(
+      lyricsResize.width + (event.clientX - lyricsResize.startX),
+      lyricsResize.height + (event.clientY - lyricsResize.startY)
+    );
+    // Growing near the edge must not push the panel out of the window.
+    placeLyricsPanel(lyricsDialog.offsetLeft, lyricsDialog.offsetTop);
+  }
+
+  function endLyricsResize() {
+    if (!lyricsResize) return;
+    lyricsResize = null;
+    saveLyricsPanelPosition();
+  }
+
   function showLyricsPanel() {
     if (!lyricsDialog) return;
     const saved = readLyricsPanelPosition();
     if (saved) {
+      if (
+        Number.isFinite(saved.width) &&
+        Number.isFinite(saved.height) &&
+        saved.width > 0 &&
+        saved.height > 0
+      ) {
+        sizeLyricsPanel(saved.width, saved.height);
+      }
       placeLyricsPanel(saved.left, saved.top);
       return;
     }
@@ -1952,6 +2043,7 @@
     if (!lyricsDialog) return;
     lyricsDialog.hidden = true;
     lyricsDrag = null;
+    lyricsResize = null;
     setLyricsStatus("");
   }
 
@@ -3037,9 +3129,18 @@
     window.addEventListener("pointerup", endLyricsDrag);
     window.addEventListener("pointercancel", endLyricsDrag);
   }
+  if (lyricsResizer) {
+    lyricsResizer.addEventListener("pointerdown", startLyricsResize);
+    window.addEventListener("pointermove", moveLyricsResize);
+    window.addEventListener("pointerup", endLyricsResize);
+    window.addEventListener("pointercancel", endLyricsResize);
+  }
   window.addEventListener("resize", () => {
     // Keep the floating editor inside the viewport after a resize/fullscreen.
     if (lyricsDialog && !lyricsDialog.hidden) {
+      if (lyricsDialog.style.width || lyricsDialog.style.height) {
+        sizeLyricsPanel(lyricsDialog.offsetWidth, lyricsDialog.offsetHeight);
+      }
       placeLyricsPanel(lyricsDialog.offsetLeft, lyricsDialog.offsetTop);
     }
   });

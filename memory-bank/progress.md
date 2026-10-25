@@ -1,5 +1,23 @@
 # 📊 Projektin edistyminen – AI TABTOOL
 
+## v2.08 – Sanoitusikkuna resizable, tekstin koko Settingsiin (25.10.2026)
+
+- **Ikkunan koko:** `#lyrics-resize` oikeassa alakulmassa (pointer events);
+  min 360 × 280 px, max ikkuna − 16 px. Koko tallentuu sijainnin kanssa
+  samaan `tabtool:lyricsPos`-tietueeseen (`width`/`height`) ja klampataan
+  uudelleen resize/fullscreenissa. Tekstikenttä kasvaa paneelin mukana.
+  Pelkkää DOMia: ei audion kirjoituksia, ei alphatab-kutsuja.
+- **Sanoitusrivin koko:** Settings saa ryhmän **Sanat** ja kentän
+  `lyrics.scale` (100–400 %, askel 25, **oletus 200 %** = tuplat vanhasta).
+  `applyRuntimeSettings` → `applyLyricsScale()` → CSS-muuttuja
+  `--lyrics-scale`; `.lyrics-current` =
+  `calc(clamp(1.05rem, 2vw, 1.7rem) * var(--lyrics-scale, 2))`. Oletus on
+  voimassa jo ennen asetusten latausta ja sama kerroin toimii koko näytön
+  tilassa. Asetus luetaan sivun latauksessa (muutoksen jälkeen TV-näkymä
+  uudelleen, kuten muutkin Settings-arvot).
+- **Testit 266** (2 uutta: koon muutto + tekstin koko; Settings-testi
+  laajennettu ryhmällä ja rajoilla).
+
 ## v2.07 – Sanat-editori kelluvaksi (25.10.2026)
 
 - **Ei enää modaali:** `#lyrics-dialog` on `position: fixed` paneeli

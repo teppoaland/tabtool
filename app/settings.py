@@ -24,6 +24,7 @@ from app import db
 # Rendered in this order in the Settings view.
 GROUPS: tuple[tuple[str, str], ...] = (
     ("playback", "Toisto"),
+    ("lyrics", "Sanat"),
     ("view", "Näkymä"),
     ("ui", "Toiminnot näkyvissä"),
     ("remote", "Puhelin (REMOTE)"),
@@ -115,6 +116,21 @@ FIELDS: tuple[Setting, ...] = (
         "bool",
         True,
         help="TV-näkymän ON/OFF-kytkin ohittaa tämän; tämä on oletus.",
+    ),
+    Setting(
+        "lyrics.scale",
+        "lyrics",
+        "Sanoitusrivin koko",
+        "number",
+        200,
+        minimum=100,
+        maximum=400,
+        step=25,
+        unit="%",
+        help=(
+            "Soiton aikana näkyvän sanoitusrivin koko. 100 % = entinen koko, "
+            "200 % = tuplat (oletus). Pätee myös koko näytön tilaan."
+        ),
     ),
     Setting(
         "view.stave",

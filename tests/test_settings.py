@@ -66,6 +66,7 @@ def test_defaults_are_served_with_their_bounds(client: TestClient) -> None:
     assert payload["values"] == DEFAULTS
     assert [group["key"] for group in payload["groups"]] == [
         "playback",
+        "lyrics",
         "view",
         "ui",
         "remote",
@@ -78,6 +79,26 @@ def test_defaults_are_served_with_their_bounds(client: TestClient) -> None:
         field for field in payload["fields"] if field["key"] == "countin.steps"
     )
     assert (steps["min"], steps["max"], steps["step"]) == (1, 12, 1)
+    scale = next(
+        field for field in payload["fields"] if field["key"] == "lyrics.scale"
+    )
+    assert (
+        scale["default"],
+        scale["min"],
+        scale["max"],
+        scale["step"],
+        scale["unit"],
+    ) == (200, 100, 400, 25, "%")
+
+
+def test_lyrics_scale_round_trip(client: TestClient) -> None:
+    """v2.08: the lyric strip size is a normal Settings number."""
+    response = client.post("/api/settings", json={"lyrics.scale": 300})
+    assert response.status_code == 200, response.text
+    assert response.json()["values"]["lyrics.scale"] == 300
+    assert client.get("/api/settings").json()["values"]["lyrics.scale"] == 300
+    assert client.post("/api/settings", json={"lyrics.scale": 50}).status_code == 422
+    assert client.post("/api/settings", json={"lyrics.scale": 450}).status_code == 422
 
 
 def test_saving_persists_every_value(client: TestClient) -> None:

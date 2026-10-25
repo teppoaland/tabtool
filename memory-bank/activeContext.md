@@ -1,9 +1,9 @@
 # 📍 Aktiivinen konteksti – AI TABTOOL
 
-> **Versio:** `v2.07` (25.10.2026)
+> **Versio:** `v2.08` (25.10.2026)
 > **Git:** v1.23–v1.99 **pushattu** `origin/main`iin 23.10.2026 käyttäjän
 > pyynnöstä; **tagi `v1.99` = viimeisin pushattu palautuspiste**
-> (`git reset --hard v1.99`); v2.00–v2.07 ovat paikallisia. Älä pinnaa
+> (`git reset --hard v1.99`); v2.00–v2.08 ovat paikallisia. Älä pinnaa
 > HEAD-hashia pysyvästi.
 > **Push:** vain erillisestä pyynnöstä (käyttäjä pyysi 20.10. ja 23.10.2026).
 > **Repo:** https://github.com/teppoaland/tabtool
@@ -20,6 +20,17 @@
   **pyydetään testaamaan soitto referenssikappaleella** (Seek & Destroy,
   SIIRTO −0,75 / BPM 142) ennen ja jälkeen. Katso
   `.clinerules/07-playback-frozen.md`.
+- **v2.08 (25.10.2026) – Sanoitusikkuna resizable + tekstin koko Settingsiin:**
+  - `#lyrics-resize` (oikea alakulma, pointer events): paneelin koko
+    360×280 … ikkuna−16 px; koko tallentuu `tabtool:lyricsPos`-tietueeseen
+    (`width`/`height`) ja klampataan resize/fullscreenissa. Tekstikenttä
+    kasvaa paneelin mukana (`.lyrics-form .field` flex).
+  - Settings: uusi ryhmä **Sanat**, kenttä `lyrics.scale` (100–400 %,
+    askel 25, **oletus 200 %** = tuplat). `applyRuntimeSettings` →
+    `applyLyricsScale()` → CSS-muuttuja `--lyrics-scale`;
+    `.lyrics-current` = `calc(clamp(…) * var(--lyrics-scale, 2))`, joten
+    oletus on voimassa jo ennen asetusten latausta ja myös fullscreenissa.
+  - Testit **266** (2 uutta + Settings-testin ryhmä/rajat).
 - **v2.07 (25.10.2026) – Sanat-editori kelluvaksi:**
   - `#lyrics-dialog` on nyt `position: fixed` paneeli (`z-index: 2200`,
     `#lyrics-handle`-otsikosta raahaus pointer-eventeillä, sijainti

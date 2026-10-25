@@ -5,7 +5,7 @@ ja katseluun. Hae kappale Spotifysta tai käytä omaa MP3/YouTube-audioita,
 anna tekoälyn tehdä ensimmäinen tablatuuriluonnos ja katsele sitä
 alphaTabilla TV:stä tai tietokoneelta. Puhelin toimii kaukosäätimenä.
 
-**Versio:** `v2.07` (Phase 4 – LAN-kaukosäädin, Settings, kirjaston Tiedot, sormitusversiot ja sanat sidecarina)
+**Versio:** `v2.08` (Phase 4 – LAN-kaukosäädin, Settings, kirjaston Tiedot, sormitusversiot ja sanat sidecarina)
 
 ## Session aloitus
 
@@ -128,6 +128,9 @@ TALLENNA kirjoittaa arvot palvelimelle (rajat ja tyypit validoi
 - **Toisto:** lähtölaskennan askelmat (1–12), askeleen kesto (200–3000 ms) ja
   nollan kesto (0–2000 ms) sekä lähtölaskenta oletuksena päälle/pois.
   Oletukset ovat samat kuin ennen: 5 askelta × 1000 ms + 250 ms.
+- **Sanat:** soiton aikana näkyvän sanoitusrivin koko (100–400 %, askel 25 %,
+  oletus **200 %** = tuplat aiemmasta). Sama kerroin toimii myös koko näytön
+  tilassa; 100 % palauttaa vanhan koon.
 - **Näkymä:** Näkymän oletus (Tab / Auto / Tab + nuotit / Nuotit) uudelle
   selaimelle; TV-näkymän oma valinta ohittaa sen.
 - **Toiminnot näkyvissä:** jokainen päänäkymän toiminto (LIBRARY, REMOTE, API,
@@ -300,16 +303,19 @@ COUNT-IN-kytkin (ON/OFF, oletus ON)** sekä normaalissa että koko näytön
 näkymässä; valinta muistetaan selaimessa. Kytkin luetaan vain
 `shouldRunCountIn`issa – se ei koske soittoketjuun.
 
-**Sanat (v2.06–v2.07):** katselimen **SANAT** avaa **kelluvan** editorin, jota
-voi raahata otsikkorivista ja joka pysyy aina päällimmäisenä. Koska taustalla ei
-ole verhoa, soitto, seek ja kursorin seuraaminen toimivat paneelin takaa: sanat
-voi asettaa kuuntelemalla. Otsikossa näkyy kuluvan tahdin numero ja tahtilista
-korostaa saman tahdin, joten rivin paikka on helppo tarkistaa. Jokainen rivi on
-muotoa `tahti | teksti` (esim. `10 | Mun sydän palaa`); tahdin voi kirjoittaa
-käsin tai klikata tahtilistasta. Ilman tahtinumeroa oleva rivi jatkaa
-edellisestä tahdista. Sanat tallennetaan **erilliseen** tiedostoon
+**Sanat (v2.06–v2.08):** katselimen **SANAT** avaa **kelluvan** editorin, jota
+voi raahata otsikkorivista, jonka kokoa voi muuttaa oikean alakulman kahvasta ja
+joka pysyy aina päällimmäisenä. Sijainti ja koko muistetaan selaimessa. Koska
+taustalla ei ole verhoa, soitto, seek ja kursorin seuraaminen toimivat paneelin
+takaa: sanat voi asettaa kuuntelemalla. Otsikossa näkyy kuluvan tahdin numero ja
+tahtilista korostaa saman tahdin, joten rivin paikka on helppo tarkistaa.
+Jokainen rivi on muotoa `tahti | teksti` (esim. `10 | Mun sydän palaa`); tahdin
+voi kirjoittaa käsin tai klikata tahtilistasta. Ilman tahtinumeroa oleva rivi
+jatkaa edellisestä tahdista. Sanat tallennetaan **erilliseen** tiedostoon
 `data/lyrics/<tab_id>.json` – GP5/MusicXML/MIDI ja tabin metadata eivät muutu,
 joten tabi pysyy lukusyötteenä eikä soitto- tai synkkaketjuun kosketa.
+Soiton aikana näkyvän rivin kokoa säädetään **SETTINGS → Sanat**
+(100–400 %, oletus 200 %).
 
 **Vihje:** älä raahaa hiirellä tabin yli – se saattoi aiemmin luoda
 alphaTabin loop-alueen. Nykyään alue nollataan automaattisesti, mutta

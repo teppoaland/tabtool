@@ -8,12 +8,13 @@ may appear. The playback chain (rule 07) is not involved.
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
 
 import pytest
 from fastapi.testclient import TestClient
 
-from app import db, lyrics
+from app import db, lyrics, settings
 from app.pipeline.build import build_document
 from app.pipeline.export_gp5 import export_gp5
 from app.pipeline.model import STANDARD_TUNING, TabNote
@@ -232,6 +233,13 @@ def _js_function(source: str, name: str) -> str:
     raise AssertionError(f"unbalanced braces around {name}")
 
 
+def _js_code(source: str, name: str) -> str:
+    """Function body without comments, so docs may name audio/api."""
+    body = _js_function(source, name)
+    body = re.sub(r"/\*.*?\*/", "", body, flags=re.S)
+    return re.sub(r"//[^\n]*", "", body)
+
+
 def test_lyrics_editor_floats_above_the_player():
     """v2.07: the editor is a draggable panel, not a modal.
 
@@ -261,6 +269,44 @@ def test_lyrics_editor_floats_above_the_player():
     # Dragging is wired through pointer events on the header only.
     assert 'lyricsHandle.addEventListener("pointerdown", startLyricsDrag)' in source
     assert "pointermove" in source and "pointerup" in source
+
+
+def test_lyrics_editor_can_be_resized():
+    """v2.08: the floating editor is resizable and remembers its size."""
+    html = INDEX_HTML.read_text(encoding="utf-8")
+    assert 'id="lyrics-resize"' in html
+
+    source = APP_JS.read_text(encoding="utf-8")
+    for name in ("startLyricsResize", "moveLyricsResize", "sizeLyricsPanel"):
+        body = _js_code(source, name)
+        assert "audio" not in body, f"{name} must not touch the audio element"
+        assert "api." not in body, f"{name} must not call the alphaTab API"
+
+    assert 'lyricsResizer.addEventListener("pointerdown", startLyricsResize)' in source
+    assert "lyricsDialog.style.width" in source
+    assert "lyricsDialog.style.height" in source
+    saved = _js_function(source, "saveLyricsPanelPosition")
+    assert "width" in saved and "height" in saved
+    shown = _js_function(source, "showLyricsPanel")
+    assert "sizeLyricsPanel" in shown
+
+
+def test_lyrics_scale_setting_drives_the_strip_font():
+    """v2.08: Settings -> Sanat -> Sanoitusrivin koko; default = doubled."""
+    defaults = {field.key: field.default for field in settings.FIELDS}
+    assert defaults["lyrics.scale"] == 200
+    field = next(item for item in settings.FIELDS if item.key == "lyrics.scale")
+    assert (field.minimum, field.maximum, field.step) == (100, 400, 25)
+
+    source = APP_JS.read_text(encoding="utf-8")
+    runtime = _js_function(source, "applyRuntimeSettings")
+    assert '"lyrics.scale"' in runtime
+    scale = _js_code(source, "applyLyricsScale")
+    assert "--lyrics-scale" in scale
+    assert "audio" not in scale and "api." not in scale
+
+    css = (INDEX_HTML.parent / "style.css").read_text(encoding="utf-8")
+    assert "var(--lyrics-scale, 2)" in css
 
 
 def test_corrupt_sidecar_reads_as_no_lyrics(

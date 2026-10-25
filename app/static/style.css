@@ -1606,7 +1606,9 @@ body.viewer-fullscreen {
   background: rgba(6, 8, 12, 0.72);
   border: 1px solid var(--border);
   color: var(--text);
-  font-size: clamp(1.05rem, 2vw, 1.7rem);
+  /* --lyrics-scale comes from Settings (lyrics.scale, v2.08): 100 % is the
+     pre-v2.08 size and 200 % (the default) is that doubled. */
+  font-size: calc(clamp(1.05rem, 2vw, 1.7rem) * var(--lyrics-scale, 2));
   font-weight: 700;
   line-height: 1.3;
   text-align: center;
@@ -1929,6 +1931,7 @@ body.hide-ui-export .viewer-foot {
   transform: translateX(-50%);
   z-index: 2200;
   width: min(46rem, calc(100vw - 2rem));
+  max-width: calc(100vw - 1rem);
   max-height: calc(100vh - 3rem);
   display: flex;
   flex-direction: column;
@@ -1938,6 +1941,7 @@ body.hide-ui-export .viewer-foot {
   border: 1px solid var(--border);
   border-radius: 20px;
   box-shadow: var(--shadow);
+  overflow: hidden;
 }
 
 .lyrics-float[hidden] {
@@ -1983,13 +1987,57 @@ body.hide-ui-export .viewer-foot {
   flex-direction: column;
   gap: 0.6rem;
   min-height: 0;
+  flex: 1 1 auto;
   overflow-y: auto;
   padding-right: 0.2rem;
 }
 
+/* Inside the editor the textarea fills the resized panel; elsewhere .field
+   keeps its original grid layout. */
+.lyrics-form .field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  min-height: 0;
+  flex: 1 1 auto;
+}
+
+/* Resize grip (v2.08): bottom-right corner, pointer events only. */
+.lyrics-resize {
+  position: absolute;
+  right: 0.35rem;
+  bottom: 0.35rem;
+  width: 1.15rem;
+  height: 1.15rem;
+  border-radius: 4px;
+  cursor: nwse-resize;
+  touch-action: none;
+  opacity: 0.55;
+  background:
+    linear-gradient(
+      135deg,
+      transparent 42%,
+      var(--muted) 42%,
+      var(--muted) 50%,
+      transparent 50%
+    ),
+    linear-gradient(
+      135deg,
+      transparent 62%,
+      var(--muted) 62%,
+      var(--muted) 70%,
+      transparent 70%
+    );
+}
+
+.lyrics-resize:hover {
+  opacity: 1;
+}
+
 .lyrics-input {
   width: 100%;
-  min-height: 12rem;
+  flex: 1 1 auto;
+  min-height: 8rem;
   resize: vertical;
   background: var(--bg-soft);
   border: 1px solid var(--border);

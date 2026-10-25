@@ -2,6 +2,28 @@
 
 > AI TabTool käyttää `1.x`-versiosarjaa. Aloitus `v1.00`.
 
+## v2.08 – 25.10.2026
+
+- **Sanoitusikkuna raahattavaksi ja kooltaan säädettäväksi.** Oikean
+  alakulman kahvasta (`#lyrics-resize`, pointer events myös kosketukselle)
+  paneelin kokoa voi muuttaa: min 360 × 280 px, max ikkuna − 16 px. Koko
+  tallentuu sijainnin kanssa samaan `tabtool:lyricsPos`-tietueeseen
+  (`width`/`height`), joten ikkuna avautuu seuraavalla kerralla samanlaisena;
+  resize ja fullscreen klampautuvat takaisin ikkunaan. Tekstikenttä kasvaa
+  paneelin mukana (`.lyrics-form .field`, `flex`), ja taustalla soitto toimii
+  edelleen: raahaus ja koon muutto ovat pelkkää DOMia (ei audion kirjoituksia,
+  ei alphatab-kutsuja).
+- **Sanoitusrivin koko Settingsiin.** Uusi ryhmä **Sanat** ja kenttä
+  `lyrics.scale` (`app/settings.py`): 100–400 %, askel 25, **oletus 200 %**
+  eli tuplat vanhasta koosta. `app.js` lukee arvon
+  `applyRuntimeSettings`issa ja kirjoittaa CSS-muuttujan `--lyrics-scale`;
+  `.lyrics-current` käyttää `calc(clamp(…, 2vw, …) * var(--lyrics-scale, 2))`,
+  joten rivi skaalautuu koko näytön tilassa ja oletus (tuplat) on voimassa jo
+  ennen asetusten latausta. Asetus luetaan sivun latauksessa kuten muutkin
+  (muutoksen jälkeen TV-näkymä ladataan uudelleen).
+- **Testit:** 266 passed (2 uutta: ikkunan koon muutto + tekstin koon asetus;
+  olemassa oleva Settings-testi laajennettu uudella ryhmällä ja rajoilla).
+
 ## v2.07 – 25.10.2026
 
 - **Sanat-editori kelluvaksi ja raahattavaksi.** `#lyrics-dialog` ei ole enää
