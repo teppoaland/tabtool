@@ -2,6 +2,28 @@
 
 > AI TabTool käyttää `1.x`-versiosarjaa. Aloitus `v1.00`.
 
+## v2.12 – 25.10.2026
+
+- **Soittoeditori sanoitusikkunaan.** Paneelin otsikon alla on nyt samat
+  perustoiminnot kuin kaukosäätimessä: **PLAY/PAUSE**, **«** (alkuun),
+  **−5 s** ja **+5 s**. Ne kutsuvat olemassa olevia funktioita
+  (`handlePlayButton`, `seekTo`, `seekBy`) eivätkä muuta niitä. Editorin
+  PLAY peilaa katselimen PLAY-napin tilaa `MutationObserver`illa, joten
+  uusia audio-eventtejä ei lisätty.
+- **Tahtinumero hyppää soittoon.** Klikkaus tahtilistassa (esim. 127)
+  siirtää audion, tabin ja kursorin siihen tahtiin: `jumpToBar()` laskee
+  tahdin score-ajan (`api.score.masterBars[i].start` + `notatedTempo()`) ja
+  antaa sen **jäädytetyn inversion** hoidettavaksi
+  (`mediaHandler.seekTo(scoreMs)`), jota alphaTab itsekin käyttää. Sen
+  jälkeen `syncPosition(true)`, `updateTransport()` ja
+  `scrollScoreToCursor()`. Sanoituskoodiin ei tullut toista kopiota
+  drift/offset-matematiikasta – vartiotesti estää sen.
+- **Kaksoisklikkaus tahtinumerossa** lisää edelleen rivin `tahti | `
+  tekstikenttään (entinen toiminto), joten tahdin valinta ja rivin
+  aloittaminen onnistuvat samasta listasta.
+- **Testit:** 268 passed (1 uusi: editorin soittonapit, tahtiklikin seek ja
+  se, ettei `jumpToBar` sisällä omaa kellomatematiikkaa).
+
 ## v2.11 – 25.10.2026
 
 - **Sanoitusikkunan kokoa voi muuttaa kummasta nurkasta tahansa.** Kahva on

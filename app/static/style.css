@@ -1997,6 +1997,22 @@ body.hide-ui-export .viewer-foot {
   font-variant-numeric: tabular-nums;
 }
 
+/* Soittoeditori (v2.12): the same basic controls as the remote, so a lyric
+   line can be placed without reaching for the transport behind the panel. */
+.lyrics-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.lyrics-play {
+  min-width: 5.6rem;
+  padding: 0.5rem 0.9rem;
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+}
+
 .lyrics-form {
   display: flex;
   flex-direction: column;

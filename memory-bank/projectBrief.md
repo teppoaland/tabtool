@@ -1,6 +1,6 @@
 # 🎯 Projektin lyhyt kuvaus – AI TABTOOL
 
-> **Versio:** `v2.11` (25.10.2026)
+> **Versio:** `v2.12` (25.10.2026)
 > **Repo:** https://github.com/teppoaland/tabtool
 > **Paikallinen:** `D:\AI\tabtool`
 
@@ -159,14 +159,17 @@ Lokaali web-palvelu, jossa voi:
   alareunasta (`lyrics.offset_px`, oletus 100 px, `--lyrics-offset`);
   fullscreenissa rivi on 96vw leveä → yksi rivi isommallakin koolla.
   Rivin tausta on **täysin musta** (`#000`) ja sivupadding 3ch, joten
-  liikkuva tabi ei häiritse lukemista. Tabin poisto poistaa sidecarin;
-  lukittu tabi saa silti sanat.
+  liikkuva tabi ei häiritse lukemista. Editorissa on kaukosäätimen
+  perussoitto (PLAY/PAUSE, «, −5 s, +5 s) ja **tahtinumeron klikkaus hyppää
+  siihen tahtiin** `mediaHandler.seekTo`-inversiolla (ei omaa
+  kellomatematiikkaa). Tabin poisto poistaa sidecarin; lukittu tabi saa
+  silti sanat.
 - **Songsterr / Ultimate Guitar:** ei scrapea eikä kiertämistä.
   Songsterr-appin cache sisältää vain SVG-renderin, beat-ajastuksen ja
   audion (ei string/fret-dataa), ja GP/MIDI/MP3-lataus on Plus-ominaisuus
   (`songsterr.com/ai.txt`). Käyttäjän Android-osto on **kertamaksu**
   (vain Android, ei web). GP5:t haetaan laillisesta lähteestä käsin.
-- **Versiosarja `1.x`**, aloitus `v1.00`; nyt `v2.11`.
+- **Versiosarja `1.x`**, aloitus `v1.00`; nyt `v2.12`.
 - **Ei julkista julkaisua:** koodi pidetään lokaalina. Commitit tehdään
   paikalliseen repoon palautuspisteiksi (revert); push GitHubiin vain
   erillisestä pyynnöstä.
@@ -209,6 +212,6 @@ Sano Cline:lle **`lue membank`**. Sääntö on
 - `app/lyrics.py` – sanojen sidecar (`data/lyrics/<tab_id>.json`)
 - `scripts/pipeline_smoke.py` – CLI-proof
 - `stop.bat` / `status.bat` – palvelimen pysäytys ja tilan tarkistus
-- `tests/` – 267 pytest-testiä
+- `tests/` – 268 pytest-testiä
 - `data/` – GITIGNORED: audio, stemmit, tabit, tokenit
 - `docs/` – GITIGNORED: henkilökohtainen suunnitelma

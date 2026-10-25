@@ -136,6 +136,11 @@
     document.querySelectorAll(".lyrics-resize")
   );
   const lyricsBarBadge = document.getElementById("lyrics-bar-badge");
+  // Soittoeditori (v2.12): samat perustoiminnot kuin kaukosäätimessä.
+  const lyricsPlayButton = document.getElementById("lyrics-play");
+  const lyricsStartButton = document.getElementById("lyrics-start");
+  const lyricsBackButton = document.getElementById("lyrics-back");
+  const lyricsForwardButton = document.getElementById("lyrics-forward");
   const lyricsForm = document.getElementById("lyrics-form");
   const lyricsSubject = document.getElementById("lyrics-subject");
   const lyricsInput = document.getElementById("lyrics-input");
@@ -1864,6 +1869,39 @@
     markLyricsBars();
   }
 
+  function jumpToBar(bar) {
+    // Press a bar number to put the song, the tab and the cursor there.
+    // The score time is converted to audio seconds by the frozen inverse in
+    // mediaHandler.seekTo (the same one alphaTab uses), so the lyrics code
+    // does not keep a second copy of the drift/offset math (rule 07).
+    if (!api || !activeTab) return false;
+    const bars =
+      api.score && Array.isArray(api.score.masterBars)
+        ? api.score.masterBars
+        : null;
+    if (!bars || !bars.length) return false;
+    const number = Math.max(1, Math.round(Number(bar) || 1));
+    const index = Math.min(number, bars.length) - 1;
+    const startTick = Number(bars[index].start) || 0;
+    const tempo = notatedTempo() || 120;
+    const scoreMs = (startTick * 60000) / (tempo * 960);
+    clearPlaybackRange();
+    mediaHandler.seekTo(scoreMs);
+    syncPosition(true);
+    updateTransport();
+    window.setTimeout(scrollScoreToCursor, 80);
+    return true;
+  }
+
+  function syncLyricsPlayLabel() {
+    // Mirror the real PLAY button (which already owns the label) instead of
+    // adding another audio listener: no new coupling to the chain.
+    if (!lyricsPlayButton || !playButton) return;
+    const playing = playButton.dataset.state === "playing";
+    lyricsPlayButton.textContent = playing ? "PAUSE" : "PLAY";
+    lyricsPlayButton.dataset.state = playing ? "playing" : "paused";
+  }
+
   function renderLyricsBars(count) {
     if (!lyricsBars) return;
     lyricsBars.textContent = "";
@@ -1876,8 +1914,10 @@
       chip.className = "lyrics-bar";
       chip.dataset.bar = String(bar);
       chip.textContent = String(bar);
-      chip.title = `Lisää rivi tahdille ${bar}`;
-      chip.addEventListener("click", () => insertLyricsBar(bar));
+      chip.title = `Hyppää tahtiin ${bar}. Kaksoisklikkaus lisää rivin.`;
+      // Click = seek, double-click = start a line for that bar (v2.12).
+      chip.addEventListener("click", () => jumpToBar(bar));
+      chip.addEventListener("dblclick", () => insertLyricsBar(bar));
       lyricsBars.appendChild(chip);
     }
     markLyricsBars();
@@ -2077,6 +2117,7 @@
     // cursor stay usable while the lines are placed by ear.
     showLyricsPanel();
     markLyricsPlayingBar(currentLyricsBar(), false);
+    syncLyricsPlayLabel();
     if (lyricsInput) lyricsInput.focus({ preventScroll: true });
     if (tabId && lyricsTabId !== tabId) loadLyrics(tabId);
   }
@@ -2165,6 +2206,18 @@
         childList: true,
         characterData: true,
         subtree: true,
+      });
+    }
+    if (playButton) {
+      // The editor's PLAY/PAUSE mirrors the real button, so no audio listener
+      // is added anywhere (the chain stays exactly as it is).
+      const playObserver = new MutationObserver(() => syncLyricsPlayLabel());
+      playObserver.observe(playButton, {
+        childList: true,
+        characterData: true,
+        subtree: true,
+        attributes: true,
+        attributeFilter: ["data-state"],
       });
     }
   }
@@ -3165,6 +3218,20 @@
   if (lyricsButton) lyricsButton.addEventListener("click", openLyricsDialog);
   if (lyricsForm) lyricsForm.addEventListener("submit", saveLyrics);
   if (lyricsClose) lyricsClose.addEventListener("click", closeLyricsDialog);
+  // Playback for placing lyrics (v2.12): the same calls the transport and
+  // the remote already use. Nothing here changes them.
+  if (lyricsPlayButton) {
+    lyricsPlayButton.addEventListener("click", () => handlePlayButton());
+  }
+  if (lyricsStartButton) {
+    lyricsStartButton.addEventListener("click", () => seekTo(0));
+  }
+  if (lyricsBackButton) {
+    lyricsBackButton.addEventListener("click", () => seekBy(-5));
+  }
+  if (lyricsForwardButton) {
+    lyricsForwardButton.addEventListener("click", () => seekBy(5));
+  }
   if (lyricsHandle) {
     lyricsHandle.addEventListener("pointerdown", startLyricsDrag);
     window.addEventListener("pointermove", moveLyricsDrag);

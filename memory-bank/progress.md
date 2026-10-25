@@ -1,5 +1,18 @@
 # 📊 Projektin edistyminen – AI TABTOOL
 
+## v2.12 – Soittoeditori sanoitusikkunaan (25.10.2026)
+
+- Paneelin otsikon alla: PLAY/PAUSE (`handlePlayButton`), « (`seekTo(0)`),
+  −5 s / +5 s (`seekBy`). Editorin PLAY peilaa katselimen PLAY-nappia
+  `MutationObserver`illa – uusia audio-eventtejä ei lisätty.
+- **Tahtinumero hyppää:** `jumpToBar(bar)` laskee score-ajan
+  (`api.score.masterBars[i].start`, `notatedTempo()`) ja antaa sen
+  `mediaHandler.seekTo`lle (jäädytetty inversio), sitten
+  `syncPosition(true)`, `updateTransport()`, `scrollScoreToCursor()`.
+  Sanoituskoodiin ei tullut toista kopiota kellomatematiikasta.
+- Kaksoisklikkaus tahtinumerossa lisää edelleen rivin `tahti | `.
+- Testit **268**.
+
 ## v2.11 – Koon muutto kummasta nurkasta (25.10.2026)
 
 - Kaksi resize-kahvaa: **vasen yläkulma** (ensisijainen) ja oikea alakulma.

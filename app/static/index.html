@@ -6,14 +6,14 @@
   <meta name="color-scheme" content="dark">
   <title>AI TabTool</title>
   <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="/static/style.css?v=2.11">
+  <link rel="stylesheet" href="/static/style.css?v=2.12">
 </head>
 <body>
   <header class="topbar">
     <div class="brand">
       <span class="brand-mark" aria-hidden="true">AT</span>
       <span class="brand-name">AI TABTOOL</span>
-      <span id="version-tag" class="version">v2.11</span>
+      <span id="version-tag" class="version">v2.12</span>
     </div>
     <nav class="nav" aria-label="Päävalikko">
       <button id="open-search-top" type="button" class="primary nav-library"
@@ -360,9 +360,21 @@
       <h2 id="lyrics-heading">Sanat</h2>
       <span id="lyrics-bar-badge" class="lyrics-bar-badge">Tahti –</span>
     </header>
+    <!-- Soittoeditori (v2.12): samat perustoiminnot kuin kaukosäätimessä,
+         jotta rivin paikan voi tarkistaa soittamatta katselimeen. -->
+    <div class="lyrics-controls" role="group" aria-label="Soitto">
+      <button id="lyrics-play" type="button" class="primary lyrics-play"
+              title="Toista tai pysäytä audio. Sama kuin katselimen PLAY.">PLAY</button>
+      <button id="lyrics-start" type="button" class="ghost small"
+              title="Siirry kappaleen alkuun.">«</button>
+      <button id="lyrics-back" type="button" class="ghost small"
+              title="Siirry 5 sekuntia taaksepäin.">−5 s</button>
+      <button id="lyrics-forward" type="button" class="ghost small"
+              title="Siirry 5 sekuntia eteenpäin.">+5 s</button>
+    </div>
     <p id="lyrics-subject" class="detail-subject muted"></p>
     <div id="lyrics-bars" class="lyrics-bars" role="group"
-         aria-label="Tahdit: paina lisätäksesi rivi"></div>
+         aria-label="Tahdit: paina hypätäksesi tahtiin, kaksoisklikkaa lisätäksesi rivin"></div>
     <form id="lyrics-form" class="lyrics-form">
       <label class="field">
         <span>Yksi rivi per tahti: <code>tahti | teksti</code></span>
@@ -382,13 +394,13 @@
 
 
   <footer class="footer">
-    <span>AI TabTool v2.11</span>
+    <span>AI TabTool v2.12</span>
     <span>Local-first · <a href="/remote">Remote</a></span>
   </footer>
 
-  <script src="/static/vendor/alphaTab/alphaTab.min.js?v=2.11"></script>
-  <script src="/static/app.js?v=2.11" defer></script>
-  <script src="/static/remote-bridge.js?v=2.11" defer></script>
+  <script src="/static/vendor/alphaTab/alphaTab.min.js?v=2.12"></script>
+  <script src="/static/app.js?v=2.12" defer></script>
+  <script src="/static/remote-bridge.js?v=2.12" defer></script>
 </body>
 </html>
 

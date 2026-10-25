@@ -56,8 +56,10 @@ Putki (app/pipeline/)
   200 % → CSS-muuttuja `--lyrics-scale`) ja koko näytön nosto
   (`lyrics.offset_px`, oletus 100 px → `--lyrics-offset`, vain
   fullscreenissa). Fullscreenissa rivi on 96vw leveä, joten se pysyy yhdellä
-  rivillä. Tausta on musta (`#000`) ja sivupadding 3ch. Tabin poisto poistaa
-  sidecarin.
+  rivillä. Tausta on musta (`#000`) ja sivupadding 3ch. Editorissa on
+  PLAY/PAUSE, «, −5 s ja +5 s, ja **tahtinumeron klikkaus hyppää siihen
+  tahtiin** hyödyntäen `mediaHandler.seekTo`-inversiota (ei omaa
+  kellomatematiikkaa). Tabin poisto poistaa sidecarin.
 - `app/library.py` hoitaa poiston: tab-hakemisto, stemmit sekä job/track-
   rivit. Jaettu audio säilyy, jos toinen tabi käyttää sitä; MP3 jää
   `EXTERNAL_DIR`iin. Poisto ei koske `data/`-juuren ulkopuolisiin polkuihin.

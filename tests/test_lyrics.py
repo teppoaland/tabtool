@@ -344,6 +344,41 @@ def test_lyrics_backdrop_is_opaque_black_with_side_padding():
     assert "border: 1px" not in block
 
 
+def test_lyrics_editor_has_playback_controls():
+    """v2.12: PLAY/PAUSE, «, −5 s, +5 s and a bar click that seeks.
+
+    The controls call the transport's existing functions and a bar click
+    reuses mediaHandler.seekTo (the frozen score-time inverse), so the lyrics
+    code keeps no second copy of the clock math.
+    """
+    html = INDEX_HTML.read_text(encoding="utf-8")
+    for element in ("lyrics-play", "lyrics-start", "lyrics-back", "lyrics-forward"):
+        assert f'id="{element}"' in html
+
+    source = APP_JS.read_text(encoding="utf-8")
+    jump = _js_code(source, "jumpToBar")
+    assert "mediaHandler.seekTo(scoreMs)" in jump
+    assert "notatedTempo()" in jump
+    assert "masterBars" in jump
+    for marker in ("syncDrift", "bpmDrift", "barDurationMs", "audio"):
+        assert marker not in jump, f"jumpToBar must not re-implement {marker}"
+
+    assert (
+        'lyricsPlayButton.addEventListener("click", () => handlePlayButton())'
+        in source
+    )
+    assert 'lyricsStartButton.addEventListener("click", () => seekTo(0))' in source
+    assert 'lyricsBackButton.addEventListener("click", () => seekBy(-5))' in source
+    assert 'lyricsForwardButton.addEventListener("click", () => seekBy(5))' in source
+    assert 'chip.addEventListener("click", () => jumpToBar(bar))' in source
+    assert 'chip.addEventListener("dblclick", () => insertLyricsBar(bar))' in source
+
+    # The editor button mirrors the real PLAY label instead of audio events.
+    label = _js_code(source, "syncLyricsPlayLabel")
+    assert "playButton.dataset.state" in label
+    assert "audio" not in label
+
+
 def test_corrupt_sidecar_reads_as_no_lyrics(
     client: TestClient, data_dir: Path
 ) -> None:
