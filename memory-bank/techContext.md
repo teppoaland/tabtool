@@ -9,7 +9,7 @@
 - **Ei GPU:ta** (`nvidia-smi` tyhjä) → CPU-only
 - D: levytilaa ~147 GB vapaana
 
-## Python-paketit (v2.04)
+## Python-paketit (v2.04; ei uusia riippuvuuksia v2.05–v2.14)
 
 Core:
 
@@ -59,7 +59,7 @@ python -m venv .venv
 ## Testit
 
 ```powershell
-.venv\Scripts\python.exe -m pytest -q          # 244 passed
+.venv\Scripts\python.exe -m pytest -q          # 270 passed (v2.14)
 .venv\Scripts\python.exe -m compileall -q app scripts tests
 node --check app\static\app.js
 node --check app\static\remote.js
@@ -93,11 +93,11 @@ Hyödylliset valinnat: `--model htdemucs_6s`, `--stem guitar`, `--tuning`,
 - Ankkurit: v1.38 `c74ccdd`, v1.39 `8237876`, v1.40 `30e2c0e`,
   v1.41 = GP3/GP4-tuonti; tagi `v1.29` = `bb704e8`; tagi `v1.99` =
   toimiva palautuspiste (23.10.2026).
-- Koodi v1.23–v1.99 on **pushattu** `origin/main`iin käyttäjän pyynnöstä
-  23.10.2026 (aiempi push 20.10.2026). **Tagi `v1.99` = viimeisin
-  pushattu palautuspiste** (`git reset --hard v1.99`); v2.00–v2.01 ovat
-  paikallisia (ei pushattu). Push vain erillisestä pyynnöstä; `data/` ja
-  `docs/` eivät ole gitissä.
+- Koodi v1.23–v2.14 on **pushattu** `origin/main`iin käyttäjän pyynnöistä
+  (20.10., 23.10. ja 25.10.2026). **Tagi `v1.99` = vanhempi palautuspiste**
+  (`git reset --hard v1.99`); viimeisin pushattu HEAD 25.10.2026 oli `ede4c40`
+  (v2.14). Push vain erillisestä pyynnöstä; `data/` ja `docs/` eivät ole
+  gitissä.
 - `scripts/build_kiss_legend.py` on `.gitignore`ssa: se sisältää koko
   kappaleen nuottidatan (tekijänoikeus), joten sitä ei viedä julkiseen
   gitiin.

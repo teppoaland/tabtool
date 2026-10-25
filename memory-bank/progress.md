@@ -1,711 +1,110 @@
 # 📊 Projektin edistyminen – AI TABTOOL
 
-## v2.14 – Tahtihyppy tempo-automaatioilla (bugikorjaus, 25.10.2026)
-
-- Oire: Seek & Destroy -tabissa klikkaus tahtiin 116 meni 117 ja heitto
-  kasvoi (220 → 235). Syy: `jumpToBar` laski tahdin score-ajan **yhdellä
-  temmolla** (`startTick * 60000 / (tempo * 960)`), mutta tabissa on
-  tempo-automaatiot (tahti 113 → 208 BPM, tahti 165 → 140 BPM). Reno
-  Nordinissa ei ole automaatioita, siksi se toimi 1:1.
-- Korjaus: hyppy annetaan alphaTabille tickinä (`api.tickPosition =
-  startTick`). Sen setteri muuntaa tickin score-ajaksi tempokartalla, kuvaa
-  score-ajan backing track -ajaksi ja kutsuu itse
-  `mediaHandler.seekTo`-inversiota – sama polku kuin tablatuurin klikkaus.
-- Vartiotesti `test_bar_seek_uses_the_tempo_aware_tick_path`: `jumpToBar`
-  ei saa sisältää `60000`/`960`/`notatedTempo`-laskentaa.
-- Testit **270**.
-
-## v2.13 – Tahtilista isommaksi + jakokahva (25.10.2026)
-
-- `#lyrics-bars` oletuskorkeus **14rem** (ennen max 6.4rem) ja paneelin
-  oletuskorkeus 46rem, jotta jako toimii ilman venyttämistä.
-- `#lyrics-split` tahtilistan ja sanoituskentän välissä: listan kasvaessa
-  tekstikenttä pienenee (`.lyrics-form` `flex: 1 1 auto`,
-  `.lyrics-input` min 5rem). Jako tallentuu `barsHeight`-arvona
-  `tabtool:lyricsPos`-tietueeseen ja klampataan 80 px … paneeli−220 px;
-  ↑/↓ säätää 24 px, kun kahva on fokusoituna.
-- Pelkkää DOMia/CSS:ää. Testit **269**.
-
-## v2.12 – Soittoeditori sanoitusikkunaan (25.10.2026)
-
-- Paneelin otsikon alla: PLAY/PAUSE (`handlePlayButton`), « (`seekTo(0)`),
-  −5 s / +5 s (`seekBy`). Editorin PLAY peilaa katselimen PLAY-nappia
-  `MutationObserver`illa – uusia audio-eventtejä ei lisätty.
-- **Tahtinumero hyppää:** `jumpToBar(bar)` laskee score-ajan
-  (`api.score.masterBars[i].start`, `notatedTempo()`) ja antaa sen
-  `mediaHandler.seekTo`lle (jäädytetty inversio), sitten
-  `syncPosition(true)`, `updateTransport()`, `scrollScoreToCursor()`.
-  Sanoituskoodiin ei tullut toista kopiota kellomatematiikasta.
-- Kaksoisklikkaus tahtinumerossa lisää edelleen rivin `tahti | `.
-- Testit **268**.
-
-## v2.11 – Koon muutto kummasta nurkasta (25.10.2026)
-
-- Kaksi resize-kahvaa: **vasen yläkulma** (ensisijainen) ja oikea alakulma.
-  Molemmat kutsuvat samaa `startLyricsResize`-käsittelijää; nurkka tulee
-  elementin `data-corner`-attribuutista (`nw` / `se`).
-- `nw` pitää vastakkaisen reunan paikallaan: paneeli kasvaa vasemmalle/ylös
-  ja `left`/`top` seuraavat pointeria; koko klampataan 360×280 … ikkuna−16.
-- Otsikkorivi sai vasemman paddingin, jottei kahva peitä otsikkoa; kahva on
-  `z-index: 2`, joten se ei käynnistä raahausta. Koko tallentuu edelleen
-  `tabtool:lyricsPos`-tietueeseen.
-- Testit **267**.
-
-## v2.10 – Sanoitustausta mustaksi (25.10.2026)
-
-- `.lyrics-current` sai **täysin mustan** taustan (`#000`); entinen
-  `rgba(6, 8, 12, 0.72)` ja `text-shadow` poistuivat, samoin reunaviiva.
-- Luettavuus: sivupadding **3ch** (kolme merkkiä molemmin puolin) ja
-  symmetrinen pystypadding **0.55em**, joten musta palkki kasvaa ylös ja
-  alas ja teksti pysyy keskellä. Yksiköt skaalautuvat `lyrics.scale`n ja
-  fullscreenin mukana.
-- Testit **267** (1 uusi: taustan läpinäkymättömyys ja mitoitus).
-
-## v2.09 – Fullscreen-sanoitus ylemmäs + nosto-asetus (25.10.2026)
-
-- **Yksi rivi koko näytössä:** `.lyrics-current` saa fullscreenissa
-  `max-width: 96vw` (normaalissa 92vw / 1100px), joten pitkä rivi mahtuu
-  yhdelle riville 300 %:n koollakin.
-- **Nosto:** `#lyrics-strip` koko näytössä
-  `bottom: calc(1.1rem + var(--lyrics-offset, 100px))` → oletus 100 px
-  ylempänä kuin ennen; ruudulla on tilaa eikä mikään jää peittoon.
-- **Asetus:** `lyrics.offset_px` (SETTINGS → Sanat → Sanoitusrivin nosto),
-  0–600 px, askel 10, oletus 100 px. `applyRuntimeSettings` lukee arvon;
-  `applyLyricsStyle()` kirjoittaa `--lyrics-scale` ja `--lyrics-offset`
-  dokumentin juureen. Vain tyylejä – ei audion kirjoituksia, ei
-  alphaTab-kutsuja, ei kellomuutoksia.
-- **Testit 266** (laajennetut: koon ja noston oletukset/rajat, CSS-muuttujat
-  ja fullscreen-säännöt).
-
-## v2.08 – Sanoitusikkuna resizable, tekstin koko Settingsiin (25.10.2026)
-
-- **Ikkunan koko:** `#lyrics-resize` oikeassa alakulmassa (pointer events);
-  min 360 × 280 px, max ikkuna − 16 px. Koko tallentuu sijainnin kanssa
-  samaan `tabtool:lyricsPos`-tietueeseen (`width`/`height`) ja klampataan
-  uudelleen resize/fullscreenissa. Tekstikenttä kasvaa paneelin mukana.
-  Pelkkää DOMia: ei audion kirjoituksia, ei alphatab-kutsuja.
-- **Sanoitusrivin koko:** Settings saa ryhmän **Sanat** ja kentän
-  `lyrics.scale` (100–400 %, askel 25, **oletus 200 %** = tuplat vanhasta).
-  `applyRuntimeSettings` → `applyLyricsScale()` → CSS-muuttuja
-  `--lyrics-scale`; `.lyrics-current` =
-  `calc(clamp(1.05rem, 2vw, 1.7rem) * var(--lyrics-scale, 2))`. Oletus on
-  voimassa jo ennen asetusten latausta ja sama kerroin toimii koko näytön
-  tilassa. Asetus luetaan sivun latauksessa (muutoksen jälkeen TV-näkymä
-  uudelleen, kuten muutkin Settings-arvot).
-- **Testit 266** (2 uutta: koon muutto + tekstin koko; Settings-testi
-  laajennettu ryhmällä ja rajoilla).
-
-## v2.07 – Sanat-editori kelluvaksi (25.10.2026)
-
-- **Ei enää modaali:** `#lyrics-dialog` on `position: fixed` paneeli
-  (`z-index: 2200`), jota raahataan otsikosta (`#lyrics-handle`,
-  pointer events; sijainti `localStorage`issa `tabtool:lyricsPos`, klampataan
-  ikkunaan). Ilman taustaverhoa ja ilman `body.modal-open`ia PLAY, seek,
-  Nopeus/SYNC ja kursorin seuranta toimivat paneelin takaa.
-- **Tahdin tunnistus:** otsikon `#lyrics-bar-badge` ja tahtilistan
-  `.lyrics-bar.is-current` seuraavat `#bar-readout`ia, joten rivin paikka
-  näkyy soiton aikana. Lista vierittyy vain omassa kontissaan.
-- **Testit 263** (1 uusi: paneeli ei ole modaali; drag-funktiot eivät koske
-  audioon eikä alphaTab-APIin).
-- **Data (ei koodia, ei gitiin):** Reino Nordin -tabin aiempi 97 rivin
-  `lyrics.txt`-mäppäys (tahdit 1–99) kirjoitettu `data/lyrics/`-sidecariin
-  päätabille `668d62…` ja lukitulle kopiolle `33cbc8bf…`. Käyttäjän uudet
-  rivit 1–3 voittivat vanhan kirjoitusasun. Sanoitusten sisältöä ei
-  kopioida memory bankiin (tekijänoikeus).
-
-## v2.06 – Sanat sidecarina, ei muutoksia tab-tiedostoon (25.10.2026)
-
-- **Päätös:** sanat eivät mene GP5-tiedostoon eivätkä tabin metadataan.
-  Yksi JSON per tabi: `data/lyrics/<tab_id>.json`
-  (`{"tab_id", "updated_at", "measures": {"10": "…"}}`). Tabi pysyy
-  lukusyötteenä, joten bittimuoto ei voi särkyä eikä soittoketjuun tarvitse
-  koskea.
-- **Backend:** `app/lyrics.py` (validointi: tahti 1–10000, rivi ≤ 300
-  merkkiä, ≤ 2000 riviä; välilyöntien normalisointi; temp + `os.replace`).
-  `GET/PUT /api/tabs/{id}/lyrics` (`main.py`), tuntematon tabi 404,
-  virheellinen syöte 422. Lukittu tabi saa silti sanat (lukko koskee tabia
-  ja sen toistoasetuksia). `library.delete_tab_data` poistaa sidecarin.
-- **Frontend:** `SANAT`-nappi `.viewer-tools`issa avaa `#lyrics-dialog`in
-  (tahtilistat 1…N + tekstikenttä, rivi muodossa `tahti | teksti`;
-  numeroton rivi jatkaa edellisestä). `#lyrics-strip` on kiinteä overlay
-  (fixed, `pointer-events:none`, z-index 1400) ja näyttää kuluvan tahdin
-  rivin; tieto tulee `#bar-readout`-tekstistä `MutationObserver`illa, ei
-  `api`-kutsulla eikä audiosta. `.alphatab`-mitat ja transport ennallaan.
-- **Testit 262** (16 uutta `tests/test_lyrics.py`ssa + vartiotesti
-  `test_lyrics_stay_outside_the_playback_chain`): tabin `tab.gp5` ja
-  `meta.json` tavu-tasolla ennallaan sanojen tallennuksen jälkeen.
-  Käyttäjän UI-/kuuntelutesti tarvitaan ennen kuittausta (sääntö 07).
-
-## v2.05 – LIBRARY yläpalkkiin, PLAY pelkäksi toistoksi (25.10.2026)
-
-- **Yläpalkin `LIBRARY` oranssiksi:** `ghost small nav-search` →
-  `primary nav-library` (accent-täyttö, tiiviimpi mitoitus). Painike on
-  `#open-search-top`, joten Settingsin `ui.nav_library` piilottaa edelleen
-  oikean elementin.
-- **Katselimen `LIBRARY` poistettu:** kirjasto aukeaa vain yläpalkista.
-  `.viewer-bar` siirtyi 4 → 3 sarakkeeseen (`PLAY`, otsikko, FULLSCREEN +
-  COUNT-IN); fullscreenin erillinen grid-sääntö ja `#open-search`-piilotus
-  poistuivat. `openSearch()` ankkuroi yläpalkin painikkeeseen ja
-  `remote-bridge.js` avaa modaalin siitä (ei enää `#open-search`-fallbackia).
-- **`PLAY` = pelkkä toisto:** `enterViewerFullscreen()` poistui
-  `togglePlayback`ista ja `handlePlayButton`ista, joten PLAY ei enää vaihda
-  koko näyttöön. Label vaihtuu `PAUSE`ksi edelleen `setPlayLabel`in kautta
-  (audio `play`/`pause`/`ended` + `api.playerStateChanged`). Kellotus,
-  `seekTo`-inversio, `syncPosition`, audio-eventit ja count-inin kulku ovat
-  ennallaan; `countInAudioTime`-palautus (v1.92) säilyi, koska FULLSCREEN
-  voidaan painaa kesken laskennan.
-- **Testit 246** (2 uutta `tests/test_playback_guard.py`ssa:
-  `test_play_is_playback_only_and_never_steals_the_screen`,
-  `test_library_lives_in_the_topbar_only`). Soittoketjuun ei koskettu
-  muuten kuin poistamalla fullscreen-kutsu; käyttäjän kuuntelutesti
-  (Seek & Destroy, SIIRTO −0,75 / BPM 142) tarvitaan ennen kuittausta.
+> **Versio:** `v2.14` (25.10.2026) · **Testit:** 270 passed ·
+> **Git:** v1.23–v2.14 pushattu `origin/main`iin 25.10.2026 (`ede4c40`).
+> Yksityiskohtainen historia: `CHANGELOG.md`. Tässä tiedostossa on tila,
+> päätökset ja seuraavat askeleet – ei lokia.
 
 ## 🔒 ISO LUKKO – soitto valmis ja jäädytetty (23.10.2026)
 
-- Käyttäjä kuitannut: **kaikki soittoviat on korjattu** ja soitto toimii
-  **99 % tarkkuudella** oikein, mikä **riittää**. Tila on hyväksytty
-  lopulliseksi.
-- **Soittoon vaikuttaviin koodeihin EI KOSKETA.** Mikä tahansa koodi, jolla
-  on pienikin mahdollisuus sotkea soittoa, tehdään **varoen** ja käyttäjää
-  **pyydetään testaamaan soitto referenssikappaleella** (Seek & Destroy,
-  SIIRTO −0,75 / BPM 142) ennen ja jälkeen.
+- Käyttäjä kuittasi: **kaikki soittoviat korjattu**, soitto toimii **99 %**
+  tarkkuudella ja se riittää. Tila on lopullinen.
+- **Soittoketjuun ei kosketa**: `notatedTempo`/`bpmDrift`/`barDurationMs`/
+  `syncTimeMs`/`scoreEndTimeMs`, `mediaHandler.seekTo`-inversio,
+  `syncPosition`, `seekTo`, `clearPlaybackRange`, `togglePlayback`,
+  audio-eventit, transportin DOM-id:t, `.alphatab`-mitat ja
+  `/sync|tempo|section`-reitit. Riskimuutos = lupa + regressiochecklist +
+  käyttäjän kuuntelutesti (Seek & Destroy, SIIRTO −0,75 / BPM 142).
 - Katso `.clinerules/07-playback-frozen.md`.
 
-## Sanat Reino Nordin -tabiin (24.10.2026, vain dataa)
-
-- **Tavoite:** kappale on laulubiisi, joten sanat leivottiin tabiin luettavaksi
-  soiton aikana. Ei koodimuutoksia – kaikki `data/`ssa (gitignored).
-- **Muoto:** GP5:n `beat.text` (alphaTab renderöi sen tahtirivin yläpuolelle).
-  Kokeiltiin myös GP:n omia lyriikoita (sana/isku): ne törmäävät tiheissä
-  16-osakohdissa, joten `beat.text` valittiin.
-- **Ajoitus:** 97 riviä, tahdit 1–99; tauot 82–83 ja 100–101. Kiintopisteet
-  käyttäjän kuuntelusta (M 1/1, "Mun sydän palaa" tahti 10, kertosäkeet
-  22/30/59/84) + Demucs-vokaalistemman (`yt-7d7871495b/vocals.wav`)
-  frasialut. Sanat osuvat oikeille tahdeille, eivät jokaiselle iskulle.
-- **Rakenne:** sanat siirrettiin V3:lta **4. raidalle `Vocals`** (ei nuotteja,
-  tauot + tekstit). V1/V2/V3 ennallaan 1681 nuottia/raita → mitä tahansa
-  niistä voi soittaa sanojen kanssa.
-- **Suojaus:** erillinen lukittu kirjastotabi `33cbc8bf…`
-  *Xsuaalisuuteen (sanat)*, arkistokopio
-  `D:\tabtool_files\tabs\Reino Nordin - Xsuaalisuuteen (sanat).gp5` ja
-  `data/backups/668d62…-vocals-20261024-155850/`.
-- **Rajoite:** `VALITSE TÄMÄ` kirjoittaa GP5:n versio-JSON:sta → Vocals-raita
-  katoaa; siksi lukittu kopio. Sanoitusten tekstiä ei viedä gitiin eikä
-  memory bankiin (tekijänoikeus).
-- **Validointi:** PyGuitarPro-luku takaisin (raidat/tahdit/nuotit), alphaTab
-  (`ScoreLoader.loadScoreFromBytes`) `beat.text`-tarkistus ja headless
-  Edge -renderöinti temp-HTML:stä.
-
-## v2.04 – Versiovalinnan varmistus ja palautus (24.10.2026)
-
-- **Ongelma:** `VALITSE TÄMÄ` finalisoi suoraan – muut sormitusversiot
-  poistettiin ilman varmistusta, eikä paluuta ollut. Tuntemattoman
-  kappaleen kohdalla valinta on pakko tehdä kuuntelemalla.
-- **Varmistus:** `#variant-dialog` ("Valitaanko tämä versio?") ennen
-  `POST /api/tabs/{id}/variant`ia; peruminen `PERUUTA`/Esc/tausta.
-- **Varmuuskopio:** palvelin kopioi ennen kirjoitusta
-  `tab.gp5`/`tab.musicxml`/`tab.mid` + `variants/*.json` +
-  `manifest.json` hakemistoon `data/backups/variant-<tab_id>/`;
-  `meta.variant_backup` tallentuu ja näkyy Tiedot-dialogissa.
-- **Palautus:** `POST /api/tabs/{id}/variant/restore` kopioi
-  varmuuskopion takaisin ja palauttaa `variants`/`default_variant`/
-  `note_count`/`variant_finalized=false`; UI:ssa `PALAUTA VERSIOT`
-  (`#variant-restore-button`) näkyy vain finalisoidulla tabilla, jolla on
-  varmuuskopio. TAB BPM säilyy. Lukittu tabi → 409 molemmissa.
-- **Testit 244** (5 uutta: varmuuskopion sisältö, palautus +
-  uudelleenvalinta, 422 ilman varmuuskopiota, 409 lukitulle,
-  varmistusdialogin rakenne).
-
-## v2.03 – Kirjaston Tiedot ja lähdemeta (24.10.2026)
-
-- **`NIMEÄ` → `Tiedot`:** kirjastorivi avaa modaalin
-  (`#detail-dialog`), joka muokkaa esittäjän, nimen, virityksen, lukituksen
-  ja arkistoinnin. Absoluuttiset tiedot (BPM, tahtia, nuotteja, kanava,
-  lisäysaika, ID) ja lähdelinkit näkyvät vain luku -tietoina. Lukittu tabi
-  on vain luku -tilassa, kunnes lukitus avataan samasta ikkunasta (myös
-  palvelin valvoo 409:llä).
-- **Esittäjän ylikirjoitus:** `tabs.artist_override` (+ `ALTER TABLE`
-  -migraatio), `original_artist` säilyy, tyhjä arvo palauttaa
-  generaattorin esittäjän. `db.list_tabs` järjestää ylikirjoitetun
-  artistin mukaan. YouTube-latauksen uploader (esim. "Knight Rydazz") on
-  nyt korjattavissa oikeaksi artistiksi (esim. Reino Nordin).
-- **Lähdemeta:** `meta.audio_source_url` (+ `audio_source_type`) kaikille
-  YouTube-audioille (AI-putki, GP5 + YouTube, LIITÄ AUDIO) sekä
-  `meta.tab_source_url` / `tab_source_file` GP-linkki- ja tiedostotuonnille.
-  `_tab_summary` palauttaa ne vain http(s)-linkkeinä; vanha `meta.source`
-  toimii fallbackina. `scripts/backfill_source_url.py` täydentää vanhat
-  audiolinkit `jobs`-riveistä.
-- **Puhelin:** SÄÄDÄ-lomakkeessa Esittäjä-kenttä (`#adjust-artist`),
-  sama "tyhjä = alkuperäinen" -logiikka.
-- **Testit 239** (10 uutta: esittäjän ylikirjoitus/tyhjennys/järjestys,
-  Reino Nordin -tapaus, lähdelinkit + http(s)-suodatus, `Tiedot`-modaalin
-  rakenne, URL-tuonnin ja GP5+YouTube-jobien lähdemeta). Soittoketjuun ei
-  koskettu.
-
-## v2.02 – Settings-näkymä ja puhelimen soittimet (24.10.2026)
-
-- **`/settings`** (SETTINGS yläpalkissa REMOTE- ja API-linkkien jälkeen):
-  count-inin askelmat (1–12), askeleen kesto (200–3000 ms), nollan kesto
-  (0–2000 ms), lähtölaskennan oletus, Näkymän oletus ja 16 päänäkymän
-  toiminnon näkyvyys (oletus: näkyvissä) sekä puhelimen LISÄÄ/SÄÄDÄ-,
-  Nopeus- ja soitinvalinta. Arvot `settings`-taulussa; `app/settings.py`
-  validoi tyypit ja rajat (`GET/POST /api/settings`, virhe → 422).
-- **Count-inin kesto säädettäväksi:** `COUNT_IN_FROM` / `COUNT_IN_STEP_MS` /
-  `COUNT_IN_ZERO_MS` toimivat oletuksina (5 × 1000 ms + 250 ms = entinen
-  5,25 s). `beginCountIn()` lukee `countInSteps` / `countInStepMs` /
-  `countInZeroMs`; ei uusia audio-/alphaTab-kutsuja, `togglePlayback()`
-  ennallaan. `tests/test_playback_guard.py` valvoo edelleen rajaa.
-- **Puhelin:** SOITA/LISÄÄ/SÄÄDÄ -painikkeet sivun alaosaan; ylhäällä
-  avoimen tabin soittimet. TV raportoi raidat tilassa (`clean_state` →
-  `tracks`), silta klikkaa samaa `.track-chip`iä (uusi komento `track`,
-  indeksi 0–31). 2 soitinta = 1 rivi, 5 = 2 riviä.
-- **Testit 229** (31 uutta: `tests/test_settings.py` + raidat
-  `tests/test_remote.py`). Soittoketjuun ei koskettu; kuuntelutesti on
-  käyttäjän (rule 07).
-
-## v1.93–v2.01 – Remote-UI, nopeus, GP3 ja kirjastot (23.10.2026)
-
-- **Remote (v1.93–v1.98):** otsikko yhdelle riville (AT-merkki,
-  DISPLAY/API-nav ja REMOTE-kicker pois); QR sivun alaosaan; `«` =
-  `seek 0`, `+5 s` pois; nopeus 1 % askelet + 95–105 % → 100 %; yksi
-  tila-indikaattori `Online` / `Offline` / `Offline-TV` (lyhyt
-  API-katkos ei enää väitä TV:n olevan kiinni); seek-sliderin
-  strict-mode `ReferenceError` korjattu (`forwardButton`-jäänne) +
-  regressiotesti.
-- **Päänäkymä (v1.96–v1.97):** `#rate-slider` step 0,01 + 10 %:n snap;
-  ei muutoksia `setPlaybackRate`iin; vartiotesti estää `playbackRate`n
-  päätymisen kohdistusmatematiikkaan.
-- **`start.bat` (v1.94):** yksi ajo pysäyttää vanhan Python/uvicorn-
-  instanssin ja käynnistää uuden; vierasta prosessia ei tapeta.
-- **GP3 → GP5 (v1.99):** `_sanitize_for_gp5` korjaa grace-fretin −1
-  (`isDead`, fret 0) ennen kirjoitusta; White Wedding (gprotab) toimii.
-  Testi: GP3 −1-grace → aito GP5.
-- **Kirjastot (v2.00–v2.01):** TV:n LIBRARY ja puhelimen SOITA/SÄÄDÄ
-  järjestetään bändin nimellä (`artist` → `title`,
-  `localeCompare("fi")`); remote-kirjaston sisäinen `max-height`/
-  `overflow` poistettu → yksi sivun scrollbar.
-- Testit **195**; tagi `v1.99` = viimeisin pushattu palautuspiste
-  (v2.00–v2.01 paikallisia).
-
-## v1.92 – Count-in ei siirrä alkukohdistusta (23.10.2026)
-
-- **Juurisyy (bisect):** count-inin 5→0-portinvartija (v1.55–v1.56) viivästytti
-  `togglePlayback()` → `api.playPause()` ~5,25 s; fullscreen-resize siirsi
-  audion pois aloituspaikalta → intro heitti 1–40, runko 41+ 1:1. v1.48/v1.53
-  (ei count-in) 1:1, v1.68 (count-in) rikki; v1.48→v1.53 nettoero = 0.
-- **Korjaus:** `handlePlayButton` tallentaa audion paikan (`countInAudioTime`)
-  ja `finishCountIn` palauttaa sen ennen `togglePlayback()`ia. Synkka-ketju
-  koskematon. Sääntö 07 dokumentoitu (v1.92 palautus = no-op paluu).
-- Käyttäjän kuuntelutesti: Seek & Destroy / Mötley / Whiplash 1:1 alusta
-  (99 %). Tagi `v1.92`. 189 testiä.
-
-## v1.91 – Kursorin edestakainen heitto (23.10.2026)
-- Syy: alphaTab asettaa jokaisen syötetyn ajan kursoriksi ilman
-  tarkistusta (`output.updatePosition` → `updateTimePosition`), ja selain
-  ilmoittaa `audio.currentTime`n ~250 ms paloina, jotka voivat toistua tai
-  mennä hetken taaksepäin → kursori hyppäsi iskun eteen ja palasi.
-- Korjaus: `syncPosition()` pitää syötön monotonisena toiston aikana
-  (`lastFedScoreMs`, `lastFedAudioS`, `FEED_JITTER_S = 0,3 s`). Pidetty
-  arvo on aina oikean lukeman tuottama, joten kello ei mene audion edelle.
-  `force` (seek/pause/lataus/SIIRTO/SYNC), pysäytetty audio ja yli 0,3 s
-  taaksepäin menevä aito seek nollaavat vertailun → kelaus toimii.
-- Ei muutoksia `syncTimeMs`iin, `mediaHandler`iin, `togglePlayback`iin,
-  audio-eventteihin, DOM-id:ihin eikä CSS:ään. 1 uusi vartiotesti →
-  **189 testiä**. `syncPosition` ajettu Node-harnessilla (monotonisuus,
-  forced-seek, aito taaksepäin-seek, pause-palautus, `audio.seeking`-esto).
-- **Odottaa käyttäjän kuuntelu-/tabsynkkitestiä.**
-- **HUOM (23.10.2026): tämä ei ratkaissut käyttäjän raportoimaa
-  ongelmaa** (heitto kasvaa tahdeissa 1–41 ja "katoaa" tahdissa 41).
-  v1.91 ei voi muuttaa kellon nopeutta, joten syy on muualla — katso
-  `activeContext.md`:n avoin ongelma. A/B: `git revert 1807688`.
-
-## ✅ Ratkaistu v1.92 – heitto tahdeissa 1–41 (count-in)
-
-- Syy: count-inin portinvartija, ei audio eikä synkka-koodi (katso v1.92 yllä).
-- Hypoteesit H0/H1/H2 kumottu: heitto ei ollut tallenteen tempo eikä
-  naamiointi, vaan viivästetyn lähdön siirto fullscreen-resizen vuoksi.
-
-## v1.90 – Vanhojen remote-komentojen toisto (23.10.2026)
-- TV-silta aloitti jonon alusta → vanhat komennot laukesivat sivun
-  auetessa (eri aloituskohta eri startilla; restart korjasi). Nyt
-  `primeSequence` lukitsee sekvenssin eikä suorita aiempia. 2 uutta
-  testiä → **188 testiä**. Tabidata tarkistettu: lukitut sync-arvot tallessa.
-
-## v1.89 – Remote kolmessa tilassa (23.10.2026)
-- SOITA / LISÄÄ / SÄÄDÄ, vain yksi paneeli kerrallaan. Lisäys estetty
-  soiton aikana ja soitto jobin aikana (palvelin 409 + UI).
-- LISÄÄ: YT + valinn. GP5-linkki/-tiedosto → olemassa olevat reitit;
-  job-seuranta 1,5 s; kirjasto päivittyy. SÄÄDÄ: nimi/viritys/lukitus/
-  arkistointi. 6 uutta testiä → **186 testiä**.
-
-## v1.88 – Varoitus, kun TV-näkymä puuttuu (23.10.2026)
-- `/remote`: `#tv-hint` kertoo `TV-näkymä ei ole auki. Avaa
-  http://127.0.0.1:8000 tietokoneella.`, kun `tv_online: false`.
-- `start.bat` muistuttaa pitämään `/`-välilehden auki ja avaamaan
-  `/remote` toiseen välilehteen. 1 uusi testi → **180 testiä**.
-
-## v1.87 – PAUSE-tila punaisella (23.10.2026)
-- `remote.js` togglaa `.is-playing`-luokan; CSS `#remote-play.is-playing`
-  = `--error`-tausta + tumma teksti. 1 uusi testi → **179 testiä**.
-
-## v1.86 – PLAY ei himmene offline-tilassa (23.10.2026)
-- `remote.js`: `playButton.disabled` pois; komento jonoutuu ja toteutuu
-  kun TV-sivu on näkyvissä. Tilateksti `TV: Offline · avaa TV-näkymä`.
-- `TV_ONLINE_S` 10 → 30 s, koska selain hidastaa taustavälilehden
-  ajastimia. 2 uutta testiä → **178 testiä**.
-
-## v1.85 – QR-palstan URL-rivi (23.10.2026)
-- `.remote-pair` 150 px levyiseksi ja `.remote-url` rivittymään samaan
-  leveyteen (`word-break`); oikea reuna linjassa QR:n kanssa. Vain CSS.
-  176 testiä.
-
-## v1.84 – QR-SVG:n xmlns-korjaus (23.10.2026)
-- `/api/lan/qr.svg` käytti `svg_inline`iä, joka jättää `xmlns`:n pois →
-  selain näytti rikkinäisen kuvan. Nyt `segno.save(kind="svg")` →
-  `<svg xmlns="http://www.w3.org/2000/svg" …>`. Testi valvoo määrettä.
-  176 testiä.
-
-## v1.83 – Yksi käynnistin + QR `/remote`ssa (23.10.2026)
-- `start-lan.bat` **poistettu** (turha): `start.bat` sitoo aina
-  `0.0.0.0:8000`:aan, tulostaa LAN-osoitteet ja avaa TV-näkymän.
-- **150 × 150 px QR `/remote`-sivun oikeassa reunassa** + osoite
-  `http://<LAN-IP>:8000/remote`; piilotettu alle 720 px näytöillä.
-  QR encodaa LAN-IP:n, ei 127.0.0.1; päivittyy 30 s välein (istuntotoken).
-- `/connect`-sivu poistettu (`connect.html/js`); `GET /connect` → 404.
-- `scripts/lan_addresses.ps1` tulostaa vain `LAN: http://…/remote`.
-- `app.js` ei muuttunut; `index.html` vain `?v=1.83`-leimat. 176 testiä.
-
-## v1.82 – LAN-kaukosäädin (23.10.2026)
-- `start-lan.bat` (= `start.bat lan`): `0.0.0.0:8000`, LAN-osoitteet
-  (`scripts/lan_addresses.ps1`), selain `/connect`-sivulle. `status.bat`
-  näyttää LAN-osoitteen, kun palvelin kuuntelee kaikkia rajapintoja.
-- `app/remote.py`: `RemoteHub` (komentojono 50, TTL 60 s, `seq`/`reset`),
-  `/api/remote/command|state|commands`, `/api/lan/info|qr.svg`, `/connect`,
-  valinnainen LAN-PIN (`/lan`, HttpOnly-eväste, SHA-256, 10 yritystä/60 s).
-  QR-pariutus käyttää istuntotokenia – PIN ei koskaan URLiin.
-- `app/static/remote-bridge.js`: pollaa komennot 0,5 s ja klikkaa olemassa
-  olevia transport-nappeja (PLAY, seek-slider, rate-slider, kirjaston rivi).
-  **`app.js` ei muuttunut** → sääntö #1 säilyy.
-- `/remote` = puhelinnäkymä (PLAY/PAUSE, ±5 s, seek, Nopeus, kirjasto, TV:n
-  tila). `connect.html/js` = QR-sivu.
-- `segno==1.6.6` (BSD-3-Clause, puhdas Python). 23 uutta testiä →
-  **175 pytest-testiä**. Vaatii käyttäjän puhelin-/kuuntelutestin.
-  (v1.83 yhdisti käynnistyksen ja siirsi QR:n `/remote`en.)
-
-## v1.81 – COUNT-IN ON/OFF (22.10.2026)
-- FULLSCREEN-napin alle `.viewer-corner`-lohkoon liukukytkin
-  (`#countin-toggle`, `#countin-state`, ON/OFF), oletus ON, valinta
-  localStorageen (`tabtool:countIn`). Luetaan **vain**
-  `shouldRunCountIn`issa → soittoketju koskematon. 2 guard-testiä.
-
-## v1.80 – Virityksen vaihto sävelet säilyttäen (22.10.2026)
-- `app.tab_edit.retune_tracks` + `scripts/retune_tab.py`: raidat, joiden
-  avoimet kielet täsmäävät `--from`iin, viritetään uudelleen ja nauhat
-  siirretään kielikohtaisesti (`nauha = sävel − uusi avoin`). Validointi
-  vertaa jokaisen nuotin soivan sävelen; varmuuskopio + palautus.
-- Volbeat `116a1fa3…` Drop D → **D Standard** (2529 nuottia, max nauha 13,
-  BAR 7 `0/2`, BAR 9–10 `4/2 5/3 6/4`). 2 uutta testiä.
-
-## v1.79 – Viritys kitararaidasta (22.10.2026)
-- `app.tuning.open_strings()`: 6-kielinen raita, jossa eniten nuotteja
-  (rummut ohitetaan) → Volbeat-tabit `Standard E` → `Drop D · DADGBE`.
-- `backfill_tuning.py --force` (ohittaa manuaaliset overridet, lukee
-  UTF-8 → cp1252). 2 uutta testiä.
-
-## v1.78 – Pickup-tahdin poisto (22.10.2026)
-- `remove_bars` pitää ensimmäisen jäljelle jäävän tahdin absoluuttisen
-  alun. Dr. Feelgoodin 1/16-anacrusis pois → 135 tahtia, `ticksPerBar`
-  240 → 3840 (SIIRTO oli 16× liian voimakas). 1 uusi testi.
-
-## v1.77 – Ylimääräiset tahdit pois (22.10.2026)
-- `remove_bars` + `scripts/trim_bars.py` (`--bars "137,138"`, `--reset-sync`).
-  Dr. Feelgood 138 → 136 tahtia: audion musiikki päättyy 287,74 s, tabi
-  jatkui 291,6 s. 3 uutta testiä.
-
-## v1.76 – Toisto kirjoitetaan tahdeiksi (22.10.2026)
-- `app/tab_edit.py` (`read_song`, `backup_file`, `save_song`,
-  `expand_repeat`, `count_notes`) + `scripts/expand_repeat.py`.
-  Dr. Feelgood bar 2 ×2 → 17 tahtia (122 → 138, 2615 nuottia).
-  6 uutta testiä.
-
-## v1.75 – TEMPO cp1252 + SIIRTO ±999 (22.10.2026)
-- `_gp5_song()` lukee GP5:n UTF-8 → cp1252 -fallbackilla ja kirjoittaa
-  UTF-8:na (Dr. Feelgood `Mötley Crüe`, 0xf6). `SYNC_OFFSET_LIMIT = 999`
-  (backend + `#shift-input` + `app.js`n clampit). 2 uutta testiä.
-
-
-## v1.74 – GP5 UTF-8 (21.10.2026)
-- GP5 merkkijonot kirjoitetaan/luetaan UTF-8:na (alphaTab luki cp1252:n
-  väärin → `·`/`ä` = `�`); `backfill_gp5_utf8.py` korjasi 2 AI-tabia.
-
-## v1.73 – Haamunuottien siivo (21.10.2026)
-- `app/pipeline/prune.py`: oktaavihaamut pois + polyfonia max 4/isku;
-  `PIPELINE_VERSION=3`, meta `pruned_notes`. 5 uutta testiä.
-
-## v1.72 – Sormitusprofiilit + versiot (21.10.2026)
-- `fretboard.py`: 3 profiilia (V1·Avoimet/V2·Boksi/V3·Vähän liikettä) +
-  uusi kustannusfunktio. `playability.py` 0–10 score. Versiot raitoina
-  yhdessä GP5:ssä; `VALITSE TÄMÄ` (`POST /api/tabs/{id}/variant`),
-  `variant_store.py`, `PIPELINE_VERSION=2`. Uudet testit:
-  fretboard_profiles, playability, tab_variant.
-
-## v1.71 – Lukkoikoni (21.10.2026)
-- 🔒 lukitun kappaleen kirjastoriville (rivin oma elementti).
-
-## v1.70 – Lukitus kaikkiin asetuksiin (21.10.2026)
-- `locked` = read-only: nimi/viritys/arkistointi/TAB BPM/SYNC/SIIRTO/
-  audion liityntä + poisto (409). UI disabloi; avaus NIMEÄstä. 2 testiä.
-
-## v1.69 – Kappale soi loppuun (21.10.2026)
-- `syncTimeMs` clamp `scoreEnd−50ms` + `handlePlayButton`-nollaus →
-  tabin päätyttyä audio soi loppuun, kursori jää viimeiselle iskulle.
-  1 testi (score-end-guard).
-
-## v1.68 – Viritys näkyviin (21.10.2026)
-
-- GP5:n avoimet kielet → `app/tuning.py`: Standard E / Drop D / Eb
-  Standard / D Standard / Open G / Custom + kirjaimet. Metaan
-  `tuning_label` (`D Standard · DGCFAD`) ja `tuning_notes`;
-  `tabs.tuning` saa oikean avaimen (ennen `custom`).
-- Näkyy soittokortin metassa, kirjastorivillä (ei-standardit) ja
-  NIMEÄ-lomakkeen Viritys-kentässä (`tuning_override`, `tuning_clear`).
-- `scripts/backfill_tuning.py` päivitti 6 tabia: WASP
-  `Eb Standard · EbAbDbGbBbEb`, Dr. Feelgood `D Standard · DGCFAD`,
-  muut Standard E. `smoke-youtube*`-tabien GP5 on rikki (testijäänteitä).
-- 114 pytest-testiä.
-
-## v1.67 – YouTube-kanava tabille (21.10.2026)
-
-- `fetch_youtube_details()` lukee `%(channel)s` (fallback uploader);
-  `AudioSource.channel` → `meta.youtube_channel` sekä AI-tabeille että
-  GP5+YT-liitoksille. Näkyy `YT: <kanava>` kirjastossa, vihjeessä ja
-  soittokortissa; `scripts/backfill_youtube_channel.py`. 108 testiä.
-
-## v1.66 – Oma tuontikirjasto ja bulk-export (21.10.2026)
-
-- `app/bulk.py`: `import_folder()` (SHA-256-manifesti estää tuplat) ja
-  `export_tabs()` (GP5/MusicXML/MIDI + `manifest.json` + ZIP).
-  Skriptit `import_folder.py`, `export_tabs.py`, `adb_pull_gp.ps1`
-  (puhelimen Download, ei appien yksityistä dataa). `.gitignore`:
-  `library/`. 101 pytest-testiä.
-
-## v1.65 – POISTA punaiseksi ×:ksi (21.10.2026)
-
-- Kirjastorivin poisto on ikonimainen punainen `×` (`aria-label`/`title`
-  "Poista … kirjastosta"); lukitulla rivillä harmaa ja pois käytöstä.
-- 101 pytest-testiä; `node --check` OK.
-
-## v1.64 – KIRJASTO modaalin vasemmaksi (21.10.2026)
-
-- Sarakkeet vaihdettu DOMissa: KIRJASTO vasen (1.15fr), generaattori
-  oikea; erotinviiva generaattorin sarakkeessa. HTML-jäsennin: ei
-  sulkemattomia tageja.
-
-## v1.63 – Kirjaston nimet, lukitus ja arkisto (21.10.2026)
-
-- Skeema: `tabs.title_override`, `locked`, `archived` + `ALTER TABLE`
-  -migraatio `init_db`ssä (vanha data säilyy).
-- `POST /api/tabs/{id}/library` (Form `title`/`locked`/`archived`);
-  `_tab_summary` palauttaa `title_override`/`original_title`/`locked`/
-  `archived`. Lukittu tabi → `DELETE` 409. Lista aakkosissa
-  (SQL artist/nimi + `localeCompare("fi")` UI:ssa).
-- UI: rivin `NIMEÄ`-lomake (nimi + Lukitse + Arkistoi + TALLENNA/
-  PERUUTA), `ARKISTO (n)` -linkki listan lopussa (rastin poisto
-  palauttaa pääkirjastoon).
-- 101 pytest-testiä (5 uutta: nimeäminen, lukitus, arkisto, järjestys,
-  migraatio).
-
-## v1.57–v1.62 – Tabin marginaalit ja korttiasettelu (21.10.2026)
-
-- Tabin marginaali tulee alphaTabin `display.padding`ista: v1.57
-  15 px, v1.58 `[30, 15]` jotta scrollbar saa oman kaistan. `.alphatab`
-  paddingiton/reunukseton (reunus inset-varjolla). Mitattu 15/15 ja
-  30/30 px eikä ylivuotoa (1600/1366/1200/1024/800 px).
-- v1.59–v1.62: hero pois, LIBRARY PLAY-korttiin, työkalurivi omalle
-  riville, modaali avautuu LIBRARY-napin korkeudelle, EXPORT tabikentän
-  alle, FULLSCREEN kortin oikeaan kulmaan, `.transport` omaksi kortiksi,
-  LIBRARY piiloon fullscreenissä.
-- Ei muutoksia soittoketjuun (`mediaHandler`/`seekTo`/`syncTimeMs`).
-
-## v1.56 – Count-in toimii, 1:1 säilyy (20.10.2026)
-
-- Count-in 5 → 0 validoitu käyttäjän kuuntelutestillä: laskenta näkyy
-  soittonäkymässä, ääni alkaa vasta 0:n jälkeen, kohdistus pysyy 1:1.
-- Korjaus: `shouldRunCountIn` ei enää lue `audio.currentTime`ia.
-  alphaTab siirtää audion ensimmäiselle iskulle jo latauksessa
-  (`mediaHandler.seekTo` → 0,8455 s SIIRTO −0,75:llä), joten v1.55:n
-  `currentTime > 0.05` -ehto ohitti laskennan aina. Nyt ohitus perustuu
-  käyttäjän omaan seekiin (`countInSkipped`, nollataan `loadTab`issa).
-- Vartiotesti `tests/test_playback_guard.py`: count-in-funktioissa ei saa
-  olla `audio`-/`api.`-viittauksia eikä soittoketjussa count-in-koodia.
-- Headless-Edge (CDP): 5→4→3→2→1→0 ≈ 5,07 s, toisto 5,33 s; laskennan
-  aikana `currentTime` 0,846 ja tahti 1 muuttumattomia, layout 800/800;
-  2. PLAY peruu, seuraava aloittaa vitosesta; A/B audio 11,0 s → tahti 6
-  molemmilla. Ei poikkeuksia konsolissa.
-- 96 pytest-testiä.
-
-## v1.55 – Count-in portinvartijana (20.10.2026)
-
-- `handlePlayButton` + `#play-countdown` (fixed-lapsi `#viewer-section`issä,
-  ei wrapperia `#alphaTab`in ympärille); `togglePlayback` pysyi
-  muuttumattomana (diffissä 2 poistettua riviä).
-- Ensimmäinen versio ei käynnistänyt laskentaa lainkaan (ks. v1.56).
-- 96 pytest-testiä.
-
-## v1.54 – Palvelimen hallinta käyttäjälle (20.10.2026)
-
-- `stop.bat` + `scripts/stop_server.ps1`: pysäyttää portin 8000
-  kuuntelijan ja sen python/uvicorn-emoprosessin, tulostaa PID:t ja
-  varmistaa, että portti vapautui.
-- `status.bat` + `scripts/server_status.ps1`: portin tila + `/api/version`.
-- `start.bat`: porttitarkistus estää toisen instanssin käynnistämisen.
-- Testattu: stop.bat pysäytti taustalle jääneen uvicornin (7596/17624),
-  start.bat kieltäytyi varatusta portista (exit 1, ei selainta),
-  toistettu stop.bat ilmoitti "not in use", status.bat näytti tilan.
-- Ei muutoksia soittoon, sync-asetuksiin, tablatuuriin tai GP5-dataan.
-- 93 pytest-testiä; palvelin jätetty pysäytetyksi käyttäjän
-  käynnistettäväksi.
-
-## v1.53 – Count-in poistettu, soitto 1:1 (20.10.2026)
-
-- Countdown poistettu kokonaan: `#play-countdown`-overlay,
-  `.viewer-stage`-kääre, countdown-CSS/JS ja count-in-tilat.
-  `togglePlayback` palautettu v1.48:n muotoon (fullscreen +
-  `api.playPause()` heti).
-- SIIRTO-inversio säilyi v1.52:n mukaisena kaikille `time > 0` -seekeille.
-- Mitattu: lataus t = 1,268 s (SIIRTO −0,75), PLAY aloittaa heti,
-  10 s toiston jälkeen tahti 7 = odotettu, ei countdown-elementtejä,
-  layout 1600/1600 px.
-- Countdown tehdään myöhemmin eri tavalla, irrallaan soittoketjusta.
-- 93 pytest-testiä; live-palvelin v1.53.
-
-## v1.51–v1.52 – Count-in-yritys ja synkan palautus (19.10.2026)
-
-- v1.51 rajasi SIIRTO-inversion osoitinklikkauksiin → alphaTabin omat
-  seekit jäivät kääntämättä ja soitonaloitus siirtyi 1,268 s → 0.
-- v1.52 palautti inversion kaikille `time > 0` -seekeille; count-in
-  poistettiin v1.53:ssa. 93 pytest-testiä.
-
-## v1.50 – Tabinäkymän leveyskorjaus (19.10.2026)
-
-- `.viewer-stage` ja `.alphatab` saivat `min-width: 0` ja
-  `width/max-width: 100 %`; canvas ei enää kasvattanut sivua ~7000 px.
-- Mitattu 1366/1600/2560 px, ei sivuttaisvieritystä. 93 testiä.
-
-## v1.49 – Tumma tabinäkymä, LIBRARY-nimet ja 5 s count-in (19.10.2026)
-
-- Tabi tummalle taustalle (`display.resources`-värit, `.alphatab`
-  `#0d1117`); SEARCH-napit → LIBRARY, modaalin h2-otsikko pois.
-- `#play-countdown` `.viewer-stage`-ankkurissa, 5 → 0, toinen PLAY peruu.
-- Headless-CDP validoitu; ei backend-muutoksia; 93 testiä.
-
-## v1.43–v1.48 – Kursorin synkka ja klikkaus-seek (18.–19.10.2026)
-
-- `backingTrackDuration` = partituurin kesto (`scoreEndTimeMs` master
-  bar -tikeistä), joten alphaTabin venytys poistui ja kello on 1:1.
-- KOHDISTA-klikkaus ja live-offset-näyttö; animoitu beat-kursori pois.
-- Klikkaus-seek kääntää SIIRTO/SYNC/BPM-korjauksen. 93 testiä.
-
-## v1.42 – Testiyhteenveto ja sessioalustus (18.10.2026)
-
-- `pytest.ini`:stä pois `addopts = -q`, joten `pytest -q` tulostaa
-  yhteenvedon; memory bankin komennot putkitetaan `Out-String -Width 200`.
-- Ei toiminnallisia muutoksia; 93 testiä.
-
-## v1.41 – GP3/GP4-tuonti ja audiopolun korjaus (18.10.2026)
-
-- `import`/`import-url` hyväksyvät `.gp3`/`.gp4`; vanha versio
-  kirjoitetaan aidoksi GP5:ksi. GP4 → GP5: notet/tahdit/tempo säilyivät.
-- `db.import_tabs_from_disk` resolvoi `meta.audio_path`in `DATA_DIR`:stä.
-- 93 testiä.
-
-## v1.20–v1.40 – Perusta, tuonti ja modaali (18.10.2026)
-
-- Katselu (tab-only, Näkymä, raitavalinnat, FULLSCREEN, cursor), pätkä- ja
-  audiojobi, SYNC ±10 %, SIIRTO, playback range -nollaus, MP3-kuunteluversiot,
-  `D:\tabtool_files`-arkisto, web-UI/job-jono/alphaTab, käynnistyksen
-  automaatio, tuotenimi AI TabTool.
-- SEARCH-modaali (haku, GP5-linkki + `app/tab_download.py`, GP5-tiedosto +
-  YT-linkki samalla jobilla), kappaleen poisto (`app/library.py`),
-  GP3/GP4-tuonti (muunnos aidoksi GP5:ksi, 0 nuottoeroa).
-- Modaalin pino (`z-index` 2000/2100, cursor piiloon) ja
-  `db.import_tabs_from_disk`.
-- Yksityiskohdat `CHANGELOG.md`:ssä, ankkurit `techContext.md`:ssä.
-
-## Testitilanne
-
-- `pytest -q` → **188 passed**
-- `compileall` → OK
-- `node --check app.js` / `remote.js` / `remote-bridge.js` → OK
-- Headless-Edge/Chrome: alphaTab-render, cursor, fullscreen, GP5/MusicXML-
-  tuonti (linkki + tiedosto), audio attach, BPM/desimaalitempo, SIIRTO,
-  SYNC-tallennus, playback range -nollaus, SEARCH-modaali, kappaleen
-  valinta ja poisto, **count-in 5→0** (v1.56: laskennan aikana audio ja
-  tahti muuttumattomia, A/B sama tahti samassa audiokohdassa),
-  **tabin marginaalit 30/30 px ja scrollbar-kaista** (v1.57–v1.62),
-  **modaalin avautuminen ja kirjaston nimeämislomake** (v1.60, v1.63),
-  **kanava ja viritys kirjastorivillä** (v1.67–v1.68, pytest + smoke).
+## Nyt – sanoitus (v2.06–v2.14)
+
+- **Sidecar:** sanat `data/lyrics/<tab_id>.json`
+  (`{"tab_id","updated_at","measures":{"10":"…"}}`). Tabi pysyy
+  lukusyötteenä: GP5/MusicXML/MIDI ja meta eivät muutu (testi vertaa tavut).
+  API `GET/PUT /api/tabs/{id}/lyrics`; `app/lyrics.py` validoi (tahti
+  1–10000, rivi ≤ 300 merkkiä, ≤ 2000 riviä) ja kirjoittaa atomaarisesti.
+  Tabin poisto poistaa sidecarin; lukittu tabi saa silti sanat.
+- **Editori (`SANAT`)**: kelluva paneeli (ei modaalia → soitto toimii
+  takana), raahaus otsikosta, koko kahdesta nurkasta (nw/se), jakokahva
+  tahtilistan ja tekstikentän välillä (`barsHeight`), tahtilista 14rem ja
+  paneeli 46rem oletuksena. Soitto: PLAY/PAUSE, «, ±5 s. Tahtinumeron
+  klikkaus = hyppy, kaksoisklikkaus = uusi rivi `tahti | `.
+- **Overlay**: `#lyrics-strip` fixed, `pointer-events: none`, musta `#000`,
+  sivupadding 3ch, pystypadding 0.55em; fullscreenissa 96vw ja nosto
+  `--lyrics-offset`. Koko `--lyrics-scale` (Settings `lyrics.scale`,
+  oletus 200 %) ja nosto `lyrics.offset_px` (0–600 px, oletus 100 px).
+  Tahdin numero luetaan `#bar-readout`-tekstistä (`MutationObserver`).
+- **Tahtihyppy**: `api.tickPosition = startTick` → alphaTab käyttää
+  tempokarttaa (myös tempo-automaatiot) ja kutsuu itse
+  `mediaHandler.seekTo`-inversiota. **Vakiotempo-laskenta kielletty**
+  (v2.14-bugi: Seek & Destroy 116 → 117, 220 → 235).
+- **Data:** Reino Nordin -tabin 97 riviä (tahdit 1–99, tauot 82–83)
+  sidecarissa sekä päätabille `668d62…` että lukitulle kopiolle
+  `33cbc8bf…`. Sanoitukset **eivät ole gitissä eivätkä memory bankissa**.
+- **Vartiotestit:** `test_lyrics_stay_outside_the_playback_chain`,
+  `test_bar_seek_uses_the_tempo_aware_tick_path`, `test_lyrics_editor_*`,
+  `test_lyrics_style_settings_drive_the_strip`.
+- **Avoin:** käyttäjän UI-/kuuntelutesti koko sanoituskokonaisuudelle
+  (sääntö #1). Cline ei julista sitä valmiiksi ilman kuittausta.
+
+## Versiohistoria (tiivis – detaljit `CHANGELOG.md`)
+
+- **v1.55–v1.56** count-in; **v1.63** kirjaston metadata; **v1.67–v1.68**
+  kanava + viritys; **v1.69** score-end guard; **v1.72** sormitusversiot.
+- **v1.76–v1.80** `tab_edit` + `expand_repeat`/`trim_bars`/`retune_tab`.
+- **v1.82–v1.90** LAN-kaukosäädin (`/remote`, QR, PIN, kolme tilaa).
+- **v1.91** monotoninen syöttö; **v1.92** count-in palauttaa audiopaikan
+  (ISO LUKKO); **v1.93–v1.98** remote-UI, nopeus 1 % + 10 % snap,
+  `start.bat`; **v1.99** GP3-grace + tagi = vanha palautuspiste.
+- **v2.00–v2.01** kirjastot bändin nimellä, yksi scrollbar.
+- **v2.02** Settings (`/settings`, count-inin kestot, UI-kytkimet).
+- **v2.03** kirjaston Tiedot + lähdemeta (`artist_override`, URLit).
+- **v2.04** versiovalinnan varmistus + varmuuskopio/palautus.
+- **v2.05** LIBRARY yläpalkkiin (oranssi), PLAY = pelkkä toisto.
+- **v2.06** sanat sidecariin; **v2.07** kelluva editori; **v2.08** koko
+  säädettävä + tekstin koko Settingsiin; **v2.09** fullscreen-nosto;
+  **v2.10** musta tausta; **v2.11** kaksi resize-kulmaa; **v2.12**
+  soittonapit + tahtiklikki; **v2.13** tahtilista + jakokahva; **v2.14**
+  tick-pohjainen tahtihyppy (tempo-automaatiot).
 
 ## Tunnetut rajoitukset
 
-- **Kursorin pieni edestakainen heitto (käyttäjän havainto 23.10.2026) –
-  korjattu v1.91, odottaa kuuntelutestiä.** alphaTab asettaa jokaisen
-  syötetyn ajan kursoriksi ilman tarkistusta, joten selaimen ~250 ms
-  paloina tuleva `audio.currentTime` käänsi kursorin hetkeksi takaisin.
-  `syncPosition()` pitää syötön nyt monotonisena toiston aikana; kello,
-  `mediaHandler.seekTo`-inversio ja audio-eventit eivät muuttuneet.
-  Jos heitto näkyy yhä, mittaa ennen uutta arvausta (ks. `activeContext.md`).
-
-- AI-transkriptio on luonnos; särö/akordit/nopeat soolot virheellisiä.
-- Basic Pitch ei ole kitarakohtainen; otteet/asemat voivat poiketa
-  opitusta tabista. Referenssitabi + TuxGuitar auttavat.
+- AI-transkriptio on luonnos: särö, akordit ja nopeat soolot virheellisiä;
+  Basic Pitch ei ole kitarakohtainen → otteet voivat poiketa opitusta.
 - Standard E -alueen ulkopuoliset nuotit pudotetaan varoituksella.
-- Tempo voi olla half/double-time; AI-BPM on arvio; TAB BPM/Nopeus
-  korjaa.
-- Soittotapa/refinger (asemaprofiilit, nuottien karsinta) puuttuu.
-- Referenssitabilla on 258 tahtia vs. AI 249; rakenne voi poiketa.
-- Rummut vaativat oman mallin; Spotify Phase 3; remote valmis v1.82
-  (vaatii käyttäjän puhelintestin).
-- GP5 + oma audiotiedosto ei yhdisty yhdellä toiminnolla (audion lähde
-  on YouTube-linkki); GP5-linkin lataus vaatii julkisen http(s)-osoitteen
-  eikä tue kirjautumista/evästeitä vaativia sivustoja.
-- **Ikärajoitettu YouTube-video ei lataudu ilman evästeitä.** yt-dlp
-  vaatii `--cookies-from-browser`in, mutta Chrome/Edge lukitsevat
-  cookie-DB:n ollessaan auki. Kierto: käytä ei-ikärajoitettua
-  studioversiota (esim. virallinen kanava) tai sulje selain / anna
-  cookie-tiedosto.
-- Poisto ei poista MP3-kuunteluversiota eikä toisen tabin jakamaa audiota.
-- **Koko historia v1.23–v1.99 on pushattu `origin/main`iin** (käyttäjän
-  pyynnöistä 20.10. ja 23.10.2026); **tagi `v1.99` = viimeisin pushattu
-  palautuspiste**; v2.00–v2.04 ovat paikallisia (ei pushattu).
-  `scripts/build_kiss_legend.py` on gitignorattu (koko kappaleen
-  nuottidata, tekijänoikeus). `data/` ja `docs/` eivät ole gitissä,
-  joten ne tarvitsevat erillisen varmuuskopion.
+- Tempo voi olla half/double-time; AI-BPM on arvio (TAB BPM/Nopeus korjaa).
+- SIIRTO-askel on 0,25 tahtia (= 1 isku); hienompi säätö on sääntö #1:n
+  ydintä. Pickup-tabissa SIIRTO/KOHDISTA voimistuvat 8×/16×.
+- Rummut vaativat oman mallin; Spotify on Phase 3.
+- GP5 + oma audiotiedosto ei yhdisty yhdellä toiminnolla (audiolähde on
+  YouTube-linkki); GP-linkki vaatii julkisen http(s)-osoitteen.
+- Ikärajoitettu YouTube vaatii evästeet (`--cookies-from-browser`).
+- Kappaleen poisto jättää MP3-kuunteluversion ja toisen tabin audion.
+- `VALITSE TÄMÄ` kirjoittaa GP5:n versio-JSON:sta → Vocals-raita katoaa
+  siitä tabista (siksi erillinen lukittu sanakopio).
+- Referenssitabissa 258 tahtia vs. AI-tabi 249 → rakenne-ero vaatii
+  GP5-korjauksen tai SIIRTOn (SYNC korjaa vain lineaarisen heiton).
 
 ## Seuraavaksi
 
-0. ~~Kursorin heitto (sääntö #1)~~ ✅ **RATKAISTU v1.92 – ISO LUKKO.**
-   Soitto kuitattu valmiiksi (99 %, riittää). Soittoon vaikuttaviin
-   koodeihin ei kosketa; riskimuutokset varoen + referenssitesti
-   (Seek & Destroy, SIIRTO −0,75 / BPM 142).
-1. **Pickup-varotin soittokelloon** (`barDurationMs`/`ticksPerBar`):
-   anacrusis-tabissa SIIRTO/KOHDISTA 8×/16× liian voimakas. Vaatii luvan
-   (sääntö #1) + regressiochecklist + kuuntelutesti. Sitä ennen data-kierto
+1. **Käyttäjän validointi** sanoituskokonaisuudelle (rule 07) ja sen
+   jälkeen mahdolliset hienosäädöt (esim. tahtilistan oletuskorkeus).
+2. **Pickup-varotin** (`barDurationMs`/`ticksPerBar`): vaatii luvan,
+   regressiochecklistin ja kuuntelutestin; sitä ennen data-kierto
    `scripts/trim_bars.py --bars 1`.
-2. **Tuonnin laatuapurit:** duplikaattien tunnistus (sama GP5 SHA-256 tai
-   sama artisti+biisi eri audio), tabin pituus vs. audion kesto,
-   pickup-varoitus.
-3. ~~**Settings-näkymä**~~ ✅ **valmis v2.02** (`/settings`,
-   `app/settings.py`: count-inin askelmat/kestot ja ON/OFF, Näkymän
-   oletus, 16 päänäkymän + 4 puhelimen toimintoa). Oletukset ennallaan
-   (`COUNT_IN_FROM` / `COUNT_IN_STEP_MS` / `COUNT_IN_ZERO_MS`
-   `app.js`:ssä, sama fallback `settings.py`:ssä).
-4. **Refinger/playability loppuun:** paras versio automaattisesti, score
-   näkyviin, turhien nuottien karsinta per tahti/fraasi.
-5. Vasta sitten Phase 3 / Spotify: PKCE, haku/metadata, SDK/Connect,
-   tokenit `oauth_tokens`-tauluun ja mockatut API-testit.
-6. Remote-kaukosäädin valmis (v1.82–v1.90) – odottaa käyttäjän
-   puhelintestiä.
+3. **Tuonnin laatuapurit:** duplikaatit (SHA-256 / sama artisti+biisi),
+   tabin pituus vs. audion kesto, pickup-varoitus.
+4. **Refinger/playability loppuun:** automaattinen paras versio ja turhien
+   nuottien karsinta per tahti/fraasi.
+5. **Remote-puhelintesti** (v1.82–v1.90) – käyttäjän kuittaus.
+6. Vasta sitten **Spotify Phase 3** (PKCE, haku/metadata, SDK/Connect).
 
-GP5-datan korjaus ei ole prioriteetti: ohjelma todettu 1:1 ainakin
-149 tahtiin (Seek & Destroy), ja tabi on syötettä, ei tuotetta.
+## Data ja git
+
+- `data/` (audio, stemmit, tabit, `lyrics/*.json`, SQLite, tokenit) ja
+  `docs/` ovat gitignoroituja; ne tarvitsevat erillisen varmuuskopion.
+- `scripts/build_kiss_legend.py` on gitignoroitu (koko kappaleen nuottidata).
+- Ulkoinen arkisto `D:\tabtool_files\` (`TABTOOL_EXTERNAL_DIR`) sisältää
+  YouTube-audiot, MP3-kuunteluversiot ja tuodut GP5/MusicXML:t.
+
