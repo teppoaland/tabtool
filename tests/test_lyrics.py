@@ -432,9 +432,10 @@ def test_bar_click_selects_the_matching_lyric_line():
     assert controls.index('id="lyrics-start"') < controls.index('id="lyrics-play"')
 
     source = APP_JS.read_text(encoding="utf-8")
-    assert (
-        'chip.addEventListener("click", () => focusLyricsBarLine(bar))' in source
-    )
+    # The click goes through the v2.17 dispatcher, which falls back to the
+    # line selection when nothing is selected.
+    assert 'chip.addEventListener("click", () => handleLyricsBarClick(bar))' in source
+    assert "focusLyricsBarLine" in _js_code(source, "handleLyricsBarClick")
 
     focus = _js_code(source, "focusLyricsBarLine")
     assert "lyricsBarLineRange" in focus
@@ -458,6 +459,52 @@ def test_bar_click_selects_the_matching_lyric_line():
     assert "trimStart" in line_range
     for marker in ("querySelector", "getElementById", "api.", "audio"):
         assert marker not in line_range
+
+
+def test_selected_words_move_into_the_pressed_bar():
+    """v2.17: select words, press a bar -> that bar's line is written.
+
+    A pasted block is consumed phrase by phrase: the selected words leave the
+    field and come back as "N | …", so the number comes from the press instead
+    of being typed by hand. Ctrl+Enter does the same for the anchor bar and
+    steps one bar ahead, which numbers consecutive lines quickly. The helpers
+    are string/DOM work only - rule 07's playback chain is not involved.
+    """
+    source = APP_JS.read_text(encoding="utf-8")
+    assert 'lyricsInput.addEventListener("keydown", handleLyricsAssignKey)' in source
+
+    handler = _js_code(source, "handleLyricsBarClick")
+    assert "assignLyricsSelectionToBar" in handler
+    assert "focusLyricsBarLine" in handler
+    assert "lyricsAnchorBar = bar + 1" in handler
+
+    assign = _js_code(source, "assignLyricsSelectionToBar")
+    for marker in ("selectionStart", "selectionEnd", "setSelectionRange"):
+        assert marker in assign
+    assert "lyricsBarLineRange" in assign
+    assert "lyricsLineSelection" in assign
+    for marker in (
+        "syncTimeMs",
+        "bpmDrift",
+        "barDurationMs",
+        "playbackRate",
+        "audio",
+        "api.",
+        "60000",
+        "960",
+    ):
+        assert marker not in assign, f"assignLyricsSelectionToBar must stay DOM only: {marker}"
+
+    key = _js_code(source, "handleLyricsAssignKey")
+    assert '"Enter"' in key and "ctrlKey" in key
+    for marker in ("audio", "api."):
+        assert marker not in key
+
+    # An old number on the picked line must not be copied into the new one.
+    chunk = _js_code(source, "normalizeLyricChunk")
+    assert "replace" in chunk and "[|:=\\t]" in chunk
+    for marker in ("audio", "api."):
+        assert marker not in chunk
 
 
 def test_bar_seek_uses_the_tempo_aware_tick_path():

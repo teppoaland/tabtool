@@ -253,6 +253,12 @@
   let lyricsLoadingFor = "";
   let lyricsShownBar = -1;
   let lyricsDirty = false;
+  // v2.17: the bar last pressed in the editor. Ctrl+Enter writes the selected
+  // words into it and moves the anchor one bar ahead (quick numbering).
+  let lyricsAnchorBar = 0;
+  // Offsets of the selection focusLyricsBarLine() made, so it is never
+  // mistaken for words the user picked to assign to a bar.
+  let lyricsLineSelection = null;
   // Sanoitusrivin koko prosentteina (v2.08) ja nosto pikseleinä (v2.09),
   // molemmat tulevat /api/settingsistä.
   let lyricsScale = LYRICS_SCALE_DEFAULT;
@@ -1871,6 +1877,7 @@
     lyricsInput.focus();
     const end = lyricsInput.value.length;
     lyricsInput.setSelectionRange(end, end);
+    lyricsLineSelection = null;
     markLyricsBars();
   }
 
@@ -1895,7 +1902,13 @@
         const lead = line.length - line.trimStart().length;
         const value = match ? match[2] : raw;
         const start = lineStart + lead + (raw.length - value.length);
-        return { start: start, end: start + value.length };
+        // A bare line is only a continuation of the previous number; it has
+        // no prefix of its own yet (v2.17), so it can still be formatted.
+        return {
+          start: start,
+          end: start + value.length,
+          numbered: Boolean(match),
+        };
       }
       nextBar = lineBar + 1;
     }
@@ -1911,6 +1924,7 @@
     if (!range) return false;
     lyricsInput.focus({ preventScroll: true });
     lyricsInput.setSelectionRange(range.start, range.end);
+    lyricsLineSelection = { start: range.start, end: range.end };
     // Scroll only the text field. Most engines bring the caret into view on
     // their own; this keeps the line visible when they do not.
     const lineHeight =
@@ -1927,6 +1941,125 @@
       lyricsInput.scrollTop = top + lineHeight - lyricsInput.clientHeight;
     }
     return true;
+  }
+
+  function normalizeLyricChunk(text) {
+    // Words taken from a paste may still carry old numbers ("10 | …"), line
+    // breaks or double spaces. Only the words are kept: one bar, one line.
+    return String(text == null ? "" : text)
+      .split(/\r?\n/)
+      .map((line) =>
+        line
+          .replace(/^\s*\d+\s*[|:=\t]\s*/, "")
+          .replace(/\s+/g, " ")
+          .trim()
+      )
+      .filter(Boolean)
+      .join(" ");
+  }
+
+  function expandLyricsSelection(text, start, end) {
+    // v2.17: a consumed phrase takes its line with it, so no empty raw line
+    // is left behind. The range is widened only when the selection covers the
+    // whole visible line.
+    const lineStart = text.lastIndexOf("\n", start - 1) + 1;
+    let lineEnd = text.indexOf("\n", end);
+    if (lineEnd === -1) lineEnd = text.length;
+    if (
+      !text.slice(lineStart, start).trim() &&
+      !text.slice(end, lineEnd).trim()
+    ) {
+      if (lineEnd < text.length) return { start: lineStart, end: lineEnd + 1 };
+      if (lineStart > 0) return { start: lineStart - 1, end: lineEnd };
+      return { start: lineStart, end: lineEnd };
+    }
+    return { start: start, end: end };
+  }
+
+  function assignLyricsSelectionToBar(bar) {
+    // v2.17: select words, press a bar (or Ctrl+Enter) -> the words become
+    // that bar's line and the number comes from the press. The selected text
+    // is removed from the field, so a pasted block is consumed phrase by
+    // phrase and the rest stays selectable in place. DOM only: no alphaTab
+    // call, no clock and no transport write.
+    if (!lyricsInput) return false;
+    const number = Math.round(Number(bar) || 0);
+    if (number < 1) return false;
+    const value = lyricsInput.value;
+    const start = lyricsInput.selectionStart;
+    const end = lyricsInput.selectionEnd;
+    if (!(end > start)) return false;
+    if (
+      lyricsLineSelection &&
+      lyricsLineSelection.start === start &&
+      lyricsLineSelection.end === end
+    ) {
+      return false;
+    }
+    const chunk = normalizeLyricChunk(value.slice(start, end));
+    if (!chunk) return false;
+    const target = lyricsBarLineRange(value, number);
+    if (target && target.numbered && start >= target.start && end <= target.end) {
+      return false;
+    }
+    // Only a numbered line already belongs to that bar. A bare continuation
+    // line is still raw text, so it is formatted through the insert path.
+    const occupied = target && target.numbered ? target : null;
+    const consume = expandLyricsSelection(value, start, end);
+    const prefix = `${number} | ${chunk}`;
+    let next = value;
+    let caret = 0;
+
+    if (occupied) {
+      // The bar already has words: keep its line and swap only the words,
+      // then remove the consumed source text. The later edit runs first so
+      // the offsets stay valid.
+      if (consume.start >= occupied.end) {
+        next = `${next.slice(0, consume.start)}${next.slice(consume.end)}`;
+        next = `${next.slice(0, occupied.start)}${chunk}${next.slice(occupied.end)}`;
+        caret = occupied.start + chunk.length;
+      } else if (consume.end <= occupied.start) {
+        next = `${next.slice(0, occupied.start)}${chunk}${next.slice(occupied.end)}`;
+        next = `${next.slice(0, consume.start)}${next.slice(consume.end)}`;
+        caret = occupied.start + chunk.length - (consume.end - consume.start);
+      } else {
+        return false;
+      }
+    } else {
+      const before = value.slice(0, consume.start);
+      const after = value.slice(consume.end);
+      const lead = before && !before.endsWith("\n") ? "\n" : "";
+      const tail = after && !after.startsWith("\n") ? "\n" : "";
+      next = `${before}${lead}${prefix}${tail}${after}`;
+      caret = before.length + lead.length + prefix.length;
+    }
+    lyricsInput.value = next;
+    lyricsDirty = true;
+    lyricsLineSelection = null;
+    markLyricsBars();
+    lyricsInput.focus({ preventScroll: true });
+    lyricsInput.setSelectionRange(caret, caret);
+    return true;
+  }
+
+  function handleLyricsBarClick(bar) {
+    // A bar press is the anchor for Ctrl+Enter; with a selection it also
+    // writes the words into that bar and moves the anchor one bar ahead.
+    lyricsAnchorBar = bar;
+    if (assignLyricsSelectionToBar(bar)) {
+      lyricsAnchorBar = bar + 1;
+      return;
+    }
+    focusLyricsBarLine(bar);
+  }
+
+  function handleLyricsAssignKey(event) {
+    // Ctrl+Enter: the same as pressing the anchor bar, so consecutive phrases
+    // get consecutive numbers without leaving the keyboard.
+    if (event.key !== "Enter" || !(event.ctrlKey || event.metaKey)) return;
+    event.preventDefault();
+    const bar = lyricsAnchorBar || currentLyricsBar() || 1;
+    if (assignLyricsSelectionToBar(bar)) lyricsAnchorBar = bar + 1;
   }
 
   function jumpToBar(bar) {
@@ -1978,11 +2111,12 @@
       chip.className = "lyrics-bar";
       chip.dataset.bar = String(bar);
       chip.textContent = String(bar);
-      chip.title = `Hyppää tahtiin ${bar}. Kaksoisklikkaus lisää rivin.`;
+      chip.title = `Hyppää tahtiin ${bar}. Maalatut sanat siirretään tähän tahtiin. Kaksoisklikkaus lisää rivin.`;
       // Click = seek, double-click = start a line for that bar (v2.12).
-      // v2.16: the same click also selects the matching "tahti | teksti" line.
+      // v2.16–v2.17: the same click selects the matching "tahti | teksti"
+      // line, or writes the selected words into that bar.
       chip.addEventListener("click", () => jumpToBar(bar));
-      chip.addEventListener("click", () => focusLyricsBarLine(bar));
+      chip.addEventListener("click", () => handleLyricsBarClick(bar));
       chip.addEventListener("dblclick", () => insertLyricsBar(bar));
       lyricsBars.appendChild(chip);
     }
@@ -1992,6 +2126,8 @@
   function fillLyricsDialog() {
     if (lyricsInput) lyricsInput.value = formatLyricsText(lyricsMeasures);
     lyricsDirty = false;
+    lyricsAnchorBar = 0;
+    lyricsLineSelection = null;
     if (lyricsSubject) {
       lyricsSubject.textContent = activeTab
         ? activeTab.artist
@@ -3403,8 +3539,11 @@
   if (lyricsInput) {
     lyricsInput.addEventListener("input", () => {
       lyricsDirty = true;
+      lyricsLineSelection = null;
       markLyricsBars();
     });
+    // v2.17: Ctrl+Enter writes the selection into the anchor bar.
+    lyricsInput.addEventListener("keydown", handleLyricsAssignKey);
   }
   watchLyrics();
   if (playButton) playButton.addEventListener("click", handlePlayButton);

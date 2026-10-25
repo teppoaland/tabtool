@@ -2,6 +2,30 @@
 
 > AI TabTool käyttää `1.x`-versiosarjaa. Aloitus `v1.00`.
 
+## v2.17 – 25.10.2026
+
+- **Sanat: maalaa sanat ja paina tahtia → rivi syntyy itse.** Kun
+  tekstikentässä on valinta, tahtinumeron painallus kirjoittaa valitut sanat
+  kyseisen tahdin riviksi (`10 | I got pictures`) ja poistaa ne liittämästäsi
+  tekstistä. Näin koko kappaleen tekstiä voi napsia tahti kerrallaan, ja
+  **numero tulee klikkauksesta** eikä sitä tarvitse kirjoittaa käsin.
+- **`Ctrl+Enter` = sama ilman hiirtä.** Valinta siirtyy viimeksi painettuun
+  tahtiin ja ankkuri siirtyy aina seuraavaan tahtiin, joten peräkkäiset rivit
+  numeroituvat 10, 11, 12… ilman erillistä numerointia. Tahtia painamatta
+  ankkuri otetaan kuluvasta tahdista.
+- **Muotoilu siivotaan:** valinnasta poistetaan vanha `N |`-etuliite,
+  rivinvaihdot litistetään välilyönniksi ja ylimääräiset välit karsitaan.
+  Jos tahdilla on jo **numeroitu** rivi, vain sen sanat vaihtuvat (rivi pysyy
+  paikallaan). Pelkkä numeroimaton jatkorivi on yhä raakatekstiä, joten sen
+  voi numeroida klikkauksella. Kokonaisen rivin valinta poistaa myös rivin,
+  joten tyhjiä rivejä ei jää.
+- **Rajaus:** apurit (`normalizeLyricChunk`, `expandLyricsSelection`,
+  `assignLyricsSelectionToBar`, `handleLyricsBarClick`,
+  `handleLyricsAssignKey`) ovat merkkijono-/DOM-työtä: ei alphaTab-kutsuja,
+  ei audion kirjoituksia eikä kellofunktioita. Vartiotesti
+  `test_selected_words_move_into_the_pressed_bar`.
+- **Testit:** 272 passed.
+
 ## v2.16 – 25.10.2026
 
 - **Sanoitusnäkymän soittorivit järjestykseen.** `«` (alkuun) siirrettiin

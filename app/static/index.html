@@ -6,14 +6,14 @@
   <meta name="color-scheme" content="dark">
   <title>AI TabTool</title>
   <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="/static/style.css?v=2.16">
+  <link rel="stylesheet" href="/static/style.css?v=2.17">
 </head>
 <body>
   <header class="topbar">
     <div class="brand">
       <span class="brand-mark" aria-hidden="true">AT</span>
       <span class="brand-name">AI TABTOOL</span>
-      <span id="version-tag" class="version">v2.16</span>
+      <span id="version-tag" class="version">v2.17</span>
     </div>
     <nav class="nav" aria-label="Päävalikko">
       <button id="open-search-top" type="button" class="primary nav-library"
@@ -375,7 +375,7 @@
     </div>
     <p id="lyrics-subject" class="detail-subject muted"></p>
     <div id="lyrics-bars" class="lyrics-bars" role="group"
-         aria-label="Tahdit: paina hypätäksesi tahtiin, kaksoisklikkaa lisätäksesi rivin"></div>
+         aria-label="Tahdit: paina hypätäksesi tahtiin ja siirtääksesi maalatut sanat, kaksoisklikkaa lisätäksesi rivin"></div>
     <!-- Jako (v2.13): tahtilistan ja sanoituskentän korkeus on sidottu
          toisiinsa; kahvaa raahaamalla näkee joko enemmän tahteja tai
          enemmän tekstiä. -->
@@ -385,7 +385,9 @@
          title="Raahaa: tahdit ↔ sanoitus. Nuolinäppäimet hienosäätävät."></div>
     <form id="lyrics-form" class="lyrics-form">
       <label class="field">
-        <span>Yksi rivi per tahti: <code>tahti | teksti</code></span>
+        <span>Yksi rivi per tahti: <code>tahti | teksti</code>. Maalaa sanat ja
+          klikkaa tahtia, niin numero tulee klikkauksesta (Ctrl+Enter =
+          aseta valinta viimeksi valittuun tahtiin).</span>
         <textarea id="lyrics-input" class="lyrics-input" rows="10"
                   spellcheck="false"
                   placeholder="10 | Ensimmäinen rivi&#10;11 | ja jatkuu…"></textarea>
@@ -402,13 +404,13 @@
 
 
   <footer class="footer">
-    <span>AI TabTool v2.16</span>
+    <span>AI TabTool v2.17</span>
     <span>Local-first · <a href="/remote">Remote</a></span>
   </footer>
 
-  <script src="/static/vendor/alphaTab/alphaTab.min.js?v=2.16"></script>
-  <script src="/static/app.js?v=2.16" defer></script>
-  <script src="/static/remote-bridge.js?v=2.16" defer></script>
+  <script src="/static/vendor/alphaTab/alphaTab.min.js?v=2.17"></script>
+  <script src="/static/app.js?v=2.17" defer></script>
+  <script src="/static/remote-bridge.js?v=2.17" defer></script>
 </body>
 </html>
 
