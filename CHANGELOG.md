@@ -2,6 +2,15 @@
 
 > AI TabTool käyttää `1.x`-versiosarjaa. Aloitus `v1.00`.
 
+## v2.15 – 25.10.2026
+
+- **Sanoitusesimerkki pois julkisesta reposta.** Editorin tekstikentän
+  placeholder ja dokumentaation esimerkki vaihdettiin neutraaliksi
+  (`10 | Ensimmäinen rivi`). Varsinaiset sanoitukset elävät vain `data/`ssa
+  (gitignored) kuten sääntö 04 vaatii – ei gitissä eikä memory bankissa.
+- Toiminnallisia muutoksia ei tullut (vain placeholder-teksti).
+- **Testit:** 270 passed.
+
 ## v2.14 – 25.10.2026
 
 - **Korjattu: sanoitusnäkymän tahtihyppy vääristyi tempo-automaatioiden
@@ -172,7 +181,7 @@
   sidecarin (`library.delete_tab_data`).
 - **UI:** katselimen työkalurivillä **SANAT** avaa editorin: tahtilistat
   (1…N, klikkaus lisää rivin `tahti | `), yksi tekstikenttä rivi per tahti
-  (`10 | Mun sydän palaa`; myös `:`, `=` ja tabulaattori käyvät, ja ilman
+  (`10 | Ensimmäinen rivi`; myös `:`, `=` ja tabulaattori käyvät, ja ilman
   numeroa oleva rivi jatkaa edellisestä tahdista), `TALLENNA` + `SULJE`.
   Soiton aikana erillinen overlay (`#lyrics-strip`) näyttää kuluvan tahdin
   rivin; se lukee vain `#bar-readout`-tekstiä `MutationObserver`illa –

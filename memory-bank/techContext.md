@@ -59,7 +59,7 @@ python -m venv .venv
 ## Testit
 
 ```powershell
-.venv\Scripts\python.exe -m pytest -q          # 270 passed (v2.14)
+.venv\Scripts\python.exe -m pytest -q          # 270 passed (v2.15)
 .venv\Scripts\python.exe -m compileall -q app scripts tests
 node --check app\static\app.js
 node --check app\static\remote.js
@@ -95,9 +95,8 @@ Hyödylliset valinnat: `--model htdemucs_6s`, `--stem guitar`, `--tuning`,
   toimiva palautuspiste (23.10.2026).
 - Koodi v1.23–v2.14 on **pushattu** `origin/main`iin käyttäjän pyynnöistä
   (20.10., 23.10. ja 25.10.2026). **Tagi `v1.99` = vanhempi palautuspiste**
-  (`git reset --hard v1.99`); viimeisin pushattu HEAD 25.10.2026 oli `ede4c40`
-  (v2.14). Push vain erillisestä pyynnöstä; `data/` ja `docs/` eivät ole
-  gitissä.
+  (`git reset --hard v1.99`); viimeisin pushattu HEAD 25.10.2026 oli v2.15.
+  Push vain erillisestä pyynnöstä; `data/` ja `docs/` eivät ole gitissä.
 - `scripts/build_kiss_legend.py` on `.gitignore`ssa: se sisältää koko
   kappaleen nuottidatan (tekijänoikeus), joten sitä ei viedä julkiseen
   gitiin.

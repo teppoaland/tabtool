@@ -1,8 +1,8 @@
 # 📍 Aktiivinen konteksti – AI TABTOOL
 
-> **Versio:** `v2.14` (25.10.2026) · **Testit:** 270 passed
-> **Git:** v1.23–v2.14 **pushattu** `origin/main`iin 25.10.2026 käyttäjän
-> pyynnöstä (HEAD `ede4c40`). Vanha palautuspiste: **tagi `v1.99`**
+> **Versio:** `v2.15` (25.10.2026) · **Testit:** 270 passed
+> **Git:** v1.23–v2.15 **pushattu** `origin/main`iin 25.10.2026 käyttäjän
+> pyynnöstä. Vanha palautuspiste: **tagi `v1.99`**
 > (`git reset --hard v1.99`, 23.10.2026). Älä pinnaa HEAD-hashia pysyvästi.
 > **Push:** vain erillisestä pyynnöstä (20.10., 23.10. ja 25.10.2026).
 > **Repo:** https://github.com/teppoaland/tabtool
@@ -18,7 +18,7 @@
   ilman lupaa; riskimuutos validoidaan käyttäjän kuuntelutestillä
   (Seek & Destroy, SIIRTO −0,75 / BPM 142). Katso
   `.clinerules/07-playback-frozen.md`.
-- **Sanoituskokonaisuus valmis (v2.06–v2.14) – käyttäjän UI-/kuuntelutesti
+- **Sanoituskokonaisuus valmis (v2.06–v2.15) – käyttäjän UI-/kuuntelutesti
   vielä kesken:**
   - Sanat ovat **sidecarissa** `data/lyrics/<tab_id>.json`
     (`{"tab_id","updated_at","measures":{"10":"…"}}`), eivät GP5:ssä eikä

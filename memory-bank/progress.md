@@ -1,7 +1,7 @@
 # 📊 Projektin edistyminen – AI TABTOOL
 
-> **Versio:** `v2.14` (25.10.2026) · **Testit:** 270 passed ·
-> **Git:** v1.23–v2.14 pushattu `origin/main`iin 25.10.2026 (`ede4c40`).
+> **Versio:** `v2.15` (25.10.2026) · **Testit:** 270 passed ·
+> **Git:** v1.23–v2.15 pushattu `origin/main`iin 25.10.2026.
 > Yksityiskohtainen historia: `CHANGELOG.md`. Tässä tiedostossa on tila,
 > päätökset ja seuraavat askeleet – ei lokia.
 
@@ -66,7 +66,8 @@
   säädettävä + tekstin koko Settingsiin; **v2.09** fullscreen-nosto;
   **v2.10** musta tausta; **v2.11** kaksi resize-kulmaa; **v2.12**
   soittonapit + tahtiklikki; **v2.13** tahtilista + jakokahva; **v2.14**
-  tick-pohjainen tahtihyppy (tempo-automaatiot).
+  tick-pohjainen tahtihyppy (tempo-automaatiot); **v2.15** neutraali
+  sanoitusesimerkki (sanoitukset pois julkisesta reposta).
 
 ## Tunnetut rajoitukset
 

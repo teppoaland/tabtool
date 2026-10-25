@@ -5,7 +5,7 @@ ja katseluun. Hae kappale Spotifysta tai käytä omaa MP3/YouTube-audioita,
 anna tekoälyn tehdä ensimmäinen tablatuuriluonnos ja katsele sitä
 alphaTabilla TV:stä tai tietokoneelta. Puhelin toimii kaukosäätimenä.
 
-**Versio:** `v2.14` (Phase 4 – LAN-kaukosäädin, Settings, kirjaston Tiedot, sormitusversiot ja sanat sidecarina)
+**Versio:** `v2.15` (Phase 4 – LAN-kaukosäädin, Settings, kirjaston Tiedot, sormitusversiot ja sanat sidecarina)
 
 ## Session aloitus
 
@@ -320,7 +320,7 @@ oletuksena korkea, ja sen ja sanoituskentän välissä on **jakokahva**: kun
 lista kasvaa, tekstikenttä pienenee – näin 258 tahdin kappale pysyy
 hallittavana. Jako muistetaan selaimessa. Otsikossa näkyy kuluvan tahdin numero
 ja tahtilista korostaa saman tahdin, joten rivin paikka on helppo tarkistaa.
-Jokainen rivi on muotoa `tahti | teksti` (esim. `10 | Mun sydän palaa`); tahdin
+Jokainen rivi on muotoa `tahti | teksti` (esim. `10 | Ensimmäinen rivi`); tahdin
 voi kirjoittaa käsin tai klikata tahtilistasta. Ilman tahtinumeroa oleva rivi
 jatkaa edellisestä tahdista. Sanat tallennetaan **erilliseen** tiedostoon
 `data/lyrics/<tab_id>.json` – GP5/MusicXML/MIDI ja tabin metadata eivät muutu,
