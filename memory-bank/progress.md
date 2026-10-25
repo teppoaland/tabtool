@@ -1,5 +1,15 @@
 # 📊 Projektin edistyminen – AI TABTOOL
 
+## v2.10 – Sanoitustausta mustaksi (25.10.2026)
+
+- `.lyrics-current` sai **täysin mustan** taustan (`#000`); entinen
+  `rgba(6, 8, 12, 0.72)` ja `text-shadow` poistuivat, samoin reunaviiva.
+- Luettavuus: sivupadding **3ch** (kolme merkkiä molemmin puolin) ja
+  symmetrinen pystypadding **0.55em**, joten musta palkki kasvaa ylös ja
+  alas ja teksti pysyy keskellä. Yksiköt skaalautuvat `lyrics.scale`n ja
+  fullscreenin mukana.
+- Testit **267** (1 uusi: taustan läpinäkymättömyys ja mitoitus).
+
 ## v2.09 – Fullscreen-sanoitus ylemmäs + nosto-asetus (25.10.2026)
 
 - **Yksi rivi koko näytössä:** `.lyrics-current` saa fullscreenissa

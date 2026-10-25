@@ -2,6 +2,20 @@
 
 > AI TabTool käyttää `1.x`-versiosarjaa. Aloitus `v1.00`.
 
+## v2.10 – 25.10.2026
+
+- **Sanoitustaustasta täysin musta.** `.lyrics-current` sai
+  `background: #000` (entinen `rgba(6, 8, 12, 0.72)` ja tekstin varjo
+  poistuivat), joten tabi ei enää kuulla taustan läpi ja rivi on
+  nopeampi lukea.
+- **Väljempi musta palkki.** Sivupadding on **3ch** molemmin puolin
+  (kolme merkkiä nykyisen fontin merkkileveydellä) ja pystypadding
+  **0.55em** symmetrisesti, joten musta tausta kasvaa ylös ja alas ja
+  teksti pysyy keskellä. Yksikköinä `ch` ja `em` skaalautuvat
+  `lyrics.scale`-asetuksen mukana, myös 300 %:lla ja fullscreenissa.
+- **Testit:** 267 passed (1 uusi: tausta on läpinäkymätön `#000`, 3ch
+  sivuväli, ei läpinäkyviä `rgba`-täyttöjä eikä reunaviivaa).
+
 ## v2.09 – 25.10.2026
 
 - **Koko näyttö: sanoitusrivi ylemmäs ja koko leveydelle.** Sanoitusrivi

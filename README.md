@@ -5,7 +5,7 @@ ja katseluun. Hae kappale Spotifysta tai käytä omaa MP3/YouTube-audioita,
 anna tekoälyn tehdä ensimmäinen tablatuuriluonnos ja katsele sitä
 alphaTabilla TV:stä tai tietokoneelta. Puhelin toimii kaukosäätimenä.
 
-**Versio:** `v2.09` (Phase 4 – LAN-kaukosäädin, Settings, kirjaston Tiedot, sormitusversiot ja sanat sidecarina)
+**Versio:** `v2.10` (Phase 4 – LAN-kaukosäädin, Settings, kirjaston Tiedot, sormitusversiot ja sanat sidecarina)
 
 ## Session aloitus
 
@@ -319,7 +319,9 @@ joten tabi pysyy lukusyötteenä eikä soitto- tai synkkaketjuun kosketa.
 Soiton aikana näkyvän rivin kokoa säädetään **SETTINGS → Sanat**
 (100–400 %, oletus 200 %) ja koko näytön nostoa alareunasta
 (0–600 px, oletus 100 px). Koko näytön tilassa rivi käyttää 96 % leveydestä,
-joten se pysyy yhdellä rivillä isommallakin koolla.
+joten se pysyy yhdellä rivillä isommallakin koolla. Rivin tausta on **täysin
+musta** ja tekstin molemmin puolin on kolme merkin levyinen tyhjä tila, joten
+rivi on helppo lukea liikkuvan tabin päältä.
 
 **Vihje:** älä raahaa hiirellä tabin yli – se saattoi aiemmin luoda
 alphaTabin loop-alueen. Nykyään alue nollataan automaattisesti, mutta

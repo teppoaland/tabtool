@@ -319,6 +319,22 @@ def test_lyrics_style_settings_drive_the_strip():
     assert "max-width: 96vw" in css
 
 
+def test_lyrics_backdrop_is_opaque_black_with_side_padding():
+    """v2.10: a solid black band reads better than a translucent one.
+
+    3ch of empty space on both sides and a symmetric em padding keep the
+    text centred in a taller band; the old translucent fill is gone.
+    """
+    css = (INDEX_HTML.parent / "style.css").read_text(encoding="utf-8")
+    start = css.index(".lyrics-current {")
+    block = css[start : css.index("}", start)]
+
+    assert "background: #000;" in block
+    assert "rgba(" not in block, "the backdrop must not be translucent"
+    assert "padding: 0.55em 3ch;" in block
+    assert "border: 1px" not in block
+
+
 def test_corrupt_sidecar_reads_as_no_lyrics(
     client: TestClient, data_dir: Path
 ) -> None:
