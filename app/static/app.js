@@ -131,6 +131,8 @@
   const lyricsButton = document.getElementById("lyrics-button");
   const lyricsStrip = document.getElementById("lyrics-strip");
   const lyricsCurrent = document.getElementById("lyrics-current");
+  // Sneak peek (v2.19): the next line, one bar early.
+  const lyricsNext = document.getElementById("lyrics-next");
   const lyricsDialog = document.getElementById("lyrics-dialog");
   const lyricsHandle = document.getElementById("lyrics-handle");
   // Kaksi kahvaa (v2.11): vasen yläkulma ja oikea alakulma.
@@ -269,6 +271,8 @@
   // molemmat tulevat /api/settingsistä.
   let lyricsScale = LYRICS_SCALE_DEFAULT;
   let lyricsOffset = LYRICS_OFFSET_DEFAULT;
+  // Sneak peek on/off (v2.19), Settings `lyrics.sneak` (oletus päällä).
+  let lyricsSneak = true;
   // Floating editor drag state (v2.07): DOM only, no audio/api involvement.
   let lyricsDrag = null;
   // Resize state for the floating editor (v2.08): DOM only as well.
@@ -1197,7 +1201,11 @@
         LYRICS_OFFSET_DEFAULT
       )
     );
+    // Sneak peek (v2.19): on unless the stored value is exactly false.
+    lyricsSneak = settings["lyrics.sneak"] !== false;
     applyLyricsStyle();
+    applyLyricsSneak();
+    renderLyricsStrip(true);
     defaultStaveProfile = Object.prototype.hasOwnProperty.call(
       STAVE_PROFILES,
       settings["view.stave"]
@@ -1738,6 +1746,18 @@
     return next;
   }
 
+  function lyricPeekForBar(bar) {
+    // v2.19: the next line, shown one bar early in the smaller band. Only one
+    // bar ahead, so a long instrumental gap stays clean (the main strip has
+    // the countdown for that). Reads the same sidecar map; DOM only.
+    if (!lyricsSneak) return "";
+    const start = Number(bar) || 0;
+    if (!start) return "";
+    const next = nextLyricBar(start);
+    if (!next || next - start !== 1) return "";
+    return String(lyricsMeasures[String(next)] || "");
+  }
+
   function currentLyricsBar() {
     if (!barReadout) return 0;
     const match = /Tahti\s+(\d+)/.exec(barReadout.textContent || "");
@@ -1756,6 +1776,14 @@
     const isCue = Boolean(text) && !lyricsMeasures[String(bar)];
     lyricsCurrent.textContent = text;
     lyricsCurrent.classList.toggle("is-cue", isCue);
+    // v2.19: the next line is previewed one bar early in a smaller band.
+    // The band keeps its space (is-empty = invisible), so the main line does
+    // not jump up and down when a gap starts.
+    const peek = lyricPeekForBar(bar);
+    if (lyricsNext) {
+      lyricsNext.textContent = peek;
+      lyricsNext.classList.toggle("is-empty", !peek);
+    }
     lyricsStrip.hidden = !text;
     markLyricsPlayingBar(bar, moved);
   }
@@ -1800,6 +1828,12 @@
     if (!lyricsStatus) return;
     lyricsStatus.textContent = text;
     lyricsStatus.classList.toggle("is-error", Boolean(isError));
+  }
+
+  function applyLyricsSneak() {
+    // v2.19: the peek band reserves its space only when the setting is on, so
+    // switching it off returns the strip to the pre-v2.19 height. DOM only.
+    if (lyricsStrip) lyricsStrip.classList.toggle("has-peek", lyricsSneak);
   }
 
   async function loadLyrics(tabId) {

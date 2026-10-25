@@ -630,6 +630,54 @@ def test_lyrics_gap_counts_down_and_finished_lyrics_can_be_locked():
     assert 'lyricsLockInput.addEventListener("change", toggleLyricsLock)' in source
 
 
+def test_sneak_peek_shows_the_next_line_one_bar_early():
+    """v2.19: the next lyric line is previewed one bar early, 50 % smaller.
+
+    The peek is a second band inside the same fixed overlay, under the main
+    line, so the frozen layout and the playback chain stay untouched. The
+    Settings switch (lyrics.sneak, default on) turns it off.
+    """
+    defaults = {field.key: field.default for field in settings.FIELDS}
+    assert defaults["lyrics.sneak"] is True
+    sneak = next(item for item in settings.FIELDS if item.key == "lyrics.sneak")
+    assert sneak.kind == "bool" and sneak.group == "lyrics"
+
+    html = INDEX_HTML.read_text(encoding="utf-8")
+    assert 'id="lyrics-next"' in html
+    strip = html[html.index('id="lyrics-strip"'):]
+    strip = strip[: strip.index("</div>")]
+    assert strip.index('id="lyrics-current"') < strip.index('id="lyrics-next"')
+
+    css = (INDEX_HTML.parent / "style.css").read_text(encoding="utf-8")
+    container = css[css.index(".lyrics-strip {"):]
+    container = container[: container.index("}")]
+    assert "flex-direction: column" in container
+    peek = css[css.index(".lyrics-next {"):]
+    peek = peek[: peek.index("}")]
+    assert "#000" in peek
+    assert "* 0.5)" in peek
+
+    source = APP_JS.read_text(encoding="utf-8")
+    runtime = _js_function(source, "applyRuntimeSettings")
+    assert '"lyrics.sneak"' in runtime
+    peek_fn = _js_code(source, "lyricPeekForBar")
+    assert "nextLyricBar" in peek_fn
+    assert "next - start !== 1" in peek_fn
+    assert "lyricsSneak" in peek_fn
+    for marker in ("audio", "api.", "setTimeout"):
+        assert marker not in peek_fn
+    strip_fn = _js_code(source, "renderLyricsStrip")
+    assert "lyricPeekForBar" in strip_fn
+    assert "is-empty" in strip_fn
+    for marker in ("audio", "api."):
+        assert marker not in strip_fn
+    sneak_fn = _js_code(source, "applyLyricsSneak")
+    assert "has-peek" in sneak_fn and "lyricsSneak" in sneak_fn
+    # The band keeps its space while the setting is on (no jumping main line).
+    assert "has-peek" in html
+    assert ".lyrics-strip:not(.has-peek) .lyrics-next" in css
+
+
 def test_bar_seek_uses_the_tempo_aware_tick_path():
     """v2.14: a tempo automation must not shift the bar seek.
 

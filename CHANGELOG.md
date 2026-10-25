@@ -2,6 +2,26 @@
 
 > AI TabTool käyttää `1.x`-versiosarjaa. Aloitus `v1.00`.
 
+## v2.19 – 25.10.2026
+
+- **Sneak peek: seuraava rivi yhtä tahtia etukäteen.** Sanoitusoverlayhin
+  lisättiin toinen, **50 % pienempi rivi nykyisen rivin alle**
+  (`#lyrics-next` samassa `#lyrics-strip`-overlayssa). Kun seuraava
+  sanoitusrivi alkaa seuraavasta tahdista, sen teksti näkyy jo kuluvan tahdin
+  aikana – myös tauon viimeisellä tahdilla (esim. laskenta `1` + seuraava
+  rivi). Kauempana olevia rivejä ei näytetä, jotta pitkä instrumentaalitauko
+  ei täytä ruutua. Overlay on edelleen `position: fixed` -kolumni: päärivi
+  ylhäällä, peek alhaalla, eikä `.alphatab`- tai transport-mittoihin kosketa.
+- **Settings:** uusi kytkin `lyrics.sneak` (Sanat-ryhmä, "Seuraavan rivin
+  esikatselu (Sneak peek)"), **oletus päällä**. `app.js` lukee sen
+  `applyRuntimeSettings`issa; katselin soveltaa arvon seuraavalla
+  latauksella. Esikatselurivi varaa tilansa aina asetuksen ollessa päällä,
+  joten päärivi ei hyppää ylös/alas, kun tauko alkaa.
+- **Rajaus:** `lyricPeekForBar` lukee saman sidecar-kartan kuin päärivikin
+  (DOM only, ei alphaTab-kutsuja eikä audion kirjoituksia). Vartiotesti
+  `test_sneak_peek_shows_the_next_line_one_bar_early`.
+- **Testit:** 276 passed.
+
 ## v2.18 – 25.10.2026
 
 - **Sanat-lukitus.** Sanat-editorin TALLENNA/SULJE-rivin lopussa on nyt

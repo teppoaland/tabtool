@@ -148,6 +148,17 @@ FIELDS: tuple[Setting, ...] = (
         ),
     ),
     Setting(
+        "lyrics.sneak",
+        "lyrics",
+        "Seuraavan rivin esikatselu (Sneak peek)",
+        "bool",
+        True,
+        help=(
+            "Näyttää seuraavan sanoitusrivin pienenä nykyisen rivin alla "
+            "yhtä tahtia ennen sen alkua. Tilaa tarvitaan vain vähän."
+        ),
+    ),
+    Setting(
         "view.stave",
         "view",
         "Näkymän oletus",

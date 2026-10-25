@@ -1589,7 +1589,12 @@ body.viewer-fullscreen {
   right: 0;
   bottom: 1.1rem;
   display: flex;
-  justify-content: center;
+  /* v2.19: the sneak peek sits under the main line, so the column keeps the
+     same bottom edge and only grows upwards. */
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.4rem;
   padding: 0 1.5rem;
   pointer-events: none;
   z-index: 1400; /* above alphaTab's cursors (1000), below the count-in (1500) */
@@ -1622,6 +1627,32 @@ body.viewer-fullscreen {
   color: var(--accent);
 }
 
+/* Sneak peek (v2.19): the next line one bar early, half the size of the main
+   band. Same black band and colour-only styling, so it reads the same in
+   fullscreen and never changes the frozen layout. */
+.lyrics-next {
+  max-width: min(1100px, 92vw);
+  padding: 0.35em 2.4ch;
+  border-radius: 999px;
+  background: #000;
+  color: var(--text);
+  opacity: 0.85;
+  font-size: calc(clamp(1.05rem, 2vw, 1.7rem) * var(--lyrics-scale, 2) * 0.5);
+  font-weight: 600;
+  line-height: 1.2;
+  text-align: center;
+}
+
+.lyrics-next.is-empty {
+  /* v2.19: the space stays reserved, so the main line never jumps between
+     bars; the band itself is invisible. */
+  visibility: hidden;
+}
+
+.lyrics-strip:not(.has-peek) .lyrics-next {
+  display: none;
+}
+
 /* Fullscreen has room, so the line uses almost the whole width and stays on
    one line even at 300 %. The Settings lift (lyrics.offset_px, default
    100 px) raises it off the bottom edge; there is nothing to cover there. */
@@ -1631,7 +1662,9 @@ body.viewer-fullscreen {
 }
 
 .viewer-section:fullscreen .lyrics-current,
-.viewer-section.is-fullscreen .lyrics-current {
+.viewer-section.is-fullscreen .lyrics-current,
+.viewer-section:fullscreen .lyrics-next,
+.viewer-section.is-fullscreen .lyrics-next {
   max-width: 96vw;
 }
 

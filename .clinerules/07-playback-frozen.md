@@ -138,7 +138,7 @@ Lukitut vertailuarvot (Seek & Destroy -kalibrointi, v1.52–v1.54):
   sivuttaisvieritystä
 - SYNC ±10 % / 0,05 %, SIIRTO 0,25 tahdin askel, desimaali-TAB BPM
   tallentuvat ja palautuvat tabia avattaessa
-- `pytest -q` (v2.18: 275 passed), `compileall`, `node --check app.js` ja
+- `pytest -q` (v2.19: 276 passed), `compileall`, `node --check app.js` ja
   `remote.js` OK
 
 ## Ihmisvalidointi – kuuntelutesti on ainoa hyväksyntä
