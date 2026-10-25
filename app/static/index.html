@@ -6,14 +6,14 @@
   <meta name="color-scheme" content="dark">
   <title>AI TabTool</title>
   <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="/static/style.css?v=2.17">
+  <link rel="stylesheet" href="/static/style.css?v=2.18">
 </head>
 <body>
   <header class="topbar">
     <div class="brand">
       <span class="brand-mark" aria-hidden="true">AT</span>
       <span class="brand-name">AI TABTOOL</span>
-      <span id="version-tag" class="version">v2.17</span>
+      <span id="version-tag" class="version">v2.18</span>
     </div>
     <nav class="nav" aria-label="Päävalikko">
       <button id="open-search-top" type="button" class="primary nav-library"
@@ -396,6 +396,11 @@
       <div class="actions">
         <button id="lyrics-save" type="submit" class="primary">TALLENNA</button>
         <button id="lyrics-close" type="button" class="ghost">SULJE</button>
+        <!-- Lukitus (v2.18): valmis sanoitus ei muutu vahingossa. -->
+        <label class="lyrics-lock"
+               title="Lukitse sanat: tallennus ja muokkaus estetään, kunnes lukitus avataan.">
+          <input id="lyrics-lock" type="checkbox"> Lukittu
+        </label>
       </div>
     </form>
     <span class="lyrics-resize" id="lyrics-resize-se" data-corner="se"
@@ -404,13 +409,13 @@
 
 
   <footer class="footer">
-    <span>AI TabTool v2.17</span>
+    <span>AI TabTool v2.18</span>
     <span>Local-first · <a href="/remote">Remote</a></span>
   </footer>
 
-  <script src="/static/vendor/alphaTab/alphaTab.min.js?v=2.17"></script>
-  <script src="/static/app.js?v=2.17" defer></script>
-  <script src="/static/remote-bridge.js?v=2.17" defer></script>
+  <script src="/static/vendor/alphaTab/alphaTab.min.js?v=2.18"></script>
+  <script src="/static/app.js?v=2.18" defer></script>
+  <script src="/static/remote-bridge.js?v=2.18" defer></script>
 </body>
 </html>
 

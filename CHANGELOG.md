@@ -2,6 +2,33 @@
 
 > AI TabTool käyttää `1.x`-versiosarjaa. Aloitus `v1.00`.
 
+## v2.18 – 25.10.2026
+
+- **Sanat-lukitus.** Sanat-editorin TALLENNA/SULJE-rivin lopussa on nyt
+  `Lukittu`-rasti. Rastin laitto **tallentaa nykyiset rivit ja lukitsee
+  sidecarin** (`data/lyrics/<tab_id>.json` → `"locked": true`) yhdellä
+  toiminnolla, joten keskeneräistä tekstiä ei voi lukita vahingossa.
+  Lukittuna tekstikenttä on vain luku -tilassa (himmeämpi), TALLENNA on pois
+  päältä eikä tahtiklikkaus kirjoita rivejä; soitto, seek ja rivien selaus
+  toimivat edelleen. Rastin poisto avaa lukituksen. Uusi reitti
+  `PUT /api/tabs/{id}/lyrics/lock` (`{"locked": true|false}`) ja lukittu
+  sidecar vastaa tallennukseen **409**. Lukitus ei koske tabia, sen
+  toistoasetuksia eikä GP5/MusicXML/MIDI-tiedostoja (`locked` on sidecarissa).
+- **Tauot: lähtölaskenta ja tyhjennys.** Overlay ei enää pidä edellistä riviä
+  tyhjän tahdin yli. Jos tahdilla ei ole sanoja mutta myöhempi rivi on
+  olemassa, strip näyttää **lähtölaskennan** seuraavaan riviin (tahdit 1–9 →
+  9, 8, … 1 ja 41–44 → 4, 3, 2, 1). Viimeisen rivin jälkeen strip piiloutuu.
+  Numero piirretään korostusvärillä (`is-cue`; vain väri, ei koko- tai
+  layout-muutosta), joten se erottuu sanoista. Tyhjiä rivejä (`41 |`) ei
+  tarvitse kirjoittaa – laskenta tulee automaattisesti eikä niitä tallenneta.
+- **Rajaus:** overlay ja lukitus ovat DOM-/sidecar-työtä; `#bar-readout`in
+  luku pysyy ennallaan eikä soittoketju (kello, seek-inversio, mediaHandler)
+  tiedä sanoista mitään. Vartiotestit
+  `test_lyrics_gap_counts_down_and_finished_lyrics_can_be_locked`,
+  `test_lyrics_lock_blocks_saves_until_it_is_opened`,
+  `test_lyrics_lock_route_validates_its_payload`.
+- **Testit:** 275 passed.
+
 ## v2.17 – 25.10.2026
 
 - **Sanat: maalaa sanat ja paina tahtia → rivi syntyy itse.** Kun

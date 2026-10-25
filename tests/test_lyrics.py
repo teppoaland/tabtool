@@ -507,6 +507,129 @@ def test_selected_words_move_into_the_pressed_bar():
         assert marker not in chunk
 
 
+def test_lyrics_lock_blocks_saves_until_it_is_opened(
+    client: TestClient, data_dir: Path
+) -> None:
+    """v2.18: a finished lyric can be locked from the SANAT editor.
+
+    The flag lives in the sidecar, so the tab files and the playback settings
+    stay untouched. A locked lyric still reads normally but refuses a save
+    with 409; clearing the box keeps the lines and makes them writable again.
+    """
+    tab_dir = _make_tab(data_dir, "lyrics-lyric-lock")
+    gp5_before = (tab_dir / "tab.gp5").read_bytes()
+    assert (
+        client.put(
+            "/api/tabs/lyrics-lyric-lock/lyrics", json={"measures": {"1": "eka"}}
+        ).status_code
+        == 200
+    )
+
+    locked = client.put(
+        "/api/tabs/lyrics-lyric-lock/lyrics/lock", json={"locked": True}
+    )
+    assert locked.status_code == 200, locked.text
+    payload = locked.json()
+    assert payload["locked"] is True
+    assert payload["measures"] == {"1": "eka"}
+
+    blocked = client.put(
+        "/api/tabs/lyrics-lyric-lock/lyrics", json={"measures": {"2": "toka"}}
+    )
+    assert blocked.status_code == 409, blocked.text
+    read_back = client.get("/api/tabs/lyrics-lyric-lock/lyrics").json()
+    assert read_back["locked"] is True
+    assert read_back["measures"] == {"1": "eka"}
+
+    stored = json.loads(
+        (data_dir / "lyrics" / "lyrics-lyric-lock.json").read_text(encoding="utf-8")
+    )
+    assert stored["locked"] is True
+
+    opened = client.put(
+        "/api/tabs/lyrics-lyric-lock/lyrics/lock", json={"locked": False}
+    )
+    assert opened.status_code == 200
+    assert opened.json()["measures"] == {"1": "eka"}
+    assert (
+        client.put(
+            "/api/tabs/lyrics-lyric-lock/lyrics", json={"measures": {"2": "toka"}}
+        ).status_code
+        == 200
+    )
+    assert client.get("/api/tabs/lyrics-lyric-lock/lyrics").json()["measures"] == {
+        "2": "toka"
+    }
+    # Locking never rewrites the tab itself.
+    assert (tab_dir / "tab.gp5").read_bytes() == gp5_before
+
+
+def test_lyrics_lock_route_validates_its_payload(
+    client: TestClient, data_dir: Path
+) -> None:
+    _make_tab(data_dir, "lyrics-lock-invalid")
+    assert (
+        client.put(
+            "/api/tabs/lyrics-lock-invalid/lyrics/lock", json={"locked": "yes"}
+        ).status_code
+        == 422
+    )
+    assert (
+        client.put("/api/tabs/missing-tab/lyrics/lock", json={"locked": True}).status_code
+        == 404
+    )
+
+
+def test_lyrics_gap_counts_down_and_finished_lyrics_can_be_locked():
+    """v2.18: an empty bar counts down to the next line; a lock keeps it safe.
+
+    The old overlay held the previous line over a gap, so the words of bar 76
+    stayed on screen until 80. Now an empty bar is cleared: if a later line
+    exists the strip shows 4, 3, 2, 1 as the singer's cue, and after the last
+    line it hides. A finished lyric can be locked in the SANAT editor, which
+    only writes the sidecar flag.
+    """
+    html = INDEX_HTML.read_text(encoding="utf-8")
+    assert 'id="lyrics-lock"' in html
+    assert "Lukittu" in html
+
+    css = (INDEX_HTML.parent / "style.css").read_text(encoding="utf-8")
+    assert ".lyrics-current.is-cue" in css
+
+    source = APP_JS.read_text(encoding="utf-8")
+    cue = _js_code(source, "lyricForBar")
+    assert "nextLyricBar" in cue
+    assert "String(next - start)" in cue
+    assert "for (let index = start; index >= 1; index -= 1)" not in cue
+
+    nxt = _js_code(source, "nextLyricBar")
+    assert "lyricsMeasures" in nxt
+    for marker in ("audio", "api."):
+        assert marker not in nxt
+
+    strip = _js_code(source, "renderLyricsStrip")
+    assert "is-cue" in strip
+    for marker in ("audio", "api."):
+        assert marker not in strip
+
+    lock = _js_code(source, "applyLyricsLock")
+    assert "readOnly" in lock
+    assert "lyricsSave" in lock
+    for marker in ("audio", "api."):
+        assert marker not in lock
+
+    assign = _js_code(source, "assignLyricsSelectionToBar")
+    assert "lyricsLocked" in assign
+
+    toggle = _js_code(source, "toggleLyricsLock")
+    assert "/lyrics/lock" in toggle
+    assert "saveLyricsField" in toggle
+    for marker in ("audio", "syncTimeMs", "barDurationMs", "playbackRate"):
+        assert marker not in toggle
+
+    assert 'lyricsLockInput.addEventListener("change", toggleLyricsLock)' in source
+
+
 def test_bar_seek_uses_the_tempo_aware_tick_path():
     """v2.14: a tempo automation must not shift the bar seek.
 

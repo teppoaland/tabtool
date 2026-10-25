@@ -151,6 +151,8 @@
   const lyricsStatus = document.getElementById("lyrics-status");
   const lyricsSave = document.getElementById("lyrics-save");
   const lyricsClose = document.getElementById("lyrics-close");
+  // Lukitus (v2.18): valmis sanoitus pysyy muuttumattomana.
+  const lyricsLockInput = document.getElementById("lyrics-lock");
   const rateSlider = document.getElementById("rate-slider");
   const rateReadout = document.getElementById("rate-readout");
   const syncSlider = document.getElementById("sync-slider");
@@ -259,6 +261,10 @@
   // Offsets of the selection focusLyricsBarLine() made, so it is never
   // mistaken for words the user picked to assign to a bar.
   let lyricsLineSelection = null;
+  // v2.18: a finished lyric can be locked in the sidecar. While locked the
+  // field is read-only and the bar handlers refuse to write; viewing and
+  // seeking keep working.
+  let lyricsLocked = false;
   // Sanoitusrivin koko prosentteina (v2.08) ja nosto pikseleinä (v2.09),
   // molemmat tulevat /api/settingsistä.
   let lyricsScale = LYRICS_SCALE_DEFAULT;
@@ -1708,14 +1714,28 @@
   // an overlay that watches #bar-readout, which the transport already keeps
   // up to date, and paints the sidecar line for that bar.
   function lyricForBar(bar) {
+    // v2.18: an empty bar is cleared instead of holding the previous line.
+    // If a later line exists, the strip counts down to it (9, 8, … 1), so a
+    // gap becomes the singer's cue for when the words continue. After the
+    // last line there is no cue and the strip hides.
     const start = Number(bar) || 0;
-    // A line stays visible over the following bars until the next line
-    // starts, so long phrases are not cut at every bar line.
-    for (let index = start; index >= 1; index -= 1) {
-      const text = lyricsMeasures[String(index)];
-      if (text) return text;
-    }
-    return "";
+    if (!start) return "";
+    const text = lyricsMeasures[String(start)];
+    if (text) return text;
+    const next = nextLyricBar(start);
+    return next ? String(next - start) : "";
+  }
+
+  function nextLyricBar(bar) {
+    // The first stored line after this bar, or 0 when the song has no more.
+    const start = Number(bar) || 0;
+    let next = 0;
+    Object.keys(lyricsMeasures).forEach((key) => {
+      const value = Number(key);
+      if (!Number.isFinite(value) || value <= start) return;
+      if (!next || value < next) next = value;
+    });
+    return next;
   }
 
   function currentLyricsBar() {
@@ -1731,7 +1751,11 @@
     const moved = bar !== lyricsShownBar;
     lyricsShownBar = bar;
     const text = lyricForBar(bar);
+    // A number is a cue, not a lyric: paint it in the accent colour (colour
+    // only, so the band keeps its size).
+    const isCue = Boolean(text) && !lyricsMeasures[String(bar)];
     lyricsCurrent.textContent = text;
+    lyricsCurrent.classList.toggle("is-cue", isCue);
     lyricsStrip.hidden = !text;
     markLyricsPlayingBar(bar, moved);
   }
@@ -1767,6 +1791,8 @@
     lyricsMeasures = {};
     lyricsBarsTotal = 0;
     lyricsShownBar = -1;
+    lyricsLocked = false;
+    applyLyricsLock();
     renderLyricsStrip(true);
   }
 
@@ -1798,6 +1824,8 @@
           : {};
       lyricsBarsTotal = Number(payload && payload.bars) || 0;
       lyricsShownBar = -1;
+      lyricsLocked = Boolean(payload && payload.locked);
+      applyLyricsLock();
       renderLyricsStrip(true);
       // A fetch that lands after the user started typing must not overwrite
       // the edit; the save button is the only writer of the sidecar.
@@ -1809,6 +1837,8 @@
       lyricsTabId = id;
       lyricsMeasures = {};
       lyricsShownBar = -1;
+      lyricsLocked = false;
+      applyLyricsLock();
       renderLyricsStrip(true);
     } finally {
       if (lyricsLoadingFor === id) lyricsLoadingFor = "";
@@ -1870,7 +1900,7 @@
   }
 
   function insertLyricsBar(bar) {
-    if (!lyricsInput) return;
+    if (!lyricsInput || lyricsLocked) return;
     const text = lyricsInput.value;
     const separator = !text || text.endsWith("\n") ? "" : "\n";
     lyricsInput.value = `${text}${separator}${bar} | `;
@@ -1983,6 +2013,7 @@
     // phrase and the rest stays selectable in place. DOM only: no alphaTab
     // call, no clock and no transport write.
     if (!lyricsInput) return false;
+    if (lyricsLocked) return false;
     const number = Math.round(Number(bar) || 0);
     if (number < 1) return false;
     const value = lyricsInput.value;
@@ -2138,6 +2169,7 @@
     const total =
       lyricsBarsTotal || Number(activeTab && activeTab.measure_count) || 0;
     renderLyricsBars(total);
+    applyLyricsLock();
     setLyricsStatus("");
   }
 
@@ -2392,13 +2424,27 @@
     setLyricsStatus("");
   }
 
+  function applyLyricsLock() {
+    // v2.18: the flag lives in the sidecar; this only mirrors it in the DOM.
+    // A locked lyric stays readable and seekable, but the field is read-only
+    // and TALLENNA is off until the box is cleared again.
+    if (lyricsLockInput) lyricsLockInput.checked = lyricsLocked;
+    if (lyricsInput) lyricsInput.readOnly = lyricsLocked;
+    if (lyricsSave) lyricsSave.disabled = lyricsLocked;
+    if (lyricsDialog) lyricsDialog.classList.toggle("is-locked", lyricsLocked);
+  }
+
   async function saveLyrics(event) {
     event.preventDefault();
-    if (!activeTab) return;
+    await saveLyricsField();
+  }
+
+  async function saveLyricsField() {
+    if (!activeTab || lyricsLocked) return false;
     const parsed = parseLyricsText(lyricsInput ? lyricsInput.value : "");
     if (parsed.errors.length) {
       setLyricsStatus(parsed.errors[0], true);
-      return;
+      return false;
     }
     if (lyricsSave) lyricsSave.disabled = true;
     setLyricsStatus("Tallennetaan…");
@@ -2423,20 +2469,72 @@
           ? saved.measures
           : parsed.measures;
       lyricsBarsTotal = Number(saved && saved.bars) || lyricsBarsTotal;
+      lyricsLocked = Boolean(saved && saved.locked);
       lyricsShownBar = -1;
       lyricsDirty = false;
+      applyLyricsLock();
       renderLyricsStrip(true);
       markLyricsBars();
       setLyricsStatus(
         `Tallennettu (${Object.keys(lyricsMeasures).length} riviä).`
       );
+      return true;
     } catch (error) {
       setLyricsStatus(
         error instanceof Error ? error.message : String(error),
         true
       );
+      return false;
     } finally {
-      if (lyricsSave) lyricsSave.disabled = false;
+      if (lyricsSave) lyricsSave.disabled = lyricsLocked;
+    }
+  }
+
+  async function toggleLyricsLock() {
+    // A finished lyric is saved and locked in one step: otherwise ticking the
+    // box would hide unsaved words behind a read-only field (v2.18).
+    if (!lyricsLockInput || !activeTab) return;
+    const want = Boolean(lyricsLockInput.checked);
+    if (want === lyricsLocked) return;
+    if (want && !(await saveLyricsField())) {
+      lyricsLockInput.checked = false;
+      return;
+    }
+    lyricsLockInput.disabled = true;
+    try {
+      const response = await fetch(`/api/tabs/${activeTab.id}/lyrics/lock`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ locked: want }),
+      });
+      if (!response.ok) {
+        const payload = await response.json().catch(() => ({}));
+        throw new Error(
+          payload && payload.detail
+            ? String(payload.detail)
+            : "Lukitus epäonnistui."
+        );
+      }
+      const saved = await response.json();
+      lyricsTabId = String(activeTab.id || "");
+      lyricsLocked = Boolean(saved && saved.locked);
+      if (saved && saved.measures && typeof saved.measures === "object") {
+        lyricsMeasures = saved.measures;
+      }
+      lyricsDirty = false;
+      lyricsShownBar = -1;
+      applyLyricsLock();
+      renderLyricsStrip(true);
+      markLyricsBars();
+      setLyricsStatus(lyricsLocked ? "Sanat lukittu." : "Lukitus avattu.");
+    } catch (error) {
+      lyricsLockInput.checked = lyricsLocked;
+      setLyricsStatus(
+        error instanceof Error ? error.message : String(error),
+        true
+      );
+    } finally {
+      lyricsLockInput.disabled = false;
     }
   }
 
@@ -3480,6 +3578,10 @@
   if (lyricsButton) lyricsButton.addEventListener("click", openLyricsDialog);
   if (lyricsForm) lyricsForm.addEventListener("submit", saveLyrics);
   if (lyricsClose) lyricsClose.addEventListener("click", closeLyricsDialog);
+  // Lukitus (v2.18): rasti tallentaa nykyiset rivit ja lukitsee sidecarin.
+  if (lyricsLockInput) {
+    lyricsLockInput.addEventListener("change", toggleLyricsLock);
+  }
   // Playback for placing lyrics (v2.12): the same calls the transport and
   // the remote already use. Nothing here changes them.
   if (lyricsPlayButton) {

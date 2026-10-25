@@ -639,14 +639,44 @@ def tab_lyrics_save(
 ) -> dict[str, object]:
     """Write the lyrics sidecar atomically; the tab file is not touched.
 
-    A locked tab may still receive lyrics: the lock protects the tab and its
-    stored playback settings, and lyrics live outside both.
+    A locked tab may still receive lyrics: the tab lock protects the tab and its
+    stored playback settings, and lyrics live outside both. A **locked lyric**
+    (v2.18) is different: it refuses the save with 409 until it is opened.
     """
     tab = _load_tab(tab_id)
     if tab is None:
         raise HTTPException(status_code=404, detail="Unknown tab")
     try:
         saved = lyrics.write(tab_id, payload.get("measures"))
+    except lyrics.LyricsLocked as error:
+        raise HTTPException(status_code=409, detail=str(error)) from error
+    except ValueError as error:
+        raise HTTPException(status_code=422, detail=str(error)) from error
+    saved["bars"] = int(tab.get("measure_count") or 0)
+    return saved
+
+
+@app.put("/api/tabs/{tab_id}/lyrics/lock", tags=["tabs"])
+def tab_lyrics_lock(
+    tab_id: str,
+    payload: dict[str, object] = Body(...),
+) -> dict[str, object]:
+    """Lock or unlock the lyrics sidecar (v2.18).
+
+    The flag lives in ``data/lyrics/<tab_id>.json`` only, so the tab, its
+    playback settings and the score files stay untouched. Locking keeps the
+    stored lines; unlocking makes them editable again.
+    """
+    tab = _load_tab(tab_id)
+    if tab is None:
+        raise HTTPException(status_code=404, detail="Unknown tab")
+    locked = payload.get("locked")
+    if not isinstance(locked, bool):
+        raise HTTPException(
+            status_code=422, detail="locked pitää olla true tai false."
+        )
+    try:
+        saved = lyrics.set_locked(tab_id, locked)
     except ValueError as error:
         raise HTTPException(status_code=422, detail=str(error)) from error
     saved["bars"] = int(tab.get("measure_count") or 0)

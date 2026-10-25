@@ -4,13 +4,17 @@ Lyrics live **next to** the tab, never inside it::
 
     data/lyrics/<tab_id>.json
 
-    {"tab_id": "...", "updated_at": "...",
+    {"tab_id": "...", "updated_at": "...", "locked": false,
      "measures": {"10": "Mun sydän palaa", "11": "ja jatkuu..."}}
 
 The GP5/MusicXML/MIDI files and the tab metadata stay byte-for-byte
 untouched, so the playback chain (``.clinerules/07-playback-frozen.md``)
 never learns about lyrics. The viewer reads this file and paints the line
 for the current bar in its own overlay.
+
+A finished lyric can be locked (v2.18): the flag lives in this file only, and
+a locked sidecar refuses writes until it is opened again. The tab lock and
+the playback settings are a different feature.
 
 A save goes through a temp file and ``os.replace`` (pipeline invariant 5):
 a failed write never leaves a half-written JSON behind. The tab id is the
@@ -36,6 +40,10 @@ MAX_LINES = 2000
 MAX_LINE_CHARS = 300
 
 _BAR_KEY = re.compile(r"^[0-9]{1,5}$")
+
+
+class LyricsLocked(Exception):
+    """A save hit a locked sidecar (v2.18); the route turns it into a 409."""
 
 
 def lyrics_dir() -> Path:
@@ -97,7 +105,12 @@ def clean_measures(raw: Any) -> dict[str, str]:
 def read(tab_id: str) -> dict[str, Any]:
     """Return the stored lyrics; a missing or unreadable file means no lyrics."""
     path = lyrics_path(tab_id)
-    payload: dict[str, Any] = {"tab_id": tab_id, "measures": {}, "updated_at": ""}
+    payload: dict[str, Any] = {
+        "tab_id": tab_id,
+        "measures": {},
+        "updated_at": "",
+        "locked": False,
+    }
     try:
         raw = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, ValueError):
@@ -111,16 +124,14 @@ def read(tab_id: str) -> dict[str, Any]:
         # rewrites it in the correct shape.
         payload["measures"] = {}
     payload["updated_at"] = str(raw.get("updated_at") or "")
+    payload["locked"] = raw.get("locked") is True
     return payload
 
 
-def write(tab_id: str, measures: Any) -> dict[str, Any]:
-    """Store the lyrics atomically and return what was saved."""
-    cleaned = clean_measures(measures)
+def _store(tab_id: str, payload: dict[str, Any]) -> None:
+    """Write one sidecar payload atomically (temp file + ``os.replace``)."""
     path = lyrics_path(tab_id)
     path.parent.mkdir(parents=True, exist_ok=True)
-    payload = {"tab_id": tab_id, "updated_at": _now(), "measures": cleaned}
-
     handle, temp_name = tempfile.mkstemp(
         prefix=f".{path.name}.", suffix=".tmp", dir=str(path.parent)
     )
@@ -135,6 +146,38 @@ def write(tab_id: str, measures: Any) -> dict[str, Any]:
         except OSError:
             pass
         raise
+
+
+def write(tab_id: str, measures: Any) -> dict[str, Any]:
+    """Store the lyrics atomically and return what was saved.
+
+    Raises ``LyricsLocked`` when the sidecar is locked: a finished lyric may
+    not be rewritten by a stray bar click or a late paste (v2.18).
+    """
+    if read(tab_id).get("locked"):
+        raise LyricsLocked("Sanat on lukittu. Avaa lukitus ennen tallennusta.")
+    cleaned = clean_measures(measures)
+    payload = {
+        "tab_id": tab_id,
+        "updated_at": _now(),
+        "measures": cleaned,
+        "locked": False,
+    }
+    _store(tab_id, payload)
+    return payload
+
+
+def set_locked(tab_id: str, locked: bool) -> dict[str, Any]:
+    """Lock or unlock the sidecar; the stored lines are kept as they are."""
+    existing = read(tab_id)
+    measures = existing.get("measures")
+    payload = {
+        "tab_id": tab_id,
+        "updated_at": _now(),
+        "measures": measures if isinstance(measures, dict) else {},
+        "locked": bool(locked),
+    }
+    _store(tab_id, payload)
     return payload
 
 
