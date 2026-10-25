@@ -6,14 +6,14 @@
   <meta name="color-scheme" content="dark">
   <title>AI TabTool</title>
   <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="/static/style.css?v=2.15">
+  <link rel="stylesheet" href="/static/style.css?v=2.16">
 </head>
 <body>
   <header class="topbar">
     <div class="brand">
       <span class="brand-mark" aria-hidden="true">AT</span>
       <span class="brand-name">AI TABTOOL</span>
-      <span id="version-tag" class="version">v2.15</span>
+      <span id="version-tag" class="version">v2.16</span>
     </div>
     <nav class="nav" aria-label="Päävalikko">
       <button id="open-search-top" type="button" class="primary nav-library"
@@ -361,12 +361,13 @@
       <span id="lyrics-bar-badge" class="lyrics-bar-badge">Tahti –</span>
     </header>
     <!-- Soittoeditori (v2.12): samat perustoiminnot kuin kaukosäätimessä,
-         jotta rivin paikan voi tarkistaa soittamatta katselimeen. -->
+         jotta rivin paikan voi tarkistaa soittamatta katselimeen.
+         v2.16: « on PLAYn vasemmalla puolella (alkuun ennen toistoa). -->
     <div class="lyrics-controls" role="group" aria-label="Soitto">
-      <button id="lyrics-play" type="button" class="primary lyrics-play"
-              title="Toista tai pysäytä audio. Sama kuin katselimen PLAY.">PLAY</button>
       <button id="lyrics-start" type="button" class="ghost small"
               title="Siirry kappaleen alkuun.">«</button>
+      <button id="lyrics-play" type="button" class="primary lyrics-play"
+              title="Toista tai pysäytä audio. Sama kuin katselimen PLAY.">PLAY</button>
       <button id="lyrics-back" type="button" class="ghost small"
               title="Siirry 5 sekuntia taaksepäin.">−5 s</button>
       <button id="lyrics-forward" type="button" class="ghost small"
@@ -401,13 +402,13 @@
 
 
   <footer class="footer">
-    <span>AI TabTool v2.15</span>
+    <span>AI TabTool v2.16</span>
     <span>Local-first · <a href="/remote">Remote</a></span>
   </footer>
 
-  <script src="/static/vendor/alphaTab/alphaTab.min.js?v=2.15"></script>
-  <script src="/static/app.js?v=2.15" defer></script>
-  <script src="/static/remote-bridge.js?v=2.15" defer></script>
+  <script src="/static/vendor/alphaTab/alphaTab.min.js?v=2.16"></script>
+  <script src="/static/app.js?v=2.16" defer></script>
+  <script src="/static/remote-bridge.js?v=2.16" defer></script>
 </body>
 </html>
 

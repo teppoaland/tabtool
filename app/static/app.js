@@ -1874,6 +1874,61 @@
     markLyricsBars();
   }
 
+  function lyricsBarLineRange(text, bar) {
+    // v2.16: the field is one line per bar ("95 | text") and a bare line
+    // continues from the previous bar (same rule as parseLyricsText). Returns
+    // the offsets of the lyric text alone, so the "95 | " prefix survives if
+    // the highlighted words are replaced. Pure string work, no DOM.
+    const target = Math.round(Number(bar) || 0);
+    if (!target) return null;
+    let nextBar = 0;
+    let offset = 0;
+    for (const line of String(text == null ? "" : text).split("\n")) {
+      const lineStart = offset;
+      offset += line.length + 1;
+      const raw = line.trim();
+      if (!raw || raw.startsWith("#")) continue;
+      const match = /^(\d+)\s*[|:=\t]\s*(.+)$/.exec(raw);
+      const lineBar = match ? Number(match[1]) : nextBar;
+      if (!Number.isFinite(lineBar) || lineBar < 1 || lineBar > 10000) continue;
+      if (lineBar === target) {
+        const lead = line.length - line.trimStart().length;
+        const value = match ? match[2] : raw;
+        const start = lineStart + lead + (raw.length - value.length);
+        return { start: start, end: start + value.length };
+      }
+      nextBar = lineBar + 1;
+    }
+    return null;
+  }
+
+  function focusLyricsBarLine(bar) {
+    // v2.16: pressing bar 95 also selects its "95 | …" line, so a line can be
+    // checked or rewritten without hunting for it in the field. DOM only: the
+    // field is a sidecar editor and the transport keeps its own state.
+    if (!lyricsInput) return false;
+    const range = lyricsBarLineRange(lyricsInput.value, bar);
+    if (!range) return false;
+    lyricsInput.focus({ preventScroll: true });
+    lyricsInput.setSelectionRange(range.start, range.end);
+    // Scroll only the text field. Most engines bring the caret into view on
+    // their own; this keeps the line visible when they do not.
+    const lineHeight =
+      Number.parseFloat(window.getComputedStyle(lyricsInput).lineHeight) || 18;
+    const index =
+      lyricsInput.value.slice(0, range.start).split("\n").length - 1;
+    const top = index * lineHeight;
+    if (top < lyricsInput.scrollTop) {
+      lyricsInput.scrollTop = Math.max(0, top - lineHeight);
+    } else if (
+      top + lineHeight >
+      lyricsInput.scrollTop + lyricsInput.clientHeight
+    ) {
+      lyricsInput.scrollTop = top + lineHeight - lyricsInput.clientHeight;
+    }
+    return true;
+  }
+
   function jumpToBar(bar) {
     // Press a bar number to put the song, the tab and the cursor there.
     // alphaTab owns the tempo map (Seek & Destroy changes tempo at bar 113),
@@ -1925,7 +1980,9 @@
       chip.textContent = String(bar);
       chip.title = `Hyppää tahtiin ${bar}. Kaksoisklikkaus lisää rivin.`;
       // Click = seek, double-click = start a line for that bar (v2.12).
+      // v2.16: the same click also selects the matching "tahti | teksti" line.
       chip.addEventListener("click", () => jumpToBar(bar));
+      chip.addEventListener("click", () => focusLyricsBarLine(bar));
       chip.addEventListener("dblclick", () => insertLyricsBar(bar));
       lyricsBars.appendChild(chip);
     }

@@ -2,6 +2,26 @@
 
 > AI TabTool käyttää `1.x`-versiosarjaa. Aloitus `v1.00`.
 
+## v2.16 – 25.10.2026
+
+- **Sanoitusnäkymän soittorivit järjestykseen.** `«` (alkuun) siirrettiin
+  PLAYn **vasemmalle puolelle**, kuten katselimen transportissa: järjestys
+  on nyt `«` · PLAY · −5 s · +5 s. Pelkkä DOM-järjestys, id:t ja
+  käsittelijät ennallaan (`lyricsStartButton` → `seekTo(0)`).
+- **Tahtiklikki kohdistaa vastaavan sanoitusrivin.** Kun tahtilistasta
+  painetaan esim. tahtia 95, `focusLyricsBarLine` valitsee tekstikentästä
+  rivin `95 | …` sanoineen (bar-numero ja erotin jäävät paikoilleen, joten
+  kirjoittamalla voi korvata vain sanoituksen) ja vierittää kentän sille
+  riville. Rivin haku noudattaa samaa sääntöä kuin `parseLyricsText`
+  (eksplisiittinen `tahti |` tai jatkorivi). Jos riville ei ole vielä
+  sanoitusta, kenttään ei kosketa – kaksoisklikki lisää uuden rivin kuten
+  ennenkin.
+- **Rajaus:** apurit ovat puhdasta merkkijono-/DOM-työtä (`lyricsBarLineRange`,
+  `focusLyricsBarLine`), eivätkä ne kutsu alphaTabia, `audio`a eivätkä
+  kellofunktioita. Vartiotesti
+  `test_bar_click_selects_the_matching_lyric_line`.
+- **Testit:** 271 passed.
+
 ## v2.15 – 25.10.2026
 
 - **Sanoitusesimerkki pois julkisesta reposta.** Editorin tekstikentän

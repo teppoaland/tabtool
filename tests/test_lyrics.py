@@ -418,6 +418,48 @@ def test_lyrics_bar_list_and_editor_share_the_panel_height():
     )
 
 
+def test_bar_click_selects_the_matching_lyric_line():
+    """v2.16: « sits before PLAY and a bar click highlights its lyric line.
+
+    Pressing bar 95 seeks (v2.12) and then selects the words of the
+    "95 | …" line, so a line can be checked or rewritten without scrolling
+    the field by hand. The lookup is pure string work and the selection is
+    DOM only, so rule 07's playback chain is not touched.
+    """
+    html = INDEX_HTML.read_text(encoding="utf-8")
+    controls = html[html.index('class="lyrics-controls"'):]
+    controls = controls[: controls.index("</div>")]
+    assert controls.index('id="lyrics-start"') < controls.index('id="lyrics-play"')
+
+    source = APP_JS.read_text(encoding="utf-8")
+    assert (
+        'chip.addEventListener("click", () => focusLyricsBarLine(bar))' in source
+    )
+
+    focus = _js_code(source, "focusLyricsBarLine")
+    assert "lyricsBarLineRange" in focus
+    assert "setSelectionRange" in focus
+    assert "lyricsInput.scrollTop" in focus
+    for marker in (
+        "syncTimeMs",
+        "bpmDrift",
+        "barDurationMs",
+        "playbackRate",
+        "audio",
+        "api.",
+        "60000",
+        "960",
+    ):
+        assert marker not in focus, f"focusLyricsBarLine must stay DOM only: {marker}"
+
+    line_range = _js_code(source, "lyricsBarLineRange")
+    # Same reading rule as parseLyricsText(): explicit number or continuation.
+    assert "nextBar" in line_range
+    assert "trimStart" in line_range
+    for marker in ("querySelector", "getElementById", "api.", "audio"):
+        assert marker not in line_range
+
+
 def test_bar_seek_uses_the_tempo_aware_tick_path():
     """v2.14: a tempo automation must not shift the bar seek.
 
