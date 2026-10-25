@@ -7,10 +7,11 @@
 
 ## Nykyinen versio
 
-`v2.23` – `app/__init__.py`:n `__version__`, `app/static/index.html`:n
+`v2.24` – `app/__init__.py`:n `__version__`, `app/static/index.html`:n
 `#version-tag` ja kaikki `?v=`-leimat. **Palautuspiste: tagi `v2.23`**
-(25.10.2026, “hyvä paketti”) ja vanhempi tagi `v1.99` (23.10.2026);
-v1.23–v2.23 on pushattu `origin/main`iin 25.10.2026.
+(25.10.2026, “hyvä paketti”), `v2.24` paikallisena committina (ei pushattu)
+ja vanhempi tagi `v1.99` (23.10.2026); v1.23–v2.23 on pushattu
+`origin/main`iin 25.10.2026.
 
 ## Milloin +0.01
 

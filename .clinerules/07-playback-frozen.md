@@ -81,6 +81,13 @@ koskee sama raja.
   (10 %:n ikkuna). Sama ikkuna on `/remote`-sivun nopeussäätimessä.
   Muut lukitut `min/max/step`-arvot ja kytkennät ovat ennallaan;
   `setPlaybackRate` itse ei muuttunut.
+- **v2.24 (käyttäjän pyyntö):** `.viewer-bar`in ensimmäisessä solussa on
+  `.viewer-start`-flex-lohko, jossa `#seek-start` (`«`) on
+  `#play-button`in vasemmalla puolella. Käsittelijä on
+  `seekStart.addEventListener("click", () => seekTo(0))` – sama kutsu kuin
+  `#lyrics-start`illa. Grid (`auto minmax(0, 1fr) auto`), otsikkosarake ja
+  kaikki yllä luetellut lukitut id:t pysyivät ennallaan; vartiotesti
+  `tests/test_viewer_seek_start.py`.
 
 ### 3. `app/static/style.css` – mitat ja pino
 
@@ -138,7 +145,7 @@ Lukitut vertailuarvot (Seek & Destroy -kalibrointi, v1.52–v1.54):
   sivuttaisvieritystä
 - SYNC ±10 % / 0,05 %, SIIRTO 0,25 tahdin askel, desimaali-TAB BPM
   tallentuvat ja palautuvat tabia avattaessa
-- `pytest -q` (v2.23: 280 passed), `compileall`, `node --check app.js` ja
+- `pytest -q` (v2.24: 284 passed), `compileall`, `node --check app.js` ja
   `remote.js` OK
 
 ## Ihmisvalidointi – kuuntelutesti on ainoa hyväksyntä

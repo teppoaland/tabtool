@@ -1,10 +1,10 @@
 # 📍 Aktiivinen konteksti – AI TABTOOL
 
-> **Versio:** `v2.23` (25.10.2026) · **Testit:** 280 passed
-> **Git:** v1.23–v2.23 **pushattu** `origin/main`iin 25.10.2026 käyttäjän
-> pyynnöstä. **Palautuspisteet:** tagi `v2.23` (25.10.2026, “hyvä paketti”)
-> ja vanhempi tagi `v1.99` (`git reset --hard v1.99`). Älä pinnaa
-> HEAD-hashia pysyvästi.
+> **Versio:** `v2.24` (25.10.2026) · **Testit:** 284 passed
+> **Git:** v1.23–v2.23 **pushattu** `origin/main`iin 25.10.2026; **v2.24 on
+> paikallinen commit (ei pushattu)**. **Palautuspisteet:** tagi `v2.23`
+> (25.10.2026, “hyvä paketti”) ja vanhempi tagi `v1.99`
+> (`git reset --hard v1.99`). Älä pinnaa HEAD-hashia pysyvästi.
 > **Push:** vain erillisestä pyynnöstä (20.10., 23.10. ja 25.10.2026).
 > **Repo:** https://github.com/teppoaland/tabtool
 > **Palvelin:** käyttäjän hallinnassa (`start.bat` / `stop.bat`); Cline ei
@@ -19,8 +19,15 @@
   ilman lupaa; riskimuutos validoidaan käyttäjän kuuntelutestillä
   (Seek & Destroy, SIIRTO −0,75 / BPM 142). Katso
   `.clinerules/07-playback-frozen.md`.
-- **Sanoituskokonaisuus valmis (v2.06–v2.23) – käyttäjän UI-/kuuntelutesti
-  vielä kesken:**
+- **v2.24 – `«` katselimen PLAYn edessä (käyttäjä kuitannut 25.10.2026).**
+  `#seek-start` (`«`) hyppää kappaleen alkuun samalla `seekTo(0)`lla kuin
+  sanoituseditorin `#lyrics-start` ja remoten `seek 0`. `«` ja PLAY ovat
+  samassa `.viewer-start`-flex-solussa, joten `.viewer-bar`in grid
+  (`auto minmax(0, 1fr) auto`), otsikkosarake ja lukitut id:t pysyivät
+  ennallaan; count-in jää tarkoituksella päälle. Vartiotesti
+  `tests/test_viewer_seek_start.py`. Soittoketjuun ei koskettu.
+- **Sanoituskokonaisuus valmis (v2.06–v2.23) – tarkistuslista referenssinä,
+  jos sanoja muokataan:**
   - Sanat ovat **sidecarissa** `data/lyrics/<tab_id>.json`
     (`{"tab_id","updated_at","locked","notes","measures":{"10":"…"}}`), eivät
     GP5:ssä eikä tabin metassa. API `GET/PUT /api/tabs/{id}/lyrics` ja
@@ -61,8 +68,9 @@
 
 ## Avoimet / myöhemmin
 
-- **Käyttäjän validointi (sääntö #1):** v2.05–v2.23 UI- ja kuuntelutesti.
-  Erityisesti: sanojen siirto klikkauksella ja `Ctrl+Enter`, `JAA RIVIT`
+- **Käyttäjän validointi (sääntö #1):** v2.24 (`«` alkuun) kuitattu
+  25.10.2026 (”Kaikki toimii”). Sanoitusosion lista pysyy referenssinä, jos
+  sanoja muokataan: sanojen siirto klikkauksella ja `Ctrl+Enter`, `JAA RIVIT`
   (tahdista 30 Dr. Feelgoodilla), muistiinpanot, `Lukittu`-rasti (tallennus
   + 409 + avaus), lähtölaskenta (1–9, 41–44, 76–79), sneak peek molemmissa
   asennoissa (`lyrics.sneak_position`), overlay fullscreenissa, tahtihyppy

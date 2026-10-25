@@ -1,8 +1,9 @@
 # 📊 Projektin edistyminen – AI TABTOOL
 
-> **Versio:** `v2.23` (25.10.2026) · **Testit:** 280 passed ·
-> **Git:** v1.23–v2.23 pushattu `origin/main`iin 25.10.2026. Palautuspiste:
-> **tagi `v2.23`** (25.10.2026) ja vanhempi `v1.99`.
+> **Versio:** `v2.24` (25.10.2026) · **Testit:** 284 passed ·
+> **Git:** v1.23–v2.23 pushattu `origin/main`iin 25.10.2026; **v2.24
+> paikallisena committina (ei pushattu)**. Palautuspiste: **tagi `v2.23`**
+> (25.10.2026) ja vanhempi `v1.99`.
 > Yksityiskohtainen historia: `CHANGELOG.md`. Tässä tiedostossa on tila,
 > päätökset ja seuraavat askeleet – ei lokia.
 
@@ -18,7 +19,16 @@
   käyttäjän kuuntelutesti (Seek & Destroy, SIIRTO −0,75 / BPM 142).
 - Katso `.clinerules/07-playback-frozen.md`.
 
-## Nyt – sanoitus (v2.06–v2.23)
+## Nyt – `«` katselimen PLAYn edessä (v2.24)
+
+- `#seek-start` (`«`) hyppää kappaleen alkuun samalla `seekTo(0)`lla kuin
+  sanoituseditorin `#lyrics-start` ja remoten `seek 0`; count-in jää päälle.
+  `«` ja PLAY ovat samassa `.viewer-start`-flex-solussa, joten
+  `.viewer-bar`in grid, otsikkosarake, transportin id:t ja `.alphatab`-mitat
+  eivät muuttuneet. Vartiotesti `tests/test_viewer_seek_start.py`.
+  **Käyttäjä kuitannut 25.10.2026.**
+
+## Sanoitus (v2.06–v2.23)
 
 - **Sidecar:** sanat `data/lyrics/<tab_id>.json`
   (`{"tab_id","updated_at","locked","measures":{"10":"…"}}`). Tabi pysyy
@@ -101,7 +111,8 @@
   lähtölaskenta ja tyhjennys; **v2.19** sneak peek + Settings-kytkin;
   **v2.20** muistiinpanot sidecariin; **v2.21** peek sanojen ylle;
   **v2.22** `JAA RIVIT` -bulk-numerointi; **v2.23** peek takaisin alle +
-  sijaintivalinta Settingsiin.
+  sijaintivalinta Settingsiin; **v2.24** `«` katselimen PLAYn eteen
+  (alkuun, `seekTo(0)`).
 
 ## Tunnetut rajoitukset
 

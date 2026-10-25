@@ -41,6 +41,7 @@ ydintekstit:
 - `Muistiinpanot (lähde, kesken, korjattavaa)` (v2.20, Sanat-editorin kenttä)
 - `JAA RIVIT` (v2.22, Sanat-editorin bulk-numerointi)
 - `Sneak peek -sijainti` (v2.23, Settings-valinta: alla / yllä)
+- `«` (v2.24, alkuun: katselimen palkki, Sanat-editori ja kaukosäädin)
 
 Hyväksytyt poikkeukset: LIBRARY-modaali (aiemmin SEARCH) ja kappaleen
 poiston varoitusdialogi (v1.38) ovat sallittuja. Muita uusia modaaleja,

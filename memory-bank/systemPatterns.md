@@ -310,9 +310,13 @@ resolvoitui työhakemistosta ja tabi menetti audionsa.
   `ARKISTO (n)` -linkin takana; rastin poisto palauttaa ne päälistaan.
   Modaalissa KIRJASTO on vasen (leveämpi) sarake ja generaattori oikea
   (v1.64).
-- **Soittokortti (v1.59–v1.62):** `.viewer-bar` on grid
-  `auto auto 1fr auto` (LIBRARY, PLAY, otsikko, FULLSCREEN oikeassa
-  reunassa); NÄKYMÄ/raitavalinnat omalla rivillään vasemmasta reunasta.
+- **Soittokortti (v1.59–v1.62, v2.24):** `.viewer-bar` on grid
+  `auto minmax(0, 1fr) auto` (ensimmäisessä solussa `.viewer-start` =
+  `«` + PLAY, sitten otsikko, sitten FULLSCREEN + COUNT-IN oikeassa
+  reunassa; LIBRARY on vain yläpalkissa v2.05:stä); NÄKYMÄ/raitavalinnat
+  omalla rivillään vasemmasta reunasta. **v2.24:** `#seek-start` (`«`,
+  `seekTo(0)`) ja `#play-button` ovat samassa flex-solussa, joten
+  ruudukkoon ei tullut uutta saraketta eikä otsikko siirtynyt.
   `.transport` on oma taustakortti. EXPORT-rivi on tabikentän alla.
   Fullscreenissä LIBRARY piilotetaan ja grid kavennetaan kolmeen
   sarakkeeseen. **v1.81:** FULLSCREEN-nappi ja COUNT-IN-kytkin ovat

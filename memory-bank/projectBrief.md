@@ -1,6 +1,6 @@
 # 🎯 Projektin lyhyt kuvaus – AI TABTOOL
 
-> **Versio:** `v2.23` (25.10.2026)
+> **Versio:** `v2.24` (25.10.2026)
 > **Repo:** https://github.com/teppoaland/tabtool
 > **Paikallinen:** `D:\AI\tabtool`
 
@@ -13,7 +13,7 @@ Lokaali web-palvelu, jossa voi:
 3. tuoda GP5/MusicXML-tabeja **linkistä tai koneelta** ja liittää niihin
    YouTube-audio yhdellä toiminnolla,
 4. katsoa tablatuuria alphaTabilla TV:stä/tietokoneelta (aikajana,
-   cursor, fullscreen, raitavalinnat, BPM/Nopeus),
+   cursor, fullscreen, raitavalinnat, BPM/Nopeus, `«` = alkuun),
 5. valita ja poistaa kappaleita LIBRARY-modaalin kirjastosta,
 6. käyttää puhelinta kaukosäätimenä sisäverkossa (QR-pariutus,
    valinnainen LAN-PIN),
@@ -172,7 +172,7 @@ Lokaali web-palvelu, jossa voi:
   audion (ei string/fret-dataa), ja GP/MIDI/MP3-lataus on Plus-ominaisuus
   (`songsterr.com/ai.txt`). Käyttäjän Android-osto on **kertamaksu**
   (vain Android, ei web). GP5:t haetaan laillisesta lähteestä käsin.
-- **Versiosarja `1.x`**, aloitus `v1.00`; nyt `v2.23`.
+- **Versiosarja `1.x`**, aloitus `v1.00`; nyt `v2.24`.
 - **Ei julkista julkaisua:** koodi pidetään lokaalina. Commitit tehdään
   paikalliseen repoon palautuspisteiksi (revert); push GitHubiin vain
   erillisestä pyynnöstä.
