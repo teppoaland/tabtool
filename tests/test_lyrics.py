@@ -652,7 +652,8 @@ def test_sneak_peek_shows_the_next_line_one_bar_early():
     css = (INDEX_HTML.parent / "style.css").read_text(encoding="utf-8")
     container = css[css.index(".lyrics-strip {"):]
     container = container[: container.index("}")]
-    assert "flex-direction: column" in container
+    # v2.21: the peek renders above the main line (column-reverse).
+    assert "flex-direction: column-reverse" in container
     peek = css[css.index(".lyrics-next {"):]
     peek = peek[: peek.index("}")]
     assert "#000" in peek

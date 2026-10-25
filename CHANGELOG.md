@@ -2,6 +2,17 @@
 
 > AI TabTool käyttää `1.x`-versiosarjaa. Aloitus `v1.00`.
 
+## v2.21 – 25.10.2026
+
+- **Sneak peek siirretty sanojen yläpuolelle.** Esikatselurivi luetaan nyt
+  luonnollisessa järjestyksessä: seuraava rivi (50 % pienempi) on
+  **yläpuolella** ja kuluvan tahdin rivi sen alla. Toteutus on yksi
+  `flex-direction: column-reverse` -muutos samassa `#lyrics-strip`-
+  overlayssa; DOM-järjestys, varattu tila, koko, väri, lukitus ja
+  soittoketju pysyvät ennallaan (ei muutoksia `.alphatab`- tai
+  transport-mittoihin).
+- **Testit:** 279 passed.
+
 ## v2.20 – 25.10.2026
 
 - **Sanat-editoriin muistiinpanokenttä.** Lomitettu vapaa teksti (`#lyrics-notes`,

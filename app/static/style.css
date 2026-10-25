@@ -1589,9 +1589,10 @@ body.viewer-fullscreen {
   right: 0;
   bottom: 1.1rem;
   display: flex;
-  /* v2.19: the sneak peek sits under the main line, so the column keeps the
-     same bottom edge and only grows upwards. */
-  flex-direction: column;
+  /* v2.21: the sneak peek renders above the main line (column-reverse), which
+     reads more naturally; the column keeps the same bottom edge, so the main
+     line stays anchored. */
+  flex-direction: column-reverse;
   align-items: center;
   justify-content: flex-end;
   gap: 0.4rem;
@@ -1627,9 +1628,10 @@ body.viewer-fullscreen {
   color: var(--accent);
 }
 
-/* Sneak peek (v2.19): the next line one bar early, half the size of the main
-   band. Same black band and colour-only styling, so it reads the same in
-   fullscreen and never changes the frozen layout. */
+/* Sneak peek (v2.19, above the main line since v2.21): the next line one bar
+   early, half the size of the main band. Same black band and colour-only
+   styling, so it reads the same in fullscreen and never changes the frozen
+   layout. */
 .lyrics-next {
   max-width: min(1100px, 92vw);
   padding: 0.35em 2.4ch;
