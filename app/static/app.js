@@ -131,7 +131,10 @@
   const lyricsCurrent = document.getElementById("lyrics-current");
   const lyricsDialog = document.getElementById("lyrics-dialog");
   const lyricsHandle = document.getElementById("lyrics-handle");
-  const lyricsResizer = document.getElementById("lyrics-resize");
+  // Kaksi kahvaa (v2.11): vasen yläkulma ja oikea alakulma.
+  const lyricsResizeGrips = Array.from(
+    document.querySelectorAll(".lyrics-resize")
+  );
   const lyricsBarBadge = document.getElementById("lyrics-bar-badge");
   const lyricsForm = document.getElementById("lyrics-form");
   const lyricsSubject = document.getElementById("lyrics-subject");
@@ -1992,17 +1995,22 @@
   function startLyricsResize(event) {
     if (!lyricsDialog) return;
     if (event.button !== undefined && event.button !== 0) return;
+    const grip = event.currentTarget;
+    const corner = (grip && grip.dataset && grip.dataset.corner) || "se";
     event.preventDefault();
     const rect = lyricsDialog.getBoundingClientRect();
     lyricsResize = {
+      corner,
       startX: event.clientX,
       startY: event.clientY,
+      left: rect.left,
+      top: rect.top,
       width: rect.width,
       height: rect.height,
     };
-    if (lyricsResizer && typeof lyricsResizer.setPointerCapture === "function") {
+    if (grip && typeof grip.setPointerCapture === "function") {
       try {
-        lyricsResizer.setPointerCapture(event.pointerId);
+        grip.setPointerCapture(event.pointerId);
       } catch (error) {
         /* the pointer may already be gone */
       }
@@ -2011,12 +2019,28 @@
 
   function moveLyricsResize(event) {
     if (!lyricsResize) return;
-    sizeLyricsPanel(
-      lyricsResize.width + (event.clientX - lyricsResize.startX),
-      lyricsResize.height + (event.clientY - lyricsResize.startY)
-    );
-    // Growing near the edge must not push the panel out of the window.
-    placeLyricsPanel(lyricsDialog.offsetLeft, lyricsDialog.offsetTop);
+    const dx = event.clientX - lyricsResize.startX;
+    const dy = event.clientY - lyricsResize.startY;
+    const maxWidth = Math.max(320, window.innerWidth - 16);
+    const maxHeight = Math.max(260, window.innerHeight - 16);
+    let width = lyricsResize.width;
+    let height = lyricsResize.height;
+    let left = lyricsResize.left;
+    let top = lyricsResize.top;
+    if (lyricsResize.corner === "nw") {
+      // The top-left grip keeps the bottom-right edge in place: the panel
+      // grows left/up while the position follows the pointer.
+      width = clampPixels(lyricsResize.width - dx, 360, maxWidth);
+      height = clampPixels(lyricsResize.height - dy, 280, maxHeight);
+      left = lyricsResize.left + (lyricsResize.width - width);
+      top = lyricsResize.top + (lyricsResize.height - height);
+    } else {
+      width = clampPixels(lyricsResize.width + dx, 360, maxWidth);
+      height = clampPixels(lyricsResize.height + dy, 280, maxHeight);
+    }
+    sizeLyricsPanel(width, height);
+    // Clamping the position also keeps a grown panel inside the window.
+    placeLyricsPanel(left, top);
   }
 
   function endLyricsResize() {
@@ -3147,8 +3171,10 @@
     window.addEventListener("pointerup", endLyricsDrag);
     window.addEventListener("pointercancel", endLyricsDrag);
   }
-  if (lyricsResizer) {
-    lyricsResizer.addEventListener("pointerdown", startLyricsResize);
+  for (const grip of lyricsResizeGrips) {
+    grip.addEventListener("pointerdown", startLyricsResize);
+  }
+  if (lyricsResizeGrips.length) {
     window.addEventListener("pointermove", moveLyricsResize);
     window.addEventListener("pointerup", endLyricsResize);
     window.addEventListener("pointercancel", endLyricsResize);

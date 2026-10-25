@@ -6,14 +6,14 @@
   <meta name="color-scheme" content="dark">
   <title>AI TabTool</title>
   <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="/static/style.css?v=2.10">
+  <link rel="stylesheet" href="/static/style.css?v=2.11">
 </head>
 <body>
   <header class="topbar">
     <div class="brand">
       <span class="brand-mark" aria-hidden="true">AT</span>
       <span class="brand-name">AI TABTOOL</span>
-      <span id="version-tag" class="version">v2.10</span>
+      <span id="version-tag" class="version">v2.11</span>
     </div>
     <nav class="nav" aria-label="Päävalikko">
       <button id="open-search-top" type="button" class="primary nav-library"
@@ -353,6 +353,8 @@
        can be placed by ear while the tab keeps playing behind it. -->
   <div id="lyrics-dialog" class="lyrics-float" role="dialog"
        aria-labelledby="lyrics-heading" hidden>
+    <span class="lyrics-resize" id="lyrics-resize" data-corner="nw"
+          aria-hidden="true" title="Muuta ikkunan kokoa."></span>
     <header id="lyrics-handle" class="lyrics-handle"
             title="Raahaa ikkunaa. Soitto jatkuu taustalla.">
       <h2 id="lyrics-heading">Sanat</h2>
@@ -374,19 +376,19 @@
         <button id="lyrics-close" type="button" class="ghost">SULJE</button>
       </div>
     </form>
-    <span id="lyrics-resize" class="lyrics-resize" aria-hidden="true"
-          title="Muuta ikkunan kokoa."></span>
+    <span class="lyrics-resize" id="lyrics-resize-se" data-corner="se"
+          aria-hidden="true" title="Muuta ikkunan kokoa."></span>
   </div>
 
 
   <footer class="footer">
-    <span>AI TabTool v2.10</span>
+    <span>AI TabTool v2.11</span>
     <span>Local-first · <a href="/remote">Remote</a></span>
   </footer>
 
-  <script src="/static/vendor/alphaTab/alphaTab.min.js?v=2.10"></script>
-  <script src="/static/app.js?v=2.10" defer></script>
-  <script src="/static/remote-bridge.js?v=2.10" defer></script>
+  <script src="/static/vendor/alphaTab/alphaTab.min.js?v=2.11"></script>
+  <script src="/static/app.js?v=2.11" defer></script>
+  <script src="/static/remote-bridge.js?v=2.11" defer></script>
 </body>
 </html>
 

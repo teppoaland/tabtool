@@ -272,9 +272,11 @@ def test_lyrics_editor_floats_above_the_player():
 
 
 def test_lyrics_editor_can_be_resized():
-    """v2.08: the floating editor is resizable and remembers its size."""
+    """v2.08–v2.11: the floating editor is resizable from either corner."""
     html = INDEX_HTML.read_text(encoding="utf-8")
-    assert 'id="lyrics-resize"' in html
+    assert html.count('class="lyrics-resize"') == 2
+    assert 'data-corner="nw"' in html
+    assert 'data-corner="se"' in html
 
     source = APP_JS.read_text(encoding="utf-8")
     for name in ("startLyricsResize", "moveLyricsResize", "sizeLyricsPanel"):
@@ -282,7 +284,14 @@ def test_lyrics_editor_can_be_resized():
         assert "audio" not in body, f"{name} must not touch the audio element"
         assert "api." not in body, f"{name} must not call the alphaTab API"
 
-    assert 'lyricsResizer.addEventListener("pointerdown", startLyricsResize)' in source
+    # Both grips run the same handler; the corner comes from the element.
+    assert 'document.querySelectorAll(".lyrics-resize")' in source
+    assert 'grip.addEventListener("pointerdown", startLyricsResize)' in source
+    start = _js_code(source, "startLyricsResize")
+    assert "dataset.corner" in start
+    move = _js_code(source, "moveLyricsResize")
+    assert 'lyricsResize.corner === "nw"' in move
+
     assert "lyricsDialog.style.width" in source
     assert "lyricsDialog.style.height" in source
     saved = _js_function(source, "saveLyricsPanelPosition")

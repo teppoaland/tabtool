@@ -1,9 +1,9 @@
 # 📍 Aktiivinen konteksti – AI TABTOOL
 
-> **Versio:** `v2.10` (25.10.2026)
+> **Versio:** `v2.11` (25.10.2026)
 > **Git:** v1.23–v1.99 **pushattu** `origin/main`iin 23.10.2026 käyttäjän
 > pyynnöstä; **tagi `v1.99` = viimeisin pushattu palautuspiste**
-> (`git reset --hard v1.99`); v2.00–v2.10 ovat paikallisia. Älä pinnaa
+> (`git reset --hard v1.99`); v2.00–v2.11 ovat paikallisia. Älä pinnaa
 > HEAD-hashia pysyvästi.
 > **Push:** vain erillisestä pyynnöstä (käyttäjä pyysi 20.10. ja 23.10.2026).
 > **Repo:** https://github.com/teppoaland/tabtool
@@ -20,6 +20,14 @@
   **pyydetään testaamaan soitto referenssikappaleella** (Seek & Destroy,
   SIIRTO −0,75 / BPM 142) ennen ja jälkeen. Katso
   `.clinerules/07-playback-frozen.md`.
+- **v2.11 (25.10.2026) – Koon muutto kummasta nurkasta:**
+  - Kaksi kahvaa: `#lyrics-resize` (vasen yläkulma, `data-corner="nw"`) ja
+    `#lyrics-resize-se` (oikea alakulma, `se`); sama `startLyricsResize`,
+    nurkka elementistä. `nw` pitää vastakkaisen reunan paikallaan
+    (`left`/`top` seuraavat pointeria), klampaus 360×280 … ikkuna−16.
+  - Otsikkoriville vasen padding, ettei kahva peitä otsikkoa; kahva
+    `z-index: 2` eikä käynnistä raahausta.
+  - Testit **267** (laajennettu: kaksi kahvaa + nurkkalogiikka).
 - **v2.10 (25.10.2026) – Sanoitustausta mustaksi ja väljemmäksi:**
   - `.lyrics-current`: `background: #000` (läpinäkyvä rgba ja tekstin varjo
     pois), sivupadding **3ch**, pystypadding **0.55em** symmetrisesti →

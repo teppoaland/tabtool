@@ -1968,7 +1968,8 @@ body.hide-ui-export .viewer-foot {
   justify-content: space-between;
   gap: 1rem;
   margin: -0.2rem -0.2rem 0;
-  padding: 0.2rem;
+  /* Room for the top-left resize grip so it never covers the title. */
+  padding: 0.2rem 0.2rem 0.2rem 1.9rem;
   cursor: grab;
   touch-action: none;
   user-select: none;
@@ -2016,17 +2017,18 @@ body.hide-ui-export .viewer-foot {
   flex: 1 1 auto;
 }
 
-/* Resize grip (v2.08): bottom-right corner, pointer events only. */
+/* Resize grips (v2.08–v2.11): one in the top-left corner (the primary one,
+   next to the drag handle) and one in the bottom-right. Pointer events only;
+   the panel keeps its size in tabtool:lyricsPos. */
 .lyrics-resize {
   position: absolute;
-  right: 0.35rem;
-  bottom: 0.35rem;
   width: 1.15rem;
   height: 1.15rem;
   border-radius: 4px;
   cursor: nwse-resize;
   touch-action: none;
   opacity: 0.55;
+  z-index: 2;
   background:
     linear-gradient(
       135deg,
@@ -2042,6 +2044,16 @@ body.hide-ui-export .viewer-foot {
       var(--muted) 70%,
       transparent 70%
     );
+}
+
+.lyrics-resize[data-corner="nw"] {
+  left: 0.4rem;
+  top: 0.4rem;
+}
+
+.lyrics-resize[data-corner="se"] {
+  right: 0.35rem;
+  bottom: 0.35rem;
 }
 
 .lyrics-resize:hover {

@@ -1,5 +1,17 @@
 # 📊 Projektin edistyminen – AI TABTOOL
 
+## v2.11 – Koon muutto kummasta nurkasta (25.10.2026)
+
+- Kaksi resize-kahvaa: **vasen yläkulma** (ensisijainen) ja oikea alakulma.
+  Molemmat kutsuvat samaa `startLyricsResize`-käsittelijää; nurkka tulee
+  elementin `data-corner`-attribuutista (`nw` / `se`).
+- `nw` pitää vastakkaisen reunan paikallaan: paneeli kasvaa vasemmalle/ylös
+  ja `left`/`top` seuraavat pointeria; koko klampataan 360×280 … ikkuna−16.
+- Otsikkorivi sai vasemman paddingin, jottei kahva peitä otsikkoa; kahva on
+  `z-index: 2`, joten se ei käynnistä raahausta. Koko tallentuu edelleen
+  `tabtool:lyricsPos`-tietueeseen.
+- Testit **267**.
+
 ## v2.10 – Sanoitustausta mustaksi (25.10.2026)
 
 - `.lyrics-current` sai **täysin mustan** taustan (`#000`); entinen

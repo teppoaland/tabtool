@@ -2,6 +2,25 @@
 
 > AI TabTool käyttää `1.x`-versiosarjaa. Aloitus `v1.00`.
 
+## v2.11 – 25.10.2026
+
+- **Sanoitusikkunan kokoa voi muuttaa kummasta nurkasta tahansa.** Kahva on
+  nyt **vasemmassa yläkulmassa** (ensisijainen, otsikon vieressä) ja
+  edelleen myös oikeassa alakulmassa. Molemmat käyttävät samaa
+  `startLyricsResize`-käsittelijää ja nurkka luetaan elementin
+  `data-corner`-attribuutista (`nw` / `se`).
+- **Vasen yläkulma pitää vastakkaisen reunan paikallaan:** paneeli kasvaa
+  vasemmalle/ylös ja `left`/`top` seuraavat pointeria; koko klampataan
+  edelleen 360 × 280 … ikkuna − 16 px. Otsikkorivi sai vasemman paddingin,
+  jottei kahva peitä "Sanat"-otsikkoa; kahva on `z-index: 2`, joten se ei
+  käynnistä raahausta.
+- Koko tallentuu edelleen `tabtool:lyricsPos`-tietueeseen, joten ikkuna
+  avautuu samankokoisena ja -paikkaisena riippumatta siitä kummasta
+  nurkasta kokoa muutettiin.
+- **Testit:** 267 passed (laajennettu: kaksi kahvaa, `data-corner` ja `nw`-
+  nurkan logiikka; drag/resize-funktiot eivät koske audioon eikä
+  alphaTab-APIin).
+
 ## v2.10 – 25.10.2026
 
 - **Sanoitustaustasta täysin musta.** `.lyrics-current` sai
