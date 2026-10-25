@@ -1917,11 +1917,65 @@ body.hide-ui-export .viewer-foot {
   text-decoration: underline;
 }
 
-/* Sanat-dialogi (v2.06): the bar chips insert "tahti | teksti" into one
-   textarea. The dialog only writes the sidecar JSON; no playback element is
-   selected here (rule 07). */
-.lyrics-panel {
-  width: min(46rem, 100%);
+/* Sanat-editori (v2.06–v2.07): a floating panel, not a modal. It has no
+   backdrop and never sets body.modal-open, so the transport, the score and
+   the playback cursor behind it keep working while the lines are placed by
+   ear. z-index 2200 is above the modal (2000) and dialog (2100) stack; the
+   drag is limited to .lyrics-handle and is pure DOM (rule 07). */
+.lyrics-float {
+  position: fixed;
+  top: 5.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2200;
+  width: min(46rem, calc(100vw - 2rem));
+  max-height: calc(100vh - 3rem);
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  padding: 0.9rem 1.1rem 1.1rem;
+  background: linear-gradient(180deg, #181d27, #0d1016);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  box-shadow: var(--shadow);
+}
+
+.lyrics-float[hidden] {
+  display: none;
+}
+
+.lyrics-handle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin: -0.2rem -0.2rem 0;
+  padding: 0.2rem;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+
+.lyrics-handle:active {
+  cursor: grabbing;
+}
+
+.lyrics-handle h2 {
+  margin: 0;
+  color: var(--accent);
+  font-size: 0.9rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.lyrics-bar-badge {
+  padding: 0.15rem 0.55rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--text);
+  font-size: 0.72rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
 }
 
 .lyrics-form {
@@ -1987,6 +2041,14 @@ body.hide-ui-export .viewer-foot {
   border-color: var(--accent);
   background: var(--accent-soft);
   color: var(--accent);
+  font-weight: 700;
+}
+
+/* The bar that is playing right now, so a line can be placed by ear. */
+.lyrics-bar.is-current {
+  border-color: var(--text);
+  box-shadow: inset 0 0 0 1px var(--text);
+  color: var(--text);
   font-weight: 700;
 }
 

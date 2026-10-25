@@ -213,6 +213,56 @@ def test_lyrics_path_cannot_escape_the_sidecar_folder() -> None:
     assert lyrics.lyrics_path("abc-123").name == "abc-123.json"
 
 
+INDEX_HTML = Path(__file__).resolve().parents[1] / "app" / "static" / "index.html"
+APP_JS = Path(__file__).resolve().parents[1] / "app" / "static" / "app.js"
+
+
+def _js_function(source: str, name: str) -> str:
+    start = source.index(f"function {name}(")
+    opening = source.index("{", start)
+    depth = 0
+    for index in range(opening, len(source)):
+        char = source[index]
+        if char == "{":
+            depth += 1
+        elif char == "}":
+            depth -= 1
+            if depth == 0:
+                return source[opening + 1 : index]
+    raise AssertionError(f"unbalanced braces around {name}")
+
+
+def test_lyrics_editor_floats_above_the_player():
+    """v2.07: the editor is a draggable panel, not a modal.
+
+    The lyrics have to be placed by ear, so the song must keep playing while
+    the editor is open: no backdrop, no body.modal-open (that would hide the
+    cursor) and no full-screen click shield.
+    """
+    html = INDEX_HTML.read_text(encoding="utf-8")
+    start = html.index('id="lyrics-dialog"')
+    open_tag = html[html.rindex("<div", 0, start) : html.index(">", start)]
+    assert "lyrics-float" in open_tag
+    assert "modal-backdrop" not in open_tag
+    assert "aria-modal" not in open_tag
+    assert 'id="lyrics-handle"' in html
+    assert 'id="lyrics-bar-badge"' in html
+
+    source = APP_JS.read_text(encoding="utf-8")
+    opener = _js_function(source, "openLyricsDialog")
+    assert 'classList.add("modal-open")' not in opener
+    assert "showLyricsPanel" in opener
+
+    for name in ("startLyricsDrag", "moveLyricsDrag", "placeLyricsPanel", "showLyricsPanel"):
+        body = _js_function(source, name)
+        assert "audio" not in body, f"{name} must not touch the audio element"
+        assert "api." not in body, f"{name} must not call the alphaTab API"
+
+    # Dragging is wired through pointer events on the header only.
+    assert 'lyricsHandle.addEventListener("pointerdown", startLyricsDrag)' in source
+    assert "pointermove" in source and "pointerup" in source
+
+
 def test_corrupt_sidecar_reads_as_no_lyrics(
     client: TestClient, data_dir: Path
 ) -> None:

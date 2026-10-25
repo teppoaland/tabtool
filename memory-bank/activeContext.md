@@ -1,9 +1,9 @@
 # 📍 Aktiivinen konteksti – AI TABTOOL
 
-> **Versio:** `v2.06` (25.10.2026)
+> **Versio:** `v2.07` (25.10.2026)
 > **Git:** v1.23–v1.99 **pushattu** `origin/main`iin 23.10.2026 käyttäjän
 > pyynnöstä; **tagi `v1.99` = viimeisin pushattu palautuspiste**
-> (`git reset --hard v1.99`); v2.00–v2.06 ovat paikallisia. Älä pinnaa
+> (`git reset --hard v1.99`); v2.00–v2.07 ovat paikallisia. Älä pinnaa
 > HEAD-hashia pysyvästi.
 > **Push:** vain erillisestä pyynnöstä (käyttäjä pyysi 20.10. ja 23.10.2026).
 > **Repo:** https://github.com/teppoaland/tabtool
@@ -20,6 +20,20 @@
   **pyydetään testaamaan soitto referenssikappaleella** (Seek & Destroy,
   SIIRTO −0,75 / BPM 142) ennen ja jälkeen. Katso
   `.clinerules/07-playback-frozen.md`.
+- **v2.07 (25.10.2026) – Sanat-editori kelluvaksi:**
+  - `#lyrics-dialog` on nyt `position: fixed` paneeli (`z-index: 2200`,
+    `#lyrics-handle`-otsikosta raahaus pointer-eventeillä, sijainti
+    localStoragessa `tabtool:lyricsPos`). Ei taustaverhoa eikä
+    `body.modal-open`ia → PLAY/seek/kursorin seuranta toimivat paneelin
+    takaa, joten sanat voi asettaa kuuntelemalla.
+  - Otsikossa `#lyrics-bar-badge` (`Tahti N`) ja tahtilistassa
+    `.lyrics-bar.is-current`; tieto tulee edelleen vain `#bar-readout`ista.
+    Chip-lista vierittyy vain omassa kontissaan (sivu ei hyppää).
+  - Data: Reino Nordin -tabin 97 rivin mäppäys (tahdit 1–99) kirjoitettu
+    sidecariin sekä päätabille `668d62…` että lukitulle kopiolle
+    `33cbc8bf…`; käyttäjän rivit 1–3 voittivat. **Ei gitiin** (data/,
+    tekijänoikeus).
+  - Testit **263** (1 uusi: kelluva paneeli + drag ei koske audioon/apiin).
 - **v2.06 (25.10.2026) – Sanat sidecarina (täysi irtikytkentä):**
   - Sanat eivät mene GP5/MusicXML/MIDIin eivätkä tabin metadataan:
     `data/lyrics/<tab_id>.json` (`{"measures": {"10": "…"}}`),

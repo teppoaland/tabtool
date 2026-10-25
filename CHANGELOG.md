@@ -2,6 +2,30 @@
 
 > AI TabTool käyttää `1.x`-versiosarjaa. Aloitus `v1.00`.
 
+## v2.07 – 25.10.2026
+
+- **Sanat-editori kelluvaksi ja raahattavaksi.** `#lyrics-dialog` ei ole enää
+  modaali: ei taustaverhoa eikä `body.modal-open`ia (joka olisi piilottanut
+  playback-kursorin). Paneeli on `position: fixed`, `z-index: 2200`, ja sitä
+  siirretään otsikkorivista (`#lyrics-handle`, pointer events, myös kosketus).
+  Sijainti muistetaan selaimessa (`tabtool:lyricsPos`) ja klampataan
+  ikkunaan myös resize/fullscreen-muutoksessa. Koska taustalla ei ole
+  klikkikilpeä, PLAY, seek, Nopeus ja SYNC toimivat paneelin takaa: sanat voi
+  asettaa kuuntelemalla. Raahaus on pelkkää DOMia – ei audion kirjoituksia,
+  ei alphaTab-kutsuja, ei kellomuutoksia.
+- **Kuluvan tahdin apu:** otsikossa `#lyrics-bar-badge` (`Tahti N`) ja
+  tahtilistassa korostus (`.lyrics-bar.is-current`), jotta näkee mihin tahdin
+  kohdalle rivi osuu soiton aikana. Tieto tulee edelleen vain
+  `#bar-readout`-tekstistä; lista vierittyy vain omassa kontissaan, joten sivu
+  ei hyppää soiton aikana.
+- **Reino Nordin -tabin sanat mäpätty sidecariin:** aiempi 97 rivin
+  GP5-mäppäys (`data/tabs/<id>/lyrics.txt`, tahdit 1–99, tauot 82–83 ja
+  100+) kirjoitettiin `data/lyrics/<tab_id>.json`iin sekä päätabille että
+  lukitulle sanakopiolle. Käyttäjän uudet rivit 1–3 voittivat vanhan
+  kirjoitusasun. Data-only: ei koodia, ei gitiin (tekijänoikeus).
+- **Testit:** 263 passed (1 uusi: kelluva paneeli – ei `modal-backdrop`ia,
+  ei `classList.add("modal-open")`ia, drag ei koske audioon eikä apiin).
+
 ## v2.06 – 25.10.2026
 
 - **Sanat erilliseen sidecar-tiedostoon (täysi irtikytkentä).** Laulun sanat

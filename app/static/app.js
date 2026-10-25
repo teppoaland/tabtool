@@ -22,6 +22,8 @@
   const STAVE_STORAGE_KEY = "tabtool:staveProfile";
   const TRACK_STORAGE_PREFIX = "tabtool:tracks:";
   const COUNT_IN_STORAGE_KEY = "tabtool:countIn";
+  // Sanat-editorin kelluva sijainti muistetaan selaimessa (v2.07).
+  const LYRICS_POS_KEY = "tabtool:lyricsPos";
   const SYNC_LIMIT = 0.1;
   // SIIRTO (whole-bar shift) may have to bridge a large structure difference
   // in the tab data, so its range is generous (v1.75). syncTimeMs() still
@@ -123,6 +125,8 @@
   const lyricsStrip = document.getElementById("lyrics-strip");
   const lyricsCurrent = document.getElementById("lyrics-current");
   const lyricsDialog = document.getElementById("lyrics-dialog");
+  const lyricsHandle = document.getElementById("lyrics-handle");
+  const lyricsBarBadge = document.getElementById("lyrics-bar-badge");
   const lyricsForm = document.getElementById("lyrics-form");
   const lyricsSubject = document.getElementById("lyrics-subject");
   const lyricsInput = document.getElementById("lyrics-input");
@@ -232,6 +236,8 @@
   let lyricsLoadingFor = "";
   let lyricsShownBar = -1;
   let lyricsDirty = false;
+  // Floating editor drag state (v2.07): DOM only, no audio/api involvement.
+  let lyricsDrag = null;
 
   function setPlayLabel(playing) {
     if (!playButton) return;
@@ -1652,10 +1658,38 @@
     if (!lyricsStrip || !lyricsCurrent) return;
     const bar = currentLyricsBar();
     if (!force && bar === lyricsShownBar) return;
+    const moved = bar !== lyricsShownBar;
     lyricsShownBar = bar;
     const text = lyricForBar(bar);
     lyricsCurrent.textContent = text;
     lyricsStrip.hidden = !text;
+    markLyricsPlayingBar(bar, moved);
+  }
+
+  function markLyricsPlayingBar(bar, moved) {
+    // A read-only helper for the floating editor: the bar number comes from
+    // the same #bar-readout the transport already writes.
+    if (lyricsBarBadge) {
+      lyricsBarBadge.textContent = bar ? `Tahti ${bar}` : "Tahti –";
+    }
+    if (!lyricsBars || !lyricsBars.children.length) return;
+    let current = null;
+    Array.from(lyricsBars.children).forEach((chip) => {
+      const isCurrent = bar > 0 && Number(chip.dataset.bar) === bar;
+      chip.classList.toggle("is-current", isCurrent);
+      if (isCurrent) current = chip;
+    });
+    if (current && moved) {
+      // Scroll only the chip list, never the page: the panel is fixed and the
+      // transport behind it must not jump while the song plays.
+      const top = current.offsetTop;
+      const bottom = top + current.offsetHeight;
+      if (top < lyricsBars.scrollTop) {
+        lyricsBars.scrollTop = Math.max(0, top - 4);
+      } else if (bottom > lyricsBars.scrollTop + lyricsBars.clientHeight) {
+        lyricsBars.scrollTop = bottom - lyricsBars.clientHeight + 4;
+      }
+    }
   }
 
   function resetLyrics() {
@@ -1811,23 +1845,114 @@
     setLyricsStatus("");
   }
 
+  // --- floating panel (v2.07) -----------------------------------------
+  // The editor is a plain fixed panel: it never adds body.modal-open, so the
+  // playback cursor stays visible and PLAY/seek behind it keep working. All
+  // of this is DOM only, so the rule 07 boundary still holds.
+  function clampPixels(value, low, high) {
+    if (!Number.isFinite(value)) return low;
+    return Math.min(Math.max(value, low), high);
+  }
+
+  function placeLyricsPanel(left, top) {
+    if (!lyricsDialog) return;
+    const width = lyricsDialog.offsetWidth || 640;
+    const height = lyricsDialog.offsetHeight || 480;
+    const maxLeft = Math.max(8, window.innerWidth - width - 8);
+    const maxTop = Math.max(8, window.innerHeight - height - 8);
+    lyricsDialog.style.transform = "none";
+    lyricsDialog.style.left = `${Math.round(clampPixels(left, 8, maxLeft))}px`;
+    lyricsDialog.style.top = `${Math.round(clampPixels(top, 8, maxTop))}px`;
+  }
+
+  function readLyricsPanelPosition() {
+    try {
+      const raw = JSON.parse(localStorage.getItem(LYRICS_POS_KEY) || "null");
+      if (raw && Number.isFinite(raw.left) && Number.isFinite(raw.top)) {
+        return raw;
+      }
+    } catch (error) {
+      /* storage disabled */
+    }
+    return null;
+  }
+
+  function saveLyricsPanelPosition() {
+    if (!lyricsDialog) return;
+    try {
+      localStorage.setItem(
+        LYRICS_POS_KEY,
+        JSON.stringify({
+          left: Math.round(lyricsDialog.offsetLeft),
+          top: Math.round(lyricsDialog.offsetTop),
+        })
+      );
+    } catch (error) {
+      /* storage disabled */
+    }
+  }
+
+  function startLyricsDrag(event) {
+    if (!lyricsDialog) return;
+    if (event.button !== undefined && event.button !== 0) return;
+    event.preventDefault();
+    const rect = lyricsDialog.getBoundingClientRect();
+    lyricsDrag = {
+      dx: event.clientX - rect.left,
+      dy: event.clientY - rect.top,
+    };
+    if (lyricsHandle && typeof lyricsHandle.setPointerCapture === "function") {
+      try {
+        lyricsHandle.setPointerCapture(event.pointerId);
+      } catch (error) {
+        /* the pointer may already be gone */
+      }
+    }
+  }
+
+  function moveLyricsDrag(event) {
+    if (!lyricsDrag) return;
+    placeLyricsPanel(
+      event.clientX - lyricsDrag.dx,
+      event.clientY - lyricsDrag.dy
+    );
+  }
+
+  function endLyricsDrag() {
+    if (!lyricsDrag) return;
+    lyricsDrag = null;
+    saveLyricsPanelPosition();
+  }
+
+  function showLyricsPanel() {
+    if (!lyricsDialog) return;
+    const saved = readLyricsPanelPosition();
+    if (saved) {
+      placeLyricsPanel(saved.left, saved.top);
+      return;
+    }
+    const width = lyricsDialog.offsetWidth || 640;
+    placeLyricsPanel((window.innerWidth - width) / 2, 88);
+  }
+
   function openLyricsDialog() {
     if (!lyricsDialog || !activeTab) return;
     const tabId = String(activeTab.id || "");
     fillLyricsDialog();
     lyricsDialog.hidden = false;
-    document.body.classList.add("modal-open");
-    if (lyricsInput) lyricsInput.focus();
+    // No backdrop and no modal-open (v2.07): the transport, the score and the
+    // cursor stay usable while the lines are placed by ear.
+    showLyricsPanel();
+    markLyricsPlayingBar(currentLyricsBar(), false);
+    if (lyricsInput) lyricsInput.focus({ preventScroll: true });
     if (tabId && lyricsTabId !== tabId) loadLyrics(tabId);
   }
 
   function closeLyricsDialog() {
     if (!lyricsDialog) return;
     lyricsDialog.hidden = true;
+    lyricsDrag = null;
     setLyricsStatus("");
-    if (!searchModal || searchModal.hidden) {
-      document.body.classList.remove("modal-open");
-    }
   }
 
   async function saveLyrics(event) {
@@ -2906,11 +3031,18 @@
   if (lyricsButton) lyricsButton.addEventListener("click", openLyricsDialog);
   if (lyricsForm) lyricsForm.addEventListener("submit", saveLyrics);
   if (lyricsClose) lyricsClose.addEventListener("click", closeLyricsDialog);
-  if (lyricsDialog) {
-    lyricsDialog.addEventListener("click", (event) => {
-      if (event.target === lyricsDialog) closeLyricsDialog();
-    });
+  if (lyricsHandle) {
+    lyricsHandle.addEventListener("pointerdown", startLyricsDrag);
+    window.addEventListener("pointermove", moveLyricsDrag);
+    window.addEventListener("pointerup", endLyricsDrag);
+    window.addEventListener("pointercancel", endLyricsDrag);
   }
+  window.addEventListener("resize", () => {
+    // Keep the floating editor inside the viewport after a resize/fullscreen.
+    if (lyricsDialog && !lyricsDialog.hidden) {
+      placeLyricsPanel(lyricsDialog.offsetLeft, lyricsDialog.offsetTop);
+    }
+  });
   if (lyricsInput) {
     lyricsInput.addEventListener("input", () => {
       lyricsDirty = true;

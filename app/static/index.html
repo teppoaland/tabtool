@@ -6,14 +6,14 @@
   <meta name="color-scheme" content="dark">
   <title>AI TabTool</title>
   <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="/static/style.css?v=2.06">
+  <link rel="stylesheet" href="/static/style.css?v=2.07">
 </head>
 <body>
   <header class="topbar">
     <div class="brand">
       <span class="brand-mark" aria-hidden="true">AT</span>
       <span class="brand-name">AI TABTOOL</span>
-      <span id="version-tag" class="version">v2.06</span>
+      <span id="version-tag" class="version">v2.07</span>
     </div>
     <nav class="nav" aria-label="Päävalikko">
       <button id="open-search-top" type="button" class="primary nav-library"
@@ -348,40 +348,43 @@
   </div>
 
 
-  <!-- Sanat (v2.06): the editor writes a sidecar JSON only. The tab keeps its
-       bars and notes untouched; every line names the bar it is shown on. -->
-  <div id="lyrics-dialog" class="modal-backdrop" hidden>
-    <div class="modal-panel modal-small lyrics-panel" role="dialog"
-         aria-modal="true" aria-labelledby="lyrics-heading">
+  <!-- Sanat (v2.06/v2.07): a floating panel, not a modal. It writes only the
+       sidecar JSON, stays above the viewer and can be dragged, so the lyrics
+       can be placed by ear while the tab keeps playing behind it. -->
+  <div id="lyrics-dialog" class="lyrics-float" role="dialog"
+       aria-labelledby="lyrics-heading" hidden>
+    <header id="lyrics-handle" class="lyrics-handle"
+            title="Raahaa ikkunaa. Soitto jatkuu taustalla.">
       <h2 id="lyrics-heading">Sanat</h2>
-      <p id="lyrics-subject" class="detail-subject muted"></p>
-      <div id="lyrics-bars" class="lyrics-bars" role="group"
-           aria-label="Tahdit: paina lisätäksesi rivi"></div>
-      <form id="lyrics-form" class="lyrics-form">
-        <label class="field">
-          <span>Yksi rivi per tahti: <code>tahti | teksti</code></span>
-          <textarea id="lyrics-input" class="lyrics-input" rows="12"
-                    spellcheck="false"
-                    placeholder="10 | Mun sydän palaa&#10;11 | ja jatkuu..."></textarea>
-        </label>
-        <p id="lyrics-status" class="bpm-status" aria-live="polite"></p>
-        <div class="actions">
-          <button id="lyrics-save" type="submit" class="primary">TALLENNA</button>
-          <button id="lyrics-close" type="button" class="ghost">SULJE</button>
-        </div>
-      </form>
-    </div>
+      <span id="lyrics-bar-badge" class="lyrics-bar-badge">Tahti –</span>
+    </header>
+    <p id="lyrics-subject" class="detail-subject muted"></p>
+    <div id="lyrics-bars" class="lyrics-bars" role="group"
+         aria-label="Tahdit: paina lisätäksesi rivi"></div>
+    <form id="lyrics-form" class="lyrics-form">
+      <label class="field">
+        <span>Yksi rivi per tahti: <code>tahti | teksti</code></span>
+        <textarea id="lyrics-input" class="lyrics-input" rows="10"
+                  spellcheck="false"
+                  placeholder="10 | Mun sydän palaa&#10;11 | ja jatkuu..."></textarea>
+      </label>
+      <p id="lyrics-status" class="bpm-status" aria-live="polite"></p>
+      <div class="actions">
+        <button id="lyrics-save" type="submit" class="primary">TALLENNA</button>
+        <button id="lyrics-close" type="button" class="ghost">SULJE</button>
+      </div>
+    </form>
   </div>
 
 
   <footer class="footer">
-    <span>AI TabTool v2.06</span>
+    <span>AI TabTool v2.07</span>
     <span>Local-first · <a href="/remote">Remote</a></span>
   </footer>
 
-  <script src="/static/vendor/alphaTab/alphaTab.min.js?v=2.06"></script>
-  <script src="/static/app.js?v=2.06" defer></script>
-  <script src="/static/remote-bridge.js?v=2.06" defer></script>
+  <script src="/static/vendor/alphaTab/alphaTab.min.js?v=2.07"></script>
+  <script src="/static/app.js?v=2.07" defer></script>
+  <script src="/static/remote-bridge.js?v=2.07" defer></script>
 </body>
 </html>
 

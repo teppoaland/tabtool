@@ -1,5 +1,23 @@
 # 📊 Projektin edistyminen – AI TABTOOL
 
+## v2.07 – Sanat-editori kelluvaksi (25.10.2026)
+
+- **Ei enää modaali:** `#lyrics-dialog` on `position: fixed` paneeli
+  (`z-index: 2200`), jota raahataan otsikosta (`#lyrics-handle`,
+  pointer events; sijainti `localStorage`issa `tabtool:lyricsPos`, klampataan
+  ikkunaan). Ilman taustaverhoa ja ilman `body.modal-open`ia PLAY, seek,
+  Nopeus/SYNC ja kursorin seuranta toimivat paneelin takaa.
+- **Tahdin tunnistus:** otsikon `#lyrics-bar-badge` ja tahtilistan
+  `.lyrics-bar.is-current` seuraavat `#bar-readout`ia, joten rivin paikka
+  näkyy soiton aikana. Lista vierittyy vain omassa kontissaan.
+- **Testit 263** (1 uusi: paneeli ei ole modaali; drag-funktiot eivät koske
+  audioon eikä alphaTab-APIin).
+- **Data (ei koodia, ei gitiin):** Reino Nordin -tabin aiempi 97 rivin
+  `lyrics.txt`-mäppäys (tahdit 1–99) kirjoitettu `data/lyrics/`-sidecariin
+  päätabille `668d62…` ja lukitulle kopiolle `33cbc8bf…`. Käyttäjän uudet
+  rivit 1–3 voittivat vanhan kirjoitusasun. Sanoitusten sisältöä ei
+  kopioida memory bankiin (tekijänoikeus).
+
 ## v2.06 – Sanat sidecarina, ei muutoksia tab-tiedostoon (25.10.2026)
 
 - **Päätös:** sanat eivät mene GP5-tiedostoon eivätkä tabin metadataan.
