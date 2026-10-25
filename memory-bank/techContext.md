@@ -271,8 +271,8 @@ DB-tiedosto); vain tuotenimi on `AI TabTool`.
   `applyUiVisibility` (body-luokat `hide-ui-*`), `loadRuntimeSettings`
   käynnistyksen alussa. Count-in lukee `countInSteps` / `countInStepMs` /
   `countInZeroMs`; oletukset ennallaan (5 / 1000 / 250). Sanoitusrivin koko
-  luetaan kentästä `lyrics.scale` → `applyLyricsScale()` →
-  `--lyrics-scale` (v2.08).
+  ja nosto luetaan kentistä `lyrics.scale` / `lyrics.offset_px` →
+  `applyLyricsStyle()` → `--lyrics-scale` ja `--lyrics-offset` (v2.08–v2.09).
 - **Puhelin:** `remote.html` (soittimet ylhäällä, mode-napit alhaalla),
   `remote.js` (`renderTracks`, `send("track")`, `features`),
   `remote-bridge.js` (`readTracks`, `tracks`-kenttä, `action === "track"`),

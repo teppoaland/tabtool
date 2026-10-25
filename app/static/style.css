@@ -1615,6 +1615,19 @@ body.viewer-fullscreen {
   text-shadow: 0 2px 12px rgba(0, 0, 0, 0.7);
 }
 
+/* Fullscreen has room, so the line uses almost the whole width and stays on
+   one line even at 300 %. The Settings lift (lyrics.offset_px, default
+   100 px) raises it off the bottom edge; there is nothing to cover there. */
+.viewer-section:fullscreen .lyrics-strip,
+.viewer-section.is-fullscreen .lyrics-strip {
+  bottom: calc(1.1rem + var(--lyrics-offset, 100px));
+}
+
+.viewer-section:fullscreen .lyrics-current,
+.viewer-section.is-fullscreen .lyrics-current {
+  max-width: 96vw;
+}
+
 @media (max-width: 720px) {
   .viewer-bar {
     grid-template-columns: auto auto;

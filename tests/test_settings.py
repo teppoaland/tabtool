@@ -89,16 +89,40 @@ def test_defaults_are_served_with_their_bounds(client: TestClient) -> None:
         scale["step"],
         scale["unit"],
     ) == (200, 100, 400, 25, "%")
+    offset = next(
+        field
+        for field in payload["fields"]
+        if field["key"] == "lyrics.offset_px"
+    )
+    assert (
+        offset["default"],
+        offset["min"],
+        offset["max"],
+        offset["step"],
+        offset["unit"],
+    ) == (100, 0, 600, 10, "px")
 
 
 def test_lyrics_scale_round_trip(client: TestClient) -> None:
-    """v2.08: the lyric strip size is a normal Settings number."""
-    response = client.post("/api/settings", json={"lyrics.scale": 300})
+    """v2.08–v2.09: the lyric size and lift are normal Settings numbers."""
+    response = client.post(
+        "/api/settings", json={"lyrics.scale": 300, "lyrics.offset_px": 140}
+    )
     assert response.status_code == 200, response.text
-    assert response.json()["values"]["lyrics.scale"] == 300
-    assert client.get("/api/settings").json()["values"]["lyrics.scale"] == 300
+    values = response.json()["values"]
+    assert (values["lyrics.scale"], values["lyrics.offset_px"]) == (300, 140)
+    stored = client.get("/api/settings").json()["values"]
+    assert (stored["lyrics.scale"], stored["lyrics.offset_px"]) == (300, 140)
     assert client.post("/api/settings", json={"lyrics.scale": 50}).status_code == 422
     assert client.post("/api/settings", json={"lyrics.scale": 450}).status_code == 422
+    assert (
+        client.post("/api/settings", json={"lyrics.offset_px": -10}).status_code
+        == 422
+    )
+    assert (
+        client.post("/api/settings", json={"lyrics.offset_px": 700}).status_code
+        == 422
+    )
 
 
 def test_saving_persists_every_value(client: TestClient) -> None:

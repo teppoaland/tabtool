@@ -27,6 +27,8 @@
   // Sanoitusrivin koko on kerroin (v2.08): 200 % = tuplat entisestä, ja
   // sama oletus on app/settings.py:ssä (lyrics.scale).
   const LYRICS_SCALE_DEFAULT = 200;
+  // Koko näytön nosto alareunasta pikseleinä (v2.09), default 100 px.
+  const LYRICS_OFFSET_DEFAULT = 100;
   const SYNC_LIMIT = 0.1;
   // SIIRTO (whole-bar shift) may have to bridge a large structure difference
   // in the tab data, so its range is generous (v1.75). syncTimeMs() still
@@ -240,8 +242,10 @@
   let lyricsLoadingFor = "";
   let lyricsShownBar = -1;
   let lyricsDirty = false;
-  // Sanoitusrivin koko prosentteina (v2.08), tulee /api/settingsistä.
+  // Sanoitusrivin koko prosentteina (v2.08) ja nosto pikseleinä (v2.09),
+  // molemmat tulevat /api/settingsistä.
   let lyricsScale = LYRICS_SCALE_DEFAULT;
+  let lyricsOffset = LYRICS_OFFSET_DEFAULT;
   // Floating editor drag state (v2.07): DOM only, no audio/api involvement.
   let lyricsDrag = null;
   // Resize state for the floating editor (v2.08): DOM only as well.
@@ -1111,16 +1115,21 @@
     return Math.min(high, Math.max(low, number));
   }
 
-  function applyLyricsScale() {
-    // Multiplies the clamp() in .lyrics-current, so the line keeps scaling
-    // with the screen and the Settings percentage only changes the factor
-    // (100 % = the old size, 200 % = the default double). A document style
-    // only: no audio write, no alphaTab call (rule 07).
+  function applyLyricsStyle() {
+    // Two document variables, read only by the lyric overlay CSS:
+    //   --lyrics-scale   multiplies the clamp() font size (100 % = old size),
+    //   --lyrics-offset  lifts the strip from the bottom edge in fullscreen.
+    // A document style only: no audio write, no alphaTab call (rule 07).
     const factor = Math.min(4, Math.max(1, lyricsScale / 100));
+    const offset = Math.min(600, Math.max(0, Math.round(lyricsOffset)));
     if (document.documentElement) {
       document.documentElement.style.setProperty(
         "--lyrics-scale",
         String(factor)
+      );
+      document.documentElement.style.setProperty(
+        "--lyrics-offset",
+        `${offset}px`
       );
     }
   }
@@ -1144,8 +1153,9 @@
       clampSetting(settings["countin.zero_ms"], 0, 2000, COUNT_IN_ZERO_MS)
     );
     defaultCountInEnabled = settings["countin.enabled"] !== false;
-    // The lyric strip font is a CSS variable (v2.08); the default doubles the
-    // old size. Only a document style is written, never an audio/api value.
+    // The lyric strip font and lift are CSS variables (v2.08–v2.09); the
+    // defaults double the old size and lift the line 100 px in fullscreen.
+    // Only document styles are written, never an audio/api value.
     lyricsScale = Math.round(
       clampSetting(
         settings["lyrics.scale"],
@@ -1154,7 +1164,15 @@
         LYRICS_SCALE_DEFAULT
       )
     );
-    applyLyricsScale();
+    lyricsOffset = Math.round(
+      clampSetting(
+        settings["lyrics.offset_px"],
+        0,
+        600,
+        LYRICS_OFFSET_DEFAULT
+      )
+    );
+    applyLyricsStyle();
     defaultStaveProfile = Object.prototype.hasOwnProperty.call(
       STAVE_PROFILES,
       settings["view.stave"]

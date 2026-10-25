@@ -1,6 +1,6 @@
 # 🎯 Projektin lyhyt kuvaus – AI TABTOOL
 
-> **Versio:** `v2.08` (25.10.2026)
+> **Versio:** `v2.09` (25.10.2026)
 > **Repo:** https://github.com/teppoaland/tabtool
 > **Paikallinen:** `D:\AI\tabtool`
 
@@ -155,14 +155,16 @@ Lokaali web-palvelu, jossa voi:
   ja kooltaan säädettävä paneeli** (ei modaalia, ei `body.modal-open`ia),
   joten soitto toimii sen takaa; otsikko näyttää kuluvan tahdin. Soiton
   aikana näkyvän rivin koko tulee Settingsistä (`lyrics.scale`, oletus
-  200 % = tuplat, CSS-muuttuja `--lyrics-scale`). Tabin poisto poistaa
-  sidecarin; lukittu tabi saa silti sanat.
+  200 % = tuplat, CSS-muuttuja `--lyrics-scale`) ja koko näytön nosto
+  alareunasta (`lyrics.offset_px`, oletus 100 px, `--lyrics-offset`);
+  fullscreenissa rivi on 96vw leveä → yksi rivi isommallakin koolla.
+  Tabin poisto poistaa sidecarin; lukittu tabi saa silti sanat.
 - **Songsterr / Ultimate Guitar:** ei scrapea eikä kiertämistä.
   Songsterr-appin cache sisältää vain SVG-renderin, beat-ajastuksen ja
   audion (ei string/fret-dataa), ja GP/MIDI/MP3-lataus on Plus-ominaisuus
   (`songsterr.com/ai.txt`). Käyttäjän Android-osto on **kertamaksu**
   (vain Android, ei web). GP5:t haetaan laillisesta lähteestä käsin.
-- **Versiosarja `1.x`**, aloitus `v1.00`; nyt `v2.08`.
+- **Versiosarja `1.x`**, aloitus `v1.00`; nyt `v2.09`.
 - **Ei julkista julkaisua:** koodi pidetään lokaalina. Commitit tehdään
   paikalliseen repoon palautuspisteiksi (revert); push GitHubiin vain
   erillisestä pyynnöstä.

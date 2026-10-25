@@ -291,22 +291,32 @@ def test_lyrics_editor_can_be_resized():
     assert "sizeLyricsPanel" in shown
 
 
-def test_lyrics_scale_setting_drives_the_strip_font():
-    """v2.08: Settings -> Sanat -> Sanoitusrivin koko; default = doubled."""
+def test_lyrics_style_settings_drive_the_strip():
+    """v2.08–v2.09: Settings -> Sanat -> size (default 200 %) and lift (100 px)."""
     defaults = {field.key: field.default for field in settings.FIELDS}
     assert defaults["lyrics.scale"] == 200
-    field = next(item for item in settings.FIELDS if item.key == "lyrics.scale")
-    assert (field.minimum, field.maximum, field.step) == (100, 400, 25)
+    assert defaults["lyrics.offset_px"] == 100
+    scale = next(item for item in settings.FIELDS if item.key == "lyrics.scale")
+    assert (scale.minimum, scale.maximum, scale.step) == (100, 400, 25)
+    offset = next(
+        item for item in settings.FIELDS if item.key == "lyrics.offset_px"
+    )
+    assert (offset.minimum, offset.maximum, offset.step) == (0, 600, 10)
 
     source = APP_JS.read_text(encoding="utf-8")
     runtime = _js_function(source, "applyRuntimeSettings")
     assert '"lyrics.scale"' in runtime
-    scale = _js_code(source, "applyLyricsScale")
-    assert "--lyrics-scale" in scale
-    assert "audio" not in scale and "api." not in scale
+    assert '"lyrics.offset_px"' in runtime
+    style = _js_code(source, "applyLyricsStyle")
+    assert "--lyrics-scale" in style
+    assert "--lyrics-offset" in style
+    assert "audio" not in style and "api." not in style
 
     css = (INDEX_HTML.parent / "style.css").read_text(encoding="utf-8")
     assert "var(--lyrics-scale, 2)" in css
+    # Fullscreen uses the whole width and the Settings lift.
+    assert "var(--lyrics-offset, 100px)" in css
+    assert "max-width: 96vw" in css
 
 
 def test_corrupt_sidecar_reads_as_no_lyrics(

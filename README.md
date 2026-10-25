@@ -5,7 +5,7 @@ ja katseluun. Hae kappale Spotifysta tai käytä omaa MP3/YouTube-audioita,
 anna tekoälyn tehdä ensimmäinen tablatuuriluonnos ja katsele sitä
 alphaTabilla TV:stä tai tietokoneelta. Puhelin toimii kaukosäätimenä.
 
-**Versio:** `v2.08` (Phase 4 – LAN-kaukosäädin, Settings, kirjaston Tiedot, sormitusversiot ja sanat sidecarina)
+**Versio:** `v2.09` (Phase 4 – LAN-kaukosäädin, Settings, kirjaston Tiedot, sormitusversiot ja sanat sidecarina)
 
 ## Session aloitus
 
@@ -129,8 +129,10 @@ TALLENNA kirjoittaa arvot palvelimelle (rajat ja tyypit validoi
   nollan kesto (0–2000 ms) sekä lähtölaskenta oletuksena päälle/pois.
   Oletukset ovat samat kuin ennen: 5 askelta × 1000 ms + 250 ms.
 - **Sanat:** soiton aikana näkyvän sanoitusrivin koko (100–400 %, askel 25 %,
-  oletus **200 %** = tuplat aiemmasta). Sama kerroin toimii myös koko näytön
-  tilassa; 100 % palauttaa vanhan koon.
+  oletus **200 %** = tuplat aiemmasta) ja **nosto** koko näytön tilassa
+  (0–600 px, askel 10, oletus **100 px**). Sama kerroin toimii myös koko
+  näytön tilassa; 100 % palauttaa vanhan koon ja nosto 0 px laskee rivin
+  takaisin alareunaan.
 - **Näkymä:** Näkymän oletus (Tab / Auto / Tab + nuotit / Nuotit) uudelle
   selaimelle; TV-näkymän oma valinta ohittaa sen.
 - **Toiminnot näkyvissä:** jokainen päänäkymän toiminto (LIBRARY, REMOTE, API,
@@ -315,7 +317,9 @@ jatkaa edellisestä tahdista. Sanat tallennetaan **erilliseen** tiedostoon
 `data/lyrics/<tab_id>.json` – GP5/MusicXML/MIDI ja tabin metadata eivät muutu,
 joten tabi pysyy lukusyötteenä eikä soitto- tai synkkaketjuun kosketa.
 Soiton aikana näkyvän rivin kokoa säädetään **SETTINGS → Sanat**
-(100–400 %, oletus 200 %).
+(100–400 %, oletus 200 %) ja koko näytön nostoa alareunasta
+(0–600 px, oletus 100 px). Koko näytön tilassa rivi käyttää 96 % leveydestä,
+joten se pysyy yhdellä rivillä isommallakin koolla.
 
 **Vihje:** älä raahaa hiirellä tabin yli – se saattoi aiemmin luoda
 alphaTabin loop-alueen. Nykyään alue nollataan automaattisesti, mutta

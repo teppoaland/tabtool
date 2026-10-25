@@ -52,7 +52,9 @@ Putki (app/pipeline/)
   asettamaan rivit kuuntelemalla. Paneeli on myös **kooltaan säädettävä**
   (`#lyrics-resize`, koko talletetaan) ja sanoitusrivin koko tulee
   Settingsistä (`lyrics.scale`, 100–400 %, oletus 200 % → CSS-muuttuja
-  `--lyrics-scale`). Tabin poisto poistaa sidecarin.
+  `--lyrics-scale`) ja koko näytön nosto (`lyrics.offset_px`, oletus 100 px
+  → `--lyrics-offset`, vain fullscreenissa). Fullscreenissa rivi on 96vw
+  leveä, joten se pysyy yhdellä rivillä. Tabin poisto poistaa sidecarin.
 - `app/library.py` hoitaa poiston: tab-hakemisto, stemmit sekä job/track-
   rivit. Jaettu audio säilyy, jos toinen tabi käyttää sitä; MP3 jää
   `EXTERNAL_DIR`iin. Poisto ei koske `data/`-juuren ulkopuolisiin polkuihin.

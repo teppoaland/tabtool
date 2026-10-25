@@ -1,5 +1,21 @@
 # 📊 Projektin edistyminen – AI TABTOOL
 
+## v2.09 – Fullscreen-sanoitus ylemmäs + nosto-asetus (25.10.2026)
+
+- **Yksi rivi koko näytössä:** `.lyrics-current` saa fullscreenissa
+  `max-width: 96vw` (normaalissa 92vw / 1100px), joten pitkä rivi mahtuu
+  yhdelle riville 300 %:n koollakin.
+- **Nosto:** `#lyrics-strip` koko näytössä
+  `bottom: calc(1.1rem + var(--lyrics-offset, 100px))` → oletus 100 px
+  ylempänä kuin ennen; ruudulla on tilaa eikä mikään jää peittoon.
+- **Asetus:** `lyrics.offset_px` (SETTINGS → Sanat → Sanoitusrivin nosto),
+  0–600 px, askel 10, oletus 100 px. `applyRuntimeSettings` lukee arvon;
+  `applyLyricsStyle()` kirjoittaa `--lyrics-scale` ja `--lyrics-offset`
+  dokumentin juureen. Vain tyylejä – ei audion kirjoituksia, ei
+  alphaTab-kutsuja, ei kellomuutoksia.
+- **Testit 266** (laajennetut: koon ja noston oletukset/rajat, CSS-muuttujat
+  ja fullscreen-säännöt).
+
 ## v2.08 – Sanoitusikkuna resizable, tekstin koko Settingsiin (25.10.2026)
 
 - **Ikkunan koko:** `#lyrics-resize` oikeassa alakulmassa (pointer events);

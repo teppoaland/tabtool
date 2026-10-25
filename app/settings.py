@@ -133,6 +133,21 @@ FIELDS: tuple[Setting, ...] = (
         ),
     ),
     Setting(
+        "lyrics.offset_px",
+        "lyrics",
+        "Sanoitusrivin nosto",
+        "number",
+        100,
+        minimum=0,
+        maximum=600,
+        step=10,
+        unit="px",
+        help=(
+            "Kuinka monta pikseliä sanoitusrivi nousee ruudun alareunasta "
+            "koko näytön tilassa (0 = aivan alhaalla, oletus 100 px)."
+        ),
+    ),
+    Setting(
         "view.stave",
         "view",
         "Näkymän oletus",

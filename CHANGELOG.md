@@ -2,6 +2,21 @@
 
 > AI TabTool käyttää `1.x`-versiosarjaa. Aloitus `v1.00`.
 
+## v2.09 – 25.10.2026
+
+- **Koko näyttö: sanoitusrivi ylemmäs ja koko leveydelle.** Sanoitusrivi
+  nostetaan koko näytön tilassa alareunasta
+  `calc(1.1rem + var(--lyrics-offset, 100px))`, ja rivin suurin leveys on
+  `96vw`, joten pitkäkin rivi mahtuu **yhdelle riville** 300 %:n koollakin.
+  Normaali näkymä pysyy ennallaan (siellä rivi on edelleen 92vw / 1100px).
+- **Uusi asetus `lyrics.offset_px` (SETTINGS → Sanat → Sanoitusrivin nosto):**
+  0–600 px, askel 10, **oletus 100 px**. `applyRuntimeSettings` lukee arvon
+  ja `applyLyricsStyle()` kirjoittaa dokumentin CSS-muuttujat
+  `--lyrics-scale` ja `--lyrics-offset`. Vain tyylejä: ei audion
+  kirjoituksia, ei alphaTab-kutsuja, ei kellomuutoksia.
+- **Testit:** 266 passed (olemassa olevia laajennettu: koon ja noston
+  oletukset/rajat sekä CSS-muuttujat ja fullscreen-säännöt).
+
 ## v2.08 – 25.10.2026
 
 - **Sanoitusikkuna raahattavaksi ja kooltaan säädettäväksi.** Oikean
