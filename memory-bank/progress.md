@@ -517,7 +517,7 @@
 - Poisto ei poista MP3-kuunteluversiota eikä toisen tabin jakamaa audiota.
 - **Koko historia v1.23–v1.99 on pushattu `origin/main`iin** (käyttäjän
   pyynnöistä 20.10. ja 23.10.2026); **tagi `v1.99` = viimeisin pushattu
-  palautuspiste**; v2.00–v2.01 ovat paikallisia (ei pushattu).
+  palautuspiste**; v2.00–v2.04 ovat paikallisia (ei pushattu).
   `scripts/build_kiss_legend.py` on gitignorattu (koko kappaleen
   nuottidata, tekijänoikeus). `data/` ja `docs/` eivät ole gitissä,
   joten ne tarvitsevat erillisen varmuuskopion.
@@ -535,9 +535,11 @@
 2. **Tuonnin laatuapurit:** duplikaattien tunnistus (sama GP5 SHA-256 tai
    sama artisti+biisi eri audio), tabin pituus vs. audion kesto,
    pickup-varoitus.
-3. **Settings-näkymä**: count-inin kesto ja muut toisto-oletukset
-   säädettäviksi (nyt `COUNT_IN_FROM` / `COUNT_IN_STEP_MS` /
-   `COUNT_IN_ZERO_MS` `app.js`:ssä; ON/OFF-kytkin on jo v1.81).
+3. ~~**Settings-näkymä**~~ ✅ **valmis v2.02** (`/settings`,
+   `app/settings.py`: count-inin askelmat/kestot ja ON/OFF, Näkymän
+   oletus, 16 päänäkymän + 4 puhelimen toimintoa). Oletukset ennallaan
+   (`COUNT_IN_FROM` / `COUNT_IN_STEP_MS` / `COUNT_IN_ZERO_MS`
+   `app.js`:ssä, sama fallback `settings.py`:ssä).
 4. **Refinger/playability loppuun:** paras versio automaattisesti, score
    näkyviin, turhien nuottien karsinta per tahti/fraasi.
 5. Vasta sitten Phase 3 / Spotify: PKCE, haku/metadata, SDK/Connect,
