@@ -118,6 +118,18 @@
   const sectionStatus = document.getElementById("section-status");
   const attachAudioButton = document.getElementById("attach-audio-button");
   const attachStatus = document.getElementById("attach-status");
+  // Sanat (v2.06): sidecar lyrics, painted outside the playback chain.
+  const lyricsButton = document.getElementById("lyrics-button");
+  const lyricsStrip = document.getElementById("lyrics-strip");
+  const lyricsCurrent = document.getElementById("lyrics-current");
+  const lyricsDialog = document.getElementById("lyrics-dialog");
+  const lyricsForm = document.getElementById("lyrics-form");
+  const lyricsSubject = document.getElementById("lyrics-subject");
+  const lyricsInput = document.getElementById("lyrics-input");
+  const lyricsBars = document.getElementById("lyrics-bars");
+  const lyricsStatus = document.getElementById("lyrics-status");
+  const lyricsSave = document.getElementById("lyrics-save");
+  const lyricsClose = document.getElementById("lyrics-close");
   const rateSlider = document.getElementById("rate-slider");
   const rateReadout = document.getElementById("rate-readout");
   const syncSlider = document.getElementById("sync-slider");
@@ -209,6 +221,17 @@
   let countInZeroTimer = null;
   let countInValue = COUNT_IN_FROM;
   let countInEnabled = true;
+
+  // === SANAT (v2.06) – own overlay, rule 07 ===========================
+  // Lyrics live in data/lyrics/<tab_id>.json (sidecar). This state never
+  // takes part in the clock, seek or alphaTab wiring: the strip reads the
+  // bar number that updateTransport() already printed into #bar-readout.
+  let lyricsTabId = "";
+  let lyricsMeasures = {};
+  let lyricsBarsTotal = 0;
+  let lyricsLoadingFor = "";
+  let lyricsShownBar = -1;
+  let lyricsDirty = false;
 
   function setPlayLabel(playing) {
     if (!playButton) return;
@@ -1602,6 +1625,292 @@
   }
   // === /COUNT-IN ======================================================
 
+  // === SANAT (v2.06) ==================================================
+  // Decoupled by design: the tab (GP5/MusicXML/MIDI) and its metadata are
+  // never written here, and nothing in the playback chain (clock, seekTo
+  // inverse, mediaHandler, syncPosition) is called or changed. The strip is
+  // an overlay that watches #bar-readout, which the transport already keeps
+  // up to date, and paints the sidecar line for that bar.
+  function lyricForBar(bar) {
+    const start = Number(bar) || 0;
+    // A line stays visible over the following bars until the next line
+    // starts, so long phrases are not cut at every bar line.
+    for (let index = start; index >= 1; index -= 1) {
+      const text = lyricsMeasures[String(index)];
+      if (text) return text;
+    }
+    return "";
+  }
+
+  function currentLyricsBar() {
+    if (!barReadout) return 0;
+    const match = /Tahti\s+(\d+)/.exec(barReadout.textContent || "");
+    return match ? Number(match[1]) : 0;
+  }
+
+  function renderLyricsStrip(force) {
+    if (!lyricsStrip || !lyricsCurrent) return;
+    const bar = currentLyricsBar();
+    if (!force && bar === lyricsShownBar) return;
+    lyricsShownBar = bar;
+    const text = lyricForBar(bar);
+    lyricsCurrent.textContent = text;
+    lyricsStrip.hidden = !text;
+  }
+
+  function resetLyrics() {
+    lyricsTabId = "";
+    lyricsMeasures = {};
+    lyricsBarsTotal = 0;
+    lyricsShownBar = -1;
+    renderLyricsStrip(true);
+  }
+
+  function setLyricsStatus(text, isError) {
+    if (!lyricsStatus) return;
+    lyricsStatus.textContent = text;
+    lyricsStatus.classList.toggle("is-error", Boolean(isError));
+  }
+
+  async function loadLyrics(tabId) {
+    const id = String(tabId || "");
+    if (!id) {
+      resetLyrics();
+      return;
+    }
+    if (lyricsLoadingFor === id) return;
+    lyricsLoadingFor = id;
+    try {
+      const response = await fetch(`/api/tabs/${id}/lyrics`, {
+        cache: "no-store",
+      });
+      if (!response.ok) throw new Error("Sanojen luku epäonnistui.");
+      const payload = await response.json();
+      if (lyricsLoadingFor !== id) return;
+      lyricsTabId = id;
+      lyricsMeasures =
+        payload && payload.measures && typeof payload.measures === "object"
+          ? payload.measures
+          : {};
+      lyricsBarsTotal = Number(payload && payload.bars) || 0;
+      lyricsShownBar = -1;
+      renderLyricsStrip(true);
+      // A fetch that lands after the user started typing must not overwrite
+      // the edit; the save button is the only writer of the sidecar.
+      if (lyricsDialog && !lyricsDialog.hidden && !lyricsDirty) {
+        fillLyricsDialog();
+      }
+    } catch (error) {
+      if (lyricsLoadingFor !== id) return;
+      lyricsTabId = id;
+      lyricsMeasures = {};
+      lyricsShownBar = -1;
+      renderLyricsStrip(true);
+    } finally {
+      if (lyricsLoadingFor === id) lyricsLoadingFor = "";
+    }
+  }
+
+  function parseLyricsText(text) {
+    // "10 | text" is the canonical form; ":", "=" and a tab also work.
+    // A bare line continues from the previous bar (10, 11, 12 ...), so a
+    // pasted block can be mapped line by line.
+    const measures = {};
+    const errors = [];
+    let nextBar = 0;
+    String(text || "")
+      .split(/\r?\n/)
+      .forEach((line, index) => {
+        const raw = line.trim();
+        if (!raw || raw.startsWith("#")) return;
+        const match = /^(\d+)\s*[|:=\t]\s*(.+)$/.exec(raw);
+        let bar = 0;
+        let lyric = "";
+        if (match) {
+          bar = Number(match[1]);
+          lyric = match[2].trim();
+        } else if (nextBar) {
+          bar = nextBar;
+          lyric = raw;
+        } else {
+          errors.push(`Rivi ${index + 1}: aloita muodossa "tahti | teksti".`);
+          return;
+        }
+        if (!Number.isFinite(bar) || bar < 1 || bar > 10000) {
+          errors.push(`Rivi ${index + 1}: tahdin numero ei kelpaa.`);
+          return;
+        }
+        if (!lyric) return;
+        measures[String(bar)] = lyric;
+        nextBar = bar + 1;
+      });
+    return { measures, errors };
+  }
+
+  function formatLyricsText(measures) {
+    return Object.keys(measures || {})
+      .sort((left, right) => Number(left) - Number(right))
+      .map((bar) => `${bar} | ${measures[bar]}`)
+      .join("\n");
+  }
+
+  function markLyricsBars() {
+    if (!lyricsBars) return;
+    const parsed = parseLyricsText(lyricsInput ? lyricsInput.value : "");
+    Array.from(lyricsBars.children).forEach((chip) => {
+      chip.classList.toggle(
+        "has-text",
+        Boolean(parsed.measures[chip.dataset.bar])
+      );
+    });
+  }
+
+  function insertLyricsBar(bar) {
+    if (!lyricsInput) return;
+    const text = lyricsInput.value;
+    const separator = !text || text.endsWith("\n") ? "" : "\n";
+    lyricsInput.value = `${text}${separator}${bar} | `;
+    lyricsInput.focus();
+    const end = lyricsInput.value.length;
+    lyricsInput.setSelectionRange(end, end);
+    markLyricsBars();
+  }
+
+  function renderLyricsBars(count) {
+    if (!lyricsBars) return;
+    lyricsBars.textContent = "";
+    // A tab with hundreds of bars would be an unusable wall of chips; the
+    // first 400 are clickable and the editor accepts any bar number anyway.
+    const total = Math.min(Math.max(Number(count) || 0, 1), 400);
+    for (let bar = 1; bar <= total; bar += 1) {
+      const chip = document.createElement("button");
+      chip.type = "button";
+      chip.className = "lyrics-bar";
+      chip.dataset.bar = String(bar);
+      chip.textContent = String(bar);
+      chip.title = `Lisää rivi tahdille ${bar}`;
+      chip.addEventListener("click", () => insertLyricsBar(bar));
+      lyricsBars.appendChild(chip);
+    }
+    markLyricsBars();
+  }
+
+  function fillLyricsDialog() {
+    if (lyricsInput) lyricsInput.value = formatLyricsText(lyricsMeasures);
+    lyricsDirty = false;
+    if (lyricsSubject) {
+      lyricsSubject.textContent = activeTab
+        ? activeTab.artist
+          ? `${activeTab.artist} — ${activeTab.title}`
+          : String(activeTab.title || "")
+        : "";
+    }
+    const total =
+      lyricsBarsTotal || Number(activeTab && activeTab.measure_count) || 0;
+    renderLyricsBars(total);
+    setLyricsStatus("");
+  }
+
+  function openLyricsDialog() {
+    if (!lyricsDialog || !activeTab) return;
+    const tabId = String(activeTab.id || "");
+    fillLyricsDialog();
+    lyricsDialog.hidden = false;
+    document.body.classList.add("modal-open");
+    if (lyricsInput) lyricsInput.focus();
+    if (tabId && lyricsTabId !== tabId) loadLyrics(tabId);
+  }
+
+  function closeLyricsDialog() {
+    if (!lyricsDialog) return;
+    lyricsDialog.hidden = true;
+    setLyricsStatus("");
+    if (!searchModal || searchModal.hidden) {
+      document.body.classList.remove("modal-open");
+    }
+  }
+
+  async function saveLyrics(event) {
+    event.preventDefault();
+    if (!activeTab) return;
+    const parsed = parseLyricsText(lyricsInput ? lyricsInput.value : "");
+    if (parsed.errors.length) {
+      setLyricsStatus(parsed.errors[0], true);
+      return;
+    }
+    if (lyricsSave) lyricsSave.disabled = true;
+    setLyricsStatus("Tallennetaan…");
+    try {
+      const response = await fetch(`/api/tabs/${activeTab.id}/lyrics`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ measures: parsed.measures }),
+      });
+      if (!response.ok) {
+        const payload = await response.json().catch(() => ({}));
+        throw new Error(
+          payload && payload.detail
+            ? String(payload.detail)
+            : "Tallennus epäonnistui."
+        );
+      }
+      const saved = await response.json();
+      lyricsTabId = String(activeTab.id || "");
+      lyricsMeasures =
+        saved && saved.measures && typeof saved.measures === "object"
+          ? saved.measures
+          : parsed.measures;
+      lyricsBarsTotal = Number(saved && saved.bars) || lyricsBarsTotal;
+      lyricsShownBar = -1;
+      lyricsDirty = false;
+      renderLyricsStrip(true);
+      markLyricsBars();
+      setLyricsStatus(
+        `Tallennettu (${Object.keys(lyricsMeasures).length} riviä).`
+      );
+    } catch (error) {
+      setLyricsStatus(
+        error instanceof Error ? error.message : String(error),
+        true
+      );
+    } finally {
+      if (lyricsSave) lyricsSave.disabled = false;
+    }
+  }
+
+  function watchLyrics() {
+    if (typeof MutationObserver !== "function") return;
+    // A new tab changes the title; the readout changes while the transport
+    // runs. Both are read-only observations of UI that already exists, so
+    // the playback chain is not connected to lyrics in any way.
+    if (titleEl) {
+      const titleObserver = new MutationObserver(() => {
+        const tabId = activeTab && activeTab.id ? String(activeTab.id) : "";
+        if (!tabId) {
+          resetLyrics();
+          return;
+        }
+        if (tabId !== lyricsTabId) loadLyrics(tabId);
+        lyricsShownBar = -1;
+        renderLyricsStrip(true);
+      });
+      titleObserver.observe(titleEl, {
+        childList: true,
+        characterData: true,
+        subtree: true,
+      });
+    }
+    if (barReadout) {
+      const barObserver = new MutationObserver(() => renderLyricsStrip(false));
+      barObserver.observe(barReadout, {
+        childList: true,
+        characterData: true,
+        subtree: true,
+      });
+    }
+  }
+  // === /SANAT =========================================================
+
   function renderTabMeta(tab) {
     if (titleEl) {
       titleEl.textContent = tab.artist
@@ -2592,6 +2901,23 @@
       if (event.target === detailDialog) closeDetailDialog();
     });
   }
+  // Sanat (v2.06): the editor and its overlay are wired here, outside the
+  // playback chain; watchLyrics() only observes existing UI text.
+  if (lyricsButton) lyricsButton.addEventListener("click", openLyricsDialog);
+  if (lyricsForm) lyricsForm.addEventListener("submit", saveLyrics);
+  if (lyricsClose) lyricsClose.addEventListener("click", closeLyricsDialog);
+  if (lyricsDialog) {
+    lyricsDialog.addEventListener("click", (event) => {
+      if (event.target === lyricsDialog) closeLyricsDialog();
+    });
+  }
+  if (lyricsInput) {
+    lyricsInput.addEventListener("input", () => {
+      lyricsDirty = true;
+      markLyricsBars();
+    });
+  }
+  watchLyrics();
   if (playButton) playButton.addEventListener("click", handlePlayButton);
   if (countInToggle) {
     countInToggle.addEventListener("change", () =>
@@ -2732,6 +3058,10 @@
       } else {
         closeSearch();
       }
+      return;
+    }
+    if (event.key === "Escape" && lyricsDialog && !lyricsDialog.hidden) {
+      closeLyricsDialog();
       return;
     }
     if (event.key === "Escape" && countInActive) {

@@ -6,14 +6,14 @@
   <meta name="color-scheme" content="dark">
   <title>AI TabTool</title>
   <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="/static/style.css?v=2.05">
+  <link rel="stylesheet" href="/static/style.css?v=2.06">
 </head>
 <body>
   <header class="topbar">
     <div class="brand">
       <span class="brand-mark" aria-hidden="true">AT</span>
       <span class="brand-name">AI TABTOOL</span>
-      <span id="version-tag" class="version">v2.05</span>
+      <span id="version-tag" class="version">v2.06</span>
     </div>
     <nav class="nav" aria-label="Päävalikko">
       <button id="open-search-top" type="button" class="primary nav-library"
@@ -66,6 +66,8 @@
           <button id="attach-audio-button" type="button" class="ghost small" hidden
                   title="Etsi samanniminen tabi, jolla on audio, ja liitä sen audio tähän tabiin.">LIITÄ AUDIO</button>
           <span id="attach-status" class="attach-status" aria-live="polite"></span>
+          <button id="lyrics-button" type="button" class="ghost small"
+                  title="Laulun sanat tahdeittain. Sanat tallennetaan erilliseen tiedostoon, tabi ei muutu.">SANAT</button>
         </div>
       </div>
       <div class="transport" aria-label="Toiston hallinta">
@@ -140,6 +142,12 @@
       <div id="play-countdown" class="countdown" role="status"
            aria-live="polite" hidden>
         <span id="play-countdown-value" class="countdown-value">5</span>
+      </div>
+      <!-- Sanat (v2.06): a fixed, out-of-flow overlay like the count-in. It
+           only reads the bar text that updateTransport() already writes and
+           never touches the audio, the clock or alphaTab. -->
+      <div id="lyrics-strip" class="lyrics-strip" hidden>
+        <span id="lyrics-current" class="lyrics-current"></span>
       </div>
     </section>
   </main>
@@ -340,14 +348,40 @@
   </div>
 
 
+  <!-- Sanat (v2.06): the editor writes a sidecar JSON only. The tab keeps its
+       bars and notes untouched; every line names the bar it is shown on. -->
+  <div id="lyrics-dialog" class="modal-backdrop" hidden>
+    <div class="modal-panel modal-small lyrics-panel" role="dialog"
+         aria-modal="true" aria-labelledby="lyrics-heading">
+      <h2 id="lyrics-heading">Sanat</h2>
+      <p id="lyrics-subject" class="detail-subject muted"></p>
+      <div id="lyrics-bars" class="lyrics-bars" role="group"
+           aria-label="Tahdit: paina lisätäksesi rivi"></div>
+      <form id="lyrics-form" class="lyrics-form">
+        <label class="field">
+          <span>Yksi rivi per tahti: <code>tahti | teksti</code></span>
+          <textarea id="lyrics-input" class="lyrics-input" rows="12"
+                    spellcheck="false"
+                    placeholder="10 | Mun sydän palaa&#10;11 | ja jatkuu..."></textarea>
+        </label>
+        <p id="lyrics-status" class="bpm-status" aria-live="polite"></p>
+        <div class="actions">
+          <button id="lyrics-save" type="submit" class="primary">TALLENNA</button>
+          <button id="lyrics-close" type="button" class="ghost">SULJE</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+
   <footer class="footer">
-    <span>AI TabTool v2.05</span>
+    <span>AI TabTool v2.06</span>
     <span>Local-first · <a href="/remote">Remote</a></span>
   </footer>
 
-  <script src="/static/vendor/alphaTab/alphaTab.min.js?v=2.05"></script>
-  <script src="/static/app.js?v=2.05" defer></script>
-  <script src="/static/remote-bridge.js?v=2.05" defer></script>
+  <script src="/static/vendor/alphaTab/alphaTab.min.js?v=2.06"></script>
+  <script src="/static/app.js?v=2.06" defer></script>
+  <script src="/static/remote-bridge.js?v=2.06" defer></script>
 </body>
 </html>
 

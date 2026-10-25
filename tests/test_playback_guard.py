@@ -245,6 +245,27 @@ def test_library_lives_in_the_topbar_only():
     assert "FULLSCREEN-painikkeesta" in play_tag
 
 
+def test_lyrics_stay_outside_the_playback_chain():
+    """v2.06: the lyric overlay only reads UI text, never the chain.
+
+    The sidecar JSON is shown by watching #bar-readout, which the transport
+    already keeps up to date. The clock, the seek inverse, the media handler
+    and the transport functions must stay ignorant of lyrics.
+    """
+    source = _source()
+    for name in PLAYBACK_FUNCTIONS + ("updateTransport", "currentBarNumber"):
+        body = _function_body(source, name)
+        assert "lyrics" not in body, f"{name} must not know about lyrics"
+
+    for name in ("currentLyricsBar", "renderLyricsStrip", "loadLyrics"):
+        body = _function_body(source, name)
+        assert "api." not in body, f"{name} must not call the alphaTab API"
+        assert "audio" not in body, f"{name} must not touch the audio element"
+
+    # The bar number comes from the readout the transport already writes.
+    assert "barReadout" in _function_body(source, "currentLyricsBar")
+
+
 def test_playback_rate_never_enters_the_alignment_math():
     """v1.97: Nopeus is practice speed, not a sync control.
 

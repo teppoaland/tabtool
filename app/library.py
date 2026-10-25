@@ -1,8 +1,9 @@
 """Remove a tab together with its private data.
 
-A deleted song loses its tab directory, database rows, audio and stems.
-The external MP3 listening copy (``EXTERNAL_DIR/audio/mp3``) is kept, so the
-user can still listen to the song elsewhere.
+A deleted song loses its tab directory, database rows, audio, stems and the
+lyrics sidecar (``data/lyrics/<tab_id>.json``). The external MP3 listening
+copy (``EXTERNAL_DIR/audio/mp3``) is kept, so the user can still listen to
+the song elsewhere.
 """
 
 from __future__ import annotations
@@ -11,7 +12,7 @@ import shutil
 from pathlib import Path
 from typing import Any
 
-from app import config, db
+from app import config, db, lyrics
 from app.external_store import display_name
 
 
@@ -76,6 +77,8 @@ def delete_tab_data(tab_id: str) -> dict[str, Any]:
     mp3 = _mp3_path(artist, title)
 
     _remove_tab_directory(tab)
+    # Lyrics are a sidecar (v2.06), so they are not inside the tab directory.
+    lyrics.delete(tab_id)
     db.delete_tab_records(tab_id)
 
     # Shared audio (for example an imported tab attached to an AI tab) is

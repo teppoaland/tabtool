@@ -17,7 +17,16 @@ from pathlib import Path
 from typing import AsyncIterator
 from urllib.parse import urlparse
 
-from fastapi import FastAPI, File, Form, HTTPException, Query, Request, UploadFile
+from fastapi import (
+    Body,
+    FastAPI,
+    File,
+    Form,
+    HTTPException,
+    Query,
+    Request,
+    UploadFile,
+)
 from fastapi.responses import FileResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 
@@ -26,6 +35,7 @@ from app import (
     db,
     jobs,
     library,
+    lyrics,
     remote,
     settings,
     tab_download,
@@ -600,6 +610,47 @@ def get_tab(tab_id: str) -> dict[str, object]:
     if tab is None:
         raise HTTPException(status_code=404, detail="Unknown tab")
     return tab
+
+
+@app.get("/api/tabs/{tab_id}/lyrics", tags=["tabs"])
+def tab_lyrics(tab_id: str) -> dict[str, object]:
+    """Read the lyrics sidecar (v2.06).
+
+    Lyrics are stored next to the tab (``data/lyrics/<tab_id>.json``), never
+    inside the GP5/MusicXML/MIDI or the tab metadata, so this route cannot
+    change what the playback chain reads. ``bars`` is the tab's bar count and
+    only helps the editor list the bars.
+    """
+    tab = _load_tab(tab_id)
+    if tab is None:
+        raise HTTPException(status_code=404, detail="Unknown tab")
+    try:
+        payload = lyrics.read(tab_id)
+    except ValueError as error:
+        raise HTTPException(status_code=404, detail="Unknown tab") from error
+    payload["bars"] = int(tab.get("measure_count") or 0)
+    return payload
+
+
+@app.put("/api/tabs/{tab_id}/lyrics", tags=["tabs"])
+def tab_lyrics_save(
+    tab_id: str,
+    payload: dict[str, object] = Body(...),
+) -> dict[str, object]:
+    """Write the lyrics sidecar atomically; the tab file is not touched.
+
+    A locked tab may still receive lyrics: the lock protects the tab and its
+    stored playback settings, and lyrics live outside both.
+    """
+    tab = _load_tab(tab_id)
+    if tab is None:
+        raise HTTPException(status_code=404, detail="Unknown tab")
+    try:
+        saved = lyrics.write(tab_id, payload.get("measures"))
+    except ValueError as error:
+        raise HTTPException(status_code=422, detail=str(error)) from error
+    saved["bars"] = int(tab.get("measure_count") or 0)
+    return saved
 
 
 def _tab_file(tab_id: str, fmt: str) -> tuple[dict[str, object], Path]:

@@ -1578,6 +1578,41 @@ body.viewer-fullscreen {
   text-shadow: 0 0 1.5rem rgba(240, 179, 90, 0.45);
 }
 
+/* Sanat (v2.06): the lyric line is a fixed overlay like the count-in. It is
+   out of the grid and the flex flow, so the tab width, the scroll area and
+   the .alphatab size stay untouched (rule 07). The text comes from the
+   sidecar JSON for the bar #bar-readout already reports; pointer-events is
+   off so the strip never blocks the transport or the score. */
+.lyrics-strip {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 1.1rem;
+  display: flex;
+  justify-content: center;
+  padding: 0 1.5rem;
+  pointer-events: none;
+  z-index: 1400; /* above alphaTab's cursors (1000), below the count-in (1500) */
+}
+
+.lyrics-strip[hidden] {
+  display: none;
+}
+
+.lyrics-current {
+  max-width: min(1100px, 92vw);
+  padding: 0.45rem 1.1rem;
+  border-radius: 999px;
+  background: rgba(6, 8, 12, 0.72);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-size: clamp(1.05rem, 2vw, 1.7rem);
+  font-weight: 700;
+  line-height: 1.3;
+  text-align: center;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.7);
+}
+
 @media (max-width: 720px) {
   .viewer-bar {
     grid-template-columns: auto auto;
@@ -1880,5 +1915,83 @@ body.hide-ui-export .viewer-foot {
 
 .detail-meta a:hover {
   text-decoration: underline;
+}
+
+/* Sanat-dialogi (v2.06): the bar chips insert "tahti | teksti" into one
+   textarea. The dialog only writes the sidecar JSON; no playback element is
+   selected here (rule 07). */
+.lyrics-panel {
+  width: min(46rem, 100%);
+}
+
+.lyrics-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  min-height: 0;
+  overflow-y: auto;
+  padding-right: 0.2rem;
+}
+
+.lyrics-input {
+  width: 100%;
+  min-height: 12rem;
+  resize: vertical;
+  background: var(--bg-soft);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 0.7rem 0.85rem;
+  color: var(--text);
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: 0.85rem;
+  line-height: 1.45;
+}
+
+.lyrics-input:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.lyrics-bars {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  max-height: 6.4rem;
+  overflow-y: auto;
+  padding: 0.4rem;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: rgba(6, 8, 12, 0.35);
+}
+
+.lyrics-bar {
+  appearance: none;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-size: 0.7rem;
+  font-variant-numeric: tabular-nums;
+  min-width: 1.7rem;
+  padding: 0.2rem 0.3rem;
+  cursor: pointer;
+}
+
+.lyrics-bar:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.lyrics-bar.has-text {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.lyrics-bar:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 

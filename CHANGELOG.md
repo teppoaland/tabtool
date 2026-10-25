@@ -2,6 +2,38 @@
 
 > AI TabTool käyttää `1.x`-versiosarjaa. Aloitus `v1.00`.
 
+## v2.06 – 25.10.2026
+
+- **Sanat erilliseen sidecar-tiedostoon (täysi irtikytkentä).** Laulun sanat
+  eivät mene GP5/MusicXML/MIDI-tiedostoon eivätkä tabin metadataan, vaan
+  omaan tiedostoon `data/lyrics/<tab_id>.json`:
+  `{"tab_id": …, "updated_at": …, "measures": {"10": "…", "11": "…"}}`.
+  Tabi on siis ohjelmalle vain lukusyöte, joten soittoketju (kello,
+  `seekTo`-inversio, media-adapteri, `syncPosition`) ei tiedä sanoista
+  mitään eikä GP5-tiedoston bittimuoto voi särkyä.
+- **API:** `GET /api/tabs/{id}/lyrics` (tyhjä oletus + tabin tahtimäärä
+  `bars`) ja `PUT /api/tabs/{id}/lyrics` (`{"measures": {tahti: teksti}}`).
+  `app/lyrics.py` validoi (tahti 1–10000, teksti ≤ 300 merkkiä, rivit
+  ≤ 2000), normalisoi välilyönnit, pudottaa tyhjät rivit ja kirjoittaa
+  temp-tiedoston kautta `os.replace`lla. Virheellinen syöte → 422;
+  tuntematon tabi → 404; lukittu tabi saa silti sanat (lukko koskee tabia
+  ja sen toistoasetuksia, ei sidecaria). Tabin poisto poistaa myös
+  sidecarin (`library.delete_tab_data`).
+- **UI:** katselimen työkalurivillä **SANAT** avaa editorin: tahtilistat
+  (1…N, klikkaus lisää rivin `tahti | `), yksi tekstikenttä rivi per tahti
+  (`10 | Mun sydän palaa`; myös `:`, `=` ja tabulaattori käyvät, ja ilman
+  numeroa oleva rivi jatkaa edellisestä tahdista), `TALLENNA` + `SULJE`.
+  Soiton aikana erillinen overlay (`#lyrics-strip`) näyttää kuluvan tahdin
+  rivin; se lukee vain `#bar-readout`-tekstiä `MutationObserver`illa –
+  ei `api`-kutsuja, ei audion kirjoituksia, ei kellomuutoksia. Overlay on
+  `position: fixed` ja `pointer-events: none`, kuten count-in, joten
+  `.alphatab`-mitat ja transport pysyvät ennallaan.
+- **Testit:** 262 passed (16 uutta: sidecarin round-trip + tabin
+  bittitarkistus, validointi, atominen kirjoitus, lukittu tabi, poisto,
+  polkusuojaus, rikkinäinen JSON ja vartiotesti
+  `test_lyrics_stay_outside_the_playback_chain`). Soittoketjuun ei
+  koskettu.
+
 ## v2.05 – 25.10.2026
 
 - **Yläpalkin `LIBRARY` on nyt päätoiminto.** Painike sai oranssin

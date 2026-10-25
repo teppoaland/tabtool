@@ -1,9 +1,9 @@
 # 📍 Aktiivinen konteksti – AI TABTOOL
 
-> **Versio:** `v2.05` (25.10.2026)
+> **Versio:** `v2.06` (25.10.2026)
 > **Git:** v1.23–v1.99 **pushattu** `origin/main`iin 23.10.2026 käyttäjän
 > pyynnöstä; **tagi `v1.99` = viimeisin pushattu palautuspiste**
-> (`git reset --hard v1.99`); v2.00–v2.05 ovat paikallisia. Älä pinnaa
+> (`git reset --hard v1.99`); v2.00–v2.06 ovat paikallisia. Älä pinnaa
 > HEAD-hashia pysyvästi.
 > **Push:** vain erillisestä pyynnöstä (käyttäjä pyysi 20.10. ja 23.10.2026).
 > **Repo:** https://github.com/teppoaland/tabtool
@@ -20,6 +20,19 @@
   **pyydetään testaamaan soitto referenssikappaleella** (Seek & Destroy,
   SIIRTO −0,75 / BPM 142) ennen ja jälkeen. Katso
   `.clinerules/07-playback-frozen.md`.
+- **v2.06 (25.10.2026) – Sanat sidecarina (täysi irtikytkentä):**
+  - Sanat eivät mene GP5/MusicXML/MIDIin eivätkä tabin metadataan:
+    `data/lyrics/<tab_id>.json` (`{"measures": {"10": "…"}}`),
+    `app/lyrics.py` (validointi, temp + `os.replace`).
+  - `GET/PUT /api/tabs/{id}/lyrics`; lukittu tabi saa silti sanat;
+    tabin poisto poistaa sidecarin (`library.delete_tab_data`).
+  - UI: `.viewer-tools`in **SANAT** avaa editorin (tahtilistat + rivi per
+    tahti `tahti | teksti`). Overlay `#lyrics-strip` on `position: fixed`
+    ja lukee vain `#bar-readout`-tekstiä `MutationObserver`illa – ei
+    `api`-kutsuja, ei audio-kirjoituksia, ei kellomuutoksia.
+  - Testit **262** (16 uutta + vartiotesti
+    `test_lyrics_stay_outside_the_playback_chain`). Vaatii käyttäjän
+    UI-/kuuntelutestin (sääntö 07).
 - **v2.05 (25.10.2026) – LIBRARY yläpalkkiin, PLAY pelkäksi toistoksi:**
   - Yläpalkin `LIBRARY` (`#open-search-top`) on oranssi päätoiminto
     (`primary nav-library`).

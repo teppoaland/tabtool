@@ -5,7 +5,7 @@ ja katseluun. Hae kappale Spotifysta tai käytä omaa MP3/YouTube-audioita,
 anna tekoälyn tehdä ensimmäinen tablatuuriluonnos ja katsele sitä
 alphaTabilla TV:stä tai tietokoneelta. Puhelin toimii kaukosäätimenä.
 
-**Versio:** `v2.05` (Phase 4 – LAN-kaukosäädin, Settings, kirjaston Tiedot ja sormitusversioiden varmistettu valinta)
+**Versio:** `v2.06` (Phase 4 – LAN-kaukosäädin, Settings, kirjaston Tiedot, sormitusversiot ja sanat sidecarina)
 
 ## Session aloitus
 
@@ -299,6 +299,16 @@ ensimmäistä PLAYta, laskenta ohitetaan. **FULLSCREEN-napin alla on
 COUNT-IN-kytkin (ON/OFF, oletus ON)** sekä normaalissa että koko näytön
 näkymässä; valinta muistetaan selaimessa. Kytkin luetaan vain
 `shouldRunCountIn`issa – se ei koske soittoketjuun.
+
+**Sanat (v2.06):** katselimen **SANAT** avaa sanoituseditorin. Jokainen rivi
+on muotoa `tahti | teksti` (esim. `10 | Mun sydän palaa`); tahdin voi
+kirjoittaa käsin tai klikata tahtilistasta, jolloin rivi aloitetaan valmiiksi.
+Ilman tahtinumeroa oleva rivi jatkaa edellisestä tahdista, joten valmiin
+sanoituksen voi liittää ja numeroida alusta kerran. Soiton aikana kappaleen
+alaosassa näkyy kuluvan tahdin rivi (rivi pysyy näkyvissä, kunnes seuraava
+alkaa). Sanat tallennetaan **erilliseen** tiedostoon
+`data/lyrics/<tab_id>.json` – GP5/MusicXML/MIDI ja tabin metadata eivät
+muutu, joten tabi pysyy lukusyötteenä eikä soitto- tai synkkaketjuun kosketa.
 
 **Vihje:** älä raahaa hiirellä tabin yli – se saattoi aiemmin luoda
 alphaTabin loop-alueen. Nykyään alue nollataan automaattisesti, mutta

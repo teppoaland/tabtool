@@ -40,6 +40,14 @@ Putki (app/pipeline/)
 - `app/tab_download.py` hakee GP5/MusicXML-linkin palvelimella: vain
   julkinen http(s) (ei localhost/yksityisverkko), max 20 MB, redirectit
   validoitu. gprotab.netin HTML-sivu → automaattinen `?download`-retry.
+- **Sanat sidecarina** (v2.06): `app/lyrics.py` pitää sanoitukset
+  tiedostossa `data/lyrics/<tab_id>.json` (`{"tab_id", "updated_at",
+  "measures": {"10": "…"}}`), joten GP5/MusicXML/MIDI ja tabin meta pysyvät
+  tavu-tasolla ennallaan. `GET/PUT /api/tabs/{tab_id}/lyrics`; lukittu tabi
+  saa silti sanat. Katselimen `SANAT` (`#lyrics-dialog`) kirjoittaa vain
+  tämän tiedoston, ja `#lyrics-strip` lukee kuluvan tahdin
+  `#bar-readout`-tekstistä (`MutationObserver`) – ei kelloa, ei
+  `api`-kutsuja, ei audio-kirjoituksia. Tabin poisto poistaa sidecarin.
 - `app/library.py` hoitaa poiston: tab-hakemisto, stemmit sekä job/track-
   rivit. Jaettu audio säilyy, jos toinen tabi käyttää sitä; MP3 jää
   `EXTERNAL_DIR`iin. Poisto ei koske `data/`-juuren ulkopuolisiin polkuihin.

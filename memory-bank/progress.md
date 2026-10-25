@@ -1,5 +1,28 @@
 # 📊 Projektin edistyminen – AI TABTOOL
 
+## v2.06 – Sanat sidecarina, ei muutoksia tab-tiedostoon (25.10.2026)
+
+- **Päätös:** sanat eivät mene GP5-tiedostoon eivätkä tabin metadataan.
+  Yksi JSON per tabi: `data/lyrics/<tab_id>.json`
+  (`{"tab_id", "updated_at", "measures": {"10": "…"}}`). Tabi pysyy
+  lukusyötteenä, joten bittimuoto ei voi särkyä eikä soittoketjuun tarvitse
+  koskea.
+- **Backend:** `app/lyrics.py` (validointi: tahti 1–10000, rivi ≤ 300
+  merkkiä, ≤ 2000 riviä; välilyöntien normalisointi; temp + `os.replace`).
+  `GET/PUT /api/tabs/{id}/lyrics` (`main.py`), tuntematon tabi 404,
+  virheellinen syöte 422. Lukittu tabi saa silti sanat (lukko koskee tabia
+  ja sen toistoasetuksia). `library.delete_tab_data` poistaa sidecarin.
+- **Frontend:** `SANAT`-nappi `.viewer-tools`issa avaa `#lyrics-dialog`in
+  (tahtilistat 1…N + tekstikenttä, rivi muodossa `tahti | teksti`;
+  numeroton rivi jatkaa edellisestä). `#lyrics-strip` on kiinteä overlay
+  (fixed, `pointer-events:none`, z-index 1400) ja näyttää kuluvan tahdin
+  rivin; tieto tulee `#bar-readout`-tekstistä `MutationObserver`illa, ei
+  `api`-kutsulla eikä audiosta. `.alphatab`-mitat ja transport ennallaan.
+- **Testit 262** (16 uutta `tests/test_lyrics.py`ssa + vartiotesti
+  `test_lyrics_stay_outside_the_playback_chain`): tabin `tab.gp5` ja
+  `meta.json` tavu-tasolla ennallaan sanojen tallennuksen jälkeen.
+  Käyttäjän UI-/kuuntelutesti tarvitaan ennen kuittausta (sääntö 07).
+
 ## v2.05 – LIBRARY yläpalkkiin, PLAY pelkäksi toistoksi (25.10.2026)
 
 - **Yläpalkin `LIBRARY` oranssiksi:** `ghost small nav-search` →
