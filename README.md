@@ -460,6 +460,19 @@ audio ovat silloin 1:1.
 ```
 
 `--reset-sync` nollaa SYNC- ja SIIRTO-arvot, koska tabi vastaa nyt audiota.
+
+**Monta toistolohkoa (v2.25):** `scripts/expand_repeats.py` tekee saman
+koko kappaleelle kerralla – se etsii kaikki toistolohkot (myös
+vaihtoehtoiset lopetukset), kirjoittaa ne tahdeiksi ja validoi tuloksen
+vertaamalla tahdit soitettuun järjestykseen. Slayer – *Dead Skin Mask*
+(96 tahtia, 8 toistolohkoa, 48 soitettua lisätahtia) katkesi tahtiin 68,
+koska kello loppui 3:26 kohdalla; laajennuksen jälkeen tabissa on
+143 tahtia ja se soi loppuun asti.
+
+```powershell
+.venv\Scripts\python.exe scripts\expand_repeats.py --tab <tab_id> --dry-run
+.venv\Scripts\python.exe scripts\expand_repeats.py --tab <tab_id>
+```
 Skripti validoi tuloksen lukemalla GP5:n takaisin ja palauttaa
 varmuuskopion, jos kirjoitus epäonnistuu.
 
