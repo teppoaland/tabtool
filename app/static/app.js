@@ -86,6 +86,9 @@
 
   const form = document.getElementById("source-form");
   const fileInput = document.getElementById("file-input");
+  // v2.25: the browser keeps a file selection until it is cleared, so the
+  // audio field has its own clear button.
+  const fileClearButton = document.getElementById("file-clear");
   const urlInput = document.getElementById("url-input");
   const tuningSelect = document.getElementById("tuning-select");
   const gridSelect = document.getElementById("grid-select");
@@ -2927,10 +2930,13 @@
     }
   }
 
-  async function importTabFile(file, youtubeUrl) {
+  async function importTabFile(file, youtubeUrl, audioFile) {
     const data = new FormData();
     data.append("file", file);
     if (youtubeUrl) data.append("youtube_url", youtubeUrl);
+    // v2.25: an own MP3/WAV is attached to the imported tab in the same
+    // operation, exactly like a YouTube link.
+    if (audioFile) data.append("audio_file", audioFile);
     data.append("options", JSON.stringify(collectOptions()));
     setStatus("queued", "");
     setProgress(0, false);
@@ -3513,6 +3519,22 @@
     }
   }
 
+  // Oma audio (v2.25): a browser keeps the chosen file until it is cleared
+  // explicitly, so the selection needs its own × next to the field. This is
+  // pure form state - no audio element, no alphaTab and no playback call.
+  function updateFileClearButton() {
+    if (!fileClearButton) return;
+    const picked = Boolean(
+      fileInput && fileInput.files && fileInput.files.length
+    );
+    fileClearButton.hidden = !picked;
+  }
+
+  function clearAudioFile() {
+    if (fileInput) fileInput.value = "";
+    updateFileClearButton();
+  }
+
   async function submitJob(event) {
     event.preventDefault();
     if (submitting) return;
@@ -3537,11 +3559,8 @@
       );
       return;
     }
-    if ((gp5Url || gp5File) && file) {
-      setStatus(
-        "failed",
-        "GP5-lähteen kanssa käytä YouTube-linkkiä, ei omaa audiotiedostoa."
-      );
+    if ((gp5Url || gp5File) && file && url) {
+      setStatus("failed", "Valitse audio tai YouTube-linkki, ei molempia.");
       return;
     }
 
@@ -3552,10 +3571,12 @@
 
     try {
       if (gp5File) {
-        await importTabFile(gp5File, url);
+        // v2.25: a local GP file and an own audio file are one operation,
+        // just like the GP file + YouTube link that already worked.
+        await importTabFile(gp5File, url, file);
         return;
       }
-      if (gp5Url && !url) {
+      if (gp5Url && !url && !file) {
         await importTabFromUrl(gp5Url);
         return;
       }
@@ -3766,6 +3787,9 @@
   }
 
   if (form) form.addEventListener("submit", submitJob);
+  if (fileInput) fileInput.addEventListener("change", updateFileClearButton);
+  if (fileClearButton) fileClearButton.addEventListener("click", clearAudioFile);
+  updateFileClearButton();
   if (openSearchTopButton) {
     openSearchTopButton.addEventListener("click", openSearch);
   }

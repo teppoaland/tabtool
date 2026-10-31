@@ -294,6 +294,52 @@ a:focus-visible {
   accent-color: var(--accent);
 }
 
+/* Oma audio (v2.25): the file input and its clear (×) button share one row.
+   The wrapper lives inside .field, so .field-row keeps its columns and the
+   input keeps its own styling. */
+.file-pick {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.field .file-pick input[type="file"] {
+  flex: 1 1 auto;
+  min-width: 0;
+  width: auto;
+}
+
+.field .file-clear {
+  appearance: none;
+  flex: 0 0 auto;
+  width: 2.15rem;
+  height: 2.15rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-size: 1.05rem;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  cursor: pointer;
+}
+
+.field .file-clear:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.field .file-clear:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.field .file-clear[hidden] {
+  display: none;
+}
+
 .actions {
   display: flex;
   align-items: center;

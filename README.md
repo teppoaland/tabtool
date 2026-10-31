@@ -267,7 +267,11 @@ kunnes lukitus avataan samasta ikkunasta.
 
 Valmis referenssitabi: valitse **LIBRARY**-modaalista **GP5-linkki** tai
 **GP-tiedosto** (GP3/GP4/GP5/MusicXML; GP3/GP4 muunnetaan GP5:ksi).
-Tabi avautuu suoraan katselimeen. Jos samannimisestä
+Tabi avautuu suoraan katselimeen. **Oma audio** liitetään tuotuun tabiin
+samalla kertaa: valitse **Oma audio** (MP3/WAV/FLAC/…) ja GP-lähde, jolloin
+tabi tuodaan ja audio liitetään yhdellä GENERATE TAB -painalluksella
+(YouTube-linkki toimii samassa roolissa). Valinnan voi nollata kentän
+perässä olevasta **×**-napista. Jos samannimisestä
 kappaleesta on AI-tabi, paina **LIITÄ AUDIO**: tabi saa audion, PLAYn,
 aikajanan ja cursorin. **TAB BPM** -kenttään asetetaan kappaleen
 todellinen tempo ja painetaan **TALLENNA** – pelkkä kirjoitus ei tallennu.
@@ -351,7 +355,7 @@ Sama audio + samat asetukset palauttaa cachesta saman tabin; vain
 | `POST /api/jobs` | multipart: `file` tai `youtube_url` (+ `options` JSON) |
 | `GET /api/jobs`, `GET /api/jobs/{id}` | job-lista ja tila |
 | `GET /api/jobs/{id}/events` | SSE-progress |
-| `POST /api/tabs/import` | GP3/GP4/GP5/MusicXML-tabin tuonti (GP3/GP4 → GP5) |
+| `POST /api/tabs/import` | GP3/GP4/GP5/MusicXML-tabin tuonti (GP3/GP4 → GP5); valinnainen `audio_file` = oma audio mukaan |
 | `POST /api/tabs/{id}/section` | pätkäjobin luonti tabin audiosta |
 | `POST /api/tabs/{id}/attach-audio` | samannimisen tabin audion liitys |
 | `POST /api/tabs/{id}/tempo` | GP5-tabin BPM:n korjaus |

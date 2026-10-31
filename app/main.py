@@ -227,6 +227,55 @@ def _queue_audio_job(
     return job
 
 
+def _require_audio_upload(audio_file: UploadFile) -> None:
+    """Reject a non-audio upload before anything is imported (415).
+
+    Checked up front so a failed upload cannot leave a half-created tab in
+    the library; the size limit is still enforced by ``jobs.save_upload``.
+    """
+    suffix = Path(audio_file.filename or "").suffix.lower()
+    if suffix not in jobs.AUDIO_EXTENSIONS:
+        raise HTTPException(
+            status_code=415,
+            detail=f"Unsupported audio format: {suffix or audio_file.filename!r}",
+        )
+
+
+def _queue_upload_audio_job(
+    tab: dict[str, object],
+    audio_file: UploadFile,
+    options: jobs.JobOptions,
+) -> dict[str, object]:
+    """Attach an uploaded own audio file to an already imported tab.
+
+    The mirror image of ``_queue_audio_job`` (v2.25): the tab is imported
+    first and a background audio-only job normalizes the file (ffmpeg) and
+    attaches it, so the request never waits for the conversion.
+    """
+    try:
+        path, digest, _size = jobs.save_upload(
+            audio_file.file, audio_file.filename or "audio"
+        )
+    except ValueError as exc:
+        status = 413 if "limit" in str(exc) else 415
+        raise HTTPException(status_code=status, detail=str(exc)) from exc
+    audio_options = replace(
+        options, audio_only=True, attach_tab_id=str(tab["id"])
+    )
+    job = jobs.submit_job(
+        source_type="upload",
+        source_ref=db.to_data_relative(path),
+        title=str(tab.get("title") or ""),
+        artist=str(tab.get("artist") or ""),
+        fingerprint=jobs.upload_fingerprint(digest),
+        audio_path=path,
+        options=audio_options,
+        tab_id=str(tab["id"]),
+    )
+    job["tab"] = _tab_summary(tab)
+    return job
+
+
 def _sse(payload: object) -> bytes:
     return f"data: {json.dumps(payload)}\n\n".encode("utf-8")
 
@@ -251,23 +300,33 @@ async def create_job(
 
     if gp5_url:
         # A ready-made GP5 wins over AI transcription: import it and only
-        # download/attach the YouTube audio (and optional MP3 copy).
+        # attach the audio (an uploaded own file or a YouTube download, plus
+        # the optional MP3 copy).
         has_upload = bool(file is not None and file.filename)
-        if has_upload or local_path:
+        if local_path:
             raise HTTPException(
                 status_code=422,
-                detail="GP5-linkki toimii vain YouTube-linkin kanssa.",
+                detail="GP5-linkki toimii vain ladatun audion tai YouTube-linkin kanssa.",
             )
-        if not youtube_url:
+        if has_upload and youtube_url:
             raise HTTPException(
                 status_code=422,
-                detail="Liitä YouTube-linkki, jotta GP5-tabiin saadaan audio.",
+                detail="Valitse audio tai YouTube-linkki, ei molempia.",
             )
-        if not _is_youtube_url(youtube_url):
+        if not has_upload and not youtube_url:
+            raise HTTPException(
+                status_code=422,
+                detail="Liitä audio tai YouTube-linkki, jotta GP5-tabiin saadaan audio.",
+            )
+        if youtube_url and not _is_youtube_url(youtube_url):
             raise HTTPException(
                 status_code=422, detail="youtube_url must be a YouTube link"
             )
+        if has_upload and file is not None:
+            _require_audio_upload(file)
         tab = _download_tab(gp5_url)
+        if has_upload and file is not None:
+            return _queue_upload_audio_job(tab, file, parsed)
         return _queue_audio_job(tab, youtube_url, parsed)
 
     has_file = bool(file is not None and file.filename)
@@ -514,24 +573,37 @@ def list_tabs(limit: int = Query(default=20, ge=1, le=200)) -> list[dict[str, ob
 @app.post("/api/tabs/import", tags=["tabs"])
 async def import_tab(
     file: UploadFile = File(...),
+    audio_file: UploadFile | None = File(default=None),
     youtube_url: str = Form(default=""),
     options: str = Form(default="{}"),
 ) -> dict[str, object]:
-    """Import a GP5/MusicXML tab and optionally attach YouTube audio.
+    """Import a GP5/MusicXML tab and optionally attach its audio.
 
-    Without ``youtube_url`` the tab is imported alone (no audio). With it,
-    the response is the audio job (``status``/``stage``/``tab_id``) and the
-    audio is attached when the job finishes.
+    Without an audio source the tab is imported alone (no audio). With
+    ``youtube_url`` or an uploaded ``audio_file`` (v2.25) the response is the
+    audio job (``status``/``stage``/``tab_id``) and the audio is attached when
+    the job finishes.
     """
     youtube_url = youtube_url.strip()
     parsed = _parse_options(options)
+    audio_upload = (
+        audio_file if audio_file is not None and audio_file.filename else None
+    )
     if youtube_url and not _is_youtube_url(youtube_url):
         raise HTTPException(
             status_code=422, detail="youtube_url must be a YouTube link"
         )
+    if youtube_url and audio_upload is not None:
+        raise HTTPException(
+            status_code=422, detail="Valitse audio tai YouTube-linkki, ei molempia."
+        )
+    if audio_upload is not None:
+        _require_audio_upload(audio_upload)
     raw = await file.read()
     name = file.filename or "tab.gp5"
     tab = _import_tab_payload(raw, name, source_file=name)
+    if audio_upload is not None:
+        return _queue_upload_audio_job(tab, audio_upload, parsed)
     if youtube_url:
         return _queue_audio_job(tab, youtube_url, parsed)
     return _tab_summary(tab)

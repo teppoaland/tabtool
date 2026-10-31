@@ -174,19 +174,22 @@ def test_import_file_rejects_non_youtube_url(
     assert response.status_code == 422
 
 
-def test_gp5_job_requires_youtube_link(client) -> None:
+def test_gp5_job_requires_an_audio_source(client) -> None:
     response = client.post(
         "/api/jobs",
         data={"gp5_url": "https://example.com/tabs/song.gp5"},
     )
     assert response.status_code == 422
 
+    # v2.25: an uploaded own audio file is a valid audio source for a GP link
+    # (see tests/test_import_own_audio.py), but it must be audio - anything
+    # else is rejected before the GP tab is downloaded and imported.
     response = client.post(
         "/api/jobs",
-        files={"file": ("song.mp3", b"ID3", "audio/mpeg")},
+        files={"file": ("muistiinpanot.txt", b"muistiinpano", "text/plain")},
         data={"gp5_url": "https://example.com/tabs/song.gp5"},
     )
-    assert response.status_code == 422
+    assert response.status_code == 415
 
 
 def test_client_cannot_route_an_audio_only_job() -> None:

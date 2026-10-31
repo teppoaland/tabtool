@@ -6,14 +6,14 @@
   <meta name="color-scheme" content="dark">
   <title>AI TabTool</title>
   <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="/static/style.css?v=2.24">
+  <link rel="stylesheet" href="/static/style.css?v=2.25">
 </head>
 <body>
   <header class="topbar">
     <div class="brand">
       <span class="brand-mark" aria-hidden="true">AT</span>
       <span class="brand-name">AI TABTOOL</span>
-      <span id="version-tag" class="version">v2.24</span>
+      <span id="version-tag" class="version">v2.25</span>
     </div>
     <nav class="nav" aria-label="Päävalikko">
       <button id="open-search-top" type="button" class="primary nav-library"
@@ -189,12 +189,18 @@
         <div class="modal-column">
           <form id="source-form" class="card studio-form">
             <div class="field-row">
-              <label class="field">
-                <span>Oma audio</span>
-                <input id="file-input" type="file"
-                       accept=".mp3,.wav,.flac,.m4a,.aac,.ogg,.opus,.aiff,.aif,.webm"
-                       title="Valitse paikallinen MP3, WAV, FLAC tai muu audiotiedosto.">
-              </label>
+              <div class="field">
+                <label for="file-input">Oma audio</label>
+                <span class="file-pick">
+                  <input id="file-input" type="file"
+                         accept=".mp3,.wav,.flac,.m4a,.aac,.ogg,.opus,.aiff,.aif,.webm"
+                         title="Valitse paikallinen MP3, WAV, FLAC tai muu audiotiedosto.">
+                  <!-- v2.25: the browser keeps a file selection until it is
+                       cleared explicitly, so the field gets its own ×. -->
+                  <button id="file-clear" type="button" class="file-clear" hidden
+                          title="Tyhjennä valittu audiotiedosto.">×</button>
+                </span>
+              </div>
               <label class="field">
                 <span>tai YouTube-linkki</span>
                 <input id="url-input" type="url" inputmode="url"
@@ -215,14 +221,14 @@
                 <span>tai GP-tiedosto</span>
                 <input id="gp5-file-input" type="file"
                        accept=".gp3,.gp4,.gp5,.musicxml,.xml"
-                       title="Valitse GP3/GP4/GP5- tai MusicXML-tiedosto koneelta. YouTube-linkin kanssa tabi tuodaan ja audio liitetään samalla kertaa.">
+                       title="Valitse GP3/GP4/GP5- tai MusicXML-tiedosto koneelta. Oman audion tai YouTube-linkin kanssa tabi tuodaan ja audio liitetään samalla kertaa.">
               </label>
             </div>
 
             <p class="muted modal-hint">
-              GP-linkki tai -tiedosto ohittaa AI-generoinnin: tabi tuodaan
-              ja YouTube-audio liitetään siihen. GP4 muunnetaan GP5:ksi.
-              Ilman GP-lähdettä tabi generoidaan AI:lla.
+              GP-linkki tai -tiedosto ohittaa AI-generoinnin: tabi tuodaan ja
+              siihen liitetään oma audio tai YouTube-audio. GP4 muunnetaan
+              GP5:ksi. Ilman GP-lähdettä tabi generoidaan AI:lla.
             </p>
 
             <div class="field-row compact">
@@ -433,13 +439,13 @@
 
 
   <footer class="footer">
-    <span>AI TabTool v2.24</span>
+    <span>AI TabTool v2.25</span>
     <span>Local-first · <a href="/remote">Remote</a></span>
   </footer>
 
-  <script src="/static/vendor/alphaTab/alphaTab.min.js?v=2.24"></script>
-  <script src="/static/app.js?v=2.24" defer></script>
-  <script src="/static/remote-bridge.js?v=2.24" defer></script>
+  <script src="/static/vendor/alphaTab/alphaTab.min.js?v=2.25"></script>
+  <script src="/static/app.js?v=2.25" defer></script>
+  <script src="/static/remote-bridge.js?v=2.25" defer></script>
 </body>
 </html>
 

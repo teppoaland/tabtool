@@ -2,6 +2,30 @@
 
 > AI TabTool käyttää `1.x`-versiosarjaa. Aloitus `v1.00`.
 
+## v2.25 – 31.10.2026
+
+- **Oman audion valinnan nollaus (×).** *Oma audio* -kentän perässä on nyt
+  pieni **×**-nappi, joka tyhjentää valitun tiedoston. Selain säilyttää
+  file-valinnan, vaikka LIBRARY-modaali suljetaan, joten ennen tätä valintaa
+  ei saanut pois muuten kuin lataamalla sivun uudelleen. Nappi näkyy vain,
+  kun tiedosto on valittu, eikä se kosketa audio-elementtiä, alphaTabia eikä
+  toistoketjua (vartiotesti `test_clear_button_empties_the_file_selection`).
+- **Oma MP3 + GP3/GP4/GP5- tai MusicXML-tabi samalla kertaa.** GP-lähde ei
+  enää vaadi YouTube-linkkiä: `POST /api/tabs/import` hyväksyy valinnaisen
+  `audio_file`-kentän ja `POST /api/jobs` hyväksyy ladatun audion `gp5_url`in
+  kanssa. Tabi tuodaan ensin ja audio liitetään taustajobissa
+  (`options.audio_only` + `attach_tab_id`), joka normalisoi tiedoston
+  ffmpegillä ja kirjoittaa sen tabiin – sama polku kuin YouTube-audiolla.
+  `jobs.run_audio_job` ratkaisee ladatun tiedoston `data/`-juuresta
+  (`db.resolve_under_data`). Audion on oltava audioformaattia: muu tiedosto
+  hylätään **415**:llä ennen tabin tuontia, ja audio + YouTube-linkki yhtä
+  aikaa → **422**. `meta.audio_source_type = "upload"`, ja
+  `meta.mp3_created` on nyt tosi vain YouTube-lataukselle.
+- **Testit:** 292 passed (`tests/test_import_own_audio.py`: GP-tiedosto +
+  oma audio, GP-linkki + oma audio, tallennetun polun ratkaisu,
+  415/422-hylkäykset, ×-napin rakenne ja se, ettei vanhaa "käytä
+  YouTube-linkkiä" -estoa enää ole).
+
 ## v2.24 – 25.10.2026
 
 - **`«` katselimen PLAYn vasemmalla puolella.** Päänäkymän soittokortissa on

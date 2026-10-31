@@ -694,8 +694,15 @@ def run_audio_job(
 
     notify = report or (lambda stage: None)
     notify(STAGE_DOWNLOADING)
+    # v2.25: an uploaded own audio file is stored under data/, so its stored
+    # path is resolved exactly like run_pipeline does. YouTube links (and the
+    # absolute local paths from the CLI) are used as they are.
+    if str(job.get("source_type") or "") == "upload":
+        source = str(db.resolve_under_data(job["source_ref"]))
+    else:
+        source = str(job["source_ref"])
     audio = prepare_audio(
-        str(job["source_ref"]),
+        source,
         Path(config.DATA_DIR) / "audio",
         title=job["title"] or None,
     )
@@ -732,13 +739,20 @@ def _process_audio_job(job: dict[str, Any], options: JobOptions) -> None:
         meta = dict(tab.get("meta") or {})
         meta["audio_path"] = audio_relative
         meta["duration_seconds"] = audio.duration
-        meta["mp3_created"] = bool(options.archive_mp3)
+        # Only a YouTube download is mirrored as MP3; an own uploaded file is
+        # already on the disk (v2.25).
+        meta["mp3_created"] = bool(options.archive_mp3) and (
+            audio.source_type == "youtube"
+        )
         if audio.source_type == "youtube":
             # v2.03: keep the exact link the audio was downloaded from.
             meta["audio_source_url"] = audio.source_ref
             meta["audio_source_type"] = "youtube"
             if audio.channel:
                 meta["youtube_channel"] = audio.channel
+        elif str(job.get("source_type") or "") == "upload":
+            # v2.25: own MP3/WAV attached to an imported tab.
+            meta["audio_source_type"] = "upload"
         updated = db.update_tab_audio(tab_id, audio_relative, meta)
         if updated is None:
             raise RuntimeError("Audion liittäminen tabiin epäonnistui.")
