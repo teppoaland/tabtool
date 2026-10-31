@@ -164,10 +164,11 @@ Putki (app/pipeline/)
   (`scripts/expand_repeat.py`) eikä toistomerkiksi, koska katselimen kello
   laskee partituurin keston kirjoitetuista tahdeista – toistomerkki
   jättäisi partituurin lyhyemmäksi ja score-end-guard katkaisisi toiston.
-- GP5 + YouTube -yhdistelmä: `jobs.submit_job` luo audio-only-jobin
-  (`options.audio_only`, `attach_tab_id`), joka lataa audion ja liittää
-  sen valmiiksi tuotuun tabiin ilman transkriptiota. Sama polku
-  GP5-linkille ja paikalliselle GP5-tiedostolle.
+- GP5 + audio -yhdistelmä: `jobs.submit_job` luo audio-only-jobin
+  (`options.audio_only`, `attach_tab_id`), joka hankkii (YouTube) tai
+  normalisoi (oma tiedosto) audion ja liittää sen valmiiksi tuotuun tabiin
+  ilman transkriptiota. Sama polku GP5-linkille ja paikalliselle
+  GP5-tiedostolle; audio voi olla YouTube-linkki tai oma tiedosto (v2.25).
 - YouTube-metadata haetaan `audio_source.fetch_youtube_metadata`illa;
   `jobs.effective_track_metadata` valitsee oikean nimen/artistin.
 - Pätkäjobi luodaan tabin omasta audiopolusta (`/section`); BPM-korjaus

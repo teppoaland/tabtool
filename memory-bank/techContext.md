@@ -59,7 +59,7 @@ python -m venv .venv
 ## Testit
 
 ```powershell
-.venv\Scripts\python.exe -m pytest -q          # 284 passed (v2.24)
+.venv\Scripts\python.exe -m pytest -q          # 292 passed (v2.25)
 .venv\Scripts\python.exe -m compileall -q app scripts tests
 node --check app\static\app.js
 node --check app\static\remote.js
@@ -365,6 +365,25 @@ DB-tiedosto); vain tuotenimi on `AI TabTool`.
 - Vartiotesti `tests/test_viewer_seek_start.py` (järjestys, flex-solu,
   grid-mitta, yksi `seekTo(0)`, ei `audio.`/`api.`/`playbackRate`a).
 - Testit **284** (v2.24).
+
+## v2.25 (31.10.2026)
+
+- **Oma audio + GP-tabi:** `POST /api/tabs/import` ottaa valinnaisen
+  `audio_file`in (`UploadFile`), `POST /api/jobs` hyväksyy ladatun audion
+  `gp5_url`in kanssa. Tabi tuodaan ensin ja audio liitetään
+  audio-only-jobilla (`audio_only` + `attach_tab_id`) –
+  `_queue_upload_audio_job` on `_queue_audio_job`in peilikuva.
+  `jobs.run_audio_job` ratkaisee `source_type == "upload"` -polun
+  `db.resolve_under_data`lla, koska ladattu tiedosto on `data/`-juuren alla.
+  `_require_audio_upload` hylkää väärän tyypin **415**:llä ennen tuontia;
+  audio + YouTube yhtä aikaa → **422**. `meta.audio_source_type = "upload"`
+  ja `meta.mp3_created` vain YouTube-lataukselle.
+- **Oman audion nollaus (×):** `#file-clear` `.file-pick`-flex-lohkossa
+  `#file-input`in perässä; `updateFileClearButton` lukee vain
+  `fileInput.files`, `clearAudioFile` tyhjentää `fileInput.value`n. Ei
+  `audio.`/`api.`-kutsuja. Vanha esto "GP5-lähteen kanssa käytä
+  YouTube-linkkiä" poistettu `submitJob`ista.
+- Testit **292** (`tests/test_import_own_audio.py`).
 
 ## Sanat GP5:ssä – työtapa (24.10.2026)
 

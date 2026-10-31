@@ -1,8 +1,8 @@
 # 📍 Aktiivinen konteksti – AI TABTOOL
 
-> **Versio:** `v2.24` (25.10.2026) · **Testit:** 284 passed
-> **Git:** v1.23–v2.23 **pushattu** `origin/main`iin 25.10.2026; **v2.24 on
-> paikallinen commit (ei pushattu)**. **Palautuspisteet:** tagi `v2.23`
+> **Versio:** `v2.25` (31.10.2026) · **Testit:** 292 passed
+> **Git:** v1.23–v2.23 **pushattu** `origin/main`iin 25.10.2026; **v2.24 ja
+> v2.25 ovat paikallisia committeja (ei pushattu)**. **Palautuspisteet:** tagi `v2.23`
 > (25.10.2026, “hyvä paketti”) ja vanhempi tagi `v1.99`
 > (`git reset --hard v1.99`). Älä pinnaa HEAD-hashia pysyvästi.
 > **Push:** vain erillisestä pyynnöstä (20.10., 23.10. ja 25.10.2026).
@@ -19,6 +19,22 @@
   ilman lupaa; riskimuutos validoidaan käyttäjän kuuntelutestillä
   (Seek & Destroy, SIIRTO −0,75 / BPM 142). Katso
   `.clinerules/07-playback-frozen.md`.
+- **v2.25 – oma audio GP-tabiin + valinnan nollaus (31.10.2026).** Kaksi
+  korjausta samasta oivalluksesta: (1) *Oma audio* -kentän perässä on **×**,
+  joka tyhjentää valinnan (selain säilyttää file-valinnan modaalin
+  sulkemisen jälkeen); (2) GP3/GP4/GP5/MusicXML-tabiin voi liittää **oman
+  MP3/WAV-tiedoston** – GP-lähde ei enää vaadi YouTube-linkkiä.
+  `POST /api/tabs/import` ottaa valinnaisen `audio_file`in ja
+  `POST /api/jobs` hyväksyy ladatun audion `gp5_url`in kanssa;
+  `_queue_upload_audio_job` (main.py) tekee saman audio-only-jobin
+  (`audio_only` + `attach_tab_id`) kuin YouTube-polku, ja
+  `jobs.run_audio_job` ratkaisee ladatun tiedoston `data/`-juuresta.
+  Väärä tiedostotyyppi → **415** ennen tuontia, audio + YouTube yhtä aikaa
+  → **422**, `meta.audio_source_type = "upload"`, `meta.mp3_created` vain
+  YouTube-lataukselle. Soittoketjuun (kello, `seekTo`-inversio,
+  `mediaHandler`, transportin id:t, `.alphatab`) ei koskettu; uusi CSS on
+  `.file-pick`/`.file-clear`. Testit **292**
+  (`tests/test_import_own_audio.py`).
 - **v2.24 – `«` katselimen PLAYn edessä (käyttäjä kuitannut 25.10.2026).**
   `#seek-start` (`«`) hyppää kappaleen alkuun samalla `seekTo(0)`lla kuin
   sanoituseditorin `#lyrics-start` ja remoten `seek 0`. `«` ja PLAY ovat

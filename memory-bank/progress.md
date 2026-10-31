@@ -1,8 +1,8 @@
 # 📊 Projektin edistyminen – AI TABTOOL
 
-> **Versio:** `v2.24` (25.10.2026) · **Testit:** 284 passed ·
-> **Git:** v1.23–v2.23 pushattu `origin/main`iin 25.10.2026; **v2.24
-> paikallisena committina (ei pushattu)**. Palautuspiste: **tagi `v2.23`**
+> **Versio:** `v2.25` (31.10.2026) · **Testit:** 292 passed ·
+> **Git:** v1.23–v2.23 pushattu `origin/main`iin 25.10.2026; **v2.24 ja v2.25
+> paikallisina committeina (ei pushattu)**. Palautuspiste: **tagi `v2.23`**
 > (25.10.2026) ja vanhempi `v1.99`.
 > Yksityiskohtainen historia: `CHANGELOG.md`. Tässä tiedostossa on tila,
 > päätökset ja seuraavat askeleet – ei lokia.
@@ -18,6 +18,22 @@
   `/sync|tempo|section`-reitit. Riskimuutos = lupa + regressiochecklist +
   käyttäjän kuuntelutesti (Seek & Destroy, SIIRTO −0,75 / BPM 142).
 - Katso `.clinerules/07-playback-frozen.md`.
+
+## Nyt – oma audio GP-tabiin (v2.25)
+
+- **Oman audion valinta nollautuu:** *Oma audio* -kentän perässä on **×**
+  (`#file-clear`), koska selain säilyttää file-valinnan modaalin sulkemisen
+  jälkeen. Nappi näkyy vain valinnan ollessa voimassa; se ei kosketa
+  audio-elementtiä eikä alphaTabia.
+- **Oma MP3/WAV + GP3/4/5/MusicXML:** GP-lähde ei enää vaadi YouTube-linkkiä.
+  `POST /api/tabs/import` ottaa `audio_file`in, `POST /api/jobs` hyväksyy
+  ladatun audion `gp5_url`in kanssa. Tabi tuodaan ensin ja audio liitetään
+  audio-only-jobilla (`audio_only` + `attach_tab_id`); `jobs.run_audio_job`
+  ratkaisee ladatun tiedoston `data/`-juuresta (`db.resolve_under_data`).
+  415 väärästä tiedostotyypistä ennen tuontia, 422 jos audio ja YouTube
+  annetaan yhtä aikaa. Testit 292 (`tests/test_import_own_audio.py`).
+- **Käyttäjän validointi kesken:** sääntö #1 – aja `start.bat`, liitä oma
+  MP3 GP-tabiin ja tarkista soitto/synkka ennen seuraavaa ominaisuutta.
 
 ## Nyt – `«` katselimen PLAYn edessä (v2.24)
 
@@ -112,7 +128,8 @@
   **v2.20** muistiinpanot sidecariin; **v2.21** peek sanojen ylle;
   **v2.22** `JAA RIVIT` -bulk-numerointi; **v2.23** peek takaisin alle +
   sijaintivalinta Settingsiin; **v2.24** `«` katselimen PLAYn eteen
-  (alkuun, `seekTo(0)`).
+  (alkuun, `seekTo(0)`); **v2.25** oma audio GP-tabiin + valinnan
+  nollaus (×).
 
 ## Tunnetut rajoitukset
 
@@ -123,8 +140,9 @@
 - SIIRTO-askel on 0,25 tahtia (= 1 isku); hienompi säätö on sääntö #1:n
   ydintä. Pickup-tabissa SIIRTO/KOHDISTA voimistuvat 8×/16×.
 - Rummut vaativat oman mallin; Spotify on Phase 3.
-- GP5 + oma audiotiedosto ei yhdisty yhdellä toiminnolla (audiolähde on
-  YouTube-linkki); GP-linkki vaatii julkisen http(s)-osoitteen.
+- GP5 + oma audio toimii nyt yhdellä toiminnolla (v2.25): oma MP3/WAV
+  liitetään tuotuun tabiin samalla GENERATE TAB -painalluksella. GP-linkki
+  vaatii edelleen julkisen http(s)-osoitteen (ei localhost/yksityisverkko).
 - Ikärajoitettu YouTube vaatii evästeet (`--cookies-from-browser`).
 - Kappaleen poisto jättää MP3-kuunteluversion ja toisen tabin audion.
 - `VALITSE TÄMÄ` kirjoittaa GP5:n versio-JSON:sta → Vocals-raita katoaa

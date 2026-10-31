@@ -1,6 +1,6 @@
 # 🎯 Projektin lyhyt kuvaus – AI TABTOOL
 
-> **Versio:** `v2.24` (25.10.2026)
+> **Versio:** `v2.25` (31.10.2026)
 > **Repo:** https://github.com/teppoaland/tabtool
 > **Paikallinen:** `D:\AI\tabtool`
 
@@ -11,7 +11,7 @@ Lokaali web-palvelu, jossa voi:
 1. hakea kappaleita Spotifysta (haku/metadata),
 2. generoida kitaratablatuuri omasta MP3:sta tai YouTube-audiosta,
 3. tuoda GP5/MusicXML-tabeja **linkistä tai koneelta** ja liittää niihin
-   YouTube-audio yhdellä toiminnolla,
+   **oma audio tai YouTube-audio** yhdellä toiminnolla,
 4. katsoa tablatuuria alphaTabilla TV:stä/tietokoneelta (aikajana,
    cursor, fullscreen, raitavalinnat, BPM/Nopeus, `«` = alkuun),
 5. valita ja poistaa kappaleita LIBRARY-modaalin kirjastosta,
@@ -33,7 +33,7 @@ Lokaali web-palvelu, jossa voi:
 - **Valmiin tabin tuonti** GP3/GP4/GP5/MusicXML joko linkistä (palvelin
   lataa tiedoston) tai koneelta. GP3/GP4 muunnetaan GP5:ksi (v1.99:
   GP3:n −1-grace-fret sanitoidaan ennen kirjoitusta). GP5-lähde
-  ohittaa AI-generoinnin; YouTube-
+  ohittaa AI-generoinnin; oman audion (v2.25) tai YouTube-
   linkin kanssa audio liitetään samalla kertaa yhdellä jobilla. Ilman
   GP5-lähdettä tabi generoidaan AI:lla. Samannimisen AI-tabin audio
   voidaan myös liittää tuotuun tabiin. Tabin BPM korjattavissa
@@ -215,6 +215,6 @@ Sano Cline:lle **`lue membank`**. Sääntö on
 - `app/lyrics.py` – sanojen sidecar (`data/lyrics/<tab_id>.json`)
 - `scripts/pipeline_smoke.py` – CLI-proof
 - `stop.bat` / `status.bat` – palvelimen pysäytys ja tilan tarkistus
-- `tests/` – 280 pytest-testiä
+- `tests/` – 292 pytest-testiä
 - `data/` – GITIGNORED: audio, stemmit, tabit, tokenit
 - `docs/` – GITIGNORED: henkilökohtainen suunnitelma
