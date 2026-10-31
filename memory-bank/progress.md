@@ -19,6 +19,24 @@
   käyttäjän kuuntelutesti (Seek & Destroy, SIIRTO −0,75 / BPM 142).
 - Katso `.clinerules/07-playback-frozen.md`.
 
+## Nyt – toistomerkit dataksi (31.10.2026)
+
+- **Slayer – Dead Skin Mask (kirjasto `c64ad2fa…`, 96 tahtia) pysähtyi
+  tahtiin 68.** Syy: tabissa oli **8 toistolohkoa** (yhteensä 48 soitettua
+  lisätahtia). Katselimen kello (`scoreEndTimeMs`) laskee vain kirjoitetut
+  tahdit → kello loppui 3:26 kohdalla, kursori jähmettyi tahtiin 68 ja audio
+  jatkoi 5:20 asti. Soittoketjuun ei koskettu.
+- **Korjaus (data):** uusi `scripts/expand_repeats.py` etsii kaikki
+  toistolohkot (myös vaihtoehtoiset lopetukset), kirjoittaa ne tahdeiksi,
+  poistaa merkit ja validoi tuloksen soitettua järjestystä vasten.
+  Tulos: **96 → 143 tahtia**, 2096 → 3400 nuottia; nuotit, tekstit, bendit,
+  slidet, harmoniat ja vibrato täsmäävät tahti tahdilta soitettuun
+  järjestykseen (0 poikkeamaa). Varmuuskopio:
+  `data/backups/c64ad2fa…-20261031-124217/`. Testit 296
+  (`tests/test_expand_repeats.py`).
+- **Huom:** tabin loppu osuu 5:06, audio on 5:19,6 → viimeinen ~13 s
+  (outro) ei ole tabissa. Se on lähdedataa, ei kelloa.
+
 ## Nyt – oma audio GP-tabiin (v2.25)
 
 - **Oman audion valinta nollautuu:** *Oma audio* -kentän perässä on **×**
@@ -140,6 +158,11 @@
 - SIIRTO-askel on 0,25 tahtia (= 1 isku); hienompi säätö on sääntö #1:n
   ydintä. Pickup-tabissa SIIRTO/KOHDISTA voimistuvat 8×/16×.
 - Rummut vaativat oman mallin; Spotify on Phase 3.
+- **Toistomerkit katkaisevat kellon:** katselin laskee keston kirjoitetuista
+  tahdeista, joten GP5:n repeat-merkintä lopettaa kellon ennen audion loppua
+  (Slayer – Dead Skin Mask: 96 kirjoitettua tahtia, 143 soitettua → kursori
+  pysähtyi tahtiin 68, audio jatkoi). Korjaus on dataa, ei koodia:
+  `scripts/expand_repeats.py --tab <id>` kirjoittaa toistot tahdeiksi.
 - GP5 + oma audio toimii nyt yhdellä toiminnolla (v2.25): oma MP3/WAV
   liitetään tuotuun tabiin samalla GENERATE TAB -painalluksella. GP-linkki
   vaatii edelleen julkisen http(s)-osoitteen (ei localhost/yksityisverkko).

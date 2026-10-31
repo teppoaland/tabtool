@@ -164,6 +164,10 @@ Putki (app/pipeline/)
   (`scripts/expand_repeat.py`) eikä toistomerkiksi, koska katselimen kello
   laskee partituurin keston kirjoitetuista tahdeista – toistomerkki
   jättäisi partituurin lyhyemmäksi ja score-end-guard katkaisisi toiston.
+  **v2.25:** `scripts/expand_repeats.py` tekee saman kaikille lohkoille
+  kerralla (myös vaihtoehtoiset lopetukset) ja validoi tuloksen soitettua
+  järjestystä vasten. alphaTabin `repeatCount` = GP:n `repeatClose` + 1,
+  eli `repeatClose 1` soitetaan kaksi kertaa.
 - GP5 + audio -yhdistelmä: `jobs.submit_job` luo audio-only-jobin
   (`options.audio_only`, `attach_tab_id`), joka hankkii (YouTube) tai
   normalisoi (oma tiedosto) audion ja liittää sen valmiiksi tuotuun tabiin

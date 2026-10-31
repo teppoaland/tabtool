@@ -19,6 +19,12 @@
   ilman lupaa; riskimuutos validoidaan käyttäjän kuuntelutestillä
   (Seek & Destroy, SIIRTO −0,75 / BPM 142). Katso
   `.clinerules/07-playback-frozen.md`.
+- **Toistomerkit (31.10.2026):** Slayer – Dead Skin Mask pysähtyi tahtiin 68
+  (96 kirjoitettua tahtia, 8 toistolohkoa = 143 soitettua). Kello laskee vain
+  kirjoitetut tahdit, joten korjaus tehtiin datana:
+  `scripts/expand_repeats.py --tab <id>` → 143 tahtia, validointi soitettua
+  järjestystä vasten. Soittoketjuun ei koskettu. Jos tabin loppu ja audio
+  eroavat (~13 s tässä), se on lähdedataa eikä kelloa.
 - **v2.25 – oma audio GP-tabiin + valinnan nollaus (31.10.2026).** Kaksi
   korjausta samasta oivalluksesta: (1) *Oma audio* -kentän perässä on **×**,
   joka tyhjentää valinnan (selain säilyttää file-valinnan modaalin
