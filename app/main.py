@@ -495,10 +495,11 @@ def _tab_summary(tab: dict[str, object]) -> dict[str, object]:
     summary["tab_source_file"] = (
         str(meta.get("tab_source_file") or "") if isinstance(meta, dict) else ""
     )
-    # v2.26: the tab may carry its own tempo automation; this flag makes the
-    # viewer ignore it (per tab, default off).
-    summary["ignore_tempo_automation"] = bool(
-        meta.get("ignore_tempo_automation") if isinstance(meta, dict) else False
+    # v2.27: the tab's own tempo automation is used unless the tab switches it
+    # off in Tiedot (default on).
+    summary["tempo_automation_enabled"] = bool(
+        (meta.get("tempo_automation_enabled") if isinstance(meta, dict) else True)
+        is not False
     )
     tuning_key = str(tab.get("tuning") or "")
     label = str(meta.get("tuning_label") or "") if isinstance(meta, dict) else ""
@@ -642,7 +643,7 @@ def tab_library(
     archived: bool | None = Form(default=None),
     tuning: str | None = Form(default=None),
     tuning_clear: bool = Form(default=False),
-    ignore_tempo_automation: bool | None = Form(default=None),
+    tempo_automation_enabled: bool | None = Form(default=None),
 ) -> dict[str, object]:
     """Edit a tab's library details without touching its tab data."""
     tab = _load_tab(tab_id)
@@ -662,13 +663,13 @@ def tab_library(
         if value:
             meta = dict(tab.get("meta") or {})
             meta["tuning_override"] = value
-    # v2.26: some GP5 tabs carry a tempo automation that overrides TAB BPM
-    # (Whiplash ramps 200 -> 160 by bar 6). The viewer honours it by default —
-    # stripping every tab broke Seek & Destroy — so ignoring it is a per-tab
-    # choice stored in the tab's meta.
-    if ignore_tempo_automation is not None:
+    # v2.27: some GP5 tabs carry a tempo automation that overrides TAB BPM
+    # (Whiplash ramps 200 -> 160 by bar 6). alphaTab honours it, which is right
+    # for tabs whose tempo changes are real (Seek & Destroy, bars 113 and 165),
+    # so it is a per-tab switch: "Tempoautomatiikka" on by default.
+    if tempo_automation_enabled is not None:
         meta = dict(meta if meta is not None else (tab.get("meta") or {}))
-        meta["ignore_tempo_automation"] = bool(ignore_tempo_automation)
+        meta["tempo_automation_enabled"] = bool(tempo_automation_enabled)
     if meta is not None:
         db.update_tab_meta(tab_id, meta)
         tab = db.get_tab(tab_id) or tab

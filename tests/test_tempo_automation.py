@@ -1,4 +1,4 @@
-"""Tempo automation in a GP5 tab (v2.26).
+"""Tempo automation in a GP5 tab (v2.27).
 
 alphaTab follows a tab's own tempo automation. Seek & Destroy changes tempo at
 bars 113 (208 BPM) and 165 (140 BPM) — part of the song — so the viewer honours
@@ -6,9 +6,9 @@ it by default: a blanket strip made that tab unplayable on 1.11.2026. Whiplash
 instead ramps 200 -> 160 by bar 6, which is why its TAB BPM field looked dead
 (measured: BPM 100 vs 200 moved the cursor 3 bars instead of 75).
 
-Ignoring the automation is therefore a per-tab choice stored in the tab's meta
-(Tiedot → "Ohita tempoautomatiikka", default off). These tests cover the API
-round trip and the viewer's two loading paths.
+Using the automation is therefore a per-tab switch stored in the tab's meta
+(Tiedot → "Tempoautomatiikka", on by default). These tests cover the API round
+trip and the viewer's two loading paths.
 """
 
 from __future__ import annotations
@@ -54,28 +54,29 @@ def _make_tab(tab_id: str, *, title: str, artist: str = "Artist") -> None:
     )
 
 
-def test_the_flag_round_trips_through_the_library_route(client, data_dir):
+def test_the_switch_round_trips_through_the_library_route(client, data_dir):
     _make_tab("tempo1", title="Ramp")
-    on = client.post(
-        "/api/tabs/tempo1/library", data={"ignore_tempo_automation": "true"}
-    )
-    assert on.status_code == 200
-    assert on.json()["ignore_tempo_automation"] is True
-    detail = client.get("/api/tabs/tempo1")
-    assert detail.status_code == 200
-    assert detail.json()["meta"]["ignore_tempo_automation"] is True
-
     off = client.post(
-        "/api/tabs/tempo1/library", data={"ignore_tempo_automation": "false"}
+        "/api/tabs/tempo1/library", data={"tempo_automation_enabled": "false"}
     )
     assert off.status_code == 200
-    assert off.json()["ignore_tempo_automation"] is False
+    assert off.json()["tempo_automation_enabled"] is False
+    detail = client.get("/api/tabs/tempo1")
+    assert detail.status_code == 200
+    assert detail.json()["meta"]["tempo_automation_enabled"] is False
+
+    on = client.post(
+        "/api/tabs/tempo1/library", data={"tempo_automation_enabled": "true"}
+    )
+    assert on.status_code == 200
+    assert on.json()["tempo_automation_enabled"] is True
 
 
 def test_the_default_is_to_honour_the_automation(client, data_dir):
     _make_tab("tempo2", title="Song with tempo changes")
     summary = client.get("/api/tabs/tempo2").json()
-    assert summary["meta"].get("ignore_tempo_automation") in (None, False)
+    # No stored value -> the automation is used (Seek & Destroy needs it).
+    assert summary["meta"].get("tempo_automation_enabled") in (None, True)
 
 
 def test_default_loading_keeps_the_byte_loader():
@@ -118,8 +119,8 @@ def test_the_start_tempo_survives_the_strip():
 
 def test_tiedot_says_what_happens():
     assert "Tempoautomatiikka" in APP_JS
-    assert "ohjaa toistoa" in APP_JS
-    assert "ohitettu tämän tabin asetuksella" in APP_JS
+    assert "käytössä" in APP_JS
+    assert "ei käytössä" in APP_JS
     assert "tempoAutomationsByTab.get(tab.id)" in APP_JS
 
 

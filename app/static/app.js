@@ -202,8 +202,8 @@
   const detailTuning = document.getElementById("detail-tuning");
   const detailLocked = document.getElementById("detail-locked");
   const detailArchived = document.getElementById("detail-archived");
-  const detailIgnoreAutomation = document.getElementById(
-    "detail-ignore-automation"
+  const detailTempoAutomation = document.getElementById(
+    "detail-tempo-automation"
   );
   const detailMeta = document.getElementById("detail-meta");
   const detailStatus = document.getElementById("detail-status");
@@ -2890,12 +2890,8 @@
       items: found,
       ignored: Boolean(ignored),
     });
-    const last = found[found.length - 1];
-    setBpmStatus(
-      ignored
-        ? `Tempoautomatiikka ohitettu tämän tabin asetuksella (${found.length} kpl, viimeisin tahti ${last.bar}: ${last.tempo} BPM).`
-        : `Tabissa on tempoautomatiikka (${found.length} kpl, viimeisin tahti ${last.bar}: ${last.tempo} BPM) – se ohjaa toistoa TAB BPM:n sijaan.`
-    );
+    // No message on load: the automation is normal behaviour (Seek & Destroy)
+    // and only Tiedot needs to show it.
   }
 
   function noteTempoAutomations(score) {
@@ -3044,13 +3040,12 @@
       }
       const bytes = new Uint8Array(await score.arrayBuffer());
       const instance = getAlphaTab();
-      // Per-tab choice (Tiedot): ignore the tab's own tempo automation so the
-      // TAB BPM field governs the cursor. Off by default — Seek & Destroy needs
-      // its own tempo changes.
-      const ignoreAutomation = Boolean(
-        (tab.meta && tab.meta.ignore_tempo_automation) ||
-          tab.ignore_tempo_automation
-      );
+      // Per-tab switch in Tiedot ("Tempoautomatiikka", on by default). Only a
+      // tab that switched it off is parsed and stripped; every other tab keeps
+      // alphaTab's own byte loading (Seek & Destroy needs its tempo changes).
+      const ignoreAutomation =
+        (tab.meta && tab.meta.tempo_automation_enabled === false) ||
+        tab.tempo_automation_enabled === false;
       if (instance) {
         if (ignoreAutomation) loadScoreForTab(instance, bytes, true);
         else instance.load(bytes);
@@ -3269,9 +3264,7 @@
     const automations = tempoAutomationsByTab.get(tab.id);
     if (automations && automations.items && automations.items.length) {
       const last = automations.items[automations.items.length - 1];
-      const tail = automations.ignored
-        ? "ohitettu tämän tabin asetuksella"
-        : "ohjaa toistoa";
+      const tail = automations.ignored ? "ei käytössä" : "käytössä";
       appendDetailRow(
         "Tempoautomatiikka",
         `${automations.items.length} kpl (viimeisin tahti ${last.bar}: ${last.tempo} BPM) – ${tail}`
@@ -3347,9 +3340,10 @@
       detailArchived.checked = Boolean(tab.archived);
       detailArchived.disabled = locked;
     }
-    if (detailIgnoreAutomation) {
-      detailIgnoreAutomation.checked = Boolean(tab.ignore_tempo_automation);
-      detailIgnoreAutomation.disabled = locked;
+    if (detailTempoAutomation) {
+      // On by default: only an explicit "off" in the tab turns it off.
+      detailTempoAutomation.checked = tab.tempo_automation_enabled !== false;
+      detailTempoAutomation.disabled = locked;
     }
     renderDetailMeta(tab);
     setDetailStatus(locked ? LOCKED_HINT : "");
@@ -3392,10 +3386,10 @@
           tuning: detailTuning ? detailTuning.value.trim() : "",
           locked: detailLocked ? detailLocked.checked : false,
           archived: detailArchived ? detailArchived.checked : false,
-          // v2.26: per-tab choice to ignore the tab's own tempo automation.
-          ignore_tempo_automation: detailIgnoreAutomation
-            ? detailIgnoreAutomation.checked
-            : false,
+          // v2.27: per-tab switch, on by default.
+          tempo_automation_enabled: detailTempoAutomation
+            ? detailTempoAutomation.checked
+            : true,
         };
     if (detailSave) detailSave.disabled = true;
     setDetailStatus("Tallennetaan…");
@@ -3483,11 +3477,11 @@
       data.append("archived", patch.archived ? "true" : "false");
     }
     if (
-      Object.prototype.hasOwnProperty.call(patch, "ignore_tempo_automation")
+      Object.prototype.hasOwnProperty.call(patch, "tempo_automation_enabled")
     ) {
       data.append(
-        "ignore_tempo_automation",
-        patch.ignore_tempo_automation ? "true" : "false"
+        "tempo_automation_enabled",
+        patch.tempo_automation_enabled ? "true" : "false"
       );
     }
     if (Object.prototype.hasOwnProperty.call(patch, "tuning")) {
