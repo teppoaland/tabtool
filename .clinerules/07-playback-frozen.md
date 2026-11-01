@@ -145,7 +145,7 @@ Lukitut vertailuarvot (Seek & Destroy -kalibrointi, v1.52–v1.54):
   sivuttaisvieritystä
 - SYNC ±10 % / 0,05 %, SIIRTO 0,25 tahdin askel, desimaali-TAB BPM
   tallentuvat ja palautuvat tabia avattaessa
-- `pytest -q` (v2.24: 284 passed), `compileall`, `node --check app.js` ja
+- `pytest -q` (v2.25: 296 passed), `compileall`, `node --check app.js` ja
   `remote.js` OK
 
 ## Ihmisvalidointi – kuuntelutesti on ainoa hyväksyntä
@@ -157,10 +157,12 @@ ne eivät todista, että kursori osuu musiikkiin. Siksi:
 1. **Käyttäjä tekee kuuntelu-/tabsynkkitestin itse.** Cline ei koskaan
    sano synkkaa korjatuksi, valmiiksi eikä "pitäisi toimia" ilman
    käyttäjän kuittausta.
-2. **Palvelin on käyttäjän CMD-ikkunassa.** Käyttäjä ajaa `start.bat`in
-   (se pysäyttää vanhan instanssin ja käynnistää uuden) ja tarkistaa
-   UI:n. Cline ei käynnistä palvelinta taustalle, ei pysäytä sitä eikä
-   kierrä tätä omalla instanssilla toisella portilla.
+2. **Palvelin.** Käyttäjän instanssi on hänen CMD-ikkunassaan (`start.bat`,
+   portti 8000) eikä agentti koske siihen. Agentti saa ajaa **oman**
+   instanssin toisella portilla (esim. 8011) hallittuna taustatyönä
+   mittaamista varten ja sulkee sen itse; se ei pysäytä käyttäjän
+   instanssia eikä vaihda sen porttia. Synkan hyväksyntä on silti aina
+   käyttäjän kuuntelutesti.
 3. **Portti ennen seuraavaa työtä:** riskialttiin muutoksen jälkeen Cline
    pysähtyy, kertoo mitä muuttui ja antaa testiohjeen. Seuraavaa
    ominaisuutta ei aloiteta ennen kuin käyttäjä on kuitannut testin.
@@ -177,17 +179,44 @@ ne eivät todista, että kursori osuu musiikkiin. Siksi:
 6. Raahaa hiiri tabin yli: vihreää loop-aluetta ei jää päälle.
 7. Kuittaa Cline:lle "OK" tai missä kohtaa heitto alkaa (tahti + suunta).
 
-### Mikä laukaisee ihmisvalidoinnin (myös ytimen ulkopuolella)
+### Mikä laukaisee ihmisvalidoinnin
 
-- mikä tahansa muutos `app/static/app.js`, `index.html` tai `style.css`
-  (myös väri, fontti ja layout)
+Kuuntelutesti tarvitaan **vain** silloin, kun muutos osuu soittoketjuun,
+ajastukseen tai osoittimeen – tai kun sillä **voi olla** vaikutusta
+niihin. Automaatio ei kuule heittoa, joten tämä on aina ihmisen testi.
+
+- kellotus, seek ja inversio: `notatedTempo`, `bpmDrift`, `barDurationMs`,
+  `syncTimeMs`, `scoreEndTimeMs`, `ticksPerBar`, `normalizeSyncDrift`,
+  `setSyncDrift`, `setSyncOffsetBars`, `currentOffsetBars`,
+  `updateOffsetReadout`
+- `mediaHandler` kokonaan (ml. `seekTo`-inversio), `syncPosition`,
+  `syncPositionSoon`, `seekTo`, `seekBy`, `setPlaybackRate`,
+  `clearPlaybackRange`, `togglePlayback`, `handleAlignClick`/`armAlign`
+- alphaTab-kytkennät (`scoreLoaded`, `playerStateChanged`,
+  `playbackRangeChanged`, `output.handler`), audio-eventit, `loadTab`in
+  audio-/synkkaosat
 - `loadTab`, score-formaatin valinta (`meta.files`), GP5/MusicXML-tuonti
   ja tempon luku
+- transportin DOM-rakenne ja `.alphatab`-mitat (`index.html`, `style.css`)
 - `GET /api/tabs/{id}/audio` (Range → 206), `attach-audio`,
   `audio_only`-jobit ja tabin poisto
 - alphaTab-vendorin päivitys, `?v=`-leimat ja välimuistiin vaikuttavat
   muutokset
 - `db.update_tab_sync`, `meta.sync_*`, `meta.gp5_tempo`
+
+**Ei vaadi kuuntelutestiä:** ulkoasu, joka ei muuta näiden konttien
+mittoja, `overflow`- tai `scroll`-käyttäytymistä (väri, fontti,
+varjostus, tekstin muotoilu), sanoitus- ja kirjasto-UI, dokumentit,
+säännöt ja testit. Näissä mennään sääntö 05:n kevyellä polulla: ei
+testiajoa, käyttäjän oma silmämääräinen tarkistus riittää. **Testausta ei
+liioitella** – automaatio todentaa vain sen, että koodi latautuu ja arvot
+tallentuvat.
+
+**Tarkkailulistalla (avoin tulkinta):** vaatiiko uusi elementti
+transport-palkkiin aina luvan, vai riittääkö ettei se muuta
+`.viewer-bar`in grid-sarakkeita, otsikon paikkaa eikä lukittuja id:itä.
+Toistaiseksi: uusi elementti `#viewer-section`iin tai transportin
+id-listaan → kysy ensin.
 
 ## Työtapa, joka estää synkan hajoamisen uudelleen
 

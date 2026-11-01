@@ -7,11 +7,13 @@
 
 ## Nykyinen versio
 
-`v2.24` – `app/__init__.py`:n `__version__`, `app/static/index.html`:n
+`v2.26` – `app/__init__.py`:n `__version__`, `app/static/index.html`:n
 `#version-tag` ja kaikki `?v=`-leimat. **Palautuspiste: tagi `v2.23`**
-(25.10.2026, “hyvä paketti”), `v2.24` paikallisena committina (ei pushattu)
-ja vanhempi tagi `v1.99` (23.10.2026); v1.23–v2.23 on pushattu
-`origin/main`iin 25.10.2026.
+(25.10.2026, “hyvä paketti”), `v2.24`, `v2.25` ja `v2.26` paikallisina
+committeina (ei pushattu) ja vanhempi tagi `v1.99` (23.10.2026);
+v1.23–v2.23 on pushattu `origin/main`iin 25.10.2026. `v2.26` (tempo-
+automatiikan näkyvyys + per-tabin ohitus) odottaa vielä käyttäjän
+kuuntelutestiä ja Whiplashin lipun kokeilua.
 
 ## Milloin +0.01
 
@@ -38,16 +40,18 @@ Nosta versiota **aina kun ajettava koodi muuttuu**:
 4. **Push = julkaisu.** Projektia ei vielä julkaista: **älä pushaa**
    `origin`iin ilman käyttäjän erillistä pyyntöä. Lokaalit commitit
    riittävät palautuspisteiksi (`git revert`, `git reset`).
-5. **Palvelin on käyttäjän hallinnassa.** Uvicorn ei käytä `--reload`ia,
-   joten koodimuutoksen jälkeen palvelin pitää käynnistää uudelleen.
-   `start.bat` tekee sen yhdellä ajolla: se pysäyttää vanhan instanssin
-   (vain Python/uvicorn-prosessin) ja käynnistää uuden. Älä käynnistä
-   palvelinta taustalle äläkä pysäytä sitä ilman pyyntöä; kerro
-   käyttäjälle, että uudelleenkäynnistys tarvitaan. Vierasta prosessia
-   portilla 8000 `start.bat` ei tapa – se kertoo siitä ja lopettaa.
-6. **Kuuntelu-/tabsynkkitesti on käyttäjän.** Käyttäjä ajaa `start.bat`in
-   omassa CMD-ikkunassaan (se sammuttaa ja käynnistää palvelimen) ja
-   tarkistaa soiton UI:ssa.
+5. **Palvelin.** Uvicorn ei käytä `--reload`ia, joten koodimuutoksen
+   jälkeen palvelin pitää käynnistää uudelleen. `start.bat` tekee sen
+   yhdellä ajolla: se pysäyttää vanhan instanssin (vain
+   Python/uvicorn-prosessin) ja käynnistää uuden. **Agentti saa ajaa oman
+   instanssin** (päivitetty 1.11.2026): oma portti (esim. 8011),
+   hallittu taustatyö, ei koskaan käyttäjän instanssia portilla 8000 eikä
+   `stop.bat`ia. Oma instanssi suljetaan, kun mittaus on tehty, ja
+   kerrotaan mitä porttia käytettiin. Jos portilla 8000 on vieras prosessi,
+   se ei ole agentin ongelma.
+6. **Kuuntelu-/tabsynkkitesti on käyttäjän.** Agentti voi ajaa palvelimen
+   ja mitata itse (lokit, API, debug-lukemat), mutta synkan hyväksyy
+   edelleen käyttäjä kuuntelemalla.
    Cline ei julista synkkaa toimivaksi ilman kuittausta; portti ja
    testiohje: `.clinerules/07-playback-frozen.md`.
 6. Raportoi lyhyesti: mitä muuttui + versionumero.

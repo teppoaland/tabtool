@@ -59,7 +59,7 @@ python -m venv .venv
 ## Testit
 
 ```powershell
-.venv\Scripts\python.exe -m pytest -q          # 292 passed (v2.25)
+.venv\Scripts\python.exe -m pytest -q          # 304 passed (v2.26)
 .venv\Scripts\python.exe -m compileall -q app scripts tests
 node --check app\static\app.js
 node --check app\static\remote.js
@@ -384,6 +384,22 @@ DB-tiedosto); vain tuotenimi on `AI TabTool`.
   `audio.`/`api.`-kutsuja. Vanha esto "GP5-lähteen kanssa käytä
   YouTube-linkkiä" poistettu `submitJob`ista.
 - Testit **292** (`tests/test_import_own_audio.py`).
+
+## v2.26 (1.11.2026)
+
+- **Tempoautomatiikka GP5:ssä.** alphaTab noudattaa `masterBars[i]
+  .tempoAutomations`-listoja: Whiplash rampauttaa 200 → 160 tahtiin 6
+  mennessä (suhde 0,8 = 160/200), Seek & Destroy vaihtaa 113 → 208 ja
+  165 → 140. PyGuitarPro ei näytä näitä, joten `/tempo` kirjoittaa vain
+  perustempon — automatiikka jyrää sen.
+- **Tiedot → "Ohita tempoautomatiikka"** (per tab, `meta
+  .ignore_tempo_automation`, `POST /api/tabs/{id}/library`). Päällä:
+  `ScoreLoader.loadScoreFromBytes` → automatiikka pois (tahti 1:n lista
+  jää yhdeksi, muuten alphaTab putoaa 120 BPM:iin) → `renderScore`.
+  Oletuspolku on `instance.load(bytes)`.
+- **Näkyvyys:** `#bpm-status` kertoo avattaessa, ohjaako automatiikka
+  toistoa; Tiedot listaa määrän ja viimeisen tahdin.
+- Testit **304** (`tests/test_tempo_automation.py`).
 
 ## Sanat GP5:ssä – työtapa (24.10.2026)
 
