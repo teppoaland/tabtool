@@ -7,13 +7,13 @@
 
 ## Nykyinen versio
 
-`v2.26` – `app/__init__.py`:n `__version__`, `app/static/index.html`:n
+`v2.27` – `app/__init__.py`:n `__version__`, `app/static/index.html`:n
 `#version-tag` ja kaikki `?v=`-leimat. **Palautuspiste: tagi `v2.23`**
-(25.10.2026, “hyvä paketti”), `v2.24`, `v2.25` ja `v2.26` paikallisina
-committeina (ei pushattu) ja vanhempi tagi `v1.99` (23.10.2026);
-v1.23–v2.23 on pushattu `origin/main`iin 25.10.2026. `v2.26` (tempo-
-automatiikan näkyvyys + per-tabin ohitus) odottaa vielä käyttäjän
-kuuntelutestiä ja Whiplashin lipun kokeilua.
+(25.10.2026, “hyvä paketti”), `v2.24`, `v2.25`, `v2.26` ja `v2.27`
+paikallisina committeina (ei pushattu) ja vanhempi tagi `v1.99`
+(23.10.2026); v1.23–v2.23 on pushattu `origin/main`iin 25.10.2026.
+`v2.27` (tempoautomatiikan kytkin per tabissa) odottaa vielä käyttäjän
+kuuntelutestiä ja Whiplashin kokeilua.
 
 ## Milloin +0.01
 

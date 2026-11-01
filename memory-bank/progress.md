@@ -1,14 +1,14 @@
 # 📊 Projektin edistyminen – AI TABTOOL
 
-> **Versio:** `v2.26` (1.11.2026) · **Testit:** 304 passed ·
+> **Versio:** `v2.27` (1.11.2026) · **Testit:** 304 passed ·
 > **Git:** v1.23–v2.23 pushattu `origin/main`iin 25.10.2026; **v2.24, v2.25,
-> toistomerkit ja v2.26 paikallisina committeina (ei pushattu)** (`main` 8
+> toistomerkit, v2.26 ja v2.27 paikallisina committeina (ei pushattu)** (`main` 8
 > committia `origin/main`in edellä). Palautuspiste: **tagi `v2.23`**
 > (25.10.2026) ja vanhempi `v1.99`.
 > Yksityiskohtainen historia: `CHANGELOG.md`. Tässä tiedostossa on tila,
 > päätökset ja seuraavat askeleet – ei lokia.
 
-## v2.26 – tempoautomatiikka (1.11.2026)
+## v2.27 – tempoautomatiikka (1.11.2026)
 
 - **Ongelma:** Whiplashin TAB BPM ei vaikuttanut kursorin nopeuteen. Syy:
   GP5:ssä on tempoautomatiikka (tahti 1 = 200, tahti 6 = 160 lineaarinen),
@@ -16,7 +16,8 @@
   kun eron piti olla 75; tehollinen nopeus vastasi 160 BPM (suhde 0,8 =
   160/200). PyGuitarPro ei näytä automatiikkaa, joten `/tempo` ei voi osua
   siihen — round-trip säilyttää sen.
-- **Ratkaisu:** Tiedot → **Ohita tempoautomatiikka** (per tab, oletus pois).
+- **Ratkaisu:** Tiedot → kytkin **Tempoautomatiikka** (per tab, oletus
+  päällä; pois päältä = TAB BPM määrää nopeuden koko kappaleen ajan).
   Silloin partituuri parsitaan `ScoreLoader`illa, automatiikka pudotetaan ja
   ajetaan `renderScore`. Tahti 1:n lista säilyttää yhden merkinnän, koska se
   kantaa alkutempon (tyhjennys pudottaisi 120 BPM:iin — todettu Nodella).
@@ -205,7 +206,8 @@
 
 0. **S&D:n alkuhorjunta (avoin, 1.11.2026).** Osoitin heittää bar 5–25 (~2
    nuottia), tasoittuu ~bar 35 ja on sen jälkeen kohdallaan; **sama myös
-   v2.25:ssä** → ei v2.26:n syytä. Paikka vaihtelee ajokerroittain. Seuraava
+   v2.25:ssä** → ei tempoautomatiikkamuutoksen syytä. Paikka vaihtelee
+   ajokerroittain. Seuraava
    askel: väliaikainen jäljitin (20 näytettä/s: `audio.currentTime`,
    `api.tickPosition`, syötetty ms) ja dumppaus horjunnan jälkeen; vertaa
    feediä ja tickiä. Headless-selaimessa audio ei etene, joten mittaus

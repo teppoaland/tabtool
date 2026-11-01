@@ -1,8 +1,8 @@
 # 📍 Aktiivinen konteksti – AI TABTOOL
 
-> **Versio:** `v2.26` (1.11.2026) · **Testit:** 304 passed
+> **Versio:** `v2.27` (1.11.2026) · **Testit:** 304 passed
 > **Git:** v1.23–v2.23 **pushattu** `origin/main`iin 25.10.2026; **v2.24,
-> v2.25, toistomerkit ja v2.26 ovat paikallisia committeja (ei pushattu)**
+> v2.25, toistomerkit, v2.26 ja v2.27 ovat paikallisia committeja (ei pushattu)**
 > (`main` 8 committia `origin/main`in edellä). **Palautuspisteet:** tagi `v2.23`
 > (25.10.2026, “hyvä paketti”) ja vanhempi tagi `v1.99`
 > (`git reset --hard v1.99`). Älä pinnaa HEAD-hashia pysyvästi.
@@ -13,7 +13,7 @@
 
 ## Nyt
 
-- **v2.26 – tempoautomatiikka (1.11.2026).** Whiplashin (3f74d906…) TAB BPM
+- **v2.27 – tempoautomatiikka (1.11.2026).** Whiplashin (3f74d906…) TAB BPM
   ei vaikuttanut mihinkään: GP5:ssä on **tempoautomatiikka** (tahti 1: 200,
   tahti 6: 160, lineaarinen), jota alphaTab noudattaa perustempon sijaan.
   Mitattu: BPM 100 vs 200 siirsi kursoria 3 tahtia 75:n sijaan; tehollinen
@@ -27,7 +27,8 @@
   automatiikka toistoa.
 - **AVOIN – S&D:n horjunta (1.11.2026).** Seek & Destroy heittää alussa
   (bar 5–25, ~2 nuottia), tasoittuu ~bar 35 ja on sen jälkeen kohdallaan;
-  **sama oire myös v2.25:ssä**, joten se ei tullut v2.26:sta. Esiintyy eri
+  **sama oire myös v2.25:ssä**, joten se ei tullut tempoautomatiikka-
+  muutoksesta. Esiintyy eri
   kohdassa joka ajolla → epäily käynnistyksen aikaisesta virheestä, ei
   tabidatasta. Headless-selaimessa toisto ei etene (ei audiolaitetta), joten
   mittaus vaatii selaimen: seuraava askel on **jäljitin** (20 näytettä/s:
