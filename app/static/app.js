@@ -202,6 +202,9 @@
   const detailTuning = document.getElementById("detail-tuning");
   const detailLocked = document.getElementById("detail-locked");
   const detailArchived = document.getElementById("detail-archived");
+  const detailIgnoreAutomation = document.getElementById(
+    "detail-ignore-automation"
+  );
   const detailMeta = document.getElementById("detail-meta");
   const detailStatus = document.getElementById("detail-status");
   const detailSave = document.getElementById("detail-save");
@@ -1544,6 +1547,13 @@
     }
     api.scoreLoaded.on(() => {
       clearPlaybackRange();
+      if (pendingTempoAutomations) {
+        const pending = pendingTempoAutomations;
+        pendingTempoAutomations = null;
+        rememberTempoAutomations(pending.items, pending.ignored);
+      } else {
+        noteTempoAutomations(api.score);
+      }
       const output = api.player && api.player.output;
       if (output) output.handler = mediaHandler;
       allTracks =
@@ -2839,6 +2849,116 @@
     }
   }
 
+  // A GP5 tab can carry its own tempo automation (Seek & Destroy changes tempo
+  // at bars 113 and 165; Whiplash ramps 200 → 160 by bar 6). alphaTab follows
+  // those changes, so they drive the cursor while the TAB BPM field only sets
+  // the tab's starting tempo. The viewer keeps that behaviour — a blanket strip
+  // made Seek & Destroy unplayable on 1.11.2026 — and reports it; only a tab
+  // whose "Ohita tempoautomatiikka" is ticked in Tiedot drops it (v2.26).
+  const tempoAutomationsByTab = new Map();
+  let pendingTempoAutomations = null;
+
+  function collectTempoAutomations(score) {
+    const found = [];
+    const bars =
+      score && Array.isArray(score.masterBars) ? score.masterBars : [];
+    bars.forEach((bar, index) => {
+      const list = bar && bar.tempoAutomations;
+      if (!Array.isArray(list)) return;
+      list.forEach((automation) => {
+        if (!automation || !(Number(automation.value) > 0)) return;
+        // The first bar's list carries the tab's own starting tempo; only the
+        // later entries are real mid-song changes.
+        if (index === 0) return;
+        found.push({
+          bar: index + 1,
+          tempo: Number(automation.value),
+          linear: Boolean(automation.isLinear),
+        });
+      });
+    });
+    return found;
+  }
+
+  function rememberTempoAutomations(found, ignored) {
+    if (!activeTab || !activeTab.id) return;
+    if (!found.length) {
+      tempoAutomationsByTab.delete(activeTab.id);
+      return;
+    }
+    tempoAutomationsByTab.set(activeTab.id, {
+      items: found,
+      ignored: Boolean(ignored),
+    });
+    const last = found[found.length - 1];
+    setBpmStatus(
+      ignored
+        ? `Tempoautomatiikka ohitettu tämän tabin asetuksella (${found.length} kpl, viimeisin tahti ${last.bar}: ${last.tempo} BPM).`
+        : `Tabissa on tempoautomatiikka (${found.length} kpl, viimeisin tahti ${last.bar}: ${last.tempo} BPM) – se ohjaa toistoa TAB BPM:n sijaan.`
+    );
+  }
+
+  function noteTempoAutomations(score) {
+    const found = collectTempoAutomations(score);
+    rememberTempoAutomations(found, false);
+    return found;
+  }
+
+  // Per-tab opt-in: strip the automation so TAB BPM governs. Bar 1 keeps one
+  // entry because its list also carries the starting tempo — clearing every
+  // list drops alphaTab to its 120 BPM default (verified in Node).
+  function stripTempoAutomations(score) {
+    const dropped = [];
+    const bars =
+      score && Array.isArray(score.masterBars) ? score.masterBars : [];
+    bars.forEach((bar, index) => {
+      const list = bar && bar.tempoAutomations;
+      if (!Array.isArray(list) || list.length === 0) return;
+      const keep = index === 0 ? list[0] : null;
+      list.forEach((automation) => {
+        if (!automation || !(Number(automation.value) > 0)) return;
+        if (keep && Number(automation.value) === Number(keep.value)) return;
+        dropped.push({
+          bar: index + 1,
+          tempo: Number(automation.value),
+          linear: Boolean(automation.isLinear),
+        });
+      });
+      list.length = keep ? 1 : 0;
+      if (keep) keep.ratioPosition = 0;
+    });
+    return dropped;
+  }
+
+  // Parse the fetched tab, drop the automation when asked, and render the
+  // parsed score. A parse problem falls back to the byte loader.
+  function loadScoreForTab(instance, bytes, ignoreAutomation) {
+    let score = null;
+    try {
+      if (window.alphaTab && alphaTab.importer && alphaTab.importer.ScoreLoader) {
+        score = alphaTab.importer.ScoreLoader.loadScoreFromBytes(
+          bytes,
+          instance.settings
+        );
+      }
+    } catch (error) {
+      console.error("score parse failed", error);
+      score = null;
+    }
+    if (!score) {
+      pendingTempoAutomations = null;
+      instance.load(bytes);
+      return;
+    }
+    const found = collectTempoAutomations(score);
+    if (ignoreAutomation) stripTempoAutomations(score);
+    pendingTempoAutomations = {
+      items: found,
+      ignored: Boolean(ignoreAutomation) && found.length > 0,
+    };
+    instance.renderScore(score);
+  }
+
   async function loadTab(tabId) {
     // The count-in is per tab: switching tabs cancels it and re-arms it.
     cancelCountIn();
@@ -2924,7 +3044,17 @@
       }
       const bytes = new Uint8Array(await score.arrayBuffer());
       const instance = getAlphaTab();
-      if (instance) instance.load(bytes);
+      // Per-tab choice (Tiedot): ignore the tab's own tempo automation so the
+      // TAB BPM field governs the cursor. Off by default — Seek & Destroy needs
+      // its own tempo changes.
+      const ignoreAutomation = Boolean(
+        (tab.meta && tab.meta.ignore_tempo_automation) ||
+          tab.ignore_tempo_automation
+      );
+      if (instance) {
+        if (ignoreAutomation) loadScoreForTab(instance, bytes, true);
+        else instance.load(bytes);
+      }
     } catch (error) {
       console.error(error);
     }
@@ -3136,6 +3266,17 @@
     if (!detailMeta) return;
     detailMeta.textContent = "";
     appendDetailRow("BPM", formatBpm(tab.bpm));
+    const automations = tempoAutomationsByTab.get(tab.id);
+    if (automations && automations.items && automations.items.length) {
+      const last = automations.items[automations.items.length - 1];
+      const tail = automations.ignored
+        ? "ohitettu tämän tabin asetuksella"
+        : "ohjaa toistoa";
+      appendDetailRow(
+        "Tempoautomatiikka",
+        `${automations.items.length} kpl (viimeisin tahti ${last.bar}: ${last.tempo} BPM) – ${tail}`
+      );
+    }
     appendDetailRow("Tahtia", String(Number(tab.measure_count) || 0));
     appendDetailRow("Nuotteja", String(Number(tab.note_count) || 0));
     if (tab.channel) appendDetailRow("YouTube-kanava", tab.channel);
@@ -3206,6 +3347,10 @@
       detailArchived.checked = Boolean(tab.archived);
       detailArchived.disabled = locked;
     }
+    if (detailIgnoreAutomation) {
+      detailIgnoreAutomation.checked = Boolean(tab.ignore_tempo_automation);
+      detailIgnoreAutomation.disabled = locked;
+    }
     renderDetailMeta(tab);
     setDetailStatus(locked ? LOCKED_HINT : "");
     detailDialog.hidden = false;
@@ -3247,6 +3392,10 @@
           tuning: detailTuning ? detailTuning.value.trim() : "",
           locked: detailLocked ? detailLocked.checked : false,
           archived: detailArchived ? detailArchived.checked : false,
+          // v2.26: per-tab choice to ignore the tab's own tempo automation.
+          ignore_tempo_automation: detailIgnoreAutomation
+            ? detailIgnoreAutomation.checked
+            : false,
         };
     if (detailSave) detailSave.disabled = true;
     setDetailStatus("Tallennetaan…");
@@ -3257,6 +3406,9 @@
       return;
     }
     closeDetailDialog();
+    // The ignore-tempo-automation flag changes how the score is loaded, so the
+    // open tab is reloaded to apply it right away (v2.26).
+    if (activeTab && activeTab.id === tab.id) await loadTab(tab.id);
     setLibraryStatus("Tallennettu.");
   }
   // === /TIEDOT =========================================================
@@ -3329,6 +3481,14 @@
     }
     if (Object.prototype.hasOwnProperty.call(patch, "archived")) {
       data.append("archived", patch.archived ? "true" : "false");
+    }
+    if (
+      Object.prototype.hasOwnProperty.call(patch, "ignore_tempo_automation")
+    ) {
+      data.append(
+        "ignore_tempo_automation",
+        patch.ignore_tempo_automation ? "true" : "false"
+      );
     }
     if (Object.prototype.hasOwnProperty.call(patch, "tuning")) {
       const value = String(patch.tuning || "").trim();

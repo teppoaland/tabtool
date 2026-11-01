@@ -6,14 +6,14 @@
   <meta name="color-scheme" content="dark">
   <title>AI TabTool</title>
   <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="/static/style.css?v=2.25">
+  <link rel="stylesheet" href="/static/style.css?v=2.26">
 </head>
 <body>
   <header class="topbar">
     <div class="brand">
       <span class="brand-mark" aria-hidden="true">AT</span>
       <span class="brand-name">AI TABTOOL</span>
-      <span id="version-tag" class="version">v2.25</span>
+      <span id="version-tag" class="version">v2.26</span>
     </div>
     <nav class="nav" aria-label="Päävalikko">
       <button id="open-search-top" type="button" class="primary nav-library"
@@ -333,6 +333,10 @@
           <label class="library-flag">
             <input id="detail-archived" type="checkbox"><span>Arkistoi</span>
           </label>
+          <label class="library-flag"
+                 title="Tabin nuottitiedostossa on tempoautomatiikka (esim. ramppi), joka ohjaa toistoa TAB BPM:n sijaan. Rasti jättää automatiikan huomiotta tämän tabin soitossa.">
+            <input id="detail-ignore-automation" type="checkbox"><span>Ohita tempoautomatiikka</span>
+          </label>
         </div>
         <dl id="detail-meta" class="detail-meta"></dl>
         <p id="detail-status" class="bpm-status" aria-live="polite"></p>
@@ -439,13 +443,13 @@
 
 
   <footer class="footer">
-    <span>AI TabTool v2.25</span>
+    <span>AI TabTool v2.26</span>
     <span>Local-first · <a href="/remote">Remote</a></span>
   </footer>
 
-  <script src="/static/vendor/alphaTab/alphaTab.min.js?v=2.25"></script>
-  <script src="/static/app.js?v=2.25" defer></script>
-  <script src="/static/remote-bridge.js?v=2.25" defer></script>
+  <script src="/static/vendor/alphaTab/alphaTab.min.js?v=2.26"></script>
+  <script src="/static/app.js?v=2.26" defer></script>
+  <script src="/static/remote-bridge.js?v=2.26" defer></script>
 </body>
 </html>
 
