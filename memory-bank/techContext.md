@@ -59,7 +59,7 @@ python -m venv .venv
 ## Testit
 
 ```powershell
-.venv\Scripts\python.exe -m pytest -q          # 304 passed (v2.27)
+.venv\Scripts\python.exe -m pytest -q          # 310 passed (v2.28)
 .venv\Scripts\python.exe -m compileall -q app scripts tests
 node --check app\static\app.js
 node --check app\static\remote.js
@@ -194,7 +194,10 @@ DB-tiedosto); vain tuotenimi on `AI TabTool`.
   `start.bat` pysäyttää vanhan Python/uvicorn-instanssin ja käynnistää
   uuden yhdellä ajolla; `stop.bat` pysäyttää ja `status.bat` näyttää
   tilan ja version. Vierasta prosessia portilla 8000 ei tapeta.
-  Cline ei käynnistä palvelinta taustalle eikä pysäytä ilman pyyntöä.
+  **Agentti saa ajaa oman instanssin** toisella portilla (esim. 8011)
+  hallittuna taustatyönä ja sulkee sen itse; käyttäjän instanssiin
+  portilla 8000 ei kosketa (päivitetty 1.11.2026, ks.
+  `.clinerules/03-versioning.md`).
   **Soiton/tabin synkka hyväksytään vain käyttäjän kuuntelutestillä**
   (`.clinerules/07-playback-frozen.md`): pytest, `node --check` ja
   headless eivät todista kohdistusta.
@@ -400,6 +403,21 @@ DB-tiedosto); vain tuotenimi on `AI TabTool`.
 - **Näkyvyys:** vain Tiedot listaa määrän ja viimeisen tahdin; soitossa ei
   enää tulosteta pysyvää ilmoitusta BPM-riville (se oli turhaa kohinaa).
 - Testit **304** (`tests/test_tempo_automation.py`).
+
+## v2.28 (1.11.2026)
+
+- **Metadatan referenssi:** `meta.original_bpm` kirjoitetaan generoinnissa
+  (`jobs.py`) ja tuonnissa (`tab_import.py`); `/tempo` ei korvaa sitä vaan
+  päivittää `meta.bpm`in; `_tab_summary` palauttaa `original_bpm`.
+  UI: metadatarivi `160 BPM (nyt 166)`, Tiedot `BPM 166 (lähtö 160)`.
+  `Nopeus` ei kirjoita metaan. Testit **310**
+  (`tests/test_tab_bpm_reference.py`).
+- **Whiplash (3f74d906…):** audion tempo mitattu librosalla **161,5 BPM**;
+  `bpm` 166 (käyttäjän työnopeus), `original_bpm` 160, tempoautomatiikka
+  päällä, SIIRTO 0,5. 175 oli tabin tahdin 1 arvio.
+- **Tunnettu rajoite:** `scoreEndTimeMs()` laskee lopun vakiotemolla, joten
+  tempoautomatiikkaa käyttävä tabi pysähtyy ennen loppua (Whiplash 175:llä
+  tahti 150, 166:lla 158). Korjaus v2.29 ehdolla, ks. `progress.md`.
 
 ## Sanat GP5:ssä – työtapa (24.10.2026)
 

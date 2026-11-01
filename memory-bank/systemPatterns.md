@@ -352,6 +352,18 @@ resolvoitui työhakemistosta ja tabi menetti audionsa.
   1,268 s → 0 ja rikkoi synkan; `time === 0` jätetään ennalleen.
 - Aluevalinta: alphaTabin raahaus ei jää loopiksi – `playbackRange`
   nollataan heti. Pause palauttaa cursorin audion aikaan.
+- **Loppuvartija ei tunne temposkarttaa (v2.28, avoin):**
+  `scoreEndTimeMs()` laskee lopun `totalTicks × 60000 / (tempo × 960)` eli
+  vakiotemolla, ja `syncTimeMs()` rajaa syötteen siihen. Jos tabin
+  tempoautomatiikka pidentää todellista kestoa (Whiplash: notatoitu 223,5 s,
+  todellinen 244,1 s), toisto jämähtää ennen loppua (tahti 150 / 158).
+  **Älä korjaa tätä muuttamalla `backingTrackDuration`ia** – se pitää
+  1:1-kartoituksen; korjaus kuuluu vain syötteen loppurajaan (v2.29, vaatii
+  luvan ja kuuntelutestin).
+- **Metadatan lähtö-BPM (v2.28):** `meta.original_bpm` on referenssi, jota
+  TAB BPM -säätö ei ylikirjoita; `_tab_summary` välittää sen ja katselimen
+  rivi näyttää `160 BPM (nyt 166)`. Sama periaate kuin `original_title` /
+  `original_artist`: käyttäjän säätö ei hävitä lähtöarvoa.
 - **Tunnettu rajoite (avaa lupaa vaativa korjaus):** `barDurationMs()` ja
   `ticksPerBar()` laskevat tahdin pituuden **kahdesta ensimmäisestä
   tahdista** (`bars[1].start − bars[0].start`). Jos tabi alkaa

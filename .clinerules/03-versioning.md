@@ -7,13 +7,15 @@
 
 ## Nykyinen versio
 
-`v2.27` – `app/__init__.py`:n `__version__`, `app/static/index.html`:n
+`v2.28` – `app/__init__.py`:n `__version__`, `app/static/index.html`:n
 `#version-tag` ja kaikki `?v=`-leimat. **Palautuspiste: tagi `v2.23`**
-(25.10.2026, “hyvä paketti”), `v2.24`, `v2.25`, `v2.26` ja `v2.27`
+(25.10.2026, “hyvä paketti”), `v2.24`–`v2.28`
 paikallisina committeina (ei pushattu) ja vanhempi tagi `v1.99`
 (23.10.2026); v1.23–v2.23 on pushattu `origin/main`iin 25.10.2026.
-`v2.27` (tempoautomatiikan kytkin per tabissa) odottaa vielä käyttäjän
-kuuntelutestiä ja Whiplashin kokeilua.
+`v2.27` (tempoautomatiikan kytkin) on kuitattu Whiplashilla 1.11.2026, ja
+`v2.28` (metadatan lähtö-BPM) odottaa vain silmämääräistä tarkistusta.
+Avoin temposkartta-/loppuvartijakorjaus on suunniteltu v2.29:ksi
+(`memory-bank/progress.md`, "Seuraavaksi").
 
 ## Milloin +0.01
 

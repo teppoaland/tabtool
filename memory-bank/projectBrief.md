@@ -1,6 +1,6 @@
 # 🎯 Projektin lyhyt kuvaus – AI TABTOOL
 
-> **Versio:** `v2.27` (1.11.2026)
+> **Versio:** `v2.28` (1.11.2026)
 > **Repo:** https://github.com/teppoaland/tabtool
 > **Paikallinen:** `D:\AI\tabtool`
 
@@ -50,12 +50,18 @@ Lokaali web-palvelu, jossa voi:
   regressiochecklistillä. **Hyväksyntä on käyttäjän kuuntelu-/tabsynkkitesti**
   – automaatio ei kuule heittoa, joten Cline ei julista synkkaa korjatuksi
   ilman kuittausta. Palvelimen käynnistää ja pysäyttää käyttäjä omassa
-  CMD-ikkunassaan. Katso `.clinerules/07-playback-frozen.md`.
+  CMD-ikkunassaan; agentti saa ajaa oman instanssin toisella portilla
+  (ks. `.clinerules/03-versioning.md`). Katso
+  `.clinerules/07-playback-frozen.md`.
 - **Nopeus on harjoittelunopeus, ei kohdistus (v1.96–v1.97).** `Nopeus`
   50–150 % skaalaa audion ja kursorin yhdessä; `playbackRate` ei kuulu
   kello- eikä seek-matematiikkaan. 1 % askelet ja 95–105 % → 100 % snap;
   kaksoisnapautus palauttaa 100 %. Vartiotesti
   `test_playback_rate_never_enters_the_alignment_math`.
+- **Metadata on referenssi (v2.28).** `meta.original_bpm` on tabin lähtö-BPM
+  (generointi/tuonti), eikä TAB BPM -säätö ylikirjoita sitä: katselimen rivi
+  näyttää `160 BPM (nyt 166)` ja Tiedot `BPM 166 (lähtö 160)`. `Nopeus`,
+  `SYNC` ja `SIIRTO` eivät kirjoita BPM-referenssiä.
 - **Remote (v1.93–v1.98):** puhelimen otsikko yhdellä rivillä (AI TABTOOL,
   versio ja yksi tila-indikaattori `Online` / `Offline` / `Offline-TV`).
   Soittopalkissa `«` (alkuun, `seek 0`) ja PLAY/PAUSE; `+5 s` poistettu.
@@ -172,7 +178,7 @@ Lokaali web-palvelu, jossa voi:
   audion (ei string/fret-dataa), ja GP/MIDI/MP3-lataus on Plus-ominaisuus
   (`songsterr.com/ai.txt`). Käyttäjän Android-osto on **kertamaksu**
   (vain Android, ei web). GP5:t haetaan laillisesta lähteestä käsin.
-- **Versiosarja `1.x`**, aloitus `v1.00`; nyt `v2.27`.
+- **Versiosarja `1.x`**, aloitus `v1.00`; nyt `v2.28`.
 - **Ei julkista julkaisua:** koodi pidetään lokaalina. Commitit tehdään
   paikalliseen repoon palautuspisteiksi (revert); push GitHubiin vain
   erillisestä pyynnöstä.
@@ -215,6 +221,6 @@ Sano Cline:lle **`lue membank`**. Sääntö on
 - `app/lyrics.py` – sanojen sidecar (`data/lyrics/<tab_id>.json`)
 - `scripts/pipeline_smoke.py` – CLI-proof
 - `stop.bat` / `status.bat` – palvelimen pysäytys ja tilan tarkistus
-- `tests/` – 304 pytest-testiä
+- `tests/` – 310 pytest-testiä
 - `data/` – GITIGNORED: audio, stemmit, tabit, tokenit
 - `docs/` – GITIGNORED: henkilökohtainen suunnitelma

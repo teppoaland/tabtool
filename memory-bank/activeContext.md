@@ -1,9 +1,9 @@
 # 📍 Aktiivinen konteksti – AI TABTOOL
 
-> **Versio:** `v2.27` (1.11.2026) · **Testit:** 304 passed
-> **Git:** v1.23–v2.23 **pushattu** `origin/main`iin 25.10.2026; **v2.24,
-> v2.25, toistomerkit, v2.26 ja v2.27 ovat paikallisia committeja (ei pushattu)**
-> (`main` 8 committia `origin/main`in edellä). **Palautuspisteet:** tagi `v2.23`
+> **Versio:** `v2.28` (1.11.2026) · **Testit:** 310 passed
+> **Git:** v1.23–v2.23 **pushattu** `origin/main`iin 25.10.2026; **v2.24–v2.28
+> ovat paikallisia committeja (ei pushattu)**
+> (`main` 11 committia `origin/main`in edellä). **Palautuspisteet:** tagi `v2.23`
 > (25.10.2026, “hyvä paketti”) ja vanhempi tagi `v1.99`
 > (`git reset --hard v1.99`). Älä pinnaa HEAD-hashia pysyvästi.
 > **Push:** vain erillisestä pyynnöstä (20.10., 23.10. ja 25.10.2026).
@@ -13,27 +13,48 @@
 
 ## Nyt
 
+- **v2.28 – metadata on referenssi (1.11.2026).** Katselimen metadatarivi
+  (`#tab-meta`) ja Tiedot näyttävät tabin **lähtö-BPM:n**
+  (`meta.original_bpm`, kirjoitetaan kerran generoinnissa ja tuonnissa) eivätkä
+  peilaa työnopeutta; kun TAB BPM on säädetty, rivi näyttää molemmat
+  (`160 BPM (nyt 166)`). `/tempo` ei enää korvaa referenssiä, vain
+  `meta.bpm`in; ennen v2.28 luodut tabit saavat lähtöarvon ensimmäisellä
+  tallennuksella. `Nopeus` ei kirjoita metaan. Testit **310**
+  (`tests/test_tab_bpm_reference.py`).
+- **Whiplash (1.11.2026) – oikea tempo 160, ei 175.** Audio mitattiin
+  librosalla: **161,5 BPM** (koko raita ja 30–200 s erikseen). 175 oli tabin
+  tahdin 1 arvio, ei kappaleen tempo; tabin oma tempoautomatiikka sanoo
+  rungoksi 160. Käyttäjä ajaa tabia **166 BPM:llä** (sanoitukset ehtii nähdä
+  juuri ennen laulua) – se on työnopeus, ei referenssi: `meta.bpm = 166`,
+  `meta.original_bpm = 160`, tempoautomatiikka **päällä**, SIIRTO **0,5**.
+  Sanoitussidecar on lukittu eikä muuttunut.
+- **AVOIN – kellon loppuvartija ja tempoautomatiikka (1.11.2026).**
+  `scoreEndTimeMs()` laskee partituurin lopun **vakiotemolla**, joten
+  temposkarttaa käyttävä tabi leikkautuu ennen loppua: Whiplash pysähtyi
+  175 BPM:llä tahtiin **150** (20,6 s puuttui) ja 166 BPM:llä tahtiin **158**.
+  Korjaus (v2.29, vaatii luvan): loppuaika temposkartasta **vain**
+  `syncTimeMs()`in rajaan, jotta `scoreEndTimeMs()`/`backingTrackDuration` ja
+  1:1-kartoitus pysyvät ennallaan; S&D:n raja siirtyisi 414,8 → 410,4 s, joten
+  käyttäjän kuuntelutesti tarvitaan.
 - **v2.27 – tempoautomatiikka (1.11.2026).** Whiplashin (3f74d906…) TAB BPM
   ei vaikuttanut mihinkään: GP5:ssä on **tempoautomatiikka** (tahti 1: 200,
   tahti 6: 160, lineaarinen), jota alphaTab noudattaa perustempon sijaan.
   Mitattu: BPM 100 vs 200 siirsi kursoria 3 tahtia 75:n sijaan; tehollinen
-  suhde 0,8 = 160/200. **Korjaus:** Tiedot-dialogissa rasti **Ohita
-  tempoautomatiikka** (per tab, oletus pois) → partituuri parsitaan
-  `ScoreLoader`illa, automatiikka pudotetaan ja `renderScore` ajetaan; tahti
+  suhde 0,8 = 160/200. **Korjaus:** Tiedot-dialogissa rasti
+  **Tempoautomatiikka** (per tab, oletus päällä) → kun se otetaan pois,
+  partituuri parsitaan `ScoreLoader`illa, automatiikka pudotetaan ja
+  `renderScore` ajetaan; tahti
   1:n alkutempo säilytetään (muuten alphaTab putoaa 120 BPM:iin). **Oletuspolku
   on `instance.load(bytes)`** — koko tabin strippaus rikkoi Seek & Destroyn
   (sen temponvaihdot tahteissa 113 ja 165 ovat oikeita). Tiedot näyttää
   automatiikan määrän ja viimeisen tahdin; BPM-rivillä kerrotaan, ohjaako
   automatiikka toistoa.
-- **AVOIN – S&D:n horjunta (1.11.2026).** Seek & Destroy heittää alussa
-  (bar 5–25, ~2 nuottia), tasoittuu ~bar 35 ja on sen jälkeen kohdallaan;
-  **sama oire myös v2.25:ssä**, joten se ei tullut tempoautomatiikka-
-  muutoksesta. Esiintyy eri
-  kohdassa joka ajolla → epäily käynnistyksen aikaisesta virheestä, ei
-  tabidatasta. Headless-selaimessa toisto ei etene (ei audiolaitetta), joten
-  mittaus vaatii selaimen: seuraava askel on **jäljitin** (20 näytettä/s:
-  `audio.currentTime`, `api.tickPosition`, syötetty aika) ja sen dumppaus
-  horjunnan jälkeen.
+- **S&D kuitattu (1.11.2026).** Käyttäjä testasi: soitto toimii ja soi
+  loppuun asti; lopussa ~4 nuottia heittoa on **lähdedataa** (tabi ei ole
+  täydellinen), ei kelloa. Aiempi alun horjunta (bar 5–25) ei enää
+  ilmennyt; jos se palaa, mittaus tehdään jäljittimellä (20 näytettä/s:
+  `audio.currentTime`, `api.tickPosition`, syötetty aika) käyttäjän
+  selaimessa, koska headlessissä audio ei etene.
 - 🔒 **ISO LUKKO (23.10.2026) – SOITTO ON VALMIS JA JÄÄDYTETTY.** Käyttäjä
   kuittasi: soitto toimii **99 %** tarkkuudella, mikä riittää. Soittoketjuun
   (kello, `seekTo`-inversio, `mediaHandler`, `syncPosition`, audio-eventit,

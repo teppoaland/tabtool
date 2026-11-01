@@ -1,12 +1,39 @@
 # 📊 Projektin edistyminen – AI TABTOOL
 
-> **Versio:** `v2.27` (1.11.2026) · **Testit:** 304 passed ·
-> **Git:** v1.23–v2.23 pushattu `origin/main`iin 25.10.2026; **v2.24, v2.25,
-> toistomerkit, v2.26 ja v2.27 paikallisina committeina (ei pushattu)** (`main` 8
+> **Versio:** `v2.28` (1.11.2026) · **Testit:** 310 passed ·
+> **Git:** v1.23–v2.23 pushattu `origin/main`iin 25.10.2026; **v2.24–v2.28
+> paikallisina committeina (ei pushattu)** (`main` 11
 > committia `origin/main`in edellä). Palautuspiste: **tagi `v2.23`**
 > (25.10.2026) ja vanhempi `v1.99`.
 > Yksityiskohtainen historia: `CHANGELOG.md`. Tässä tiedostossa on tila,
 > päätökset ja seuraavat askeleet – ei lokia.
+
+## v2.28 – metadata referenssinä (1.11.2026)
+
+- **Ongelma:** TAB BPM:n säätö kirjoitti `meta.bpm`in, ja metadatarivi näytti
+  vain työnopeuden – alkuperäistä lähtöarvoa ei enää nähnyt.
+- **Ratkaisu:** `meta.original_bpm` kirjoitetaan kerran (`jobs`,
+  `tab_import`); `/tempo` ei korvaa sitä, vain `meta.bpm`in. `_tab_summary`
+  välittää `original_bpm`. Rivi: `160 BPM (nyt 166)`; Tiedot:
+  `BPM 166 (lähtö 160)`. Legacy-tabi saa lähtöarvon ensimmäisellä
+  tallennuksella (aiempaa historiaa ei voi palauttaa).
+- **`Nopeus` ei kirjoita metadataa** – vartiotesti
+  `test_playback_rate_never_writes_the_metadata`.
+- Testit **310** (`tests/test_tab_bpm_reference.py`).
+- **S&D kuitattu (1.11.2026):** soi loppuun asti; lopussa ~4 nuottia heittoa =
+  lähdedata (tabi ei täydellinen), ei kello. Alun horjuntaa ei enää ilmennyt.
+
+## Whiplash – tempo 160, sanoitukset ja loppuvartija (1.11.2026)
+
+- **Audio mitattu (librosa): 161,5 BPM.** 175 oli tabin tahdin 1 arvio, ei
+  kappaleen tempo. Käyttäjän työnopeus **166 BPM** (sanoitukset ehtii nähdä
+  juuri ennen laulua); **referenssi 160** (`original_bpm`), tempoautomatiikka
+  päällä, SIIRTO **0,5**. Sanoitussidecar lukittu, ei muutoksia.
+- **Avoin:** `scoreEndTimeMs()` käyttää vakiotempoa, joten tempoautomatiikkaa
+  käyttävä tabi leikkautuu ennen loppua – Whiplash 175:llä tahti **150**
+  (20,6 s puuttui) ja 166:lla tahti **158** (notatoitu 235,7 s vs todellinen
+  244,3 s). Korjaus v2.29: loppuaika temposkartasta vain `syncTimeMs()`in
+  rajaan; ks. `Seuraavaksi`.
 
 ## v2.27 – tempoautomatiikka (1.11.2026)
 
@@ -204,14 +231,13 @@
 
 ## Seuraavaksi
 
-0. **S&D:n alkuhorjunta (avoin, 1.11.2026).** Osoitin heittää bar 5–25 (~2
-   nuottia), tasoittuu ~bar 35 ja on sen jälkeen kohdallaan; **sama myös
-   v2.25:ssä** → ei tempoautomatiikkamuutoksen syytä. Paikka vaihtelee
-   ajokerroittain. Seuraava
-   askel: väliaikainen jäljitin (20 näytettä/s: `audio.currentTime`,
-   `api.tickPosition`, syötetty ms) ja dumppaus horjunnan jälkeen; vertaa
-   feediä ja tickiä. Headless-selaimessa audio ei etene, joten mittaus
-   tehdään käyttäjän selaimessa.
+0. **Loppuvartija temposkartan mukaan (v2.29, vaatii luvan).**
+   `scoreEndTimeMs()` laskee lopun vakiotemolla → tempoautomatiikkaa käyttävä
+   tabi pysähtyy ennen loppua (Whiplash: 150 → 158 tahtia). Korjaus: uusi
+   apufunktio summaa tahtikestot `masterBars[i].tempoAutomations`-kartasta ja
+   käytetään sitä **vain** `syncTimeMs()`in loppurajassa; `scoreEndTimeMs()` ja
+   `backingTrackDuration` jäävät ennalleen, jotta 1:1-kartoitus ei muutu.
+   S&D:n raja siirtyy 414,8 → 410,4 s → kuuntelutesti ennen hyväksyntää.
 1. **Käyttäjän validointi** sanoituskokonaisuudelle (rule 07) ja sen
    jälkeen mahdolliset hienosäädöt (esim. tahtilistan oletuskorkeus).
 2. **Pickup-varotin** (`barDurationMs`/`ticksPerBar`): vaatii luvan,
