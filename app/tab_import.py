@@ -290,6 +290,9 @@ def import_tab_bytes(
             "tab_source_file": str(source_file or filename or "").strip()[:255],
             "duration_seconds": 0,
             "bpm": parsed["bpm"],
+            # v2.28: the file's own tempo stays as the reference even after
+            # the tab is re-tempoed in the viewer.
+            "original_bpm": parsed["bpm"],
             "time_signature": parsed["time_signature"],
             "tuning": parsed["tuning"],
             "tuning_notes": parsed.get("tuning_notes", []),

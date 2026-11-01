@@ -501,6 +501,19 @@ def _tab_summary(tab: dict[str, object]) -> dict[str, object]:
         (meta.get("tempo_automation_enabled") if isinstance(meta, dict) else True)
         is not False
     )
+    # v2.28: the BPM the tab was created with is a reference, not a mirror of
+    # the working TAB BPM. It is written once (generation/import) and never
+    # overwritten; legacy tabs get their pre-edit value captured on the first
+    # tempo save (see tab_tempo).
+    original_bpm: float | None = None
+    if isinstance(meta, dict):
+        try:
+            candidate = float(meta.get("original_bpm"))
+            if candidate > 0:
+                original_bpm = candidate
+        except (TypeError, ValueError):
+            original_bpm = None
+    summary["original_bpm"] = original_bpm
     tuning_key = str(tab.get("tuning") or "")
     label = str(meta.get("tuning_label") or "") if isinstance(meta, dict) else ""
     override = (
@@ -980,6 +993,16 @@ def tab_tempo(tab_id: str, bpm: float = Form(...)) -> dict[str, object]:
             status_code=422, detail=f"Tempon asetus epäonnistui: {exc}"
         ) from exc
 
+    # v2.28: the tab's own BPM is kept as an untouched reference so the viewer
+    # can show where the BPM started. New tabs carry it from generation/import;
+    # a tab created before v2.28 gets the value it has now, captured on this
+    # first save, so every later adjustment has a comparison point.
+    if "original_bpm" not in meta:
+        baseline = meta.get("bpm", tab.get("bpm"))
+        try:
+            meta["original_bpm"] = float(baseline)
+        except (TypeError, ValueError):
+            pass
     meta["bpm"] = float(bpm)
     meta["gp5_tempo"] = notated_tempo
     meta["tempo_override"] = float(bpm)

@@ -878,6 +878,9 @@ def process_job(job_id: str) -> None:
             "audio_path": db.to_data_relative(audio.path),
             "duration_seconds": audio.duration,
             "bpm": result["bpm"],
+            # v2.28: the generated BPM is the tab's reference and is never
+            # rewritten when the user corrects TAB BPM.
+            "original_bpm": result["bpm"],
             "raw_bpm": result["raw_bpm"],
             "time_signature": list(document.time_signature),
             "tuning": document.tuning.key,

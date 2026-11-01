@@ -2814,6 +2814,35 @@
   }
   // === /SANAT =========================================================
 
+  // v2.28: the metadata line is the tab's reference, not a mirror of the
+  // working settings. The BPM the tab started from stays in it; when TAB BPM
+  // (or the GP5 tempo) has been adjusted, the current value is shown next to
+  // it so the two can be compared.
+  //
+  // The viewer loads the raw tab row (GET /api/tabs/{id}), where the value
+  // lives in meta.original_bpm; the library list returns summaries with it
+  // as a top-level field. Both shapes are accepted here.
+  function tabReferenceBpm(tab) {
+    if (!tab) return 0;
+    const meta = tab.meta || {};
+    const fromMeta = Number(meta.original_bpm);
+    if (Number.isFinite(fromMeta) && fromMeta > 0) return fromMeta;
+    const fromSummary = Number(tab.original_bpm);
+    return Number.isFinite(fromSummary) && fromSummary > 0 ? fromSummary : 0;
+  }
+
+  function bpmMetaText(tab) {
+    const current = Number(tab && tab.bpm) || 0;
+    const original = tabReferenceBpm(tab);
+    if (original > 0) {
+      if (Math.abs(original - current) > 0.05) {
+        return `${formatBpm(original)} BPM (nyt ${formatBpm(current)})`;
+      }
+      return `${formatBpm(original)} BPM`;
+    }
+    return `${formatBpm(current)} BPM`;
+  }
+
   function renderTabMeta(tab) {
     if (titleEl) {
       titleEl.textContent = tab.artist
@@ -2830,7 +2859,7 @@
       // Tuning first: it is the thing you must remember before playing.
       if (tuningText) parts.push(tuningText);
       parts.push(
-        `${formatBpm(tab.bpm)} BPM`,
+        bpmMetaText(tab),
         `${tab.measure_count} bars`,
         `${tab.note_count} notes`
       );
@@ -3260,7 +3289,17 @@
   function renderDetailMeta(tab) {
     if (!detailMeta) return;
     detailMeta.textContent = "";
-    appendDetailRow("BPM", formatBpm(tab.bpm));
+    // v2.28: the starting BPM is the reference the user compares against.
+    const originalBpm = tabReferenceBpm(tab);
+    const bpmHasReference =
+      originalBpm > 0 &&
+      Math.abs(originalBpm - (Number(tab.bpm) || 0)) > 0.05;
+    appendDetailRow(
+      "BPM",
+      bpmHasReference
+        ? `${formatBpm(tab.bpm)} (lähtö ${formatBpm(originalBpm)})`
+        : formatBpm(tab.bpm)
+    );
     const automations = tempoAutomationsByTab.get(tab.id);
     if (automations && automations.items && automations.items.length) {
       const last = automations.items[automations.items.length - 1];

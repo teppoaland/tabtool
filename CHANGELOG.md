@@ -2,6 +2,29 @@
 
 > AI TabTool käyttää `1.x`-versiosarjaa. Aloitus `v1.00`.
 
+## v2.28 – 1.11.2026
+
+- **TAB BPM ei enää ylikirjoita metadataa.** Katselimen metadatarivi
+  (`#tab-meta`) ja Tiedot näyttävät nyt tabin **lähtö-BPM:n** eli sen
+  nopeuden, jolla tabi luotiin tai tuotiin; kun TAB BPM -kentästä on säädetty
+  toinen nopeus, rivi näyttää molemmat muodossa `175 BPM (nyt 142)`.
+  Uusi kenttä on `meta.original_bpm`: se kirjoitetaan kerran
+  generoinnissa (`jobs`) ja tuonnissa (`tab_import`), eikä `/tempo` enää
+  korvaa sitä – se vain tallentaa työnopeuden `meta.bpm`iin. Ennen v2.28
+  luodut tabit saavat lähtöarvon ensimmäisellä tallennuksella siitä
+  arvosta, mikä niillä silloin on (aiempaa säätöhistoriaa ei voi palauttaa).
+- **Nopeus ei kirjoita metadataa.** `Nopeus` (50–150 %) on
+  harjoittelunopeus: se asettaa vain `audio.playbackRate`n eikä koske
+  tabin metaan, joten metadatarivi pysyy referenssinä myös nopeutta
+  säädettäessä (vartiotesti
+  `test_playback_rate_never_writes_the_metadata`).
+- **Soittoketju ennallaan.** Kellotus, seek-inversio, `mediaHandler`,
+  transportin DOM-id:t ja `.alphatab`-mitat eivät muuttuneet; GP5:n
+  tempon kirjoitus on sama kuin ennen.
+- **Testit:** 310 passed (`tests/test_tab_bpm_reference.py`: tuonti
+  tallentaa lähtö-BPM:n, toinenkin tempo-tallennus säilyttää sen,
+  vanha tabi saa lähtöarvon, Tiedot ja metadatarivi käyttävät sitä).
+
 ## v2.25 – 31.10.2026
 
 - **Oman audion valinnan nollaus (×).** *Oma audio* -kentän perässä on nyt
