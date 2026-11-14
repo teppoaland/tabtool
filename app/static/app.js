@@ -2621,10 +2621,37 @@
     setLyricsBarsHeight(LYRICS_BARS_DEFAULT);
   }
 
+  // Sanat (v2.29): native fullscreen paints only the subtree of the fullscreen
+  // element, so the floating editor is moved inside it while the viewer is in
+  // native fullscreen. Outside it the editor stays a <body> child exactly as
+  // before, so the normal view's DOM and stacking order do not change.
+  function lyricsDialogHost() {
+    const fullscreenElement = document.fullscreenElement;
+    if (
+      fullscreenElement &&
+      viewerSection &&
+      fullscreenElement === viewerSection
+    ) {
+      return fullscreenElement;
+    }
+    return document.body;
+  }
+
+  function adoptLyricsDialog() {
+    if (!lyricsDialog) return;
+    const host = lyricsDialogHost();
+    if (host && lyricsDialog.parentElement !== host) {
+      // fixed-position child: it stays out of the viewer's grid/flex flow and
+      // keeps its z-index above the count-in and the alphaTab cursor.
+      host.appendChild(lyricsDialog);
+    }
+  }
+
   function openLyricsDialog() {
     if (!lyricsDialog || !activeTab) return;
     const tabId = String(activeTab.id || "");
     fillLyricsDialog();
+    adoptLyricsDialog();
     lyricsDialog.hidden = false;
     // No backdrop and no modal-open (v2.07): the transport, the score and the
     // cursor stay usable while the lines are placed by ear.
@@ -4223,6 +4250,9 @@
       if (viewerSection) viewerSection.classList.remove("is-fullscreen");
       document.body.classList.remove("viewer-fullscreen");
     }
+    // Sanat (v2.29): follow the fullscreen element in and out, so the open
+    // editor stays visible in fullscreen and returns to <body> afterwards.
+    adoptLyricsDialog();
     setFullscreenButtonState();
     applyDisplayScale();
   });

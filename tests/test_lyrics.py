@@ -876,3 +876,51 @@ def test_corrupt_sidecar_reads_as_no_lyrics(
     target.write_text("{ this is not json", encoding="utf-8")
     payload = client.get("/api/tabs/lyrics-corrupt/lyrics").json()
     assert payload["measures"] == {}
+
+
+def test_lyrics_editor_opens_on_top_in_native_fullscreen() -> None:
+    """v2.29: SANAT must show the editor also while the viewer is fullscreen.
+
+    A native fullscreen element paints only its own subtree, so a <body>-level
+    floating panel stayed invisible there: the press did open the editor but
+    the screen showed nothing. The panel is re-parented into the fullscreen
+    element while it is active and moved back to <body> when fullscreen ends.
+    Both moves happen before the panel is shown, so the very first paint of
+    the editor is already on the painted side.
+    """
+    source = APP_JS.read_text(encoding="utf-8")
+
+    host = _js_code(source, "lyricsDialogHost")
+    assert "document.fullscreenElement" in host
+    assert "viewerSection" in host
+    assert "document.body" in host
+
+    adopt = _js_code(source, "adoptLyricsDialog")
+    assert "lyricsDialogHost()" in adopt
+    assert "appendChild" in adopt
+    for marker in ("audio", "api.", "syncTimeMs", "barDurationMs"):
+        assert marker not in adopt, f"the re-parent must stay DOM only: {marker}"
+
+    opener = _js_code(source, "openLyricsDialog")
+    assert "adoptLyricsDialog()" in opener
+    assert opener.index("adoptLyricsDialog()") < opener.index(
+        "lyricsDialog.hidden = false"
+    )
+
+    # Leaving fullscreen puts the panel back where the normal view expects it.
+    change = source[source.index('document.addEventListener("fullscreenchange"') :]
+    change = change[: change.index("});")]
+    assert "adoptLyricsDialog()" in change
+
+    # The panel itself stays an out-of-flow fixed overlay; only its parent
+    # changes, so no viewer grid/flex measurement moves.
+    html = INDEX_HTML.read_text(encoding="utf-8")
+    start = html.index('id="lyrics-dialog"')
+    open_tag = html[html.rindex("<div", 0, start) : html.index(">", start)]
+    assert "lyrics-float" in open_tag
+    css = (INDEX_HTML.parent / "style.css").read_text(encoding="utf-8")
+    rule = css[css.index(".lyrics-float {") :]
+    rule = rule[: rule.index("}")]
+    assert "position: fixed" in rule
+    assert "z-index: 2200" in rule
+

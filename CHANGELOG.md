@@ -2,6 +2,29 @@
 
 > AI TabTool käyttää `1.x`-versiosarjaa. Aloitus `v1.00`.
 
+## v2.29 – 14.11.2026
+
+- **SANAT avaa sanaeditorin myös koko näytössä.** Selaimen natiivissa
+  fullscreenissä piirretään vain fullscreen-elementin alipuu, joten
+  `#lyrics-dialog` (body-tason kelluva paneeli) jäi näkymättömäksi:
+  SANAT-painallus kyllä avasi editorin, mutta ruudulla ei näkynyt mitään,
+  ja paneeli tuli esiin vasta fullscreenistä poistuttaessa. Nyt
+  `lyricsDialogHost()` valitsee isännäksi fullscreen-elementin ja
+  `adoptLyricsDialog()` siirtää paneelin sen lapseksi; `<body>`hyn se
+  palaa, kun fullscreen päättyy (`fullscreenchange`) – myös silloin, kun
+  editori on jo auki. Siirto tehdään ennen kuin paneeli näytetään, joten
+  ensimmäinenkin maalaus on näkyvällä puolella. Paneeli pysyy
+  `position: fixed` -overlayna (`z-index: 2200`), joten se ei tule
+  katselimen gridiin eikä muuta `.alphatab`in mittoja; soittoketju,
+  kellotus, `mediaHandler` ja transportin DOM pysyivät ennallaan.
+- **Testit:** 311 passed; uusi vartiotesti
+  `test_lyrics_editor_opens_on_top_in_native_fullscreen` valvoo siirron
+  suunnan ja sen, että se pysyy DOM-työnä. Lisäksi headless-Edgellä
+  ajettiin oikea käyttäjäele: FULLSCREEN → SANAT → paneeli
+  `#viewer-section`in lapsena, näkyvissä ja päällimmäisenä
+  (`elementFromPoint` osui paneeliin); fullscreenin lopetus palautti
+  paneelin `<body>`hyn ja uusi fullscreen otti sen taas mukaansa.
+
 ## v2.28 – 1.11.2026
 
 - **TAB BPM ei enää ylikirjoita metadataa.** Katselimen metadatarivi
