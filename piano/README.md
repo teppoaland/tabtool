@@ -25,6 +25,12 @@ kappaleille.
 start-piano.bat
 ```
 
+- Työpöydän **PianoCapture**-kuvake tekee saman (käynnistää `start-piano.bat`in
+  ja avaa selaimen). Kuvake käyttää `piano/static/piano.ico`-ikonia, jotta se
+  erottuu TabTool-kuvakkeesta.
+- Yksi kaksoisklikkaus riittää myös uudelleenkäynnistykseen: vanha 8020:n
+  instanssi pysäytetään ensin. Sulje konsoli-ikkuna (tai Ctrl+C) lopettaaksesi.
+- `PIANO_NO_BROWSER=1` estää selaimen automaattisen avauksen (esim. testaus).
 - UI: <http://127.0.0.1:8020>
 - API-dokumentaatio: <http://127.0.0.1:8020/docs>
 - Oma data: `data_piano/` (gitignoroitu). TabToolin `data/` ja portti 8000

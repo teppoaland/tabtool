@@ -1,4 +1,4 @@
-param([int]$Port = 8000)
+param([int]$Port = 8000, [string]$Label = "AI TabTool")
 
 # Called by start.bat before uvicorn. One double-click restarts the server:
 # if an instance already listens on $Port, stop it first. Only a
@@ -26,11 +26,11 @@ if ($process -and $process.Name -match '^python') {
 if (-not $owned) {
     $name = if ($process) { $process.Name } else { "an unknown process" }
     Write-Host "Port $Port is in use by $name (PID $($listener.OwningProcess))."
-    Write-Host "That is not an AI TabTool server; free the port and run start.bat again."
+    Write-Host "That is not an $Label server; free the port and run the launcher again."
     exit 1
 }
 
-Write-Host "Stopping the running AI TabTool server (PID $($listener.OwningProcess)) ..."
+Write-Host "Stopping the running $Label server (PID $($listener.OwningProcess)) ..."
 & (Join-Path $PSScriptRoot 'stop_server.ps1') -Port $Port
 if ($LASTEXITCODE -ne 0) {
     exit 1
