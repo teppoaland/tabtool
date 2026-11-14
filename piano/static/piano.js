@@ -49,6 +49,9 @@
   const backingHint = $("backing-hint");
   const downloadAudio = $("download-audio");
   const downloadMidi = $("download-midi");
+  const downloadGuide = $("download-guide");
+  const listenGuideButton = $("listen-guide");
+  const listenBackingButton = $("listen-backing");
   const lanRow = $("lan-row");
   const lanUrl = $("lan-url");
   const lanQr = $("lan-qr");
@@ -313,6 +316,13 @@
       downloadMidi.href = `/api/piano/pieces/${pieceId}/midi`;
       downloadMidi.setAttribute("download", `pianocapture-${pieceId}.mid`);
     }
+    if (downloadGuide) {
+      downloadGuide.href = `/api/piano/pieces/${pieceId}/guide.mp3`;
+      downloadGuide.setAttribute(
+        "download",
+        `pianocapture-${pieceId}-guide.mp3`
+      );
+    }
     if (phoneQr && pieceQr) {
       pieceQr.onerror = () => {
         phoneQr.hidden = true;
@@ -396,16 +406,55 @@
   function applyBacking() {
     state.backing = Boolean(backingInput && backingInput.checked);
     audio.muted = !state.backing;
-    if (backingHint) {
-      backingHint.textContent = state.backing
-        ? ""
-        : "Tausta pois – soita itse mukana.";
-    }
+    updateBackingHint();
     try {
       localStorage.setItem("pianocap:backing", state.backing ? "1" : "0");
     } catch (error) {
       /* storage disabled */
     }
+  }
+
+  function updateBackingHint() {
+    if (!backingHint) return;
+    if (state.backing) {
+      backingHint.textContent = "";
+    } else if (state.synth) {
+      backingHint.textContent = "Tausta pois – kuulet vain ohjeen.";
+    } else {
+      backingHint.textContent = "Tausta pois – soita itse mukana.";
+    }
+  }
+
+  // --- guide playback (v0.5) -------------------------------------------
+  // One click for each side of the comparison: OHJE plays only the
+  // transcription (backing muted, piano synth on), ALKUPERÄINEN plays only the
+  // original recording. Same transport, same position, so A/B is instant.
+  function listenGuide() {
+    if (!state.piece) return;
+    if (backingInput) {
+      backingInput.checked = false;
+      applyBacking();
+    }
+    if (synthInput) {
+      synthInput.checked = true;
+      state.synth = true;
+      ensureAudioContext();
+    }
+    updateBackingHint();
+    if (audio.paused) play();
+  }
+
+  function listenBacking() {
+    if (!state.piece) return;
+    if (synthInput) {
+      synthInput.checked = false;
+      state.synth = false;
+    }
+    if (backingInput) {
+      backingInput.checked = true;
+      applyBacking();
+    }
+    if (audio.paused) play();
   }
 
   // --- cycle (v0.2) -----------------------------------------------------
@@ -493,39 +542,73 @@
 
   // --- synth ------------------------------------------------------------
   let audioCtx = null;
+  let guideGain = null;
 
   function ensureAudioContext() {
-    if (audioCtx) return audioCtx;
+    if (audioCtx) {
+      if (audioCtx.state === "suspended") {
+        audioCtx.resume().catch(() => {});
+      }
+      return audioCtx;
+    }
     const Ctor = window.AudioContext || window.webkitAudioContext;
     if (!Ctor) return null;
     try {
       audioCtx = new Ctor();
+      guideGain = audioCtx.createGain();
+      guideGain.gain.value = 0.9;
+      const limiter = audioCtx.createDynamicsCompressor();
+      limiter.threshold.value = -18;
+      limiter.knee.value = 12;
+      limiter.ratio.value = 8;
+      guideGain.connect(limiter).connect(audioCtx.destination);
+      audioCtx.resume().catch(() => {});
     } catch (error) {
       audioCtx = null;
+      guideGain = null;
     }
     return audioCtx;
   }
 
   function synthNote(note) {
-    if (!audioCtx || audioCtx.state === "suspended") return;
+    if (!audioCtx || !guideGain || audioCtx.state !== "running") return;
     const now = audioCtx.currentTime;
-    if (state.voices > 28) return;
+    if (state.voices > 36) return;
     const frequency = 440 * 2 ** ((note.pitch - 69) / 12);
-    const duration = clamp(note.end - note.start, 0.12, 2.6);
-    const oscillator = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
-    oscillator.type = "triangle";
-    oscillator.frequency.value = frequency;
-    gain.gain.setValueAtTime(0.0001, now);
-    gain.gain.exponentialRampToValueAtTime(0.09, now + 0.012);
-    gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
-    oscillator.connect(gain).connect(audioCtx.destination);
-    oscillator.start(now);
-    oscillator.stop(now + duration + 0.04);
+    const duration = clamp(note.end - note.start, 0.12, 4);
+    const velocity = clamp((note.velocity || 90) / 127, 0.2, 1);
+    const attackEnd = now + Math.min(0.01, duration * 0.2);
+    const decayEnd = Math.min(now + 0.28, now + duration * 0.6);
+    const releaseEnd = now + duration;
+
+    const envelope = audioCtx.createGain();
+    const gain = envelope.gain;
+    gain.setValueAtTime(0.0001, now);
+    gain.exponentialRampToValueAtTime(0.1 * velocity, attackEnd);
+    gain.exponentialRampToValueAtTime(0.032 * velocity, decayEnd);
+    gain.exponentialRampToValueAtTime(0.02 * velocity, releaseEnd);
+    gain.exponentialRampToValueAtTime(0.0001, releaseEnd + 0.04);
+    envelope.connect(guideGain);
+
+    // Harmonic stack: a sine plus quieter octave/twelfth/fifteenth partials.
+    let last = null;
+    for (const [ratio, level] of [[1, 1], [2, 0.4], [3, 0.16], [4, 0.07]]) {
+      const oscillator = audioCtx.createOscillator();
+      const partial = audioCtx.createGain();
+      oscillator.type = "sine";
+      oscillator.frequency.value = frequency * ratio;
+      partial.gain.value = level;
+      oscillator.connect(partial).connect(envelope);
+      oscillator.start(now);
+      oscillator.stop(now + duration + 0.05);
+      last = oscillator;
+    }
     state.voices += 1;
-    oscillator.onended = () => {
-      state.voices = Math.max(0, state.voices - 1);
-    };
+    if (last) {
+      last.onended = () => {
+        state.voices = Math.max(0, state.voices - 1);
+      };
+    }
   }
 
   function pumpSynth(now) {
@@ -855,7 +938,14 @@
   synthInput.addEventListener("change", () => {
     state.synth = synthInput.checked;
     if (state.synth) ensureAudioContext();
+    updateBackingHint();
   });
+  if (listenGuideButton) {
+    listenGuideButton.addEventListener("click", listenGuide);
+  }
+  if (listenBackingButton) {
+    listenBackingButton.addEventListener("click", listenBacking);
+  }
   if (cycleInput) {
     cycleInput.addEventListener("change", () => applyCycle(true));
   }

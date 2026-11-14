@@ -14,7 +14,7 @@ from fastapi.responses import FileResponse, Response
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
-from piano import __version__, audio, config, jobs, lan, pattern, pipeline, store
+from piano import __version__, audio, config, jobs, lan, pattern, pipeline, render, store
 
 APP_NAME = "PianoCapture"
 
@@ -213,6 +213,58 @@ def piece_audio_mp3(piece_id: str) -> FileResponse:
         target,
         media_type="audio/mpeg",
         filename=f"pianocapture-{piece_id}.mp3",
+    )
+
+
+@app.get("/api/piano/pieces/{piece_id}/guide.wav", tags=["pieces"])
+def piece_guide_wav(piece_id: str) -> FileResponse:
+    """The transcribed notes as audio - listen and check the guide."""
+    try:
+        piece = store.load_piece(piece_id)
+        directory = store.piece_dir(piece_id)
+    except (FileNotFoundError, ValueError):
+        raise HTTPException(status_code=404, detail="Pätkää ei löytynyt.")
+    target = directory / "guide.wav"
+    if not target.exists():
+        render.render_guide(
+            piece.get("notes", []),
+            (piece.get("window") or {}).get("duration", 0.0),
+            target,
+        )
+    return FileResponse(
+        target,
+        media_type="audio/wav",
+        filename=f"pianocapture-{piece_id}-guide.wav",
+    )
+
+
+@app.get("/api/piano/pieces/{piece_id}/guide.mp3", tags=["pieces"])
+def piece_guide_mp3(piece_id: str) -> FileResponse:
+    """The guide as MP3 (easy to carry to a phone or a DAW)."""
+    try:
+        piece = store.load_piece(piece_id)
+        directory = store.piece_dir(piece_id)
+    except (FileNotFoundError, ValueError):
+        raise HTTPException(status_code=404, detail="Pätkää ei löytynyt.")
+    mp3 = directory / "guide.mp3"
+    if not mp3.exists():
+        wav = directory / "guide.wav"
+        if not wav.exists():
+            render.render_guide(
+                piece.get("notes", []),
+                (piece.get("window") or {}).get("duration", 0.0),
+                wav,
+            )
+        try:
+            audio.to_mp3(wav, mp3)
+        except RuntimeError as error:
+            raise HTTPException(
+                status_code=500, detail=f"MP3-koodaus epäonnistui: {error}"
+            )
+    return FileResponse(
+        mp3,
+        media_type="audio/mpeg",
+        filename=f"pianocapture-{piece_id}-guide.mp3",
     )
 
 

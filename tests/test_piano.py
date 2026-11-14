@@ -17,7 +17,7 @@ import pytest
 import soundfile as sf
 from fastapi.testclient import TestClient
 
-from piano import analyze, config, lan, pattern, pipeline, store, transcribe
+from piano import analyze, config, lan, pattern, pipeline, render, store, transcribe
 from piano.main import app
 
 SR = 22050
@@ -279,6 +279,15 @@ def test_api_processes_a_local_file_and_serves_the_piece(
     assert mp3.headers["content-type"].startswith("audio/mpeg")
     assert mp3.content[:3] == b"ID3" or mp3.content[:1] == b"\xff"
 
+    guide = CLIENT.get(f"/api/piano/pieces/{piece_id}/guide.wav")
+    assert guide.status_code == 200, guide.text
+    assert guide.headers["content-type"].startswith("audio/")
+    assert len(guide.content) > 1000
+
+    guide_mp3 = CLIENT.get(f"/api/piano/pieces/{piece_id}/guide.mp3")
+    assert guide_mp3.status_code == 200, guide_mp3.text
+    assert guide_mp3.headers["content-type"].startswith("audio/mpeg")
+
     listed = CLIENT.get("/api/piano/pieces").json()
     assert any(item["id"] == piece_id for item in listed)
 
@@ -296,6 +305,20 @@ def test_api_rejects_a_missing_source() -> None:
 
 def test_api_404_for_unknown_piece() -> None:
     assert CLIENT.get("/api/piano/pieces/does-not-exist").status_code == 404
+
+
+def test_guide_audio_renders_the_transcribed_notes(tmp_path) -> None:
+    """v0.5: the guide can be heard as audio, not only played on the keyboard."""
+    target = tmp_path / "guide.wav"
+    notes = [
+        {"pitch": 60, "start": 0.0, "end": 0.5, "velocity": 100},
+        {"pitch": 64, "start": 0.5, "end": 1.0, "velocity": 80},
+    ]
+    render.render_guide(notes, 1.2, target)
+    data, sample_rate = sf.read(str(target))
+    assert sample_rate == 44100
+    assert len(data) == int(1.2 * 44100) + 1
+    assert float(np.max(np.abs(data))) > 0.05
 
 
 def test_lan_info_and_qr_point_at_the_phone_address(monkeypatch) -> None:
@@ -345,10 +368,16 @@ def test_keyboard_ui_covers_88_keys_and_hides_the_empty_overlay() -> None:
     assert 'id="backing"' in html
     assert 'id="download-audio"' in html
     assert 'id="download-midi"' in html
+    assert 'id="download-guide"' in html
+    assert 'id="listen-guide"' in html
+    assert 'id="listen-backing"' in html
     assert 'id="lan-row"' in html
     assert 'id="lan-qr"' in html
     assert 'id="piece-qr"' in html
+    assert "Ohjeääni" in html
     assert "audio.muted = !state.backing" in script
+    assert "function listenGuide" in script
+    assert "function listenBacking" in script
     # Phone/tablet: a fitted keyboard range and a per-piece deep link.
     assert "fitKeyRange" in script
     assert "keyRange" in script

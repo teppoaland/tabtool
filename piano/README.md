@@ -1,4 +1,4 @@
-# 🎹 PianoCapture v0.4
+# 🎹 PianoCapture v0.5
 
 PianoCapture on **erillinen, kevyt app** AI TabToolin rinnalla samassa repossa.
 Se ottaa YouTube-linkin (tai äänitiedoston), etsii pianon alun ja bändin
@@ -78,14 +78,37 @@ sama asia bändin kanssa.
 Kun kierto on opeteltu, ota **KIERTO** pois päältä: soitto jatkuu koko pätkän
 (yhteensä bändin kanssa), ja nuotit näytetään alkuperäisessä pituudessaan.
 
+## Kuuntele ohje – onko transkriptio oikein?
+
+Aloittelija ei ehdi soittaa kuviota niin nopeasti, että voisi verrata sitä
+levyyn. Siksi ohjeen voi **kuunnella sellaisenaan**:
+
+- **OHJE** (transportissa): tausta pois ja **Ohjeääni** päälle → kuulet vain
+  transkription, soitettuna pianomaisella synteesillä (harmoninen sarja +
+  vaimeneva envelope). Painike ei siirrä kohtaa, joten A/B-vertailu on
+  välitön.
+- **ALKUPERÄINEN**: ohjeääni pois ja tausta takaisin → kuulet alkuperäisen
+  äänitteen samasta kohdasta.
+- **Ohjeääni + Taustaääni** yhdessä = kuulet molemmat päällekkäin ja huomaat
+  heti, jos nuotti on väärä.
+- **LATAA OHJE (MP3)** – koko transkriptio audiotiedostona (serveri renderöi
+  sen `guide.wav` → `guide.mp3`, cache pätkän kansiossa). Voit kuunnella sen
+  puhelimessa tai hidastaa sitä missä tahansa soittimessa.
+- **LATAA MIDI** – sama sisältö MIDInä DAWiin/MuseScoreen.
+
+Synteesi on tarkoituksella yksinkertainen eikä se ole pianon sample: se riittää
+kertomaan, *mitkä nuotit* ohjeessa on ja *milloin* ne alkavat. Vertaa aina
+alkuperäiseen – se on ainoa totuus.
+
 ## Tausta ja lataukset
 
 - **Taustaääni** (oletuksena päällä): pätkä soi nuottien alla. Kun sen ottaa
   pois, ääni vaikenee mutta kello ja nuotit jatkavat – voit soittaa omalla
-  pianolla mukana. Valinta muistetaan selaimessa.
+  pianolla mukana, tai kuunnella pelkän ohjeen. Valinta muistetaan selaimessa.
 - **LATAA AUDIO (MP3)** – pätkä MP3:nä puhelimeen, DAW:iin tai
   taustanauhakäyttöön. Ensimmäinen lataus koodaa tiedoston ffmpegillä, sen
   jälkeen se tulee cachesta pätkän kansiosta.
+- **LATAA OHJE (MP3)** – transkriptio audiona (ks. edellinen luku).
 - **LATAA MIDI** – transkriptio MIDI-tiedostona (MuseScore, DAW, synteesi).
   Sama tiedosto kirjoitetaan jo käsittelyvaiheessa (`notes.mid`).
 
@@ -151,6 +174,8 @@ data_piano/
   pieces/<id>/piece.json    # ikkuna + nuotit + kierto
   pieces/<id>/audio.wav     # pätkän ääni
   pieces/<id>/audio.mp3     # ladattava tausta (koodataan ensimmäisellä latauksella)
+  pieces/<id>/guide.wav     # transkriptio audiona (renderöidään tarvittaessa)
+  pieces/<id>/guide.mp3     # ohjeen MP3-lataus
   pieces/<id>/notes.mid     # MIDI-tarkistus
   tmp/                      # analyysin väliaikainen otos
 ```
