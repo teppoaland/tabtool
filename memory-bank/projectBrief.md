@@ -34,8 +34,8 @@ soittoketjuun, alphaTab-kytkentöihin eikä `app/static`iin**.
 - **KIERTO** tunnistaa toistuvan kuvion onset-autokorrelaatiolla
   (kynnys 0,15) ja loopittaa yhden kierron.
 - **Ohjeen kuuntelu (v0.5):** `render.py` renderöi transkription
-  `guide.wav`/`guide.mp3`:ksi; UI:ssa **OHJE** (tausta pois + piano-synteesi)
-  ja **ALKUPERÄINEN** (tausta takaisin) samasta kohdasta, sekä
+  `guide.wav`/`guide.mp3`:ksi; PLAYn vieressä on **ORG / MID**, eli soitetaanko
+  alkuperäinen vai transkriptio (piano-synteesi); lisäksi
   `LATAA OHJE (MP3)`. Näin ohjeen voi tarkistaa korvalla ennen kuin osaa
   soittaa sitä.
 - Puhelin/tabletti toimii näyttönä LANissa: sidonta `0.0.0.0`, QR ja

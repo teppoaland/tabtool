@@ -59,7 +59,7 @@ python -m venv .venv
 ## Testit
 
 ```powershell
-.venv\Scripts\python.exe -m pytest -q          # 325 passed (v2.30 + piano 0.5.0)
+.venv\Scripts\python.exe -m pytest -q          # 325 passed (v2.30 + piano 0.5.1)
 .venv\Scripts\python.exe -m compileall -q app piano scripts tests
 node --check app\static\app.js
 node --check app\static\remote.js
@@ -465,9 +465,12 @@ DB-tiedosto); vain tuotenimi on `AI TabTool`.
   (`prepare_start.ps1 -Port 8020 -Label PianoCapture`), `PIANO_NO_BROWSER`.
 - **v0.5:** ohjeen kuuntelu – `render.py` renderöi transkription WAV:ksi
   (harmoninen synteesi, ei sampleja), `guide.wav|guide.mp3` lazy-cacheen ja
-  `LATAA OHJE (MP3)`; UI:n **OHJE** (tausta pois + ohjeääni) ja
-  **ALKUPERÄINEN** (tausta takaisin) samasta kohdasta; piano-synteesi
-  parannettu (4 osasäveltä, envelope, limiter).
+  `LATAA OHJE (MP3)`; piano-synteesi parannettu (4 osasäveltä, envelope,
+  limiter). Aluksi erilliset OHJE/ALKUPERÄINEN-painikkeet.
+- **v0.5.1:** lähdevalinta siirrettiin PLAYn viereen **ORG / MID**
+  -segmentiksi (`#play-org`, `#play-mid`); ORG = alkuperäinen, MID =
+  transkriptio (tausta mute + ohjeääni). Vaihto kesken toiston A/B:nä;
+  tilat synkronoituvat `Taustaääni`/`Ohjeääni`-kytkimiin.
 - **Testit:** 13 piano-testiä (`tests/test_piano.py`: kierto, analyysi,
   piano-parametrit, ohjeaudio, API, LAN/QR, UI-sopimus). Yhteensä **325**.
 - **Mitatut esimerkit:** Diablo – *The Well of Grief* 11,0 → 26,0 s
