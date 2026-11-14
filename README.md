@@ -76,6 +76,14 @@ Avaa tarvittaessa käsin:
 - Kaukosäädin + QR: <http://127.0.0.1:8000/remote>
 - API-dokumentaatio: <http://127.0.0.1:8000/docs>
 
+### PianoCapture (erillinen app)
+
+Samassa repossa on erillinen pianotyökalu: YouTube-pätkä → piano-osuus →
+nuotit 88-skaalaisella koskettimistolla, ilman tablatuuria ja ilman
+soitinten erottelua. Käynnistys `start-piano.bat` (portti 8020, oma data
+`data_piano/`); TabToolin porttiin 8000 ja `data/`-kansioon se ei koske.
+Dokumentaatio: [`piano/README.md`](piano/README.md).
+
 ### Puhelin kaukosäätimenä (sisäverkko)
 
 `start.bat` on ainoa käynnistin: se sitoo palvelimen `0.0.0.0:8000`:aan,

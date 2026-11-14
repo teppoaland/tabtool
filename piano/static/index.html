@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="fi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <title>PianoCapture</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/static/piano.css?v=0.1.0">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">PC</span>
+      <span class="brand-name">PIANO CAPTURE</span>
+      <span id="version-tag" class="version">v0.1.0</span>
+    </div>
+    <p class="tagline">YouTube-pätkä → 88 koskettinta. Oletus: soitin on piano.</p>
+  </header>
+
+  <main class="shell">
+    <section class="card setup" aria-label="Lähde ja pätkä">
+      <div class="row">
+        <label class="field grow">
+          <span>YouTube-linkki tai äänitiedosto</span>
+          <input id="source-url" type="text" spellcheck="false"
+                 placeholder="https://www.youtube.com/watch?v=..."
+                 autocomplete="off">
+        </label>
+        <button id="analyze" type="button" class="primary"
+                title="Lataa alku ja etsii pianon alun sekä bändin sisääntulon.">ANALYSOI ALKU</button>
+      </div>
+
+      <div class="row">
+        <label class="field small">
+          <span>Alku (s)</span>
+          <input id="window-start" type="number" min="0" step="0.1" value="0">
+        </label>
+        <label class="field small">
+          <span>Loppu (s)</span>
+          <input id="window-end" type="number" min="1" step="0.1" value="30">
+        </label>
+        <button id="use-suggestion" type="button" class="ghost" hidden>KÄYTÄ EHDOTUSTA</button>
+        <button id="process" type="button" class="primary">KÄSITTELE PÄTKÄ</button>
+      </div>
+
+      <p id="status" class="status" aria-live="polite"></p>
+      <p id="suggestion" class="suggestion" hidden></p>
+      <div class="progress" id="progress-wrap" hidden>
+        <div id="progress-bar" class="progress-bar"></div>
+      </div>
+    </section>
+
+    <section id="recent-card" class="card" hidden aria-label="Viimeisimmät pätkät">
+      <h2>Viimeisimmät pätkät</h2>
+      <div id="recent" class="recent"></div>
+    </section>
+
+    <section id="player" class="card player" hidden aria-label="Piano">
+      <div class="player-head">
+        <div>
+          <h2 id="piece-title">–</h2>
+          <p id="piece-meta" class="muted"></p>
+        </div>
+        <div class="legend" aria-hidden="true">
+          <span class="dot left"></span> vasen käsi
+          <span class="dot right"></span> oikea käsi
+        </div>
+      </div>
+
+      <div class="stage">
+        <canvas id="keys" aria-label="88-skaalainen pianokoskettimisto"></canvas>
+        <p id="empty" class="empty" hidden>
+          Tässä pätkässä ei tunnistettu pianoa. Kokeile toista kohtaa tai
+          toista videota.
+        </p>
+      </div>
+
+      <div class="transport">
+        <button id="play" type="button" class="primary" title="Toista tai pysäytä. Välilyönti toimii myös.">PLAY</button>
+        <span id="time-current" class="time">0:00.0</span>
+        <input id="seek" class="seek" type="range" min="0" max="1" step="0.01" value="0"
+               aria-label="Toistokohta">
+        <span id="time-total" class="time">0:00.0</span>
+        <label class="mini" title="Harjoittelunopeus. Nuotit seuraavat ääntä.">
+          <span>Nopeus</span>
+          <input id="speed" type="range" min="0.5" max="1" step="0.01" value="1">
+          <span id="speed-readout">100 %</span>
+        </label>
+        <label class="toggle" title="Toista pätkä uudelleen alusta.">
+          <input id="loop" type="checkbox" checked> Loop
+        </label>
+        <label class="toggle" title="Soita nuotit synteettisellä soinnilla äänen päälle.">
+          <input id="synth" type="checkbox"> Näppäinsynkka
+        </label>
+        <label class="toggle" title="Näytä vasen käsi.">
+          <input id="show-left" type="checkbox" checked> Vasen
+        </label>
+        <label class="toggle" title="Näytä oikea käsi.">
+          <input id="show-right" type="checkbox" checked> Oikea
+        </label>
+        <label class="mini" title="Käsien raja MIDI-nuottina. Oletus 60 = C4.">
+          <span>Käsiraja</span>
+          <input id="split" type="number" min="21" max="108" step="1" value="60">
+          <span id="split-name" class="muted">C4</span>
+        </label>
+      </div>
+      <p class="hint">
+        Space = PLAY/PAUSE · vasen/oikea nuoli = ±5 s · Home = alkuun.
+        Nuotit on transkriboitu automaattisesti, joten tarkista korvalla.
+      </p>
+    </section>
+  </main>
+
+  <audio id="audio" preload="auto"></audio>
+  <script src="/static/piano.js?v=0.1.0" defer></script>
+</body>
+</html>
