@@ -924,3 +924,83 @@ def test_lyrics_editor_opens_on_top_in_native_fullscreen() -> None:
     assert "position: fixed" in rule
     assert "z-index: 2200" in rule
 
+
+def test_lyrics_preview_shows_only_the_words_and_follows_the_song() -> None:
+    """v2.30: ESIKATSELU turns the editor into a plain lyric sheet.
+
+    A singer wants the whole song on screen without the editing fields, and
+    has to see which line is being sung. The preview list is painted from the
+    same lines the editor field holds, and the current line follows
+    #bar-readout - the text the transport already writes - so playback, a
+    seek and a bar jump move the highlight without a new coupling. Audio,
+    alphaTab, the clock and the seek inverse stay untouched (rule 07).
+    """
+    html = INDEX_HTML.read_text(encoding="utf-8")
+    for marker in (
+        'id="lyrics-preview-button"',
+        'id="lyrics-preview"',
+        'id="lyrics-preview-list"',
+        'id="lyrics-preview-close"',
+        'id="lyrics-preview-empty"',
+    ):
+        assert marker in html
+    assert "ESIKATSELU" in html
+    assert "TAKAISIN" not in html  # the label is written by JS when toggling
+
+    css = (INDEX_HTML.parent / "style.css").read_text(encoding="utf-8")
+    hidden = css[css.index(".lyrics-float.is-preview .lyrics-controls,") :]
+    hidden = hidden[: hidden.index("}")]
+    for part in (
+        ".lyrics-controls",
+        ".lyrics-bars",
+        ".lyrics-split",
+        ".lyrics-form",
+    ):
+        assert part in hidden, f"preview must hide {part}"
+    current = css[css.index(".lyrics-preview-line.is-current {") :]
+    current = current[: current.index("}")]
+    assert "var(--accent)" in current
+    assert "font-weight: 700" in current
+    # The list scrolls inside the panel, never the page.
+    list_rule = css[css.index(".lyrics-preview {") :]
+    list_rule = list_rule[: list_rule.index("}")]
+    assert "overflow-y: auto" in list_rule
+
+    source = APP_JS.read_text(encoding="utf-8")
+    strip = _js_code(source, "renderLyricsStrip")
+    assert "highlightLyricsPreview(bar" in strip
+    for marker in ("audio", "api."):
+        assert marker not in strip
+
+    highlight = _js_code(source, "highlightLyricsPreview")
+    assert "line.bar <= currentBar" in highlight
+    assert "lyricsPreview.scrollTop" in highlight
+    assert "is-current" in highlight
+    for marker in (
+        "audio",
+        "api.",
+        "syncTimeMs",
+        "barDurationMs",
+        "playbackRate",
+    ):
+        assert marker not in highlight, f"the preview must stay DOM only: {marker}"
+
+    toggle = _js_code(source, "setLyricsPreview")
+    assert "is-preview" in toggle
+    assert "aria-pressed" in toggle
+    assert "renderLyricsPreviewLines" in toggle
+    # Leaving preview re-marks the playing bar in the editor's bar list.
+    assert "markLyricsPlayingBar" in toggle
+
+    assert "setLyricsPreview(false)" in _js_code(source, "closeLyricsDialog")
+    assert 'lyricsPreviewButton.addEventListener("click"' in source
+    assert (
+        'lyricsPreviewClose.addEventListener("click", closeLyricsDialog)'
+        in source
+    )
+
+    build = _js_code(source, "renderLyricsPreviewLines")
+    assert "lyricsPreviewMeasures" in build
+    assert "lyricsPreviewList.appendChild" in build
+
+

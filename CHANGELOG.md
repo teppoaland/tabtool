@@ -2,6 +2,33 @@
 
 > AI TabTool käyttää `1.x`-versiosarjaa. Aloitus `v1.00`.
 
+## v2.30 – 14.11.2026
+
+- **SANAT: ESIKATSELU – pelkät sanat.** Sanaeditorissa on nyt
+  **ESIKATSELU**-painike, joka vaihtaa paneelin pelkäksi sanoitukseksi:
+  tahdit, tekstikenttä, muistiinpanot, soittorivi, jakokahva sekä
+  TALLENNA/JAA RIVIT/Lukitus piilotetaan ja tilalle tulee koko sanoitus
+  yhtenä listana. Paneelin otsikko, tahtimerkintä ja TAKAISIN/SULJE
+  jäävät, joten tilasta pääsee pois yhdellä painalluksella. Painike on
+  sama molemmissa tiloissa (ESIKATSELU ↔ TAKAISIN, `aria-pressed`).
+- **Nykyinen rivi seuraa soittoa ja tahtihyppyä.** Meneillään oleva rivi
+  korostetaan (aksenttiväri, lihavointi, vasen reunaviiva) ja vieritetään
+  listan keskelle. Tahtinumero luetaan samasta `#bar-readout`ista kuin
+  katselimen sanoitusnauha, joten PLAY, seek ja esimerkiksi tahti 52
+  liikuttavat korostusta ilman uutta kytkentää: audio, alphaTab,
+  kellotus, `mediaHandler` ja seek-inversio pysyivät ennallaan
+  (vartiotesti
+  `test_lyrics_preview_shows_only_the_words_and_follows_the_song`).
+  Rivi pysyy korostettuna oman tahtinsa ja välitahdit, kunnes seuraava
+  rivi alkaa; listan ulkopuolinen sivu ja transport eivät vierity.
+- **Toimii myös koko näytössä** (v2.29:n fullscreen-siirto pätee samaan
+  paneeliin) ja tyhjällä sanoituksella näkyy ohje tekstikentän sijaan.
+- **Testit:** 312 passed. Headless-Chromella ajettiin oikeat
+  käyttäjäeleet: tahti 46 → korostus rivillä "Late at night…", PLAY →
+  15 s myöhemmin tahti 53 ja korostus rivillä "you need it"
+  (audio 77,06 s), PAUSE → korostus jäi tahtiin 53. Lisäksi ESIKATSELU
+  koko näytössä ja paluu muokkaustilaan (TAKAISIN) tarkistettiin.
+
 ## v2.29 – 14.11.2026
 
 - **SANAT avaa sanaeditorin myös koko näytössä.** Selaimen natiivissa

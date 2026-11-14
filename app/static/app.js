@@ -162,6 +162,14 @@
   const lyricsClose = document.getElementById("lyrics-close");
   // v2.22: bulk numbering of a pasted block, one line per bar.
   const lyricsFillButton = document.getElementById("lyrics-fill");
+  // Esikatselu (v2.30): pelkät sanat ilman muokkauskenttiä. Nykyinen rivi
+  // seuraa #bar-readoutia, aivan kuten katselimen sanoitusnauha.
+  const lyricsPreviewButton = document.getElementById("lyrics-preview-button");
+  const lyricsPreviewHint = document.getElementById("lyrics-preview-hint");
+  const lyricsPreviewClose = document.getElementById("lyrics-preview-close");
+  const lyricsPreview = document.getElementById("lyrics-preview");
+  const lyricsPreviewList = document.getElementById("lyrics-preview-list");
+  const lyricsPreviewEmpty = document.getElementById("lyrics-preview-empty");
   // Lukitus (v2.18): valmis sanoitus pysyy muuttumattomana.
   const lyricsLockInput = document.getElementById("lyrics-lock");
   const rateSlider = document.getElementById("rate-slider");
@@ -281,6 +289,11 @@
   let lyricsLocked = false;
   // v2.20: the free-text note from the sidecar (source, open fixes).
   let lyricsNotes = "";
+  // Esikatselu (v2.30): pelkät sanat, ilman muokkauskenttiä. Rivi, joka on
+  // meneillään, tulee #bar-readoutista – ei uutta kytkentää soittoketjuun.
+  let lyricsPreviewActive = false;
+  let lyricsPreviewLines = [];
+  let lyricsPreviewShownBar = -1;
   // Sanoitusrivin koko prosentteina (v2.08) ja nosto pikseleinä (v2.09),
   // molemmat tulevat /api/settingsistä.
   let lyricsScale = LYRICS_SCALE_DEFAULT;
@@ -1812,6 +1825,7 @@
     }
     lyricsStrip.hidden = !text;
     markLyricsPlayingBar(bar, moved);
+    highlightLyricsPreview(bar, false);
   }
 
   function markLyricsPlayingBar(bar, moved) {
@@ -1838,6 +1852,107 @@
         lyricsBars.scrollTop = bottom - lyricsBars.clientHeight + 4;
       }
     }
+  }
+
+  // --- Esikatselu (v2.30) ---------------------------------------------
+  // Pelkät sanat: koko sanoitus yhtenä listana, meneillään oleva rivi
+  // korostettuna ja keskellä näkyvää aluetta. Tila luetaan samasta
+  // #bar-readoutista kuin katselimen sanoitusnauha, joten soitto, seek ja
+  // tahtihyppy liikuttavat korostusta ilman uutta kytkentää soittoketjuun.
+  function lyricsPreviewMeasures() {
+    // The editor field is the visible truth while the panel is in edit mode;
+    // opening the panel fills it from the sidecar, so preview and editor
+    // cannot disagree. A parse error falls back to the saved lines.
+    const parsed = parseLyricsText(lyricsInput ? lyricsInput.value : "");
+    if (!parsed.errors.length) return parsed.measures;
+    return lyricsMeasures;
+  }
+
+  function renderLyricsPreviewLines() {
+    if (!lyricsPreviewList) return;
+    const measures = lyricsPreviewMeasures();
+    const bars = Object.keys(measures)
+      .map((key) => Number(key))
+      .filter((bar) => Number.isFinite(bar) && bar > 0)
+      .sort((left, right) => left - right);
+    lyricsPreviewList.textContent = "";
+    lyricsPreviewLines = bars.map((bar) => {
+      const item = document.createElement("li");
+      item.className = "lyrics-preview-line";
+      item.dataset.bar = String(bar);
+      item.textContent = String(measures[String(bar)] || "");
+      lyricsPreviewList.appendChild(item);
+      return { bar, element: item };
+    });
+    if (lyricsPreviewEmpty) {
+      lyricsPreviewEmpty.hidden = lyricsPreviewLines.length > 0;
+    }
+    lyricsPreviewShownBar = -1;
+    highlightLyricsPreview(currentLyricsBar(), true);
+  }
+
+  function refreshLyricsPreview() {
+    // Only the open preview paints; entering the mode renders from scratch.
+    if (!lyricsPreviewActive) return;
+    renderLyricsPreviewLines();
+  }
+
+  function highlightLyricsPreview(bar, force) {
+    if (!lyricsPreviewActive || !lyricsPreviewList) return;
+    const currentBar = Number(bar) || 0;
+    if (!force && currentBar === lyricsPreviewShownBar) return;
+    lyricsPreviewShownBar = currentBar;
+    // The highlighted line stays through its own bar and any gap, so a
+    // singer sees the line they are on until the next line actually starts.
+    let current = null;
+    lyricsPreviewLines.forEach((line) => {
+      if (currentBar > 0 && line.bar <= currentBar) current = line;
+    });
+    lyricsPreviewLines.forEach((line) => {
+      line.element.classList.toggle("is-current", line === current);
+    });
+    if (!current || !lyricsPreview) return;
+    // Scroll only the lyric list: the page and the transport behind the
+    // panel must never jump while the song plays.
+    const itemRect = current.element.getBoundingClientRect();
+    const viewRect = lyricsPreview.getBoundingClientRect();
+    if (!itemRect.height) return;
+    const delta =
+      itemRect.top + itemRect.height / 2 - (viewRect.top + viewRect.height / 2);
+    if (Math.abs(delta) > 2) lyricsPreview.scrollTop += delta;
+  }
+
+  function setLyricsPreview(on) {
+    if (!lyricsDialog) return;
+    const active = Boolean(on);
+    lyricsPreviewActive = active;
+    lyricsDialog.classList.toggle("is-preview", active);
+    if (lyricsPreview) lyricsPreview.hidden = !active;
+    if (lyricsPreviewButton) {
+      lyricsPreviewButton.textContent = active ? "TAKAISIN" : "ESIKATSELU";
+      lyricsPreviewButton.setAttribute(
+        "aria-pressed",
+        active ? "true" : "false"
+      );
+      lyricsPreviewButton.title = active
+        ? "Palaa muokkaustilaan: tahdit, tekstikenttä ja tallennus."
+        : "Näytä vain sanat: koko sanoitus ilman muokkauskenttiä. Nykyinen rivi seuraa soittoa ja tahtihyppyä.";
+    }
+    if (lyricsPreviewHint) {
+      lyricsPreviewHint.textContent = active
+        ? "Nykyinen rivi seuraa soittoa."
+        : "";
+    }
+    if (lyricsPreviewClose) lyricsPreviewClose.hidden = !active;
+    if (active) {
+      renderLyricsPreviewLines();
+      return;
+    }
+    lyricsPreviewLines = [];
+    lyricsPreviewShownBar = -1;
+    if (lyricsPreviewList) lyricsPreviewList.textContent = "";
+    // The bar list was hidden while previewing; re-mark the playing bar.
+    markLyricsPlayingBar(currentLyricsBar(), true);
   }
 
   function resetLyrics() {
@@ -1895,6 +2010,7 @@
       lyricsLocked = Boolean(payload && payload.locked);
       lyricsNotes = String((payload && payload.notes) || "");
       applyLyricsLock();
+      refreshLyricsPreview();
       renderLyricsStrip(true);
       // A fetch that lands after the user started typing must not overwrite
       // the edit; the save button is the only writer of the sidecar.
@@ -1910,6 +2026,7 @@
       lyricsNotes = "";
       if (lyricsNotesInput && !lyricsDirty) lyricsNotesInput.value = "";
       applyLyricsLock();
+      refreshLyricsPreview();
       renderLyricsStrip(true);
     } finally {
       if (lyricsLoadingFor === id) lyricsLoadingFor = "";
@@ -2390,6 +2507,8 @@
     renderLyricsBars(total);
     applyLyricsLock();
     setLyricsStatus("");
+    // A tab change fills the field first; an open preview must follow it.
+    refreshLyricsPreview();
   }
 
   // --- floating panel (v2.07) -----------------------------------------
@@ -2664,6 +2783,7 @@
 
   function closeLyricsDialog() {
     if (!lyricsDialog) return;
+    setLyricsPreview(false);
     lyricsDialog.hidden = true;
     lyricsDrag = null;
     lyricsResize = null;
@@ -2731,6 +2851,7 @@
       lyricsShownBar = -1;
       lyricsDirty = false;
       applyLyricsLock();
+      refreshLyricsPreview();
       renderLyricsStrip(true);
       markLyricsBars();
       setLyricsStatus(
@@ -4038,6 +4159,16 @@
   // Sanat (v2.06): the editor and its overlay are wired here, outside the
   // playback chain; watchLyrics() only observes existing UI text.
   if (lyricsButton) lyricsButton.addEventListener("click", openLyricsDialog);
+  // Esikatselu (v2.30): pelkät sanat, ei muokkauskenttiä. DOM-vain tila,
+  // joten soitto, kellotus ja kohdistus jatkuvat ennallaan.
+  if (lyricsPreviewButton) {
+    lyricsPreviewButton.addEventListener("click", () =>
+      setLyricsPreview(!lyricsPreviewActive)
+    );
+  }
+  if (lyricsPreviewClose) {
+    lyricsPreviewClose.addEventListener("click", closeLyricsDialog);
+  }
   if (lyricsForm) lyricsForm.addEventListener("submit", saveLyrics);
   if (lyricsClose) lyricsClose.addEventListener("click", closeLyricsDialog);
   // Lukitus (v2.18): rasti tallentaa nykyiset rivit ja lukitsee sidecarin.

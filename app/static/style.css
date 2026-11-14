@@ -2099,6 +2099,69 @@ body.hide-ui-export .viewer-foot {
   font-variant-numeric: tabular-nums;
 }
 
+/* Esikatselu (v2.30): pelkät sanat samassa paneelissa. Muokkausosat
+   piilotetaan ja tilalle tulee koko sanoitus yhtenä listana; meneillään oleva
+   rivi korostetaan ja vieritetään näkyvälle alueelle. Vieritys tapahtuu vain
+   listassa, joten sivu ja transport eivät liiku. */
+.lyrics-mode-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.lyrics-preview-hint {
+  font-size: 0.7rem;
+  letter-spacing: 0.02em;
+}
+
+.lyrics-preview {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 0.15rem 0.2rem 0.2rem;
+  scrollbar-width: thin;
+}
+
+.lyrics-preview[hidden] {
+  display: none;
+}
+
+.lyrics-preview-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.lyrics-preview-line {
+  padding: 0.3rem 0.75rem;
+  border-left: 3px solid transparent;
+  border-radius: 8px;
+  color: var(--muted);
+  font-size: 1.02rem;
+  line-height: 1.35;
+  transition: color 120ms ease, background 120ms ease;
+}
+
+.lyrics-preview-line.is-current {
+  border-left-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--text);
+  font-weight: 700;
+}
+
+.lyrics-preview-empty {
+  margin: 0.4rem 0.75rem;
+  font-size: 0.85rem;
+}
+
+.lyrics-preview-empty[hidden] {
+  display: none;
+}
+
 /* Soittoeditori (v2.12): the same basic controls as the remote, so a lyric
    line can be placed without reaching for the transport behind the panel. */
 .lyrics-controls {
@@ -2341,5 +2404,15 @@ body.hide-ui-export .viewer-foot {
 .lyrics-bar:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
+}
+
+/* Muokkaustila on oletus; esikatselussa (v2.30) näkyvät vain sanat sekä
+   paneelin otsikko, tahtimerkintä ja paluu/sulkeminen. */
+.lyrics-float.is-preview .lyrics-controls,
+.lyrics-float.is-preview #lyrics-subject,
+.lyrics-float.is-preview .lyrics-bars,
+.lyrics-float.is-preview .lyrics-split,
+.lyrics-float.is-preview .lyrics-form {
+  display: none;
 }
 

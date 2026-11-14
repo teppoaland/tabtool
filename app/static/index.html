@@ -6,14 +6,14 @@
   <meta name="color-scheme" content="dark">
   <title>AI TabTool</title>
   <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="/static/style.css?v=2.29">
+  <link rel="stylesheet" href="/static/style.css?v=2.30">
 </head>
 <body>
   <header class="topbar">
     <div class="brand">
       <span class="brand-mark" aria-hidden="true">AT</span>
       <span class="brand-name">AI TABTOOL</span>
-      <span id="version-tag" class="version">v2.29</span>
+      <span id="version-tag" class="version">v2.30</span>
     </div>
     <nav class="nav" aria-label="Päävalikko">
       <button id="open-search-top" type="button" class="primary nav-library"
@@ -382,6 +382,25 @@
       <h2 id="lyrics-heading">Sanat</h2>
       <span id="lyrics-bar-badge" class="lyrics-bar-badge">Tahti –</span>
     </header>
+    <!-- Esikatselu (v2.30): pelkät sanat ilman muokkauskenttiä. Rivi, joka on
+         meneillään, seuraa #bar-readoutia, joten soitto ja tahtihyppy näkyvät
+         tässä saman tien. Tila on DOM-vain eikä kosketa soittoketjua. -->
+    <div class="lyrics-mode-bar">
+      <button id="lyrics-preview-button" type="button" class="ghost small"
+              aria-pressed="false"
+              title="Näytä vain sanat: koko sanoitus ilman muokkauskenttiä. Nykyinen rivi seuraa soittoa ja tahtihyppyä.">ESIKATSELU</button>
+      <span id="lyrics-preview-hint" class="lyrics-preview-hint muted"></span>
+      <button id="lyrics-preview-close" type="button"
+              class="ghost small lyrics-preview-close"
+              title="Sulje sanaeditori." hidden>SULJE</button>
+    </div>
+    <div id="lyrics-preview" class="lyrics-preview" hidden
+         aria-label="Sanat">
+      <ol id="lyrics-preview-list" class="lyrics-preview-list"></ol>
+      <p id="lyrics-preview-empty" class="lyrics-preview-empty muted" hidden>
+        Tällä tabilla ei ole vielä sanoja. Lisää rivit muokkaustilassa.
+      </p>
+    </div>
     <!-- Soittoeditori (v2.12): samat perustoiminnot kuin kaukosäätimessä,
          jotta rivin paikan voi tarkistaa soittamatta katselimeen.
          v2.16: « on PLAYn vasemmalla puolella (alkuun ennen toistoa). -->
@@ -443,13 +462,13 @@
 
 
   <footer class="footer">
-    <span>AI TabTool v2.29</span>
+    <span>AI TabTool v2.30</span>
     <span>Local-first · <a href="/remote">Remote</a></span>
   </footer>
 
-  <script src="/static/vendor/alphaTab/alphaTab.min.js?v=2.29"></script>
-  <script src="/static/app.js?v=2.29" defer></script>
-  <script src="/static/remote-bridge.js?v=2.29" defer></script>
+  <script src="/static/vendor/alphaTab/alphaTab.min.js?v=2.30"></script>
+  <script src="/static/app.js?v=2.30" defer></script>
+  <script src="/static/remote-bridge.js?v=2.30" defer></script>
 </body>
 </html>
 
