@@ -1,6 +1,6 @@
 # 🎯 Projektin lyhyt kuvaus – AI TABTOOL
 
-> **Versio:** `v2.28` (1.11.2026)
+> **Versio:** `v2.30` (14.11.2026) · **PianoCapture** `0.4.1` (sama repo)
 > **Repo:** https://github.com/teppoaland/tabtool
 > **Paikallinen:** `D:\AI\tabtool`
 
@@ -17,7 +17,30 @@ Lokaali web-palvelu, jossa voi:
 5. valita ja poistaa kappaleita LIBRARY-modaalin kirjastosta,
 6. käyttää puhelinta kaukosäätimenä sisäverkossa (QR-pariutus,
    valinnainen LAN-PIN),
-7. viedä tabin GP5/MusicXML/MIDI-muodossa.
+7. viedä tabin GP5/MusicXML/MIDI-muodossa,
+8. **PianoCapture** (oma app samassa repossa): YouTube-pätkä pianon
+   alkusoitosta → nuotit 88 koskettimelle, myös puhelimessa.
+
+## PianoCapture – toinen tuote samassa repossa (v0.1–0.4.1)
+
+`piano/` on erillinen kevyt FastAPI-app (oma portti **8020**, oma data
+`data_piano/`, oma UI). Se jakaa TabToolin audioputken
+(`app.pipeline.audio_source`: yt-dlp + ffmpeg) mutta **ei koske TabToolin
+soittoketjuun, alphaTab-kytkentöihin eikä `app/static`iin**.
+
+- YouTube-linkki tai paikallinen audio → 180 s otos → piano-intro ja bändin
+  sisääntulo → transkriptio Basic Pitchillä **pianon parametreilla**
+  (`27,5–4186 Hz`, `melodia_trick=False`) → 88 koskettimen canvas.
+- **KIERTO** tunnistaa toistuvan kuvion onset-autokorrelaatiolla
+  (kynnys 0,15) ja loopittaa yhden kierron.
+- Puhelin/tabletti toimii näyttönä LANissa: sidonta `0.0.0.0`, QR ja
+  `/?piece=<id>`-deep link; kapealla näytöllä klaviatuuri rajautuu
+  kappaleen sävelalueeseen.
+- Oma versiosarja `0.x`; **ei vaikuta TabToolin versionumeroon**.
+- Työpöydän kuvake: `start-piano.bat` → portti 8020 (uudelleenkäynnistys
+  pysäyttää vanhan instanssin `prepare_start.ps1`llä).
+- Tietoturva: vain sisäverkkoon, ei autentikaatiota (ks.
+  `.clinerules/08-security.md`).
 
 ## Lukitut päätökset
 
@@ -219,8 +242,11 @@ Sano Cline:lle **`lue membank`**. Sääntö on
 - `app/library.py` – kappaleen poisto (tab/audio/stemmit, MP3 jää)
 - `app/tab_edit.py` – tab-datan muokkaus (toisto, tahdin poisto, viritys)
 - `app/lyrics.py` – sanojen sidecar (`data/lyrics/<tab_id>.json`)
+- `piano/` – PianoCapture (analyze, transcribe, pattern, lan, canvas-UI)
+- `start-piano.bat` / työpöydän `PianoCapture.lnk` – portti 8020
 - `scripts/pipeline_smoke.py` – CLI-proof
 - `stop.bat` / `status.bat` – palvelimen pysäytys ja tilan tarkistus
-- `tests/` – 310 pytest-testiä
+- `tests/` – 324 pytest-testiä (myös `test_piano.py`)
 - `data/` – GITIGNORED: audio, stemmit, tabit, tokenit
+- `data_piano/` – GITIGNORED: piano-lähteet, pätkät, MIDI/MP3
 - `docs/` – GITIGNORED: henkilökohtainen suunnitelma

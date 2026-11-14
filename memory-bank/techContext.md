@@ -59,12 +59,13 @@ python -m venv .venv
 ## Testit
 
 ```powershell
-.venv\Scripts\python.exe -m pytest -q          # 310 passed (v2.28)
-.venv\Scripts\python.exe -m compileall -q app scripts tests
+.venv\Scripts\python.exe -m pytest -q          # 324 passed (v2.30 + piano 0.4.1)
+.venv\Scripts\python.exe -m compileall -q app piano scripts tests
 node --check app\static\app.js
 node --check app\static\remote.js
 node --check app\static\remote-bridge.js
 node --check app\static\settings.js
+node --check piano\static\piano.js
 ```
 
 Konsoli voi olla hyvin kapea (agentin kuori ~12 merkkiä, CP437) ja
@@ -88,8 +89,10 @@ Hyödylliset valinnat: `--model htdemucs_6s`, `--stem guitar`, `--tuning`,
 ## Git
 
 - `origin` = `https://github.com/teppoaland/tabtool.git`
-- **Push vain erillisestä pyynnöstä.** Projektia ei julkaista; commitit
-  ovat ensisijaisesti paikallisia palautuspisteitä (`git revert`).
+- **Push vain erillisestä pyynnöstä.** 14.11.2026 käyttäjä pyysi pushin:
+  `v2.24–v2.30` ja PianoCapture `0.4.1` ovat `origin/main`issa
+  (`77ee79f`), työpuu clean. Sama pyyntö kattoi intro-sivun repon
+  (`D:\AI\introduction`, `52f2de9`).
 - Ankkurit: v1.38 `c74ccdd`, v1.39 `8237876`, v1.40 `30e2c0e`,
   v1.41 = GP3/GP4-tuonti; tagi `v1.29` = `bb704e8`; tagi `v1.99` =
   toimiva palautuspiste (23.10.2026).
@@ -127,6 +130,10 @@ Hyödylliset valinnat: `--model htdemucs_6s`, `--stem guitar`, `--tuning`,
 - Audio attach: tuotu tabi voi osoittaa samannimisen AI-tabin audioon;
   audioita ei kopioida. Pätkäjobi käyttää tabin audiota ja optionsia.
 - `notes.json` / refinger **ei vielä** ole käytössä.
+- **PianoCapture (v0.1–0.4.1):** `data_piano/` on oma juuri
+  (gitignoroitu): `sources/<hash>.wav|json` (ladattu/normalisoitu mono),
+  `pieces/<id>/piece.json|audio.wav|notes.mid|audio.mp3`, `tmp/`.
+  `PIANO_DATA_DIR`, `PIANO_PORT` (8020), `PIANO_PROBE_SECONDS` (180).
 
 Sisäiset nimet säilyttävät `tabtool`-etuliitteen (repo, `TABTOOL_*`,
 DB-tiedosto); vain tuotenimi on `AI TabTool`.
@@ -417,7 +424,50 @@ DB-tiedosto); vain tuotenimi on `AI TabTool`.
   päällä, SIIRTO 0,5. 175 oli tabin tahdin 1 arvio.
 - **Tunnettu rajoite:** `scoreEndTimeMs()` laskee lopun vakiotemolla, joten
   tempoautomatiikkaa käyttävä tabi pysähtyy ennen loppua (Whiplash 175:llä
-  tahti 150, 166:lla 158). Korjaus v2.29 ehdolla, ks. `progress.md`.
+  tahti 150, 166:lla 158). Korjaus siirtyi versioon **v2.31** (v2.29 ja
+  v2.30 kuluivat sanoitus-UI:hin), ks. `progress.md`.
+
+## v2.29 (14.11.2026)
+
+- **SANAT koko näytössä:** natiivissa fullscreenissä selain piirtää vain
+  fullscreen-elementin alipuun, joten body-tason kelluva editori jäi
+  näkymättömäksi. `lyricsDialogHost()` + `adoptLyricsDialog()` siirtävät
+  paneelin `#viewer-section`in lapseksi fullscreenin ajaksi ja takaisin
+  `fullscreenchange`issa; siirto tehdään ennen `hidden = false`ta.
+  Paneeli pysyy `position: fixed` -overlayna (z 2200), joten katselimen
+  grid/flex-mitat eivät muutu. Vartiotesti
+  `test_lyrics_editor_opens_on_top_in_native_fullscreen`.
+- **v2.30 – ESIKATSELU:** pelkät sanat -tila (muokkauskentät piiloon,
+  koko sanoitus yhtenä listana, nykyinen rivi korostettuna ja keskellä).
+  Tahtinumero luetaan samasta `#bar-readout`ista kuin strip; rivi pysyy
+  korostettuna välitahdit. KIERTO ei liity tähän. Testit **312**.
+- **Testit yhteensä v2.30:** 312 (ei vielä piano-testejä).
+
+## PianoCapture 0.1–0.4.1 (14.11.2026)
+
+- **Synty:** käyttäjä halusi piano-introista 88-koskettimen ohjeen
+  (ei tablatuuria) YouTube-pätkästä. Päätös: erillinen app samaan repoon,
+  ei forkkia eikä omaa venviä (Demucs/Basic Pitch -asennukset ovat raskaat).
+- **v0.1:** `piano/` FastAPI + canvas; analyysi (HPSS + bändin sisääntulo),
+  Basic Pitch piano-parametreilla, 88 koskettinta, käsijako, nopeus, loop,
+  synteettinen näppäinääni, `data_piano/`.
+- **v0.2:** KIERTO – onset-autokorrelaatio (1,5–12 s), `÷2`/`×2`,
+  nykyinen rivi + autoscroll; kynnys 0,15 (läpisävelletty intro → ei
+  kiertoa).
+- **v0.3:** MP3/MIDI-lataus (MP3 lazy ffmpegillä) ja **Taustaääni**
+  päälle/pois (mute + kello jatkaa; muistetaan localStoragessa).
+- **v0.4:** LAN/puhelin – `0.0.0.0`, QR (`segno`) ja `/?piece=<id>`;
+  kapealla näytöllä klaviatuuri rajautuu sävelalueeseen; oma QR
+  pätkäkortissa; `scroll-margin-top` sticky-otsikolle.
+- **v0.4.1:** työpöydän kuvake (`PianoCapture.lnk`, `piano.ico`),
+  `start-piano.bat` pysäyttää vanhan 8020-instanssin
+  (`prepare_start.ps1 -Port 8020 -Label PianoCapture`), `PIANO_NO_BROWSER`.
+- **Testit:** 12 piano-testiä (`tests/test_piano.py`: kierto, analyysi
+  synteettisellä audialla, piano-parametrit, API, LAN/QR, UI-sopimus).
+  Yhteensä **324**.
+- **Mitatut esimerkit:** Diablo – *The Well of Grief* 11,0 → 26,0 s
+  (kierto 3,84 s × 3,9); The Gathering – *Black Light District*
+  0,8 → 128,3 s (ei kiertoa, huippu 0,06). Ks. `piano/README.md`.
 
 ## Sanat GP5:ssä – työtapa (24.10.2026)
 

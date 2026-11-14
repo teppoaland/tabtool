@@ -7,15 +7,17 @@
 
 ## Nykyinen versio
 
-`v2.28` – `app/__init__.py`:n `__version__`, `app/static/index.html`:n
+`v2.30` – `app/__init__.py`:n `__version__`, `app/static/index.html`:n
 `#version-tag` ja kaikki `?v=`-leimat. **Palautuspiste: tagi `v2.23`**
-(25.10.2026, “hyvä paketti”), `v2.24`–`v2.28`
-paikallisina committeina (ei pushattu) ja vanhempi tagi `v1.99`
-(23.10.2026); v1.23–v2.23 on pushattu `origin/main`iin 25.10.2026.
-`v2.27` (tempoautomatiikan kytkin) on kuitattu Whiplashilla 1.11.2026, ja
-`v2.28` (metadatan lähtö-BPM) odottaa vain silmämääräistä tarkistusta.
-Avoin temposkartta-/loppuvartijakorjaus on suunniteltu v2.29:ksi
-(`memory-bank/progress.md`, "Seuraavaksi").
+(25.10.2026, “hyvä paketti”), vanhempi tagi `v1.99` (23.10.2026).
+`v1.23–v2.30` on **pushattu** `origin/main`iin 14.11.2026 (`77ee79f`);
+työpuu clean. `v2.29` (SANAT fullscreen) ja `v2.30` (ESIKATSELU) on
+kuitattu PC:llä; Android/puhelinpuoli pianosta on vielä testaamatta.
+
+**PianoCapture** (`piano/`) on erillinen app samassa repossa ja käyttää
+**omaa `0.x`-versiosarjaa** (nyt `0.4.1`). Se ei vaikuta TabToolin
+versionumeroon eikä soittoketjuun. Avoin temposkartta-/loppuvartijakorjaus
+on siirretty versioon **v2.31** (`memory-bank/progress.md`, "Seuraavaksi").
 
 ## Milloin +0.01
 
@@ -62,7 +64,8 @@ Nosta versiota **aina kun ajettava koodi muuttuu**:
 
 ```
 .venv\Scripts\python.exe -m pytest -q
-.venv\Scripts\python.exe -m compileall -q app
+.venv\Scripts\python.exe -m compileall -q app piano
 node --check app\static\app.js
 node --check app\static\remote.js
+node --check piano\static\piano.js
 ```

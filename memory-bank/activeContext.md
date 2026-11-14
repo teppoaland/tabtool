@@ -1,18 +1,34 @@
 # 📍 Aktiivinen konteksti – AI TABTOOL
 
-> **Versio:** `v2.28` (1.11.2026) · **Testit:** 310 passed
-> **Git:** v1.23–v2.23 **pushattu** `origin/main`iin 25.10.2026; **v2.24–v2.28
-> ovat paikallisia committeja (ei pushattu)**
-> (`main` 11 committia `origin/main`in edellä). **Palautuspisteet:** tagi `v2.23`
-> (25.10.2026, “hyvä paketti”) ja vanhempi tagi `v1.99`
-> (`git reset --hard v1.99`). Älä pinnaa HEAD-hashia pysyvästi.
-> **Push:** vain erillisestä pyynnöstä (20.10., 23.10. ja 25.10.2026).
+> **Versio:** `v2.30` (14.11.2026) + PianoCapture `0.4.1` · **Testit:** 324 passed
+> **Git:** kaikki **pushattu** `origin/main`iin 14.11.2026 (`77ee79f`);
+> intro-sivu repo `52f2de9`; työpuu clean.
+> **Palautuspisteet:** tagi `v2.23` (25.10.2026, “hyvä paketti”) ja vanhempi
+> tagi `v1.99` (`git reset --hard v1.99`). Älä pinnaa HEAD-hashia pysyvästi.
+> **Push:** vain erillisestä pyynnöstä (20.10., 23.10., 25.10. ja 14.11.2026).
 > **Repo:** https://github.com/teppoaland/tabtool
 > **Palvelin:** käyttäjän instanssi on hänen CMD-ikkunassaan (portti 8000);
 > **agentti saa ajaa oman instanssin toisella portilla** (päivitetty 1.11.2026).
+> PianoCapture: oma instanssi portilla 8020 (`start-piano.bat`).
 
 ## Nyt
 
+- **v2.29–v2.30 – SANAT koko näytössä ja esikatselu (14.11.2026).**
+  Natiivi fullscreen piirtää vain elementin alipuun, joten editori siirretään
+  `#viewer-section`in lapseksi (`adoptLyricsDialog`) ja takaisin.
+  **ESIKATSELU** = pelkät sanat: koko sanoitus listana, nykyinen rivi
+  korostettuna ja keskellä, rivi seuraa `#bar-readout`ia. Ei uusia
+  kytkentöjä soittoketjuun. Testit 312.
+- **PianoCapture 0.1–0.4.1 (14.11.2026).** Erillinen app `piano/`
+  (portti 8020, `data_piano/`): YouTube-pätkä → piano-intro ja bändin
+  sisääntulo → Basic Pitch piano-parametreilla → 88 koskettimen canvas.
+  KIERTO (onset-autokorrelaatio), MP3/MIDI, Taustaääni, LAN-QR,
+  `/?piece=<id>`, työpöydän kuvake. 12 piano-testiä; yhteensä **324**.
+  Käyttäjä testasi PC:llä: toimii; Android-testi pianolla vielä edessä.
+  Ks. `techContext.md` ja `piano/README.md`.
+- **Intro-sivu (14.11.2026).** PianoCapture-kortti, 3 kuvaa, laskurit
+  02 → 03, ticker, rekrytoijatiivistelmä ja boot-rivi; audit 0 virhettä.
+  Kuvista siivottiin LAN-IP ennen julkaisua. `52f2de9` pushattu.
 - **v2.28 – metadata on referenssi (1.11.2026).** Katselimen metadatarivi
   (`#tab-meta`) ja Tiedot näyttävät tabin **lähtö-BPM:n**
   (`meta.original_bpm`, kirjoitetaan kerran generoinnissa ja tuonnissa) eivätkä
@@ -32,7 +48,7 @@
   `scoreEndTimeMs()` laskee partituurin lopun **vakiotemolla**, joten
   temposkarttaa käyttävä tabi leikkautuu ennen loppua: Whiplash pysähtyi
   175 BPM:llä tahtiin **150** (20,6 s puuttui) ja 166 BPM:llä tahtiin **158**.
-  Korjaus (v2.29, vaatii luvan): loppuaika temposkartasta **vain**
+  Korjaus (v2.31, vaatii luvan): loppuaika temposkartasta **vain**
   `syncTimeMs()`in rajaan, jotta `scoreEndTimeMs()`/`backingTrackDuration` ja
   1:1-kartoitus pysyvät ennallaan; S&D:n raja siirtyisi 414,8 → 410,4 s, joten
   käyttäjän kuuntelutesti tarvitaan.
@@ -133,6 +149,12 @@
 
 ## Avoimet / myöhemmin
 
+- **PianoCapture – seuraavat (omat 0.x-versiot):**
+  - käyttäjän Android-testi pianon ääressä (PC:llä kuitattu toimivaksi)
+  - haamunuotit: "siivoa haamut" -suodatin tai pianospesifi malli
+  - A–B-loop raahauksella; FI/EN kielituki vasta kun TabTool on valmis
+  - tunnettu raja: Basic Pitch keksii harmonisia; ohje on suunta, ei
+    virheetön transkriptio (käyttäjän hyväksymä).
 - **Käyttäjän validointi (sääntö #1):** v2.24 (`«` alkuun) kuitattu
   25.10.2026 (”Kaikki toimii”). Sanoitusosion lista pysyy referenssinä, jos
   sanoja muokataan: sanojen siirto klikkauksella ja `Ctrl+Enter`, `JAA RIVIT`

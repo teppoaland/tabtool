@@ -178,6 +178,48 @@ Putki (app/pipeline/)
 - Pätkäjobi luodaan tabin omasta audiopolusta (`/section`); BPM-korjaus
   kirjoittaa GP5:n `song.tempo`-arvon (`/tempo`).
 
+## PianoCapture – rinnakkainen app (v0.1–0.4.1)
+
+```
+piano/main.py (FastAPI, portti 8020)
+  ├─ /api/piano/health, /api/piano/lan (+ qr.svg)
+  ├─ /api/piano/analyze | process  → job-rekisteri (piano/jobs.py)
+  ├─ /api/piano/jobs/{id}
+  ├─ /api/piano/pieces/{id} (+ /audio, /audio.mp3, /midi, /qr.svg)
+  └─ /  → piano/static/ (index.html, piano.js, piano.css)
+        │
+        ▼
+piano/pipeline.py
+  audio.prepare_source → analyze.suggest_window → transcribe (Basic Pitch)
+  → pattern.find_cycle → store.save_piece
+```
+
+- **Oma app, ei jaettua UI:ta.** `piano/` ei importtaa `app/main.py`ta,
+  alphaTabia eikä `app/static`ia; se lainaa vain `app.pipeline.audio_source`in
+  (yt-dlp/ffmpeg-normalisointi). TabToolin JS, soittoketju ja DOM-id:t
+  pysyvät koskemattomina (sääntö 07).
+- **Oma kello.** Pianon toisto lukee `audio.currentTime`ia suoraan; ei
+  SIIRTO/SYNC-inversiota eikä `mediaHandler`ia. Siksi piano-UI voi kehittyä
+  ilman TabToolin regressiochecklistiä.
+- **Oma data ja DB-kierto.** `data_piano/{sources,pieces,tmp}`; pätkä =
+  `piece.json` (ikkuna, nuotit, kierto) + `audio.wav` + `notes.mid` +
+  `audio.mp3` (lazy). Ei SQLitea, ei TabToolin `data/`-hakemistoa.
+- **Jobit muistissa** (`piano/jobs.py`: dict + thread per työ); UI pollaa
+  `/api/piano/jobs/{id}`.
+- **Analyysi on ehdotus, ei totuus.** `analyze.py` mittaa HPSS:n
+  harmonisen/perkussiivisen energian, matalan kaistan ja onset-tiheyden;
+  bändin sisääntulo = kestävä (~0,5 s) hyppy perkussiivisuudessa **ja**
+  äänenvoimakkuudessa. Ikkuna on aina käyttäjän muokattavissa.
+- **Kierto** (`pattern.py`): onset-voimakkuuden autokorrelaatio 1,5–12 s;
+  huippu ≥ 0,15 → ehdotus, muuten `None` (läpisävelletty intro).
+- **Transkriptio** (`transcribe.py`): Basic Pitch, piano-parametrit
+  (`melodia_trick=False`), MIDI tallennetaan tarkistukseksi.
+- **Puhelin/LAN** (`lan.py`): UDP-routing-temppu + segno-QR; sivusto sitoo
+  `0.0.0.0`:aan vain `start-piano.bat`issa. Kapealla näytöllä canvas rajaa
+  klaviatuurin kappaleen sävelalueeseen; `/?piece=<id>` avaa pätkän suoraan.
+- **Versiot:** piano `0.x` (nyt 0.4.1); TabTool pysyy `2.x`:ssä. Yhteinen
+  venv ja `requirements.txt`, ei uusia riippuvuuksia (segno oli jo).
+
 ## Putken data
 
 - `NoteEvent` – pitch, start/end sekunteina, velocity.
@@ -358,7 +400,7 @@ resolvoitui työhakemistosta ja tabi menetti audionsa.
   tempoautomatiikka pidentää todellista kestoa (Whiplash: notatoitu 223,5 s,
   todellinen 244,1 s), toisto jämähtää ennen loppua (tahti 150 / 158).
   **Älä korjaa tätä muuttamalla `backingTrackDuration`ia** – se pitää
-  1:1-kartoituksen; korjaus kuuluu vain syötteen loppurajaan (v2.29, vaatii
+  1:1-kartoituksen; korjaus kuuluu vain syötteen loppurajaan (v2.31, vaatii
   luvan ja kuuntelutestin).
 - **Metadatan lähtö-BPM (v2.28):** `meta.original_bpm` on referenssi, jota
   TAB BPM -säätö ei ylikirjoita; `_tab_summary` välittää sen ja katselimen

@@ -1,12 +1,40 @@
 # 📊 Projektin edistyminen – AI TABTOOL
 
-> **Versio:** `v2.28` (1.11.2026) · **Testit:** 310 passed ·
-> **Git:** v1.23–v2.23 pushattu `origin/main`iin 25.10.2026; **v2.24–v2.28
-> paikallisina committeina (ei pushattu)** (`main` 11
-> committia `origin/main`in edellä). Palautuspiste: **tagi `v2.23`**
-> (25.10.2026) ja vanhempi `v1.99`.
+> **Versio:** `v2.30` (14.11.2026) + **PianoCapture `0.4.1`** · **Testit:** 324 passed ·
+> **Git:** v1.23–v2.30 ja piano 0.4.1 **pushattu** `origin/main`iin
+> 14.11.2026 (`77ee79f`), työpuu clean. Intro-sivu repo
+> (`D:\AI\introduction`) pushattu samana päivänä (`52f2de9`).
+> Palautuspiste: **tagi `v2.23`** (25.10.2026) ja vanhempi `v1.99`.
 > Yksityiskohtainen historia: `CHANGELOG.md`. Tässä tiedostossa on tila,
 > päätökset ja seuraavat askeleet – ei lokia.
+
+## PianoCapture 0.1–0.4.1 + TabTool v2.29–v2.30 (14.11.2026)
+
+- **v2.29 – SANAT koko näytössä.** Natiivi fullscreen piirtää vain
+  fullscreen-elementin alipuun, joten body-tason kelluva editori jäi
+  näkymättömäksi (painallus avasi sen, mutta ruudulla ei näkynyt mitään).
+  `adoptLyricsDialog()` siirtää paneelin `#viewer-section`in lapseksi ja
+  palauttaa `fullscreenchange`issa; paneeli pysyy fixed-overlayna, joten
+  katselimen mitat eivät muutu. Testi
+  `test_lyrics_editor_opens_on_top_in_native_fullscreen`.
+- **v2.30 – ESIKATSELU.** Sanaeditoriin pelkät sanat -tila (muokkausosat
+  piiloon, koko sanoitus listana, nykyinen rivi korostettuna ja keskellä).
+  Tahtinumero samasta `#bar-readout`ista; rivi pysyy korostettuna
+  välitahdit. Ei uusia kytkentöjä soittoketjuun. Testit 312.
+- **PianoCapture 0.1–0.4.1** (`piano/`, portti 8020, `data_piano/`):
+  YouTube-pätkä → piano-intro/bändin sisääntulo → Basic Pitch
+  piano-parametreilla → 88 koskettimen canvas. Mukana KIERTO
+  (onset-autokorrelaatio), MP3/MIDI-lataus, Taustaääni, puhelin/LAN-QR,
+  deep link `?piece=<id>` ja työpöydän kuvake. Ks.
+  `memory-bank/techContext.md` ja `piano/README.md`.
+- **Mitatut tulokset:** Diablo *The Well of Grief* 11,0 → 26,0 s
+  (kierto 3,84 s × 3,9); The Gathering *Black Light District*
+  0,8 → 128,3 s (ei kiertoa). Basic Pitch tuottaa haamunuotteja, mikä on
+  hyväksytty rajoite (visuaalinen ohje, ei virheetön transkriptio).
+- **Intro-sivu:** PianoCapture-kortti, kuvat (1200 px, UI-PNG), laskurit
+  02 → 03, ticker, rekrytoijatiivistelmä ja boot-rivi; audit 0 virhettä.
+  Kuvista siivottiin LAN-IP (Android-selainpalkki pois, QR sumennettu).
+- **Testit:** 324 passed (12 piano-testiä).
 
 ## v2.28 – metadata referenssinä (1.11.2026)
 
@@ -32,7 +60,7 @@
 - **Avoin:** `scoreEndTimeMs()` käyttää vakiotempoa, joten tempoautomatiikkaa
   käyttävä tabi leikkautuu ennen loppua – Whiplash 175:llä tahti **150**
   (20,6 s puuttui) ja 166:lla tahti **158** (notatoitu 235,7 s vs todellinen
-  244,3 s). Korjaus v2.29: loppuaika temposkartasta vain `syncTimeMs()`in
+  244,3 s). Korjaus v2.31: loppuaika temposkartasta vain `syncTimeMs()`in
   rajaan; ks. `Seuraavaksi`.
 
 ## v2.27 – tempoautomatiikka (1.11.2026)
@@ -231,7 +259,7 @@
 
 ## Seuraavaksi
 
-0. **Loppuvartija temposkartan mukaan (v2.29, vaatii luvan).**
+0. **Loppuvartija temposkartan mukaan (v2.31, vaatii luvan).**
    `scoreEndTimeMs()` laskee lopun vakiotemolla → tempoautomatiikkaa käyttävä
    tabi pysähtyy ennen loppua (Whiplash: 150 → 158 tahtia). Korjaus: uusi
    apufunktio summaa tahtikestot `masterBars[i].tempoAutomations`-kartasta ja
@@ -249,9 +277,19 @@
    nuottien karsinta per tahti/fraasi.
 5. **Remote-puhelintesti** (v1.82–v1.90) – käyttäjän kuittaus.
 6. Vasta sitten **Spotify Phase 3** (PKCE, haku/metadata, SDK/Connect).
+7. **PianoCapture (omat 0.x-versiot):**
+   - haamunuotit: asiakaspuolen "siivoa haamut" -suodatin (velocity/pituus/
+     oktaavikopiot) tai pianospesifi malli (`piano_transcription_inference`;
+     sama `NoteEvent`-rajapinta, yhden moduulin vaihto)
+   - A–B-loop raahauksella ja "toista tämä kohta"
+   - kielituki FI/EN vasta kun TabTool on valmis (käyttäjän linjaus:
+     koko softa kerralla, ei nyt)
+   - puhelin: käyttäjän testi Androidilla (toimii PC:llä).
 
 ## Data ja git
 
+- **Pushattu 14.11.2026:** `v2.24–v2.30` + PianoCapture 0.4.1
+  (`origin/main` = `77ee79f`); intro-sivu `52f2de9`. Työpuu clean.
 - **Palautuspiste `v2.23`** (25.10.2026, tagi puskettu `origin`iin): koko
   sanoituspaketti (lukitus, laskenta, sneak peek, muistiinpanot, JAA RIVIT).
   Vanhempi piste: `v1.99`. `git reset --hard <tag>` palauttaa koodin.
