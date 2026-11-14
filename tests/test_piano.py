@@ -17,7 +17,7 @@ import pytest
 import soundfile as sf
 from fastapi.testclient import TestClient
 
-from piano import analyze, config, pattern, pipeline, store, transcribe
+from piano import analyze, config, lan, pattern, pipeline, store, transcribe
 from piano.main import app
 
 SR = 22050
@@ -282,6 +282,12 @@ def test_api_processes_a_local_file_and_serves_the_piece(
     listed = CLIENT.get("/api/piano/pieces").json()
     assert any(item["id"] == piece_id for item in listed)
 
+    monkeypatch.setattr(lan, "base_url", lambda port=None: "http://192.168.1.50:8020")
+    qr = CLIENT.get(f"/api/piano/pieces/{piece_id}/qr.svg")
+    assert qr.status_code == 200
+    assert qr.headers["content-type"].startswith("image/svg+xml")
+    assert b"<svg" in qr.content
+
 
 def test_api_rejects_a_missing_source() -> None:
     response = CLIENT.post("/api/piano/analyze", json={"url": ""})
@@ -290,6 +296,26 @@ def test_api_rejects_a_missing_source() -> None:
 
 def test_api_404_for_unknown_piece() -> None:
     assert CLIENT.get("/api/piano/pieces/does-not-exist").status_code == 404
+
+
+def test_lan_info_and_qr_point_at_the_phone_address(monkeypatch) -> None:
+    """v0.4: the phone in front of the piano gets the same page over the LAN."""
+    monkeypatch.setattr(lan, "base_url", lambda port=None: "http://192.168.1.50:8020")
+    info = CLIENT.get("/api/piano/lan").json()
+    assert info["url"] == "http://192.168.1.50:8020"
+    assert info["qr"].endswith("qr.svg")
+
+    qr = CLIENT.get("/api/piano/lan/qr.svg")
+    assert qr.status_code == 200
+    assert qr.headers["content-type"].startswith("image/svg+xml")
+    assert b"<svg" in qr.content
+
+
+def test_lan_qr_is_404_without_an_address(monkeypatch) -> None:
+    monkeypatch.setattr(lan, "base_url", lambda port=None: None)
+    assert CLIENT.get("/api/piano/lan/qr.svg").status_code == 404
+    info = CLIENT.get("/api/piano/lan").json()
+    assert info["url"] is None
 
 
 def test_keyboard_ui_covers_88_keys_and_hides_the_empty_overlay() -> None:
@@ -319,5 +345,12 @@ def test_keyboard_ui_covers_88_keys_and_hides_the_empty_overlay() -> None:
     assert 'id="backing"' in html
     assert 'id="download-audio"' in html
     assert 'id="download-midi"' in html
+    assert 'id="lan-row"' in html
+    assert 'id="lan-qr"' in html
+    assert 'id="piece-qr"' in html
     assert "audio.muted = !state.backing" in script
+    # Phone/tablet: a fitted keyboard range and a per-piece deep link.
+    assert "fitKeyRange" in script
+    assert "keyRange" in script
+    assert 'new URLSearchParams(window.location.search).get("piece")' in script
 

@@ -1,4 +1,4 @@
-# 🎹 PianoCapture v0.3
+# 🎹 PianoCapture v0.4
 
 PianoCapture on **erillinen, kevyt app** AI TabToolin rinnalla samassa repossa.
 Se ottaa YouTube-linkin (tai äänitiedoston), etsii pianon alun ja bändin
@@ -82,6 +82,25 @@ Kun kierto on opeteltu, ota **KIERTO** pois päältä: soitto jatkuu koko pätk�
   jälkeen se tulee cachesta pätkän kansiosta.
 - **LATAA MIDI** – transkriptio MIDI-tiedostona (MuseScore, DAW, synteesi).
   Sama tiedosto kirjoitetaan jo käsittelyvaiheessa (`notes.mid`).
+
+## Puhelin ja tabletti
+
+Pianon edessä ei ole tilaa PC:lle, joten koko näkymä toimii puhelimessa tai
+tabletissa samassa Wi-Fi-verkossa:
+
+- `start-piano.bat` sitoo palvelimen `0.0.0.0`:aan. Asetusnäytön
+  **Puhelin/tabletti**-rivillä on LAN-osoite ja QR-koodi, jolla puhelin avaa
+  saman sivun. Soittimen otsikossa on **pieni QR**, joka avaa juuri sen pätkän
+  suoraan (`/?piece=<id>`).
+- Kapealla näytöllä klaviatuuri **rajautuu kappaleen käyttämään sävelalueeseen**
+  (vähintään 2 oktaavia), jotta koskettimet pysyvät luettavina. Leveällä
+  näytöllä näkyvät kaikki 88.
+- Puhelin toistaa taustaäänen itse (tai Taustaääni pois), joten PC:tä ei
+  tarvita pianon viereen – se voi olla toisessa huoneessa palvelimena.
+- Jos puhelin ei yhdistä, salli portti **8020** Windows Defenderin
+  palomuurissa yksityisille verkoille.
+- PianoCapturella ei ole PIN-porttia (toisin kuin TabToolin kaukosäätimessä):
+  käytä sitä vain luotetussa kotiverkossa.
 
 ## Transkriptio
 

@@ -273,6 +273,12 @@ button:focus-visible {
   margin-bottom: 0.6rem;
 }
 
+/* The topbar is sticky; scrolling a card into view must not hide it under it. */
+.setup,
+.player {
+  scroll-margin-top: 5.5rem;
+}
+
 .player-head h2 {
   margin: 0;
   text-transform: none;
@@ -444,6 +450,54 @@ a.ghost:hover {
   border-color: var(--accent);
   color: var(--accent);
   text-decoration: none;
+}
+
+/* Puhelin/tabletti (v0.4): the laptop can sit elsewhere; the phone in front
+   of the piano opens the same page. The QR opens the app (setup card) or this
+   exact piece (player head). On a phone the blocks hide themselves. */
+.lan-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  margin-top: 0.8rem;
+}
+
+.lan-row[hidden] {
+  display: none;
+}
+
+.lan-url {
+  color: var(--accent);
+  font-size: 0.8rem;
+  word-break: break-all;
+}
+
+.qr {
+  width: 84px;
+  height: 84px;
+  border-radius: 8px;
+  background: #f6f8fb;
+  padding: 4px;
+}
+
+.phone-qr {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+  font-size: 0.66rem;
+}
+
+.phone-qr[hidden] {
+  display: none;
+}
+
+@media (max-width: 900px) {
+  .lan-row,
+  .phone-qr {
+    display: none;
+  }
 }
 
 @media (max-width: 700px) {

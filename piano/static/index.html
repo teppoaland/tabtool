@@ -6,14 +6,14 @@
   <meta name="color-scheme" content="dark">
   <title>PianoCapture</title>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="/static/piano.css?v=0.3.0">
+  <link rel="stylesheet" href="/static/piano.css?v=0.4.0">
 </head>
 <body>
   <header class="topbar">
     <div class="brand">
       <span class="brand-mark" aria-hidden="true">PC</span>
       <span class="brand-name">PIANO CAPTURE</span>
-      <span id="version-tag" class="version">v0.3.0</span>
+      <span id="version-tag" class="version">v0.4.0</span>
     </div>
     <p class="tagline">YouTube-pätkä → 88 koskettinta. Oletus: soitin on piano.</p>
   </header>
@@ -49,6 +49,11 @@
       <div class="progress" id="progress-wrap" hidden>
         <div id="progress-bar" class="progress-bar"></div>
       </div>
+      <div class="lan-row" id="lan-row" hidden>
+        <span class="muted">Puhelin/tabletti samassa verkossa:</span>
+        <a id="lan-url" class="lan-url" href="#" target="_blank" rel="noopener"></a>
+        <img id="lan-qr" class="qr" alt="QR-koodi: avaa PianoCapture puhelimessa" hidden>
+      </div>
     </section>
 
     <section id="recent-card" class="card" hidden aria-label="Viimeisimmät pätkät">
@@ -61,6 +66,10 @@
         <div>
           <h2 id="piece-title">–</h2>
           <p id="piece-meta" class="muted"></p>
+        </div>
+        <div class="phone-qr" id="phone-qr" hidden>
+          <img id="piece-qr" class="qr" alt="QR-koodi: avaa tämä pätkä puhelimessa">
+          <span class="muted">Puhelin</span>
         </div>
         <div class="legend" aria-hidden="true">
           <span class="dot left"></span> vasen käsi
@@ -137,6 +146,6 @@
   </main>
 
   <audio id="audio" preload="auto"></audio>
-  <script src="/static/piano.js?v=0.3.0" defer></script>
+  <script src="/static/piano.js?v=0.4.0" defer></script>
 </body>
 </html>

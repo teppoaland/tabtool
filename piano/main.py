@@ -9,12 +9,12 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from fastapi import FastAPI, HTTPException
-from fastapi.responses import FileResponse
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.responses import FileResponse, Response
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
-from piano import __version__, audio, config, jobs, pattern, pipeline, store
+from piano import __version__, audio, config, jobs, lan, pattern, pipeline, store
 
 APP_NAME = "PianoCapture"
 
@@ -74,6 +74,51 @@ def favicon() -> FileResponse:
 @app.get("/api/piano/health", tags=["system"])
 def health() -> dict[str, str]:
     return {"status": "ok", "app": APP_NAME, "version": __version__}
+
+
+@app.get("/api/piano/lan", tags=["system"])
+def lan_info(request: Request) -> dict:
+    """The LAN address a phone or tablet should open (None if unavailable)."""
+    port = request.url.port or config.PORT
+    url = lan.base_url(port)
+    return {
+        "ip": lan.lan_ip(),
+        "port": port,
+        "url": url,
+        "qr": "/api/piano/lan/qr.svg" if url else None,
+    }
+
+
+@app.get("/api/piano/lan/qr.svg", include_in_schema=False)
+def lan_qr(request: Request) -> Response:
+    port = request.url.port or config.PORT
+    url = lan.base_url(port)
+    if url is None:
+        raise HTTPException(status_code=404, detail="LAN-osoitetta ei löytynyt.")
+    return Response(
+        content=lan.qr_svg(url),
+        media_type="image/svg+xml",
+        headers={"Cache-Control": "no-store"},
+    )
+
+
+@app.get("/api/piano/pieces/{piece_id}/qr.svg", include_in_schema=False)
+def piece_qr(piece_id: str, request: Request) -> Response:
+    """QR that opens this exact piece on a phone in front of the piano."""
+    try:
+        store.load_piece(piece_id)
+    except (FileNotFoundError, ValueError):
+        raise HTTPException(status_code=404, detail="Pätkää ei löytynyt.")
+    port = request.url.port or config.PORT
+    base = lan.base_url(port)
+    if base is None:
+        raise HTTPException(status_code=404, detail="LAN-osoitetta ei löytynyt.")
+    url = f"{base}/?piece={piece_id}"
+    return Response(
+        content=lan.qr_svg(url, scale=5),
+        media_type="image/svg+xml",
+        headers={"Cache-Control": "no-store"},
+    )
 
 
 @app.post("/api/piano/analyze", tags=["pipeline"])

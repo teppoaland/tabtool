@@ -49,6 +49,11 @@
   const backingHint = $("backing-hint");
   const downloadAudio = $("download-audio");
   const downloadMidi = $("download-midi");
+  const lanRow = $("lan-row");
+  const lanUrl = $("lan-url");
+  const lanQr = $("lan-qr");
+  const phoneQr = $("phone-qr");
+  const pieceQr = $("piece-qr");
   const showLeftInput = $("show-left");
   const showRightInput = $("show-right");
   const splitInput = $("split");
@@ -64,6 +69,7 @@
     cycle: null,
     cycleOn: false,
     cycleLength: 0,
+    keyRange: { lo: FIRST_MIDI, hi: LAST_MIDI },
     suggestion: null,
     source: null,
     playing: false,
@@ -307,6 +313,14 @@
       downloadMidi.href = `/api/piano/pieces/${pieceId}/midi`;
       downloadMidi.setAttribute("download", `pianocapture-${pieceId}.mid`);
     }
+    if (phoneQr && pieceQr) {
+      pieceQr.onerror = () => {
+        phoneQr.hidden = true;
+      };
+      pieceQr.src = `/api/piano/pieces/${pieceId}/qr.svg?t=${Date.now()}`;
+      phoneQr.hidden = false;
+    }
+    fitKeyRange();
     seekInput.max = String(Math.max(0.1, loopEnd()));
     seekInput.value = "0";
     timeTotal.textContent = formatTime(loopEnd());
@@ -429,6 +443,7 @@
     seekInput.max = String(Math.max(0.1, end));
     timeTotal.textContent = formatTime(end);
     updateCycleInfo();
+    fitKeyRange();
     if (state.piece && (restart || currentTime() >= end)) seekTo(0);
     draw();
   }
@@ -440,6 +455,40 @@
     if (cycleInput) cycleInput.checked = true;
     if (cycleLengthInput) cycleLengthInput.value = next.toFixed(1);
     applyCycle(true);
+  }
+
+  // --- phone/tablet keyboard fit (v0.4) --------------------------------
+  // On a narrow screen the full 88 keys would be ~4 px each. Show only the
+  // pitch range this fragment (or the current cycle) uses, snapped outward to
+  // white keys. A wide screen keeps all 88 for orientation.
+  function fitKeyRange() {
+    if (window.innerWidth >= 1100 || !state.notes.length) {
+      state.keyRange = { lo: FIRST_MIDI, hi: LAST_MIDI };
+      return;
+    }
+    const end = state.cycleOn ? loopEnd() : state.duration || Infinity;
+    let lo = LAST_MIDI;
+    let hi = FIRST_MIDI;
+    for (const note of state.notes) {
+      if (note.start >= end) continue;
+      lo = Math.min(lo, note.pitch);
+      hi = Math.max(hi, note.pitch);
+    }
+    if (hi < lo) {
+      state.keyRange = { lo: FIRST_MIDI, hi: LAST_MIDI };
+      return;
+    }
+    lo = Math.max(FIRST_MIDI, lo - 2);
+    hi = Math.min(LAST_MIDI, hi + 2);
+    while (lo > FIRST_MIDI && BLACK_PITCHES.has(lo % 12)) lo -= 1;
+    while (hi < LAST_MIDI && BLACK_PITCHES.has(hi % 12)) hi += 1;
+    // Keep at least two octaves: less looks like a toy keyboard.
+    while (hi - lo < 24) {
+      if (lo > FIRST_MIDI) lo -= 1;
+      else if (hi < LAST_MIDI) hi += 1;
+      else break;
+    }
+    state.keyRange = { lo, hi };
   }
 
   // --- synth ------------------------------------------------------------
@@ -527,7 +576,17 @@
     if (!width || !height) return;
     const keyboardHeight = clamp(height * KEYBOARD_RATIO, 64, 132);
     const top = height - keyboardHeight;
-    const whiteWidth = width / 52;
+    // A phone/tablet shows only the pitch range this fragment actually uses,
+    // so the keys stay wide enough to read. A wide screen keeps all 88.
+    const range = state.keyRange || { lo: FIRST_MIDI, hi: LAST_MIDI };
+    const visibleKeys = keys.filter(
+      (key) => key.midi >= range.lo && key.midi <= range.hi
+    );
+    const whiteKeys = visibleKeys.filter((key) => !key.black);
+    const whiteWidth = width / Math.max(1, whiteKeys.length);
+    const whiteOffset = whiteKeys.length ? whiteKeys[0].x : 0;
+    const keyByMidi = new Map(visibleKeys.map((key) => [key.midi, key]));
+    const keyX = (key) => (key.x - whiteOffset) * whiteWidth;
     const pixelsPerSecond = top / VISIBLE_SECONDS;
     const t = state.piece ? currentTime() : 0;
     // In KIERTO only the first cycle is drawn, so the sheet is short.
@@ -539,10 +598,10 @@
     ctx2d.save();
     ctx2d.strokeStyle = "rgba(255,255,255,0.05)";
     ctx2d.lineWidth = 1;
-    for (let midi = FIRST_MIDI; midi <= LAST_MIDI; midi += 12) {
-      const key = keys.find((item) => item.midi === midi);
+    for (let midi = Math.ceil(range.lo / 12) * 12; midi <= range.hi; midi += 12) {
+      const key = keyByMidi.get(midi);
       if (!key) continue;
-      const x = Math.round(key.x * whiteWidth) + 0.5;
+      const x = Math.round(keyX(key)) + 0.5;
       ctx2d.beginPath();
       ctx2d.moveTo(x, 0);
       ctx2d.lineTo(x, top);
@@ -555,14 +614,14 @@
     for (const note of state.notes) {
       if (!isVisible(note)) continue;
       if (note.start >= endT) continue;
+      const key = keyByMidi.get(note.pitch);
+      if (!key) continue;
       const noteEnd = Math.min(note.end, endT);
       const active = note.start <= t && t < noteEnd;
       if (active) activeKeys.add(note.pitch);
-      const key = keys[note.pitch - FIRST_MIDI];
-      if (!key) continue;
       const keyWidth = key.w * whiteWidth;
       const blockWidth = Math.max(3, keyWidth * (key.black ? 0.92 : 0.84));
-      const blockX = key.x * whiteWidth + (keyWidth - blockWidth) / 2;
+      const blockX = keyX(key) + (keyWidth - blockWidth) / 2;
       const yBottom = top - (note.start - t) * pixelsPerSecond;
       const yTop = top - (noteEnd - t) * pixelsPerSecond;
       const visibleTop = Math.max(0, Math.min(yTop, yBottom));
@@ -589,10 +648,9 @@
     }
 
     // keyboard
-    for (const key of keys) {
+    for (const key of whiteKeys) {
       const keyWidth = key.w * whiteWidth;
-      const x = key.x * whiteWidth;
-      if (key.black) continue;
+      const x = keyX(key);
       const active = activeKeys.has(key.midi);
       const color = active
         ? hand({ pitch: key.midi }) === "left"
@@ -611,10 +669,10 @@
         ctx2d.fillText(noteName(key.midi), x + keyWidth / 2, top + keyboardHeight - 6);
       }
     }
-    for (const key of keys) {
+    for (const key of visibleKeys) {
       if (!key.black) continue;
       const keyWidth = key.w * whiteWidth;
-      const x = key.x * whiteWidth;
+      const x = keyX(key);
       const blackHeight = keyboardHeight * 0.62;
       const active = activeKeys.has(key.midi);
       const color = active
@@ -636,10 +694,10 @@
       ctx2d.textAlign = "center";
       ctx2d.font = "700 11px system-ui, sans-serif";
       for (const pitch of activeKeys) {
-        const key = keys[pitch - FIRST_MIDI];
+        const key = keyByMidi.get(pitch);
         if (!key) continue;
         const keyWidth = key.w * whiteWidth;
-        const x = key.x * whiteWidth + keyWidth / 2;
+        const x = keyX(key) + keyWidth / 2;
         ctx2d.fillStyle = "rgba(10,12,16,0.55)";
         const label = noteName(pitch);
         const textWidth = ctx2d.measureText(label).width + 8;
@@ -712,15 +770,43 @@
         } nuottia`;
         button.appendChild(meta);
         button.addEventListener("click", () => {
-          loadPiece(item.id).catch((error) =>
-            setStatus(error instanceof Error ? error.message : String(error), "error")
-          );
+          loadPiece(item.id)
+            .then(() =>
+              player.scrollIntoView({ behavior: "smooth", block: "start" })
+            )
+            .catch((error) =>
+              setStatus(error instanceof Error ? error.message : String(error), "error")
+            );
         });
         recentEl.appendChild(button);
       }
       recentCard.hidden = false;
     } catch (error) {
       /* recent list is a convenience only */
+    }
+  }
+
+  // --- phone/tablet (v0.4) ----------------------------------------------
+  // The laptop can sit in another room: the phone in front of the piano opens
+  // the same page over the LAN. The setup card shows that address and a QR.
+  async function loadLanInfo() {
+    if (!lanRow) return;
+    try {
+      const response = await fetch("/api/piano/lan", { cache: "no-store" });
+      if (!response.ok) return;
+      const info = await response.json();
+      if (!info || !info.url) return;
+      if (lanUrl) {
+        lanUrl.href = info.url;
+        lanUrl.textContent = info.url;
+      }
+      if (lanQr) {
+        lanQr.src = `${info.qr}?t=${Date.now()}`;
+        lanQr.hidden = false;
+      }
+      lanRow.hidden = false;
+    } catch (error) {
+      /* LAN info is a convenience only */
     }
   }
 
@@ -828,12 +914,14 @@
     typeof ResizeObserver === "function"
       ? new ResizeObserver(() => {
           resizeCanvas();
+          fitKeyRange();
           draw();
         })
       : null;
   if (resizeObserver) resizeObserver.observe(canvas);
   window.addEventListener("resize", () => {
     resizeCanvas();
+    fitKeyRange();
     draw();
   });
 
@@ -845,4 +933,24 @@
   draw();
   window.requestAnimationFrame(frame);
   refreshRecent();
+  loadLanInfo();
+
+  // A phone can be linked straight to one piece: /?piece=<id> (the QR in the
+  // player head uses this).
+  let initialPiece = "";
+  try {
+    initialPiece = new URLSearchParams(window.location.search).get("piece") || "";
+  } catch (error) {
+    initialPiece = "";
+  }
+  if (initialPiece) {
+    loadPiece(initialPiece)
+      .then(() => player.scrollIntoView({ block: "start" }))
+      .catch((error) =>
+        setStatus(
+          error instanceof Error ? error.message : String(error),
+          "error"
+        )
+      );
+  }
 })();
