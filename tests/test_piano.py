@@ -288,6 +288,26 @@ def test_api_processes_a_local_file_and_serves_the_piece(
     assert guide_mp3.status_code == 200, guide_mp3.text
     assert guide_mp3.headers["content-type"].startswith("audio/mpeg")
 
+    # v0.6: hiding a hand also drops it from the exports.
+    right_guide = CLIENT.get(
+        f"/api/piano/pieces/{piece_id}/guide.mp3?hand=right&split=60"
+    )
+    assert right_guide.status_code == 200, right_guide.text
+    assert right_guide.headers["content-type"].startswith("audio/mpeg")
+
+    right_midi = CLIENT.get(
+        f"/api/piano/pieces/{piece_id}/midi?hand=right&split=60"
+    )
+    assert right_midi.status_code == 200, right_midi.text
+    assert right_midi.content.startswith(b"MThd")
+    import pretty_midi
+
+    midi_path = tmp_path / "right.mid"
+    midi_path.write_bytes(right_midi.content)
+    parsed = pretty_midi.PrettyMIDI(str(midi_path))
+    pitches = [note.pitch for inst in parsed.instruments for note in inst.notes]
+    assert pitches and all(pitch >= 60 for pitch in pitches)
+
     listed = CLIENT.get("/api/piano/pieces").json()
     assert any(item["id"] == piece_id for item in listed)
 
@@ -319,6 +339,26 @@ def test_guide_audio_renders_the_transcribed_notes(tmp_path) -> None:
     assert sample_rate == 44100
     assert len(data) == int(1.2 * 44100) + 1
     assert float(np.max(np.abs(data))) > 0.05
+
+
+def test_hand_filter_keeps_only_the_requested_side(tmp_path) -> None:
+    """v0.6: hiding a hand must also drop it from the guide/MIDI exports."""
+    notes = [
+        {"pitch": 48, "start": 0.0, "end": 1.0, "velocity": 90},
+        {"pitch": 60, "start": 0.0, "end": 1.0, "velocity": 90},
+        {"pitch": 72, "start": 0.5, "end": 1.5, "velocity": 80},
+    ]
+    assert [n["pitch"] for n in render.filter_notes(notes, "right", 60)] == [60, 72]
+    assert [n["pitch"] for n in render.filter_notes(notes, "left", 60)] == [48]
+    assert len(render.filter_notes(notes, "all", 60)) == 3
+
+    path = tmp_path / "right.mid"
+    render.render_midi(render.filter_notes(notes, "right", 60), path)
+    import pretty_midi
+
+    parsed = pretty_midi.PrettyMIDI(str(path))
+    pitches = [note.pitch for inst in parsed.instruments for note in inst.notes]
+    assert pitches == [60, 72]
 
 
 def test_lan_info_and_qr_point_at_the_phone_address(monkeypatch) -> None:
@@ -378,6 +418,9 @@ def test_keyboard_ui_covers_88_keys_and_hides_the_empty_overlay() -> None:
     assert "audio.muted = !state.backing" in script
     assert "function setPlayMode" in script
     assert "function syncPlayMode" in script
+    assert "function handQuery" in script
+    assert "function updateDownloadLinks" in script
+    assert "hand=right" in script
     # v0.5.2: an audio-time voice throttle silenced a short piece after a long
     # one (Gathering 127 s -> Diablo 15 s). The per-note voice count is enough.
     assert "voicesReset" not in script

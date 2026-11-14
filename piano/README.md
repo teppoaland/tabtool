@@ -1,4 +1,4 @@
-# 🎹 PianoCapture v0.5.2
+# 🎹 PianoCapture v0.6
 
 PianoCapture on **erillinen, kevyt app** AI TabToolin rinnalla samassa repossa.
 Se ottaa YouTube-linkin (tai äänitiedoston), etsii pianon alun ja bändin
@@ -102,6 +102,14 @@ alkuperäiseen – se on ainoa totuus.
 soittanut pidempää pätkää (esim. Gathering 2:07 → Diablo 0:15). Syy oli
 ääniaikaan sidottu "voices"-throttle, joka jäi päälle pitkästä pätkästä; nyt
 se on poistettu ja äänimäärä nollataan pätkän vaihtuessa.
+
+## Käsien rajaus myös latauksiin (v0.6)
+
+Kun **Vasen** tai **Oikea** otetaan pois päältä, myös **LATAA OHJE (MP3)** ja
+**LATAA MIDI** rajaavat pois piilotetun käden – esimerkiksi Diablon vasemman
+käden haamunuotit. Rajana on **Käsiraja** (oletus C4 = MIDI 60), ja serveri
+renderöi rajatun version omaan cacheensa (`guide-right-60.wav` yms.).
+Kun molemmat kädet ovat näkyvissä, lataus sisältää kaikki nuotit.
 
 ## Tausta ja lataukset
 

@@ -15,6 +15,42 @@ import soundfile as sf
 SAMPLE_RATE = 44100
 
 
+def filter_notes(notes: list[dict], hand: str, split: int = 60) -> list[dict]:
+    """Keep one hand of the transcription (``right`` = pitch >= split)."""
+    if hand not in ("left", "right"):
+        return list(notes)
+    boundary = int(split)
+    if hand == "right":
+        return [n for n in notes if int(n.get("pitch", 0)) >= boundary]
+    return [n for n in notes if int(n.get("pitch", 0)) < boundary]
+
+
+def render_midi(notes: list[dict], target: str | Path) -> Path:
+    """Write the (filtered) notes as a standard MIDI file."""
+    import pretty_midi
+
+    midi = pretty_midi.PrettyMIDI()
+    instrument = pretty_midi.Instrument(program=0, name="PianoCapture")
+    for note in notes:
+        end = float(note.get("end", 0.0))
+        start = float(note.get("start", 0.0))
+        if end <= start:
+            continue
+        instrument.notes.append(
+            pretty_midi.Note(
+                velocity=max(1, min(127, int(note.get("velocity", 90)))),
+                pitch=int(note.get("pitch", 60)),
+                start=start,
+                end=end,
+            )
+        )
+    midi.instruments.append(instrument)
+    path = Path(target)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    midi.write(str(path))
+    return path
+
+
 def render_guide(
     notes: list[dict],
     duration: float,

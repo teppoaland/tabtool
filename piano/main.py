@@ -217,41 +217,47 @@ def piece_audio_mp3(piece_id: str) -> FileResponse:
 
 
 @app.get("/api/piano/pieces/{piece_id}/guide.wav", tags=["pieces"])
-def piece_guide_wav(piece_id: str) -> FileResponse:
-    """The transcribed notes as audio - listen and check the guide."""
+def piece_guide_wav(piece_id: str, hand: str = "all", split: int = 60) -> FileResponse:
+    """The transcribed notes as audio. ``hand=right|left`` drops the other hand."""
     try:
         piece = store.load_piece(piece_id)
         directory = store.piece_dir(piece_id)
     except (FileNotFoundError, ValueError):
         raise HTTPException(status_code=404, detail="Pätkää ei löytynyt.")
-    target = directory / "guide.wav"
+    boundary = max(21, min(108, int(split)))
+    suffix = "" if hand not in ("left", "right") else f"-{hand}-{boundary}"
+    target = directory / f"guide{suffix}.wav"
     if not target.exists():
+        notes = render.filter_notes(piece.get("notes", []), hand, boundary)
         render.render_guide(
-            piece.get("notes", []),
+            notes,
             (piece.get("window") or {}).get("duration", 0.0),
             target,
         )
     return FileResponse(
         target,
         media_type="audio/wav",
-        filename=f"pianocapture-{piece_id}-guide.wav",
+        filename=f"pianocapture-{piece_id}{suffix}-guide.wav",
     )
 
 
 @app.get("/api/piano/pieces/{piece_id}/guide.mp3", tags=["pieces"])
-def piece_guide_mp3(piece_id: str) -> FileResponse:
-    """The guide as MP3 (easy to carry to a phone or a DAW)."""
+def piece_guide_mp3(piece_id: str, hand: str = "all", split: int = 60) -> FileResponse:
+    """The guide as MP3; the hand filter matches the on-screen view."""
     try:
         piece = store.load_piece(piece_id)
         directory = store.piece_dir(piece_id)
     except (FileNotFoundError, ValueError):
         raise HTTPException(status_code=404, detail="Pätkää ei löytynyt.")
-    mp3 = directory / "guide.mp3"
+    boundary = max(21, min(108, int(split)))
+    suffix = "" if hand not in ("left", "right") else f"-{hand}-{boundary}"
+    mp3 = directory / f"guide{suffix}.mp3"
     if not mp3.exists():
-        wav = directory / "guide.wav"
+        wav = directory / f"guide{suffix}.wav"
         if not wav.exists():
+            notes = render.filter_notes(piece.get("notes", []), hand, boundary)
             render.render_guide(
-                piece.get("notes", []),
+                notes,
                 (piece.get("window") or {}).get("duration", 0.0),
                 wav,
             )
@@ -264,12 +270,30 @@ def piece_guide_mp3(piece_id: str) -> FileResponse:
     return FileResponse(
         mp3,
         media_type="audio/mpeg",
-        filename=f"pianocapture-{piece_id}-guide.mp3",
+        filename=f"pianocapture-{piece_id}{suffix}-guide.mp3",
     )
 
 
 @app.get("/api/piano/pieces/{piece_id}/midi", tags=["pieces"])
-def piece_midi(piece_id: str) -> FileResponse:
+def piece_midi(piece_id: str, hand: str = "all", split: int = 60) -> FileResponse:
+    """The (optionally hand-filtered) transcription as MIDI."""
+    boundary = max(21, min(108, int(split)))
+    suffix = "" if hand not in ("left", "right") else f"-{hand}-{boundary}"
+    if suffix:
+        try:
+            piece = store.load_piece(piece_id)
+            directory = store.piece_dir(piece_id)
+        except (FileNotFoundError, ValueError):
+            raise HTTPException(status_code=404, detail="Pätkää ei löytynyt.")
+        path = directory / f"notes{suffix}.mid"
+        if not path.exists():
+            notes = render.filter_notes(piece.get("notes", []), hand, boundary)
+            render.render_midi(notes, path)
+        return FileResponse(
+            path,
+            media_type="audio/midi",
+            filename=f"pianocapture-{piece_id}{suffix}.mid",
+        )
     try:
         path = store.piece_midi(piece_id)
     except (FileNotFoundError, ValueError):

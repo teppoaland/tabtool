@@ -312,17 +312,7 @@
       downloadAudio.href = `/api/piano/pieces/${pieceId}/audio.mp3`;
       downloadAudio.setAttribute("download", `pianocapture-${pieceId}.mp3`);
     }
-    if (downloadMidi) {
-      downloadMidi.href = `/api/piano/pieces/${pieceId}/midi`;
-      downloadMidi.setAttribute("download", `pianocapture-${pieceId}.mid`);
-    }
-    if (downloadGuide) {
-      downloadGuide.href = `/api/piano/pieces/${pieceId}/guide.mp3`;
-      downloadGuide.setAttribute(
-        "download",
-        `pianocapture-${pieceId}-guide.mp3`
-      );
-    }
+    updateDownloadLinks();
     if (phoneQr && pieceQr) {
       pieceQr.onerror = () => {
         phoneQr.hidden = true;
@@ -346,6 +336,49 @@
       state.notes.length ? "ok" : "error"
     );
     await refreshRecent();
+  }
+
+  // --- downloads follow the hand view (v0.6) --------------------------
+  // If one hand is hidden, the guide audio and MIDI are rendered without it,
+  // so a video or a DAW project uses exactly the notes that are on screen.
+  function handQuery() {
+    const splitValue = state.split || 60;
+    if (!state.showLeft && state.showRight) {
+      return `?hand=right&split=${splitValue}`;
+    }
+    if (state.showLeft && !state.showRight) {
+      return `?hand=left&split=${splitValue}`;
+    }
+    return "";
+  }
+
+  function updateDownloadLinks() {
+    if (!state.piece) return;
+    const id = String(state.piece.id || "");
+    if (!id) return;
+    const query = handQuery();
+    const suffix = query.includes("hand=right")
+      ? "-oikea"
+      : query.includes("hand=left")
+        ? "-vasen"
+        : "";
+    if (downloadGuide) {
+      downloadGuide.href = `/api/piano/pieces/${id}/guide.mp3${query}`;
+      downloadGuide.setAttribute(
+        "download",
+        `pianocapture-${id}${suffix}-guide.mp3`
+      );
+      downloadGuide.title = query
+        ? "Lataa ohje vain näkyvistä käsistä."
+        : "Lataa koko ohje MP3:na.";
+    }
+    if (downloadMidi) {
+      downloadMidi.href = `/api/piano/pieces/${id}/midi${query}`;
+      downloadMidi.setAttribute("download", `pianocapture-${id}${suffix}.mid`);
+      downloadMidi.title = query
+        ? "Lataa MIDI vain näkyvistä käsistä."
+        : "Lataa koko transkriptio MIDInä.";
+    }
   }
 
   function play() {
@@ -961,15 +994,18 @@
   }
   showLeftInput.addEventListener("change", () => {
     state.showLeft = showLeftInput.checked;
+    updateDownloadLinks();
   });
   showRightInput.addEventListener("change", () => {
     state.showRight = showRightInput.checked;
+    updateDownloadLinks();
   });
 
   function applySplit() {
     state.split = clamp(Math.round(Number(splitInput.value) || 60), FIRST_MIDI, LAST_MIDI);
     splitInput.value = String(state.split);
     splitName.textContent = noteName(state.split);
+    updateDownloadLinks();
   }
   splitInput.addEventListener("change", applySplit);
 
