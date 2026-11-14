@@ -15,7 +15,7 @@ työpuu clean. `v2.29` (SANAT fullscreen) ja `v2.30` (ESIKATSELU) on
 kuitattu PC:llä; Android/puhelinpuoli pianosta on vielä testaamatta.
 
 **PianoCapture** (`piano/`) on erillinen app samassa repossa ja käyttää
-**omaa `0.x`-versiosarjaa** (nyt `0.6.1`). Se ei vaikuta TabToolin
+**omaa `0.x`-versiosarjaa** (nyt `0.6.2`). Se ei vaikuta TabToolin
 versionumeroon eikä soittoketjuun. Avoin temposkartta-/loppuvartijakorjaus
 on siirretty versioon **v2.31** (`memory-bank/progress.md`, "Seuraavaksi").
 

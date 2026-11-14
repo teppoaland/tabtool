@@ -59,7 +59,7 @@ python -m venv .venv
 ## Testit
 
 ```powershell
-.venv\Scripts\python.exe -m pytest -q          # 326 passed (v2.30 + piano 0.6.1)
+.venv\Scripts\python.exe -m pytest -q          # 326 passed (v2.30 + piano 0.6.2)
 .venv\Scripts\python.exe -m compileall -q app piano scripts tests
 node --check app\static\app.js
 node --check app\static\remote.js
@@ -486,6 +486,14 @@ DB-tiedosto); vain tuotenimi on `AI TabTool`.
   seuraa `Vasen`/`Oikea`-kytkimiä ja `Käsiraja`a. Diablon vasen käsi
   (haamunuotit) voidaan siis pudottaa näkymästä, synteesistä, MP3:sta ja
   MIDIstä yhdellä valinnalla.
+- **v0.6.1:** käsivalinta muistetaan pätkäkohtaisesti
+  (`pianocap:hands:<id>`), joten Diablo avautuu oikea käsi -tilassa ja TG
+  molemmilla käsillä.
+- **v0.6.2 (bugi):** reload MID-istunnon jälkeen jätti molemmat lähteet pois
+  (Taustaääni persistoitui, Ohjeääni ei) → ORG/MID näytti tyhjältä ja PLAY oli
+  mykkä. Korjaus: Ohjeääni persistoidaan (`pianocap:synth`), ja jos molemmat
+  olisivat pois, palautetaan ORG; `syncPlayMode` näyttää kumman tahansa
+  lähteen itsenäisesti (mix = molemmat valittuina).
 - **Testit:** 14 piano-testiä (`tests/test_piano.py`: kierto, analyysi,
   piano-parametrit, ohjeaudio, käsirajaus, API, LAN/QR, UI-sopimus).
   Yhteensä **326**.
