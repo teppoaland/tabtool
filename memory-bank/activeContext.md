@@ -1,6 +1,6 @@
 # 📍 Aktiivinen konteksti – AI TABTOOL
 
-> **Versio:** `v2.30` (14.11.2026) + PianoCapture `0.6.0` · **Testit:** 326 passed
+> **Versio:** `v2.30` (14.11.2026) + PianoCapture `0.6.1` · **Testit:** 326 passed
 > **Git:** kaikki **pushattu** `origin/main`iin 14.11.2026 (`77ee79f`);
 > intro-sivu repo `52f2de9`; työpuu clean.
 > **Palautuspisteet:** tagi `v2.23` (25.10.2026, “hyvä paketti”) ja vanhempi
@@ -29,6 +29,9 @@
   (ääniaikainen voices-throttle); poistettu, äänimäärä nollataan vaihdossa.
   **v0.6:** kätensä rajaus näkyy myös latauksissa (`?hand=right|left&split=`)
   – Diablon vasen käsi pois näkymästä, synteesistä, guide-MP3:sta ja MIDIstä.
+  **v0.6.1:** käsivalinta muistetaan pätkäkohtaisesti (localStorage
+  `pianocap:hands:<id>`), joten Diablo avautuu suoraan oikea käsi -tilassa;
+  `piece.json`ia ei muuteta.
   14 piano-testiä; yhteensä **326**.
   Käyttäjä testasi PC:llä: toimii; Android-testi pianolla vielä edessä.
   Ks. `techContext.md` ja `piano/README.md`.

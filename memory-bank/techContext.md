@@ -59,7 +59,7 @@ python -m venv .venv
 ## Testit
 
 ```powershell
-.venv\Scripts\python.exe -m pytest -q          # 326 passed (v2.30 + piano 0.6.0)
+.venv\Scripts\python.exe -m pytest -q          # 326 passed (v2.30 + piano 0.6.1)
 .venv\Scripts\python.exe -m compileall -q app piano scripts tests
 node --check app\static\app.js
 node --check app\static\remote.js
