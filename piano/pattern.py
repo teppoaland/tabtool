@@ -22,7 +22,10 @@ ANALYSIS_SR = 22050
 HOP = 512
 MIN_CYCLE = 1.5
 MAX_CYCLE = 12.0
-PEAK_FLOOR = 0.08
+# A real loop peaks clearly above the noise floor of a metrical but through-
+# composed intro. The Gathering's 2:08 intro peaks at 0.06; a genuine loop at
+# 0.39. Keeping the floor high means "no cycle" is shown instead of a lie.
+PEAK_FLOOR = 0.15
 
 
 def _onset_autocorrelation(audio_path: str | Path) -> tuple[np.ndarray, float]:

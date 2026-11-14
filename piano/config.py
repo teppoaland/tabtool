@@ -30,8 +30,9 @@ TMP_DIR = DATA_DIR / "tmp"
 HOST = os.getenv("PIANO_HOST", "127.0.0.1").strip() or "127.0.0.1"
 PORT = int(os.getenv("PIANO_PORT", "8020"))
 
-# How much of the beginning is downloaded and analysed for the intro.
-PROBE_SECONDS = float(os.getenv("PIANO_PROBE_SECONDS", "75"))
+# How much of the beginning is downloaded and analysed for the intro. Long
+# solo intros exist (2+ minutes), so the probe reaches past them.
+PROBE_SECONDS = float(os.getenv("PIANO_PROBE_SECONDS", "180"))
 # The tool is for short fragments (intros, verses), not whole songs.
 MAX_WINDOW_SECONDS = float(os.getenv("PIANO_MAX_WINDOW_SECONDS", "300"))
 MIN_WINDOW_SECONDS = 3.0

@@ -1,4 +1,4 @@
-# 🎹 PianoCapture v0.2
+# 🎹 PianoCapture v0.2.1
 
 PianoCapture on **erillinen, kevyt app** AI TabToolin rinnalla samassa repossa.
 Se ottaa YouTube-linkin (tai äänitiedoston), etsii pianon alun ja bändin
@@ -35,7 +35,7 @@ start-piano.bat
 ## Työnkulku
 
 1. **ANALYSOI ALKU** – lataa äänen kerran (`data_piano/sources/`), ottaa
-   ensimmäiset 75 s ja ehdottaa ikkunan:
+   ensimmäiset 180 s ja ehdottaa ikkunan:
    - **piano alkaa** = ensimmäinen kestävä harmoninen alkusoitto
      (HPSS: harmoninen vs. perkussiivinen energia; vesi/taustakohina on
      pääosin perkussiivista, piano harmonista),
@@ -65,6 +65,9 @@ sama asia bändin kanssa.
   työkalu löysi 1 tahdin (tai päinvastoin), yhdellä painalluksella saa oikean.
 - Numeroa voi myös kirjoittaa suoraan, joten korvalla tehty korjaus on aina
   mahdollista. Automaatti on ehdotus, ei totuus.
+- Jos toistoa ei löydy varmasti (onset-autokorrelaation huippu alle 0,15),
+  **KIERTO on pois päältä** ja näytetään koko pätkä. Näin kautta sävelletylle
+  introlle ei tarjota väkisin kiertoa – sen voi silti asettaa käsin.
 
 Kun kierto on opeteltu, ota **KIERTO** pois päältä: soitto jatkuu koko pätkän
 (yhteensä bändin kanssa), ja nuotit näytetään alkuperäisessä pituudessaan.
@@ -83,11 +86,10 @@ kelpaa):
 
 Nuotit tallennetaan JSONiin ja lisäksi `notes.mid` (tarkistus MuseScorella).
 
-## Mitattu esimerkki
+## Mitatut esimerkit
 
-Testikappale: Diablo – *The Well of Grief*
-(<https://www.youtube.com/watch?v=StJwVS0IyO8>), jossa piano alkaa 11 s ja
-muut soittimet tulevat mukaan 26 s.
+**Diablo – *The Well of Grief*** (<https://www.youtube.com/watch?v=StJwVS0IyO8>):
+piano alkaa 11 s, muut soittimet 26 s.
 
 - Ehdotus: **11,0 s → 26,0 s**, varmuus **97 %**.
 - Kierto: **3,84 s × 3,9** (varmuus 0,94) – eli 2 tahdin kuvio ~123 BPM:ssä.
@@ -95,6 +97,14 @@ muut soittimet tulevat mukaan 26 s.
 - 74 % nuottien aloituksista osui 60 ms sisään havaittuun onsetiin – suuntaa
   antava laadunmitta, ei todiste oikeellisuudesta. **Korvalla tarkistus on
   ainoa hyväksyntä.**
+
+**The Gathering – *Black Light District*** (<https://www.youtube.com/watch?v=FpGGVkt1M3M>):
+yhtenäinen, ei-toistuva piano-intro 0 – 2:09.
+
+- Ehdotus: **0,8 s → 128,3 s** (2:08,3), varmuus **100 %**.
+- Kierto: **ei kiertoa** (onset-autokorrelaation huippu 0,06 < 0,15) –
+  KIERTO on pois päältä ja koko 2:08 näytetään sellaisenaan.
+- Transkriptio 127,5 s pätkästä: **178 nuottia**.
 
 ## Data ja tiedostot
 
