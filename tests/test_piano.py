@@ -423,6 +423,10 @@ def test_keyboard_ui_covers_88_keys_and_hides_the_empty_overlay() -> None:
     assert "hand=right" in script
     assert "pianocap:hands:" in script
     assert "function saveHands" in script
+    assert "pianocap:synth" in script
+    assert "function readSynth" in script
+    # A reload must never leave both sources off (blank ORG/MID, mute PLAY).
+    assert "!(backingInput && backingInput.checked)" in script
     # v0.5.2: an audio-time voice throttle silenced a short piece after a long
     # one (Gathering 127 s -> Diablo 15 s). The per-note voice count is enough.
     assert "voicesReset" not in script

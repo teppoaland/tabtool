@@ -327,6 +327,12 @@
     state.showRight = savedHands.right;
     if (showLeftInput) showLeftInput.checked = savedHands.left;
     if (showRightInput) showRightInput.checked = savedHands.right;
+    // Never open a piece with no source at all: fall back to the recording.
+    if (!state.backing && !state.synth) {
+      if (backingInput) backingInput.checked = true;
+      applyBacking();
+    }
+    syncPlayMode();
 
     const source = piece.source || {};
     const artist = source.artist ? `${source.artist} — ` : "";
@@ -487,6 +493,22 @@
     }
   }
 
+  function readSynth() {
+    try {
+      return localStorage.getItem("pianocap:synth") === "1";
+    } catch (error) {
+      return false;
+    }
+  }
+
+  function saveSynth() {
+    try {
+      localStorage.setItem("pianocap:synth", state.synth ? "1" : "0");
+    } catch (error) {
+      /* storage disabled */
+    }
+  }
+
   function updateBackingHint() {
     if (!backingHint) return;
     if (state.backing) {
@@ -503,13 +525,17 @@
   // transcription (backing muted, piano synth on). Switching while playing
   // swaps the source at the same position, so A/B is instant.
   function syncPlayMode() {
-    const org = state.backing && !state.synth;
-    const mid = !state.backing && state.synth;
+    // Each source is shown independently: mix (both on) lights both, and a
+    // normal single source lights exactly one. A reload never leaves the
+    // control blank because init normalises "neither" to ORG.
     if (playOrgButton) {
-      playOrgButton.setAttribute("aria-pressed", org ? "true" : "false");
+      playOrgButton.setAttribute(
+        "aria-pressed",
+        state.backing ? "true" : "false"
+      );
     }
     if (playMidButton) {
-      playMidButton.setAttribute("aria-pressed", mid ? "true" : "false");
+      playMidButton.setAttribute("aria-pressed", state.synth ? "true" : "false");
     }
   }
 
@@ -523,6 +549,7 @@
       synthInput.checked = mid;
       state.synth = mid;
       if (mid) ensureAudioContext();
+      saveSynth();
     }
     updateBackingHint();
     syncPlayMode();
@@ -1006,6 +1033,7 @@
   synthInput.addEventListener("change", () => {
     state.synth = synthInput.checked;
     if (state.synth) ensureAudioContext();
+    saveSynth();
     updateBackingHint();
     syncPlayMode();
   });
@@ -1092,7 +1120,18 @@
   applySplit();
   if (cycleInput) cycleInput.checked = false;
   if (backingInput) backingInput.checked = readBacking();
+  if (synthInput) synthInput.checked = readSynth();
+  if (
+    !(backingInput && backingInput.checked) &&
+    !(synthInput && synthInput.checked)
+  ) {
+    // A reload after a MID session used to leave both sources off (backing was
+    // persisted, synth was not). Default to the recording so PLAY is not mute.
+    if (backingInput) backingInput.checked = true;
+    if (synthInput) synthInput.checked = false;
+  }
   applyBacking();
+  state.synth = Boolean(synthInput && synthInput.checked);
   syncPlayMode();
   resizeCanvas();
   draw();
