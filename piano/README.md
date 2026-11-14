@@ -1,4 +1,4 @@
-# 🎹 PianoCapture v0.2.1
+# 🎹 PianoCapture v0.3
 
 PianoCapture on **erillinen, kevyt app** AI TabToolin rinnalla samassa repossa.
 Se ottaa YouTube-linkin (tai äänitiedoston), etsii pianon alun ja bändin
@@ -72,6 +72,17 @@ sama asia bändin kanssa.
 Kun kierto on opeteltu, ota **KIERTO** pois päältä: soitto jatkuu koko pätkän
 (yhteensä bändin kanssa), ja nuotit näytetään alkuperäisessä pituudessaan.
 
+## Tausta ja lataukset
+
+- **Taustaääni** (oletuksena päällä): pätkä soi nuottien alla. Kun sen ottaa
+  pois, ääni vaikenee mutta kello ja nuotit jatkavat – voit soittaa omalla
+  pianolla mukana. Valinta muistetaan selaimessa.
+- **LATAA AUDIO (MP3)** – pätkä MP3:nä puhelimeen, DAW:iin tai
+  taustanauhakäyttöön. Ensimmäinen lataus koodaa tiedoston ffmpegillä, sen
+  jälkeen se tulee cachesta pätkän kansiosta.
+- **LATAA MIDI** – transkriptio MIDI-tiedostona (MuseScore, DAW, synteesi).
+  Sama tiedosto kirjoitetaan jo käsittelyvaiheessa (`notes.mid`).
+
 ## Transkriptio
 
 Basic Pitch, mutta **pianon parametreilla** (TabToolin kitara-asetukset eivät
@@ -114,6 +125,7 @@ data_piano/
   sources/<hash>.json       # url, title, artist, duration
   pieces/<id>/piece.json    # ikkuna + nuotit + kierto
   pieces/<id>/audio.wav     # pätkän ääni
+  pieces/<id>/audio.mp3     # ladattava tausta (koodataan ensimmäisellä latauksella)
   pieces/<id>/notes.mid     # MIDI-tarkistus
   tmp/                      # analyysin väliaikainen otos
 ```
@@ -150,7 +162,8 @@ ei verkkoa, ei TensorFlow'ta, ei mallilatauksia.
 - Ei kvantisointia tahtiviivoille (tarkoituksella: soitin on piano, ei tabi).
 - Käsijako on MIDI-raja (oletus C4), ei oikea käden tunnistus.
 - Basic Pitch tuottaa joskus ylimääräisiä harmonisia; onset/frame-kynnyksiä
-  voi säätää `piano/transcribe.py`:ssä.
+  voi säätää `piano/transcribe.py`:ssä. Tarkoitus on antaa **suunta ja
+  esimerkki**, ei virheetön transkriptio.
 - Analyysi olettaa, että bändin sisääntulo kuuluu äänenvoimakkuuden ja
   perkussiivisuuden hyppynä. Jos intro vaihtuu suoraan soolosoittimeen ilman
   dynamiikkamuutosta, ehdotus menee pieleen → käytä käsin asetettua ikkunaa.

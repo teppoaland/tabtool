@@ -417,6 +417,35 @@ button:focus-visible {
   font-size: 0.72rem;
 }
 
+/* Lataukset (v0.3): the clip as MP3 for a phone and the notes as MIDI. */
+.download-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  margin-top: 0.7rem;
+}
+
+a.ghost {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 0.35rem 0.6rem;
+  color: var(--text);
+  background: transparent;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-decoration: none;
+}
+
+a.ghost:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  text-decoration: none;
+}
+
 @media (max-width: 700px) {
   .tagline {
     display: none;

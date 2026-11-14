@@ -230,6 +230,8 @@ def test_api_processes_a_local_file_and_serves_the_piece(
         calls["audio"] = str(audio_path)
         calls["midi"] = str(midi_path) if midi_path else None
         calls["limit"] = limit
+        if midi_path:
+            Path(midi_path).write_bytes(b"MThd" + b"\x00" * 12)
         return [
             {"pitch": 60, "start": 0.0, "end": 0.8, "velocity": 90},
             {"pitch": 67, "start": 0.5, "end": 1.2, "velocity": 80},
@@ -268,6 +270,15 @@ def test_api_processes_a_local_file_and_serves_the_piece(
     assert audio.status_code == 200
     assert audio.headers["content-type"].startswith("audio/")
 
+    midi = CLIENT.get(f"/api/piano/pieces/{piece_id}/midi")
+    assert midi.status_code == 200
+    assert midi.content.startswith(b"MThd")
+
+    mp3 = CLIENT.get(f"/api/piano/pieces/{piece_id}/audio.mp3")
+    assert mp3.status_code == 200, mp3.text
+    assert mp3.headers["content-type"].startswith("audio/mpeg")
+    assert mp3.content[:3] == b"ID3" or mp3.content[:1] == b"\xff"
+
     listed = CLIENT.get("/api/piano/pieces").json()
     assert any(item["id"] == piece_id for item in listed)
 
@@ -305,4 +316,8 @@ def test_keyboard_ui_covers_88_keys_and_hides_the_empty_overlay() -> None:
     assert 'id="cycle-length"' in html
     assert 'id="cycle-half"' in html
     assert 'id="cycle-double"' in html
+    assert 'id="backing"' in html
+    assert 'id="download-audio"' in html
+    assert 'id="download-midi"' in html
+    assert "audio.muted = !state.backing" in script
 

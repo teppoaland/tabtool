@@ -6,14 +6,14 @@
   <meta name="color-scheme" content="dark">
   <title>PianoCapture</title>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="/static/piano.css?v=0.2.1">
+  <link rel="stylesheet" href="/static/piano.css?v=0.3.0">
 </head>
 <body>
   <header class="topbar">
     <div class="brand">
       <span class="brand-mark" aria-hidden="true">PC</span>
       <span class="brand-name">PIANO CAPTURE</span>
-      <span id="version-tag" class="version">v0.2.1</span>
+      <span id="version-tag" class="version">v0.3.0</span>
     </div>
     <p class="tagline">YouTube-pätkä → 88 koskettinta. Oletus: soitin on piano.</p>
   </header>
@@ -90,6 +90,9 @@
         <label class="toggle" title="Toista pätkä uudelleen alusta.">
           <input id="loop" type="checkbox" checked> Loop
         </label>
+        <label class="toggle" title="Päällä: pätkä soi taustalla. Pois: ääni ei soi, mutta nuotit liikkuvat – soita itse mukana.">
+          <input id="backing" type="checkbox" checked> Taustaääni
+        </label>
         <label class="toggle" title="Soita nuotit synteettisellä soinnilla äänen päälle.">
           <input id="synth" type="checkbox"> Näppäinsynkka
         </label>
@@ -118,16 +121,22 @@
           <span id="split-name" class="muted">C4</span>
         </label>
       </div>
+      <div class="download-row">
+        <span class="muted">Taustaksi:</span>
+        <a id="download-audio" class="ghost" href="#" download>LATAA AUDIO (MP3)</a>
+        <a id="download-midi" class="ghost" href="#" download>LATAA MIDI</a>
+        <span id="backing-hint" class="muted"></span>
+      </div>
       <p class="hint">
         Space = PLAY/PAUSE · vasen/oikea nuoli = ±5 s · Home = alkuun.
         <strong>KIERTO</strong> näyttää vain toistuvan kuvion ja loopittaa sen:
-        opettele yksi kierto, soita sitten koko alku. Nuotit on transkriboitu
-        automaattisesti, joten tarkista korvalla.
+        opettele yksi kierto, soita sitten koko alku. Tämä on esimerkki siitä,
+        miten kappale menee – ei virheetön transkriptio, joten tarkista korvalla.
       </p>
     </section>
   </main>
 
   <audio id="audio" preload="auto"></audio>
-  <script src="/static/piano.js?v=0.2.1" defer></script>
+  <script src="/static/piano.js?v=0.3.0" defer></script>
 </body>
 </html>

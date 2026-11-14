@@ -45,6 +45,10 @@
   const cycleLengthInput = $("cycle-length");
   const cycleHalfButton = $("cycle-half");
   const cycleDoubleButton = $("cycle-double");
+  const backingInput = $("backing");
+  const backingHint = $("backing-hint");
+  const downloadAudio = $("download-audio");
+  const downloadMidi = $("download-midi");
   const showLeftInput = $("show-left");
   const showRightInput = $("show-right");
   const splitInput = $("split");
@@ -69,6 +73,7 @@
     showRight: true,
     loop: true,
     synth: false,
+    backing: true,
     lastSynth: -1,
     voices: 0,
     voicesReset: 0,
@@ -292,7 +297,16 @@
 
     audio.src = `/api/piano/pieces/${pieceId}/audio?v=${Date.now()}`;
     audio.load();
+    audio.muted = !state.backing;
     audio.playbackRate = state.speed;
+    if (downloadAudio) {
+      downloadAudio.href = `/api/piano/pieces/${pieceId}/audio.mp3`;
+      downloadAudio.setAttribute("download", `pianocapture-${pieceId}.mp3`);
+    }
+    if (downloadMidi) {
+      downloadMidi.href = `/api/piano/pieces/${pieceId}/midi`;
+      downloadMidi.setAttribute("download", `pianocapture-${pieceId}.mid`);
+    }
     seekInput.max = String(Math.max(0.1, loopEnd()));
     seekInput.value = "0";
     timeTotal.textContent = formatTime(loopEnd());
@@ -350,6 +364,34 @@
     timeCurrent.textContent = formatTime(value);
     seekInput.value = String(value);
     state.lastSynth = value - 0.02;
+  }
+
+  // --- backing (v0.3) ---------------------------------------------------
+  // "Taustaääni" on: the clip plays under the falling notes. Off: the clip is
+  // muted but still runs the clock, so the notes keep moving and the user can
+  // play their own piano along. The choice is remembered in this browser.
+  function readBacking() {
+    try {
+      const stored = localStorage.getItem("pianocap:backing");
+      return stored === null ? true : stored === "1";
+    } catch (error) {
+      return true;
+    }
+  }
+
+  function applyBacking() {
+    state.backing = Boolean(backingInput && backingInput.checked);
+    audio.muted = !state.backing;
+    if (backingHint) {
+      backingHint.textContent = state.backing
+        ? ""
+        : "Tausta pois – soita itse mukana.";
+    }
+    try {
+      localStorage.setItem("pianocap:backing", state.backing ? "1" : "0");
+    } catch (error) {
+      /* storage disabled */
+    }
   }
 
   // --- cycle (v0.2) -----------------------------------------------------
@@ -740,6 +782,9 @@
   if (cycleDoubleButton) {
     cycleDoubleButton.addEventListener("click", () => scaleCycle(2));
   }
+  if (backingInput) {
+    backingInput.addEventListener("change", applyBacking);
+  }
   showLeftInput.addEventListener("change", () => {
     state.showLeft = showLeftInput.checked;
   });
@@ -794,6 +839,8 @@
 
   applySplit();
   if (cycleInput) cycleInput.checked = false;
+  if (backingInput) backingInput.checked = readBacking();
+  applyBacking();
   resizeCanvas();
   draw();
   window.requestAnimationFrame(frame);

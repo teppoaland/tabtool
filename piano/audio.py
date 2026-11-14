@@ -177,3 +177,26 @@ def probe_window(source: Path, probe_seconds: float) -> Path:
     target = config.TMP_DIR / f"probe-{source_key(str(source))}-{int(probe_seconds)}.wav"
     slice_wav(source, target, 0.0, probe_seconds)
     return target
+
+
+def to_mp3(source: str | Path, target: str | Path, bitrate: str = "192k") -> Path:
+    """Encode a WAV clip as MP3 for a phone or a DAW (cached next to the WAV)."""
+    ensure_ffmpeg()
+    src = Path(source)
+    dst = Path(target)
+    dst.parent.mkdir(parents=True, exist_ok=True)
+    _run(
+        [
+            "ffmpeg",
+            "-y",
+            "-i",
+            str(src),
+            "-vn",
+            "-codec:a",
+            "libmp3lame",
+            "-b:a",
+            bitrate,
+            str(dst),
+        ]
+    )
+    return dst

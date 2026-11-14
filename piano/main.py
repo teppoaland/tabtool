@@ -14,7 +14,7 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
-from piano import __version__, config, jobs, pattern, pipeline, store
+from piano import __version__, audio, config, jobs, pattern, pipeline, store
 
 APP_NAME = "PianoCapture"
 
@@ -146,6 +146,28 @@ def piece_audio(piece_id: str) -> FileResponse:
         media_type="audio/wav",
         filename=f"{piece_id}.wav",
         headers={"Cache-Control": "no-store"},
+    )
+
+
+@app.get("/api/piano/pieces/{piece_id}/audio.mp3", tags=["pieces"])
+def piece_audio_mp3(piece_id: str) -> FileResponse:
+    """The clip as MP3, cached next to the WAV (easy to copy to a phone)."""
+    try:
+        source = store.piece_audio(piece_id)
+    except (FileNotFoundError, ValueError):
+        raise HTTPException(status_code=404, detail="Ääntä ei löytynyt.")
+    target = source.with_suffix(".mp3")
+    if not target.exists():
+        try:
+            audio.to_mp3(source, target)
+        except RuntimeError as error:
+            raise HTTPException(
+                status_code=500, detail=f"MP3-koodaus epäonnistui: {error}"
+            )
+    return FileResponse(
+        target,
+        media_type="audio/mpeg",
+        filename=f"pianocapture-{piece_id}.mp3",
     )
 
 
