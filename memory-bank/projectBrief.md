@@ -41,6 +41,9 @@ soittoketjuun, alphaTab-kytkentöihin eikä `app/static`iin**.
 - **Käsien rajaus (v0.6):** `Vasen`/`Oikea`-valinta rajaa myös guide-MP3:n ja
   MIDIn (`?hand=right|left&split=`), joten haamukäsi ei päädy videoon eikä
   DAWiin.
+- **Promosamplet:** `samples/` (Diablo 15 s, TG 30 s ote) ja oikeusmaininta
+  `THIRD_PARTY_NOTICES.md`:ssä; tarkoitus on esitellä työkalua ja promota
+  bändejä, ei korvata julkaisuja.
 - Puhelin/tabletti toimii näyttönä LANissa: sidonta `0.0.0.0`, QR ja
   `/?piece=<id>`-deep link; kapealla näytöllä klaviatuuri rajautuu
   kappaleen sävelalueeseen.

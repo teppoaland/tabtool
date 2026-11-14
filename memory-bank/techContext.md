@@ -494,6 +494,11 @@ DB-tiedosto); vain tuotenimi on `AI TabTool`.
   mykkä. Korjaus: Ohjeääni persistoidaan (`pianocap:synth`), ja jos molemmat
   olisivat pois, palautetaan ORG; `syncPlayMode` näyttää kumman tahansa
   lähteen itsenäisesti (mix = molemmat valittuina).
+- **Promosamplet (15.11.2026):** `samples/` sisältää Diablon 15 s oikea käsi
+  -guiden ja TG:n 30 s otteen 2:07-introsta; koko TG on vain paikallisesti.
+  Oikeudet mainittu `THIRD_PARTY_NOTICES.md`:ssä ja `samples/README.md`:ssä;
+  sääntö 04 sallii tämän poikkeuksen. Diablon paikallinen pätkä on siivottu
+  58 nuottiin (`piece.orig.json` backup, guide/MID regeneroitu).
 - **Testit:** 14 piano-testiä (`tests/test_piano.py`: kierto, analyysi,
   piano-parametrit, ohjeaudio, käsirajaus, API, LAN/QR, UI-sopimus).
   Yhteensä **326**.

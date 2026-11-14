@@ -19,7 +19,7 @@
   **ESIKATSELU** = pelkät sanat: koko sanoitus listana, nykyinen rivi
   korostettuna ja keskellä, rivi seuraa `#bar-readout`ia. Ei uusia
   kytkentöjä soittoketjuun. Testit 312.
-- **PianoCapture 0.1–0.6.0 (14.11.2026).** Erillinen app `piano/`
+- **PianoCapture 0.1–0.6.2 (14.11.2026).** Erillinen app `piano/`
   (portti 8020, `data_piano/`): YouTube-pätkä → piano-intro ja bändin
   sisääntulo → Basic Pitch piano-parametreilla → 88 koskettimen canvas.
   KIERTO (onset-autokorrelaatio), MP3/MIDI, Taustaääni, LAN-QR,
@@ -34,7 +34,11 @@
   `piece.json`ia ei muuteta.
   **v0.6.2:** myös Ohjeääni muistetaan (`pianocap:synth`), ORG/MID ei jää
   tyhjäksi reloadissa; jos molemmat sources olisivat pois, palautetaan ORG.
-  14 piano-testiä; yhteensä **326**.
+  **Promosamplet:** `samples/` (Diablo 15 s oikea käsi, TG 30 s ote 2:07:stä;
+  koko TG paikallisesti), oikeusmaininta `THIRD_PARTY_NOTICES.md` +
+  `samples/README.md`, sääntö 04:n poikkeus. **Diablon paikallinen pätkä
+  siivottu** 85 → 58 nuottiin (backup `piece.orig.json`), guide/MID
+  regeneroitu. 14 piano-testiä; yhteensä **326**.
   Käyttäjä testasi PC:llä: toimii; Android-testi pianolla vielä edessä.
   Ks. `techContext.md` ja `piano/README.md`.
 - **Intro-sivu (14.11.2026).** PianoCapture-kortti, 3 kuvaa, laskurit

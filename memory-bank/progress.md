@@ -38,6 +38,14 @@
   muistetaan reloadin yli; jos molemmat lähteet olisivat pois, ORG palautetaan,
   joten ORG/MID ei jää tyhjäksi eikä PLAY mykäksi. Ks.
   `memory-bank/techContext.md` ja `piano/README.md`.
+- **Promosamplet + Diablon siivous (15.11.2026).** `samples/`-kansioon
+  Diablon 15 s oikea käsi -guide ja TG:n 30 s ote 2:07-introsta (koko intro
+  jää paikalliseksi videota varten). Oikeudet kirjattu
+  `THIRD_PARTY_NOTICES.md`:hen ja `samples/README.md`:hen; sääntö 04:ään
+  promosample-poikkeus ja `.gitignore`en `!samples/*.wav`. Diablon
+  paikallinen pätkä siivottiin 85 → 58 nuottiin (pitch < 60 pois,
+  `piece.orig.json` varmuuskopiona); guide/MID regeneroitu. Committit
+  `9d5918d` + `2692976`, pushattu.
 - **Mitatut tulokset:** Diablo *The Well of Grief* 11,0 → 26,0 s
   (kierto 3,84 s × 3,9); The Gathering *Black Light District*
   0,8 → 128,3 s (ei kiertoa). Basic Pitch tuottaa haamunuotteja, mikä on
