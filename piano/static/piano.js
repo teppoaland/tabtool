@@ -40,6 +40,11 @@
   const speedReadout = $("speed-readout");
   const loopInput = $("loop");
   const synthInput = $("synth");
+  const cycleInput = $("cycle");
+  const cycleInfo = $("cycle-info");
+  const cycleLengthInput = $("cycle-length");
+  const cycleHalfButton = $("cycle-half");
+  const cycleDoubleButton = $("cycle-double");
   const showLeftInput = $("show-left");
   const showRightInput = $("show-right");
   const splitInput = $("split");
@@ -52,6 +57,9 @@
     piece: null,
     notes: [],
     duration: 0,
+    cycle: null,
+    cycleOn: false,
+    cycleLength: 0,
     suggestion: null,
     source: null,
     playing: false,
@@ -258,23 +266,38 @@
     state.notes = Array.isArray(piece.notes) ? piece.notes : [];
     state.duration = Number(piece.window && piece.window.duration) || 0;
     state.lastSynth = -1;
+    state.cycle = piece.cycle || null;
+    state.cycleOn = Boolean(
+      state.cycle && Number(state.cycle.confidence) >= 0.55
+    );
+    state.cycleLength = state.cycle
+      ? clamp(Number(state.cycle.length) || 8, 1.5, Math.max(1.5, state.duration))
+      : Math.min(8, Math.max(1.5, state.duration));
+    if (cycleInput) cycleInput.checked = state.cycleOn;
+    if (cycleLengthInput) cycleLengthInput.value = state.cycleLength.toFixed(1);
 
     const source = piece.source || {};
     const artist = source.artist ? `${source.artist} — ` : "";
     titleEl.textContent = `${artist}${source.title || "Piano"}`;
     const start = Number(piece.window && piece.window.start) || 0;
     const end = Number(piece.window && piece.window.end) || 0;
+    const cycleText = state.cycle
+      ? ` · kierto ${Number(state.cycle.length).toFixed(1)} s × ${Number(
+          state.cycle.repeats
+        ).toFixed(1)}`
+      : "";
     metaEl.textContent = `${formatTime(start)}–${formatTime(end)} · ${
       state.notes.length
-    } nuottia · transkriboitu automaattisesti`;
+    } nuottia${cycleText} · transkriboitu automaattisesti`;
 
     audio.src = `/api/piano/pieces/${pieceId}/audio?v=${Date.now()}`;
     audio.load();
     audio.playbackRate = state.speed;
-    seekInput.max = String(state.duration || 1);
+    seekInput.max = String(Math.max(0.1, loopEnd()));
     seekInput.value = "0";
-    timeTotal.textContent = formatTime(state.duration);
+    timeTotal.textContent = formatTime(loopEnd());
     timeCurrent.textContent = formatTime(0);
+    updateCycleInfo();
     emptyEl.hidden = state.notes.length > 0;
     player.hidden = false;
     resizeCanvas();
@@ -329,6 +352,54 @@
     state.lastSynth = value - 0.02;
   }
 
+  // --- cycle (v0.2) -----------------------------------------------------
+  // A short piano figure usually repeats. KIERTO shows and loops just one
+  // cycle, so the whole intro can be learned from a few seconds of notes.
+  function loopEnd() {
+    if (!state.cycleOn || !state.duration) return state.duration;
+    return Math.min(state.cycleLength || state.duration, state.duration);
+  }
+
+  function updateCycleInfo() {
+    if (!cycleInfo) return;
+    if (!state.duration || !state.cycleOn) {
+      cycleInfo.textContent = "";
+      return;
+    }
+    const repeats = state.duration / Math.max(0.1, loopEnd());
+    cycleInfo.textContent = `${loopEnd().toFixed(1)} s × ${repeats.toFixed(1)}`;
+  }
+
+  function applyCycle(restart) {
+    if (!state.duration) return;
+    state.cycleOn = Boolean(cycleInput && cycleInput.checked);
+    const fallback = state.cycle
+      ? Number(state.cycle.length)
+      : Math.min(8, state.duration);
+    const typed = Number(String(cycleLengthInput.value).replace(",", "."));
+    state.cycleLength = clamp(
+      Number.isFinite(typed) && typed > 0 ? typed : fallback,
+      1.5,
+      Math.max(1.5, state.duration)
+    );
+    if (cycleLengthInput) cycleLengthInput.value = state.cycleLength.toFixed(1);
+    const end = loopEnd();
+    seekInput.max = String(Math.max(0.1, end));
+    timeTotal.textContent = formatTime(end);
+    updateCycleInfo();
+    if (state.piece && (restart || currentTime() >= end)) seekTo(0);
+    draw();
+  }
+
+  function scaleCycle(factor) {
+    if (!state.duration) return;
+    const base = state.cycleLength || state.duration;
+    const next = clamp(base * factor, 1.5, Math.max(1.5, state.duration));
+    if (cycleInput) cycleInput.checked = true;
+    if (cycleLengthInput) cycleLengthInput.value = next.toFixed(1);
+    applyCycle(true);
+  }
+
   // --- synth ------------------------------------------------------------
   let audioCtx = null;
 
@@ -373,12 +444,14 @@
     state.voices = Math.max(0, state.voices);
     const from = state.lastSynth;
     const to = now + 0.04;
+    const end = loopEnd();
     if (from < 0) {
       state.lastSynth = to;
       return;
     }
     for (const note of state.notes) {
       if (!isVisible(note)) continue;
+      if (note.start >= end) continue;
       if (note.start > from && note.start <= to) synthNote(note);
     }
     state.lastSynth = to;
@@ -415,6 +488,8 @@
     const whiteWidth = width / 52;
     const pixelsPerSecond = top / VISIBLE_SECONDS;
     const t = state.piece ? currentTime() : 0;
+    // In KIERTO only the first cycle is drawn, so the sheet is short.
+    const endT = state.cycleOn ? loopEnd() : Infinity;
 
     ctx2d.clearRect(0, 0, width, height);
 
@@ -437,7 +512,9 @@
     const activeKeys = new Set();
     for (const note of state.notes) {
       if (!isVisible(note)) continue;
-      const active = note.start <= t && t < note.end;
+      if (note.start >= endT) continue;
+      const noteEnd = Math.min(note.end, endT);
+      const active = note.start <= t && t < noteEnd;
       if (active) activeKeys.add(note.pitch);
       const key = keys[note.pitch - FIRST_MIDI];
       if (!key) continue;
@@ -445,7 +522,7 @@
       const blockWidth = Math.max(3, keyWidth * (key.black ? 0.92 : 0.84));
       const blockX = key.x * whiteWidth + (keyWidth - blockWidth) / 2;
       const yBottom = top - (note.start - t) * pixelsPerSecond;
-      const yTop = top - (note.end - t) * pixelsPerSecond;
+      const yTop = top - (noteEnd - t) * pixelsPerSecond;
       const visibleTop = Math.max(0, Math.min(yTop, yBottom));
       const visibleBottom = Math.min(top, Math.max(yTop, yBottom));
       if (visibleBottom <= visibleTop) continue;
@@ -547,14 +624,20 @@
   function frame() {
     if (!player.hidden && state.piece) {
       const now = currentTime();
-      if (state.playing && state.loop && state.duration > 0 && now >= state.duration - 0.03) {
+      const end = loopEnd();
+      if (
+        state.playing &&
+        (state.loop || state.cycleOn) &&
+        end > 0 &&
+        now >= end - 0.03
+      ) {
         seekTo(0);
         if (audio.paused) play();
       }
       pumpSynth(now);
       timeCurrent.textContent = formatTime(now);
       if (!seekDragging) {
-        seekInput.value = String(clamp(now, 0, state.duration || 0));
+        seekInput.value = String(clamp(now, 0, end || 0));
       }
       draw();
     }
@@ -618,8 +701,7 @@
   audio.addEventListener("loadedmetadata", () => {
     if (Number.isFinite(audio.duration) && audio.duration > 0) {
       state.duration = audio.duration;
-      seekInput.max = String(audio.duration);
-      timeTotal.textContent = formatTime(audio.duration);
+      applyCycle(false);
     }
   });
 
@@ -646,6 +728,18 @@
     state.synth = synthInput.checked;
     if (state.synth) ensureAudioContext();
   });
+  if (cycleInput) {
+    cycleInput.addEventListener("change", () => applyCycle(true));
+  }
+  if (cycleLengthInput) {
+    cycleLengthInput.addEventListener("change", () => applyCycle(true));
+  }
+  if (cycleHalfButton) {
+    cycleHalfButton.addEventListener("click", () => scaleCycle(0.5));
+  }
+  if (cycleDoubleButton) {
+    cycleDoubleButton.addEventListener("click", () => scaleCycle(2));
+  }
   showLeftInput.addEventListener("change", () => {
     state.showLeft = showLeftInput.checked;
   });
@@ -699,6 +793,7 @@
   });
 
   applySplit();
+  if (cycleInput) cycleInput.checked = false;
   resizeCanvas();
   draw();
   window.requestAnimationFrame(frame);

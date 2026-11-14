@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from piano import analyze, audio, config, store, transcribe
+from piano import analyze, audio, config, pattern, store, transcribe
 
 
 def _cleanup(path: Path) -> None:
@@ -97,6 +97,8 @@ def process_window(
     )
 
     report("Tallennetaan…", 0.9)
+    # A short fixed figure usually repeats; learning one cycle is enough.
+    cycle = pattern.find_cycle(directory / "audio.wav", duration)
     piece = {
         "id": piece_id,
         "created": store.created_stamp(),
@@ -114,6 +116,7 @@ def process_window(
         },
         "notes": notes,
         "note_count": len(notes),
+        "cycle": cycle,
         "has_midi": True,
     }
     store.save_piece(piece)

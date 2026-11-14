@@ -17,7 +17,7 @@ import pytest
 import soundfile as sf
 from fastapi.testclient import TestClient
 
-from piano import analyze, config, pipeline, store, transcribe
+from piano import analyze, config, pattern, pipeline, store, transcribe
 from piano.main import app
 
 SR = 22050
@@ -169,6 +169,52 @@ def _wait_job(job_id: str, timeout: float = 30.0) -> dict:
     raise AssertionError("job did not finish")
 
 
+def _write_accented_figure(path, *, period=2.0, repeats=3) -> None:
+    """A 2 s accented figure repeated three times: the loop is exactly 2 s."""
+    sr = 22050
+    total = period * repeats
+    timeline = np.arange(int(total * sr)) / sr
+    audio = np.zeros_like(timeline, dtype=np.float32)
+    offsets = [0.0, 0.5, 1.0, 1.5]
+    pitches = [69, 72, 76, 74]
+    accents = {0.0: 0.5, 0.5: 0.18, 1.0: 0.22, 1.5: 0.15}
+    for repetition in range(repeats):
+        for offset, pitch in zip(offsets, pitches):
+            start = repetition * period + offset
+            index = int(start * sr)
+            length = int(0.4 * sr)
+            local = np.arange(length) / sr
+            frequency = 440 * 2 ** ((pitch - 69) / 12)
+            tone = np.sin(2 * math.pi * frequency * local) * np.exp(-local / 0.25)
+            audio[index : index + length] += (
+                tone * accents[offset] * (1.0 if repetition == 0 else 0.9)
+            ).astype(np.float32)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    sf.write(str(path), audio / float(np.max(np.abs(audio))) * 0.8, sr)
+
+
+def test_find_cycle_detects_the_repeating_figure(tmp_path) -> None:
+    """v0.2: KIERTO needs the loop length, and a wrong guess must be visible."""
+    source = tmp_path / "figure.wav"
+    _write_accented_figure(source, period=2.0, repeats=3)
+    cycle = pattern.find_cycle(source, duration=6.0)
+    assert cycle is not None
+    assert cycle["length"] == pytest.approx(2.0, abs=0.15)
+    assert cycle["repeats"] == pytest.approx(3.0, abs=0.3)
+    assert 0.0 < cycle["confidence"] <= 1.0
+
+    # A cycle that cannot fit twice is not a loop.
+    single = tmp_path / "single.wav"
+    _write_accented_figure(single, period=2.0, repeats=1)
+    assert pattern.find_cycle(single, duration=2.0) is None
+
+
+def test_find_cycle_returns_none_for_a_flat_signal(tmp_path) -> None:
+    source = tmp_path / "silence.wav"
+    sf.write(str(source), np.zeros(22050 * 4, dtype=np.float32), 22050)
+    assert pattern.find_cycle(source, duration=4.0) is None
+
+
 @pytest.mark.skipif(shutil.which("ffmpeg") is None, reason="ffmpeg required")
 def test_api_processes_a_local_file_and_serves_the_piece(
     piano_data, monkeypatch, tmp_path
@@ -190,6 +236,16 @@ def test_api_processes_a_local_file_and_serves_the_piece(
         ]
 
     monkeypatch.setattr(transcribe, "transcribe_window", fake_transcribe)
+    monkeypatch.setattr(
+        pattern,
+        "find_cycle",
+        lambda *args, **kwargs: {
+            "length": 2.0,
+            "repeats": 2.5,
+            "confidence": 0.9,
+            "peak": 0.5,
+        },
+    )
 
     response = CLIENT.post(
         "/api/piano/process",
@@ -202,6 +258,7 @@ def test_api_processes_a_local_file_and_serves_the_piece(
 
     piece = CLIENT.get(f"/api/piano/pieces/{piece_id}").json()
     assert piece["note_count"] == 2
+    assert piece["cycle"]["length"] == 2.0
     assert piece["window"]["start"] == pytest.approx(0.0)
     assert piece["window"]["end"] == pytest.approx(5.0)
     assert piece["window"]["duration"] == pytest.approx(5.0, abs=0.15)
@@ -244,4 +301,8 @@ def test_keyboard_ui_covers_88_keys_and_hides_the_empty_overlay() -> None:
     assert 'id="speed"' in html
     assert 'id="loop"' in html
     assert 'id="synth"' in html
+    assert 'id="cycle"' in html
+    assert 'id="cycle-length"' in html
+    assert 'id="cycle-half"' in html
+    assert 'id="cycle-double"' in html
 

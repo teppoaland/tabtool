@@ -14,7 +14,7 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
-from piano import __version__, config, jobs, pipeline, store
+from piano import __version__, config, jobs, pattern, pipeline, store
 
 APP_NAME = "PianoCapture"
 
@@ -116,9 +116,23 @@ def pieces(limit: int = 20) -> list[dict]:
 @app.get("/api/piano/pieces/{piece_id}", tags=["pieces"])
 def piece(piece_id: str) -> dict:
     try:
-        return store.load_piece(piece_id)
+        record = store.load_piece(piece_id)
     except (FileNotFoundError, ValueError):
         raise HTTPException(status_code=404, detail="Pätkää ei löytynyt.")
+    # Pieces made before v0.2 have no cycle; compute it once and keep it.
+    if "cycle" not in record:
+        try:
+            record["cycle"] = pattern.find_cycle(
+                store.piece_audio(piece_id),
+                (record.get("window") or {}).get("duration"),
+            )
+        except (OSError, ValueError):
+            record["cycle"] = None
+        try:
+            store.save_piece(record)
+        except OSError:
+            pass
+    return record
 
 
 @app.get("/api/piano/pieces/{piece_id}/audio", tags=["pieces"])

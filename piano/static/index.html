@@ -6,14 +6,14 @@
   <meta name="color-scheme" content="dark">
   <title>PianoCapture</title>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="/static/piano.css?v=0.1.0">
+  <link rel="stylesheet" href="/static/piano.css?v=0.2.0">
 </head>
 <body>
   <header class="topbar">
     <div class="brand">
       <span class="brand-mark" aria-hidden="true">PC</span>
       <span class="brand-name">PIANO CAPTURE</span>
-      <span id="version-tag" class="version">v0.1.0</span>
+      <span id="version-tag" class="version">v0.2.0</span>
     </div>
     <p class="tagline">YouTube-pätkä → 88 koskettinta. Oletus: soitin on piano.</p>
   </header>
@@ -93,6 +93,19 @@
         <label class="toggle" title="Soita nuotit synteettisellä soinnilla äänen päälle.">
           <input id="synth" type="checkbox"> Näppäinsynkka
         </label>
+        <label class="toggle" title="Näytä ja loopita vain toistuva kuvio: opettele yksi kierto, soita sitten koko alku.">
+          <input id="cycle" type="checkbox" checked> KIERTO
+        </label>
+        <span id="cycle-info" class="cycle-info muted"></span>
+        <label class="mini" title="Kierron pituus sekunteina. Analyysi ehdottaa automaattisesti; säädä korvalla.">
+          <span>Kierron pituus</span>
+          <input id="cycle-length" type="number" min="1.5" step="0.1" value="4">
+          <span>s</span>
+        </label>
+        <button id="cycle-half" type="button" class="ghost small"
+                title="Puoleta kierron pituus (esim. 2 tahtia → 1 tahti).">÷2</button>
+        <button id="cycle-double" type="button" class="ghost small"
+                title="Kaksinkertaista kierron pituus (esim. 2 tahtia → 4 tahtia).">×2</button>
         <label class="toggle" title="Näytä vasen käsi.">
           <input id="show-left" type="checkbox" checked> Vasen
         </label>
@@ -107,12 +120,14 @@
       </div>
       <p class="hint">
         Space = PLAY/PAUSE · vasen/oikea nuoli = ±5 s · Home = alkuun.
-        Nuotit on transkriboitu automaattisesti, joten tarkista korvalla.
+        <strong>KIERTO</strong> näyttää vain toistuvan kuvion ja loopittaa sen:
+        opettele yksi kierto, soita sitten koko alku. Nuotit on transkriboitu
+        automaattisesti, joten tarkista korvalla.
       </p>
     </section>
   </main>
 
   <audio id="audio" preload="auto"></audio>
-  <script src="/static/piano.js?v=0.1.0" defer></script>
+  <script src="/static/piano.js?v=0.2.0" defer></script>
 </body>
 </html>
