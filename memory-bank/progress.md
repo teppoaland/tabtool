@@ -1,14 +1,14 @@
 # 📊 Projektin edistyminen – AI TABTOOL
 
-> **Versio:** `v2.30` (14.11.2026) + **PianoCapture `0.5.1`** · **Testit:** 325 passed ·
-> **Git:** v1.23–v2.30 ja piano 0.5.1 **pushattu** `origin/main`iin
+> **Versio:** `v2.30` (14.11.2026) + **PianoCapture `0.5.2`** · **Testit:** 325 passed ·
+> **Git:** v1.23–v2.30 ja piano 0.5.2 **pushattu** `origin/main`iin
 > 14.11.2026 (`77ee79f` + docs `cbc3912`), työpuu clean. Intro-sivu repo
 > (`D:\AI\introduction`) pushattu samana päivänä (`52f2de9`).
 > Palautuspiste: **tagi `v2.23`** (25.10.2026) ja vanhempi `v1.99`.
 > Yksityiskohtainen historia: `CHANGELOG.md`. Tässä tiedostossa on tila,
 > päätökset ja seuraavat askeleet – ei lokia.
 
-## PianoCapture 0.1–0.5.1 + TabTool v2.29–v2.30 (14.11.2026)
+## PianoCapture 0.1–0.5.2 + TabTool v2.29–v2.30 (14.11.2026)
 
 - **v2.29 – SANAT koko näytössä.** Natiivi fullscreen piirtää vain
   fullscreen-elementin alipuun, joten body-tason kelluva editori jäi
@@ -21,15 +21,18 @@
   piiloon, koko sanoitus listana, nykyinen rivi korostettuna ja keskellä).
   Tahtinumero samasta `#bar-readout`ista; rivi pysyy korostettuna
   välitahdit. Ei uusia kytkentöjä soittoketjuun. Testit 312.
-- **PianoCapture 0.1–0.5.1** (`piano/`, portti 8020, `data_piano/`):
+- **PianoCapture 0.1–0.5.2** (`piano/`, portti 8020, `data_piano/`):
   YouTube-pätkä → piano-intro/bändin sisääntulo → Basic Pitch
   piano-parametreilla → 88 koskettimen canvas. Mukana KIERTO
   (onset-autokorrelaatio), MP3/MIDI-lataus, Taustaääni, puhelin/LAN-QR,
   deep link `?piece=<id>` ja työpöydän kuvake. **v0.5:** ohjeen kuuntelu –
   `render.py` → `guide.wav/mp3`, **ORG / MID** PLAYn vieressä ja
   `LATAA OHJE (MP3)`; aloittelija voi tarkistaa transkription korvalla ilman
-  että osaa vielä soittaa sitä. Ks. `memory-bank/techContext.md` ja
-  `piano/README.md`.
+  että osaa vielä soittaa sitä. **v0.5.2:** korjattu MID-äänen katoaminen
+  pitkän pätkän jälkeen (Gathering 2:07 → Diablo 0:15): ääniaikainen
+  voices-throttle jäi pitkästä pätkästä eikä lyhyt pätkä ylittänyt sitä;
+  throttle poistettu ja `state.voices` nollataan pätkän vaihdossa.
+  Ks. `memory-bank/techContext.md` ja `piano/README.md`.
 - **Mitatut tulokset:** Diablo *The Well of Grief* 11,0 → 26,0 s
   (kierto 3,84 s × 3,9); The Gathering *Black Light District*
   0,8 → 128,3 s (ei kiertoa). Basic Pitch tuottaa haamunuotteja, mikä on

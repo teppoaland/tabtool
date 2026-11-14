@@ -59,7 +59,7 @@ python -m venv .venv
 ## Testit
 
 ```powershell
-.venv\Scripts\python.exe -m pytest -q          # 325 passed (v2.30 + piano 0.5.1)
+.venv\Scripts\python.exe -m pytest -q          # 325 passed (v2.30 + piano 0.5.2)
 .venv\Scripts\python.exe -m compileall -q app piano scripts tests
 node --check app\static\app.js
 node --check app\static\remote.js
@@ -471,6 +471,13 @@ DB-tiedosto); vain tuotenimi on `AI TabTool`.
   -segmentiksi (`#play-org`, `#play-mid`); ORG = alkuperäinen, MID =
   transkriptio (tausta mute + ohjeääni). Vaihto kesken toiston A/B:nä;
   tilat synkronoituvat `Taustaääni`/`Ohjeääni`-kytkimiin.
+- **v0.5.2 (bugi):** MID-ääni katosi, jos ennen sitä soitti pidempää pätkää
+  (Gathering 2:07 → Diablo 0:15). `pumpSynth`issa oli ääniaikainen
+  `voicesReset`-throttle, joka jäi pitkän pätkän lukemaan eikä lyhyen pätkän
+  kello ylittänyt sitä → synteesi ei käynnistynyt koko pätkässä. Throttle
+  poistettu; `state.voices` nollataan `loadPiece`ssa ja `play`ssa.
+  Todennettu CDP:llä laskemalla `createOscillator`-kutsut: ennen 0, jälkeen
+  76 kolmessa sekunnissa.
 - **Testit:** 13 piano-testiä (`tests/test_piano.py`: kierto, analyysi,
   piano-parametrit, ohjeaudio, API, LAN/QR, UI-sopimus). Yhteensä **325**.
 - **Mitatut esimerkit:** Diablo – *The Well of Grief* 11,0 → 26,0 s

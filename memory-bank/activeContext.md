@@ -1,6 +1,6 @@
 # 📍 Aktiivinen konteksti – AI TABTOOL
 
-> **Versio:** `v2.30` (14.11.2026) + PianoCapture `0.5.1` · **Testit:** 325 passed
+> **Versio:** `v2.30` (14.11.2026) + PianoCapture `0.5.2` · **Testit:** 325 passed
 > **Git:** kaikki **pushattu** `origin/main`iin 14.11.2026 (`77ee79f`);
 > intro-sivu repo `52f2de9`; työpuu clean.
 > **Palautuspisteet:** tagi `v2.23` (25.10.2026, “hyvä paketti”) ja vanhempi
@@ -19,13 +19,15 @@
   **ESIKATSELU** = pelkät sanat: koko sanoitus listana, nykyinen rivi
   korostettuna ja keskellä, rivi seuraa `#bar-readout`ia. Ei uusia
   kytkentöjä soittoketjuun. Testit 312.
-- **PianoCapture 0.1–0.5.1 (14.11.2026).** Erillinen app `piano/`
+- **PianoCapture 0.1–0.5.2 (14.11.2026).** Erillinen app `piano/`
   (portti 8020, `data_piano/`): YouTube-pätkä → piano-intro ja bändin
   sisääntulo → Basic Pitch piano-parametreilla → 88 koskettimen canvas.
   KIERTO (onset-autokorrelaatio), MP3/MIDI, Taustaääni, LAN-QR,
   `/?piece=<id>`, työpöydän kuvake. **v0.5:** ohjeen voi kuunnella
   (`render.py` → `guide.wav/mp3`, **ORG/MID PLAYn vieressä**, parannettu
-  parannettu piano-synteesi). 13 piano-testiä; yhteensä **325**.
+  piano-synteesi). **v0.5.2:** MID-ääni katosi pitkän pätkän jälkeen
+  (ääniaikainen voices-throttle); poistettu, äänimäärä nollataan vaihdossa.
+  13 piano-testiä; yhteensä **325**.
   Käyttäjä testasi PC:llä: toimii; Android-testi pianolla vielä edessä.
   Ks. `techContext.md` ja `piano/README.md`.
 - **Intro-sivu (14.11.2026).** PianoCapture-kortti, 3 kuvaa, laskurit
