@@ -59,7 +59,7 @@ python -m venv .venv
 ## Testit
 
 ```powershell
-.venv\Scripts\python.exe -m pytest -q          # 324 passed (v2.30 + piano 0.4.1)
+.venv\Scripts\python.exe -m pytest -q          # 325 passed (v2.30 + piano 0.5.0)
 .venv\Scripts\python.exe -m compileall -q app piano scripts tests
 node --check app\static\app.js
 node --check app\static\remote.js
@@ -133,6 +133,7 @@ Hyödylliset valinnat: `--model htdemucs_6s`, `--stem guitar`, `--tuning`,
 - **PianoCapture (v0.1–0.4.1):** `data_piano/` on oma juuri
   (gitignoroitu): `sources/<hash>.wav|json` (ladattu/normalisoitu mono),
   `pieces/<id>/piece.json|audio.wav|notes.mid|audio.mp3`, `tmp/`.
+  `guide.wav|guide.mp3` syntyvät vasta pyydettäessä (`render.py`).
   `PIANO_DATA_DIR`, `PIANO_PORT` (8020), `PIANO_PROBE_SECONDS` (180).
 
 Sisäiset nimet säilyttävät `tabtool`-etuliitteen (repo, `TABTOOL_*`,
@@ -462,9 +463,13 @@ DB-tiedosto); vain tuotenimi on `AI TabTool`.
 - **v0.4.1:** työpöydän kuvake (`PianoCapture.lnk`, `piano.ico`),
   `start-piano.bat` pysäyttää vanhan 8020-instanssin
   (`prepare_start.ps1 -Port 8020 -Label PianoCapture`), `PIANO_NO_BROWSER`.
-- **Testit:** 12 piano-testiä (`tests/test_piano.py`: kierto, analyysi
-  synteettisellä audialla, piano-parametrit, API, LAN/QR, UI-sopimus).
-  Yhteensä **324**.
+- **v0.5:** ohjeen kuuntelu – `render.py` renderöi transkription WAV:ksi
+  (harmoninen synteesi, ei sampleja), `guide.wav|guide.mp3` lazy-cacheen ja
+  `LATAA OHJE (MP3)`; UI:n **OHJE** (tausta pois + ohjeääni) ja
+  **ALKUPERÄINEN** (tausta takaisin) samasta kohdasta; piano-synteesi
+  parannettu (4 osasäveltä, envelope, limiter).
+- **Testit:** 13 piano-testiä (`tests/test_piano.py`: kierto, analyysi,
+  piano-parametrit, ohjeaudio, API, LAN/QR, UI-sopimus). Yhteensä **325**.
 - **Mitatut esimerkit:** Diablo – *The Well of Grief* 11,0 → 26,0 s
   (kierto 3,84 s × 3,9); The Gathering – *Black Light District*
   0,8 → 128,3 s (ei kiertoa, huippu 0,06). Ks. `piano/README.md`.

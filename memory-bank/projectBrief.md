@@ -33,6 +33,11 @@ soittoketjuun, alphaTab-kytkentöihin eikä `app/static`iin**.
   (`27,5–4186 Hz`, `melodia_trick=False`) → 88 koskettimen canvas.
 - **KIERTO** tunnistaa toistuvan kuvion onset-autokorrelaatiolla
   (kynnys 0,15) ja loopittaa yhden kierron.
+- **Ohjeen kuuntelu (v0.5):** `render.py` renderöi transkription
+  `guide.wav`/`guide.mp3`:ksi; UI:ssa **OHJE** (tausta pois + piano-synteesi)
+  ja **ALKUPERÄINEN** (tausta takaisin) samasta kohdasta, sekä
+  `LATAA OHJE (MP3)`. Näin ohjeen voi tarkistaa korvalla ennen kuin osaa
+  soittaa sitä.
 - Puhelin/tabletti toimii näyttönä LANissa: sidonta `0.0.0.0`, QR ja
   `/?piece=<id>`-deep link; kapealla näytöllä klaviatuuri rajautuu
   kappaleen sävelalueeseen.
