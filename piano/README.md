@@ -1,4 +1,4 @@
-# 🎹 PianoCapture v0.5.1
+# 🎹 PianoCapture v0.5.2
 
 PianoCapture on **erillinen, kevyt app** AI TabToolin rinnalla samassa repossa.
 Se ottaa YouTube-linkin (tai äänitiedoston), etsii pianon alun ja bändin
@@ -97,6 +97,11 @@ levyyn. Siksi ohjeen voi **kuunnella sellaisenaan**:
 Synteesi on tarkoituksella yksinkertainen eikä se ole pianon sample: se riittää
 kertomaan, *mitkä nuotit* ohjeessa on ja *milloin* ne alkavat. Vertaa aina
 alkuperäiseen – se on ainoa totuus.
+
+**v0.5.2:** korjattu bugi, jossa MID-ääni katosi kokonaan, jos sitä ennen oli
+soittanut pidempää pätkää (esim. Gathering 2:07 → Diablo 0:15). Syy oli
+ääniaikaan sidottu "voices"-throttle, joka jäi päälle pitkästä pätkästä; nyt
+se on poistettu ja äänimäärä nollataan pätkän vaihtuessa.
 
 ## Tausta ja lataukset
 

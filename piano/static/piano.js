@@ -85,7 +85,6 @@
     backing: true,
     lastSynth: -1,
     voices: 0,
-    voicesReset: 0,
     busy: false,
     cssWidth: 0,
     cssHeight: 0,
@@ -280,6 +279,7 @@
     state.notes = Array.isArray(piece.notes) ? piece.notes : [];
     state.duration = Number(piece.window && piece.window.duration) || 0;
     state.lastSynth = -1;
+    state.voices = 0;
     state.cycle = piece.cycle || null;
     state.cycleOn = Boolean(
       state.cycle && Number(state.cycle.confidence) >= 0.55
@@ -351,6 +351,7 @@
   function play() {
     if (!state.piece) return;
     ensureAudioContext();
+    state.voices = 0;
     state.lastSynth = currentTime() - 0.02;
     const promise = audio.play();
     if (promise && typeof promise.catch === "function") {
@@ -612,9 +613,6 @@
 
   function pumpSynth(now) {
     if (!state.synth || audio.paused) return;
-    if (state.voicesReset > now) return;
-    state.voicesReset = now + 1;
-    state.voices = Math.max(0, state.voices);
     const from = state.lastSynth;
     const to = now + 0.04;
     const end = loopEnd();
