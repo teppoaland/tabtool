@@ -6,7 +6,10 @@ automatically transcribed notes. They are **not** the original recordings.
 | File | Work | Duration | Notes |
 |---|---|---|---|
 | `diablo-the-well-of-grief-guide.wav` | "The Well of Grief" – Diablo | 15 s | Right hand only; left-hand ghost notes removed. |
-| `the-gathering-black-light-district-guide.wav` | "Black Light District" – The Gathering | 2:07 | Both hands. |
+| `the-gathering-black-light-district-guide-30s.wav` | "Black Light District" – The Gathering | 0:30 | Excerpt of the 2:07 intro (the full song is ~16 min); both hands. |
+
+The full 2:07 intro render is kept locally for the video and is not part of
+this repository.
 
 ## Rights
 

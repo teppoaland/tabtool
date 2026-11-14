@@ -195,7 +195,9 @@ Repon `samples/`-kansiossa on kaksi PianoCapturen ohjerenderiä:
 
 - `samples/diablo-the-well-of-grief-guide.wav` – 15 s, vain oikea käsi
   (siivottu haamunuoteista)
-- `samples/the-gathering-black-light-district-guide.wav` – 2:07, molemmat kädet
+- `samples/the-gathering-black-light-district-guide-30s.wav` – 30 s ote
+  2:07-introsta (koko kappale ~16 min); molemmat kädet. Koko intro säilyy
+  paikallisesti videota varten, ei repossa.
 
 Ne ovat **synteettisiä pianoesityksiä automaattisesti transkriboiduista
 nuoteista**, eivät alkuperäisiä äänitteitä. Kappaleet ja kaikki niihin

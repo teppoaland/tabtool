@@ -52,7 +52,7 @@ recordings.
 | File | Work | Rights |
 |---|---|---|
 | `samples/diablo-the-well-of-grief-guide.wav` | "The Well of Grief" – Diablo | Composition and all related rights belong to the songwriters, composers and publishers. |
-| `samples/the-gathering-black-light-district-guide.wav` | "Black Light District" – The Gathering | Same. |
+| `samples/the-gathering-black-light-district-guide-30s.wav` | "Black Light District" – The Gathering | Same. |
 
 The files are included in good faith to demonstrate PianoCapture and to
 promote the artists and their music. No ownership is claimed and no fee is
