@@ -59,7 +59,7 @@ python -m venv .venv
 ## Testit
 
 ```powershell
-.venv\Scripts\python.exe -m pytest -q          # 325 passed (v2.30 + piano 0.5.2)
+.venv\Scripts\python.exe -m pytest -q          # 326 passed (v2.30 + piano 0.6.0)
 .venv\Scripts\python.exe -m compileall -q app piano scripts tests
 node --check app\static\app.js
 node --check app\static\remote.js
@@ -133,7 +133,8 @@ Hyödylliset valinnat: `--model htdemucs_6s`, `--stem guitar`, `--tuning`,
 - **PianoCapture (v0.1–0.4.1):** `data_piano/` on oma juuri
   (gitignoroitu): `sources/<hash>.wav|json` (ladattu/normalisoitu mono),
   `pieces/<id>/piece.json|audio.wav|notes.mid|audio.mp3`, `tmp/`.
-  `guide.wav|guide.mp3` syntyvät vasta pyydettäessä (`render.py`).
+  `guide.wav|guide.mp3` syntyvät vasta pyydettäessä (`render.py`);
+  käsirajaus tallentaa omat versionsa (`guide-right-60.wav`, `notes-right-60.mid`).
   `PIANO_DATA_DIR`, `PIANO_PORT` (8020), `PIANO_PROBE_SECONDS` (180).
 
 Sisäiset nimet säilyttävät `tabtool`-etuliitteen (repo, `TABTOOL_*`,
@@ -478,8 +479,16 @@ DB-tiedosto); vain tuotenimi on `AI TabTool`.
   poistettu; `state.voices` nollataan `loadPiece`ssa ja `play`ssa.
   Todennettu CDP:llä laskemalla `createOscillator`-kutsut: ennen 0, jälkeen
   76 kolmessa sekunnissa.
-- **Testit:** 13 piano-testiä (`tests/test_piano.py`: kierto, analyysi,
-  piano-parametrit, ohjeaudio, API, LAN/QR, UI-sopimus). Yhteensä **325**.
+- **v0.6:** käsien rajaus ulottuu latauksiin: `guide.wav/mp3` ja MIDI
+  hyväksyvät `?hand=right|left&split=<midi>`; `render.filter_notes` ja
+  `render.render_midi` (pretty_midi) tekevät rajatut versiot cacheen
+  (`guide-right-60.wav`, `notes-right-60.mid`). UI:n `updateDownloadLinks`
+  seuraa `Vasen`/`Oikea`-kytkimiä ja `Käsiraja`a. Diablon vasen käsi
+  (haamunuotit) voidaan siis pudottaa näkymästä, synteesistä, MP3:sta ja
+  MIDIstä yhdellä valinnalla.
+- **Testit:** 14 piano-testiä (`tests/test_piano.py`: kierto, analyysi,
+  piano-parametrit, ohjeaudio, käsirajaus, API, LAN/QR, UI-sopimus).
+  Yhteensä **326**.
 - **Mitatut esimerkit:** Diablo – *The Well of Grief* 11,0 → 26,0 s
   (kierto 3,84 s × 3,9); The Gathering – *Black Light District*
   0,8 → 128,3 s (ei kiertoa, huippu 0,06). Ks. `piano/README.md`.

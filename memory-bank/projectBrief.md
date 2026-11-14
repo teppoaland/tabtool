@@ -38,6 +38,9 @@ soittoketjuun, alphaTab-kytkentöihin eikä `app/static`iin**.
   alkuperäinen vai transkriptio (piano-synteesi); lisäksi
   `LATAA OHJE (MP3)`. Näin ohjeen voi tarkistaa korvalla ennen kuin osaa
   soittaa sitä.
+- **Käsien rajaus (v0.6):** `Vasen`/`Oikea`-valinta rajaa myös guide-MP3:n ja
+  MIDIn (`?hand=right|left&split=`), joten haamukäsi ei päädy videoon eikä
+  DAWiin.
 - Puhelin/tabletti toimii näyttönä LANissa: sidonta `0.0.0.0`, QR ja
   `/?piece=<id>`-deep link; kapealla näytöllä klaviatuuri rajautuu
   kappaleen sävelalueeseen.
