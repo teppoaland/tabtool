@@ -50,8 +50,8 @@
   const downloadAudio = $("download-audio");
   const downloadMidi = $("download-midi");
   const downloadGuide = $("download-guide");
-  const listenGuideButton = $("listen-guide");
-  const listenBackingButton = $("listen-backing");
+  const playOrgButton = $("play-org");
+  const playMidButton = $("play-mid");
   const lanRow = $("lan-row");
   const lanUrl = $("lan-url");
   const lanQr = $("lan-qr");
@@ -407,6 +407,7 @@
     state.backing = Boolean(backingInput && backingInput.checked);
     audio.muted = !state.backing;
     updateBackingHint();
+    syncPlayMode();
     try {
       localStorage.setItem("pianocap:backing", state.backing ? "1" : "0");
     } catch (error) {
@@ -425,36 +426,34 @@
     }
   }
 
-  // --- guide playback (v0.5) -------------------------------------------
-  // One click for each side of the comparison: OHJE plays only the
-  // transcription (backing muted, piano synth on), ALKUPERÄINEN plays only the
-  // original recording. Same transport, same position, so A/B is instant.
-  function listenGuide() {
-    if (!state.piece) return;
-    if (backingInput) {
-      backingInput.checked = false;
-      applyBacking();
+  // --- play source: ORG / MID (v0.5.1) ---------------------------------
+  // The choice sits next to PLAY: ORG plays the recording, MID plays the
+  // transcription (backing muted, piano synth on). Switching while playing
+  // swaps the source at the same position, so A/B is instant.
+  function syncPlayMode() {
+    const org = state.backing && !state.synth;
+    const mid = !state.backing && state.synth;
+    if (playOrgButton) {
+      playOrgButton.setAttribute("aria-pressed", org ? "true" : "false");
     }
-    if (synthInput) {
-      synthInput.checked = true;
-      state.synth = true;
-      ensureAudioContext();
+    if (playMidButton) {
+      playMidButton.setAttribute("aria-pressed", mid ? "true" : "false");
     }
-    updateBackingHint();
-    if (audio.paused) play();
   }
 
-  function listenBacking() {
-    if (!state.piece) return;
-    if (synthInput) {
-      synthInput.checked = false;
-      state.synth = false;
-    }
+  function setPlayMode(mode) {
+    const mid = mode === "mid";
     if (backingInput) {
-      backingInput.checked = true;
+      backingInput.checked = !mid;
       applyBacking();
     }
-    if (audio.paused) play();
+    if (synthInput) {
+      synthInput.checked = mid;
+      state.synth = mid;
+      if (mid) ensureAudioContext();
+    }
+    updateBackingHint();
+    syncPlayMode();
   }
 
   // --- cycle (v0.2) -----------------------------------------------------
@@ -939,12 +938,13 @@
     state.synth = synthInput.checked;
     if (state.synth) ensureAudioContext();
     updateBackingHint();
+    syncPlayMode();
   });
-  if (listenGuideButton) {
-    listenGuideButton.addEventListener("click", listenGuide);
+  if (playOrgButton) {
+    playOrgButton.addEventListener("click", () => setPlayMode("org"));
   }
-  if (listenBackingButton) {
-    listenBackingButton.addEventListener("click", listenBacking);
+  if (playMidButton) {
+    playMidButton.addEventListener("click", () => setPlayMode("mid"));
   }
   if (cycleInput) {
     cycleInput.addEventListener("change", () => applyCycle(true));
@@ -1019,6 +1019,7 @@
   if (cycleInput) cycleInput.checked = false;
   if (backingInput) backingInput.checked = readBacking();
   applyBacking();
+  syncPlayMode();
   resizeCanvas();
   draw();
   window.requestAnimationFrame(frame);

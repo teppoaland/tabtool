@@ -1,4 +1,4 @@
-# 🎹 PianoCapture v0.5
+# 🎹 PianoCapture v0.5.1
 
 PianoCapture on **erillinen, kevyt app** AI TabToolin rinnalla samassa repossa.
 Se ottaa YouTube-linkin (tai äänitiedoston), etsii pianon alun ja bändin
@@ -83,12 +83,10 @@ Kun kierto on opeteltu, ota **KIERTO** pois päältä: soitto jatkuu koko pätk�
 Aloittelija ei ehdi soittaa kuviota niin nopeasti, että voisi verrata sitä
 levyyn. Siksi ohjeen voi **kuunnella sellaisenaan**:
 
-- **OHJE** (transportissa): tausta pois ja **Ohjeääni** päälle → kuulet vain
-  transkription, soitettuna pianomaisella synteesillä (harmoninen sarja +
-  vaimeneva envelope). Painike ei siirrä kohtaa, joten A/B-vertailu on
-  välitön.
-- **ALKUPERÄINEN**: ohjeääni pois ja tausta takaisin → kuulet alkuperäisen
-  äänitteen samasta kohdasta.
+- **ORG / MID PLAY-painikkeen vieressä:** **ORG** soittaa alkuperäisen
+  äänitteen, **MID** soittaa transkription pianomaisella synteesillä
+  (harmoninen sarja + vaimeneva envelope). Vaihto kesken toiston vaihtaa
+  lähteen samasta kohdasta, joten A/B-vertailu on välitön.
 - **Ohjeääni + Taustaääni** yhdessä = kuulet molemmat päällekkäin ja huomaat
   heti, jos nuotti on väärä.
 - **LATAA OHJE (MP3)** – koko transkriptio audiotiedostona (serveri renderöi

@@ -6,14 +6,14 @@
   <meta name="color-scheme" content="dark">
   <title>PianoCapture</title>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="/static/piano.css?v=0.5.0">
+  <link rel="stylesheet" href="/static/piano.css?v=0.5.1">
 </head>
 <body>
   <header class="topbar">
     <div class="brand">
       <span class="brand-mark" aria-hidden="true">PC</span>
       <span class="brand-name">PIANO CAPTURE</span>
-      <span id="version-tag" class="version">v0.5.0</span>
+      <span id="version-tag" class="version">v0.5.1</span>
     </div>
     <p class="tagline">YouTube-pätkä → 88 koskettinta. Oletus: soitin on piano.</p>
   </header>
@@ -87,6 +87,12 @@
 
       <div class="transport">
         <button id="play" type="button" class="primary" title="Toista tai pysäytä. Välilyönti toimii myös.">PLAY</button>
+        <div class="play-mode" role="group" aria-label="Toistolähde">
+          <button id="play-org" type="button" aria-pressed="true"
+                  title="Soita alkuperäinen äänite.">ORG</button>
+          <button id="play-mid" type="button" aria-pressed="false"
+                  title="Soita transkriptio synteettisellä pianolla (MIDI-data).">MID</button>
+        </div>
         <span id="time-current" class="time">0:00.0</span>
         <input id="seek" class="seek" type="range" min="0" max="1" step="0.01" value="0"
                aria-label="Toistokohta">
@@ -105,10 +111,6 @@
         <label class="toggle" title="Soita transkriptio pianomaisella synteesillä. Tausta pois -tilassa kuulet vain ohjeen.">
           <input id="synth" type="checkbox"> Ohjeääni
         </label>
-        <button id="listen-guide" type="button" class="ghost small"
-                title="Kuuntele vain ohje: tausta pois, ohjeääni päälle. Näin tarkistat, onko transkriptio oikein.">OHJE</button>
-        <button id="listen-backing" type="button" class="ghost small"
-                title="Kuuntele alkuperäinen ilman ohjeääntä.">ALKUPERÄINEN</button>
         <label class="toggle" title="Näytä ja loopita vain toistuva kuvio: opettele yksi kierto, soita sitten koko alku.">
           <input id="cycle" type="checkbox" checked> KIERTO
         </label>
@@ -144,15 +146,15 @@
       <p class="hint">
         Space = PLAY/PAUSE · vasen/oikea nuoli = ±5 s · Home = alkuun.
         <strong>KIERTO</strong> näyttää vain toistuvan kuvion ja loopittaa sen:
-        opettele yksi kierto, soita sitten koko alku. <strong>OHJE</strong>
-        kuuntelee pelkän transkription ja <strong>ALKUPERÄINEN</strong> palauttaa
-        taustan – näin tarkistat korvalla, onko ohje oikein. Tämä on esimerkki
-        siitä, miten kappale menee, ei virheetön transkriptio.
+        opettele yksi kierto, soita sitten koko alku. <strong>ORG / MID</strong>
+        PLAYn vieressä valitsee, soiko alkuperäinen vai transkriptio – näin
+        tarkistat korvalla, onko ohje oikein. Tämä on esimerkki siitä, miten
+        kappale menee, ei virheetön transkriptio.
       </p>
     </section>
   </main>
 
   <audio id="audio" preload="auto"></audio>
-  <script src="/static/piano.js?v=0.5.0" defer></script>
+  <script src="/static/piano.js?v=0.5.1" defer></script>
 </body>
 </html>

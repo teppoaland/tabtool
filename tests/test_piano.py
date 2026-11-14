@@ -369,15 +369,15 @@ def test_keyboard_ui_covers_88_keys_and_hides_the_empty_overlay() -> None:
     assert 'id="download-audio"' in html
     assert 'id="download-midi"' in html
     assert 'id="download-guide"' in html
-    assert 'id="listen-guide"' in html
-    assert 'id="listen-backing"' in html
+    assert 'id="play-org"' in html
+    assert 'id="play-mid"' in html
     assert 'id="lan-row"' in html
     assert 'id="lan-qr"' in html
     assert 'id="piece-qr"' in html
     assert "Ohjeääni" in html
     assert "audio.muted = !state.backing" in script
-    assert "function listenGuide" in script
-    assert "function listenBacking" in script
+    assert "function setPlayMode" in script
+    assert "function syncPlayMode" in script
     # Phone/tablet: a fitted keyboard range and a per-piece deep link.
     assert "fitKeyRange" in script
     assert "keyRange" in script
