@@ -175,6 +175,8 @@ piano alkaa 11 s, muut soittimet 26 s.
 - Ehdotus: **11,0 s → 26,0 s**, varmuus **97 %**.
 - Kierto: **3,84 s × 3,9** (varmuus 0,94) – eli 2 tahdin kuvio ~123 BPM:ssä.
 - Transkriptio 15 s pätkästä: **85 nuottia**, sävelalue MIDI 31–81.
+  **Paikallinen versio on siivottu 58 nuottiin** (vasemman käden haamut pois,
+  pitch < 60), ja myös promosample on tästä siivotusta versiosta.
 - 74 % nuottien aloituksista osui 60 ms sisään havaittuun onsetiin – suuntaa
   antava laadunmitta, ei todiste oikeellisuudesta. **Korvalla tarkistus on
   ainoa hyväksyntä.**
@@ -186,6 +188,21 @@ yhtenäinen, ei-toistuva piano-intro 0 – 2:09.
 - Kierto: **ei kiertoa** (onset-autokorrelaation huippu 0,06 < 0,15) –
   KIERTO on pois päältä ja koko 2:08 näytetään sellaisenaan.
 - Transkriptio 127,5 s pätkästä: **178 nuottia**.
+
+## Promosamplet
+
+Repon `samples/`-kansiossa on kaksi PianoCapturen ohjerenderiä:
+
+- `samples/diablo-the-well-of-grief-guide.wav` – 15 s, vain oikea käsi
+  (siivottu haamunuoteista)
+- `samples/the-gathering-black-light-district-guide.wav` – 2:07, molemmat kädet
+
+Ne ovat **synteettisiä pianoesityksiä automaattisesti transkriboiduista
+nuoteista**, eivät alkuperäisiä äänitteitä. Kappaleet ja kaikki niihin
+kuuluvat oikeudet kuuluvat tekijöilleen ja julkaisijoilleen; samplet ovat
+mukana bändien promoamiseksi ja Pianon toiminnan esittelemiseksi, ei
+virallisina julkaisuina. Tarkempi maininta: `THIRD_PARTY_NOTICES.md` ja
+`samples/README.md`. Oikeudenhaltijan pyynnöstä tiedostot poistetaan.
 
 ## Data ja tiedostot
 

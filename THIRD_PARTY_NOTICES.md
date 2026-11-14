@@ -43,6 +43,25 @@ alphaTab 1.8.4 is vendored unmodified under `app/static/vendor/alphaTab/`
 Bravura music font is licensed under the SIL Open Font License 1.1; its
 license text is kept next to the font files.
 
+## Promotional sample audio
+
+`samples/` contains two guide renders made with PianoCapture's own piano
+synthesis from automatically transcribed notes. They are not the original
+recordings.
+
+| File | Work | Rights |
+|---|---|---|
+| `samples/diablo-the-well-of-grief-guide.wav` | "The Well of Grief" – Diablo | Composition and all related rights belong to the songwriters, composers and publishers. |
+| `samples/the-gathering-black-light-district-guide.wav` | "Black Light District" – The Gathering | Same. |
+
+The files are included in good faith to demonstrate PianoCapture and to
+promote the artists and their music. No ownership is claimed and no fee is
+charged. They are not official releases. If a rights holder asks for a file
+to be removed, it will be removed.
+
+This notice records attribution and intent; it does not transfer or grant
+rights.
+
 ## External services
 
 | Service | Purpose | Terms |

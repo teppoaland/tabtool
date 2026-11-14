@@ -18,6 +18,8 @@ scripts/build_kiss_legend.py
 *.ogg
 *.opus
 *.webm
+# Promo-samplet (PianoCapture-demo); ks. samples/README.md + THIRD_PARTY_NOTICES.md
+!samples/*.wav
 *.aiff
 *.gp
 *.gp3

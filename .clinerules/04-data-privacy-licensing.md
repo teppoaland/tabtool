@@ -27,7 +27,21 @@ Nämä eivät koskaan mene julkiseen gitiin:
 - Tabi sidotaan siihen audiotiedostoon, josta se tehtiin.
 - YouTube-lataus on käyttäjän vastuulla (YouTube ToS, tekijänoikeudet).
 - Generoidut transkriptiot ovat henkilökohtaiseen käyttöön; niitä ei
-  julkaista eikä levitetä.
+  julkaista eikä levitetä. **Poikkeus:** `samples/`-kansion promosamplet
+  (ks. alla).
+
+### Poikkeus: promosamplet
+
+`samples/*.wav` saa viedä julkiseen gitiin vain, jos:
+
+- ne on mainittu `samples/README.md`:ssä ja `THIRD_PARTY_NOTICES.md`:ssä,
+- kyse on PianoCapturen synteettisestä ohjeesta, ei alkuperäisestä
+  äänitteestä,
+- tekijät ja oikeudenhaltijat mainitaan eikä omistusta väitetä,
+- tiedosto poistetaan oikeudenhaltijan pyynnöstä.
+
+Muut äänitiedostot (`*.wav`, `*.mp3`, …) pysyvät kiellettyinä julkisessa
+gitissä.
 
 ## Lisenssit
 
