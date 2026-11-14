@@ -5,4 +5,4 @@ proven audio plumbing (yt-dlp download, ffmpeg) from ``app.pipeline`` but keeps
 its own data, UI and playback, so TabTool's frozen playback chain is untouched.
 """
 
-__version__ = "0.6.0"
+__version__ = "0.6.1"

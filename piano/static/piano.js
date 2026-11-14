@@ -268,6 +268,39 @@
   }
 
   // --- piece + player ---------------------------------------------------
+  // --- per-piece hand memory (v0.6.1) ---------------------------------
+  // Diablo has no left hand, so its "Vasen pois" choice is remembered for that
+  // piece only; another piece keeps both hands.
+  function readHands(pieceId) {
+    try {
+      const raw = JSON.parse(
+        localStorage.getItem(`pianocap:hands:${pieceId}`) || "null"
+      );
+      if (
+        raw &&
+        typeof raw.left === "boolean" &&
+        typeof raw.right === "boolean"
+      ) {
+        return raw;
+      }
+    } catch (error) {
+      /* storage disabled */
+    }
+    return null;
+  }
+
+  function saveHands() {
+    if (!state.piece) return;
+    try {
+      localStorage.setItem(
+        `pianocap:hands:${state.piece.id}`,
+        JSON.stringify({ left: state.showLeft, right: state.showRight })
+      );
+    } catch (error) {
+      /* storage disabled */
+    }
+  }
+
   async function loadPiece(pieceId) {
     setStatus("Ladataan pätkää…");
     const response = await fetch(`/api/piano/pieces/${pieceId}`, { cache: "no-store" });
@@ -289,6 +322,11 @@
       : Math.min(8, Math.max(1.5, state.duration));
     if (cycleInput) cycleInput.checked = state.cycleOn;
     if (cycleLengthInput) cycleLengthInput.value = state.cycleLength.toFixed(1);
+    const savedHands = readHands(pieceId) || { left: true, right: true };
+    state.showLeft = savedHands.left;
+    state.showRight = savedHands.right;
+    if (showLeftInput) showLeftInput.checked = savedHands.left;
+    if (showRightInput) showRightInput.checked = savedHands.right;
 
     const source = piece.source || {};
     const artist = source.artist ? `${source.artist} — ` : "";
@@ -994,10 +1032,12 @@
   }
   showLeftInput.addEventListener("change", () => {
     state.showLeft = showLeftInput.checked;
+    saveHands();
     updateDownloadLinks();
   });
   showRightInput.addEventListener("change", () => {
     state.showRight = showRightInput.checked;
+    saveHands();
     updateDownloadLinks();
   });
 
