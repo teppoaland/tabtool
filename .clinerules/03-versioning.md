@@ -15,9 +15,11 @@ työpuu clean. `v2.29` (SANAT fullscreen) ja `v2.30` (ESIKATSELU) on
 kuitattu PC:llä; Android/puhelinpuoli pianosta on vielä testaamatta.
 
 **PianoCapture** (`piano/`) on erillinen app samassa repossa ja käyttää
-**omaa `0.x`-versiosarjaa** (nyt `0.6.2`). Se ei vaikuta TabToolin
-versionumeroon eikä soittoketjuun. Avoin temposkartta-/loppuvartijakorjaus
-on siirretty versioon **v2.31** (`memory-bank/progress.md`, "Seuraavaksi").
+**omaa `1.x`-versiosarjaa**: ensimmäinen release **`1.00`** (15.11.2026).
+Se ei vaikuta TabToolin versionumeroon eikä soittoketjuun. Jatkossa
+**+0.01 jokaisesta muutoksesta** (1.01, 1.02…), kuten muissakin omissa
+ohjelmissa. Avoin temposkartta-/loppuvartijakorjaus on siirretty versioon
+**v2.31** (`memory-bank/progress.md`, "Seuraavaksi").
 
 ## Milloin +0.01
 
@@ -25,6 +27,8 @@ Nosta versiota **aina kun ajettava koodi muuttuu**:
 
 - `app/*.py`, `app/pipeline/*.py`
 - `app/static/*.html`, `*.css`, `*.js`
+- `piano/*.py`, `piano/static/*.html`, `*.css`, `*.js` (PianoCapture:
+  sama +0.01-periaate, myös UI-tekstistä)
 - `requirements*.txt`, `pytest.ini`, `*.bat`
 - rakenteellinen refaktorointi, vaikka toiminta pysyisi samana
 

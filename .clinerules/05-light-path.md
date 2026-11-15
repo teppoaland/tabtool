@@ -11,6 +11,18 @@ koko, sijainti, fontti), riittää:
 
 Käyttäjä testaa itse silmällä.
 
+## UI-muutokset – käyttäjä validoi
+
+Pienet UI-muutokset (teksti, sijainti, tooltip, väri, tyhjä tila, QR) saa
+tehdä suoraan: **ei pytestia, ei selainautomaatiota, ei kuvakaappauksia**.
+Käyttäjä tarkistaa UI:n itse joka tapauksessa.
+
+Sama koskee PianoCapturen `piano/static/` -tiedostoja. Testiajo ja
+selainvalidointi varataan muutoksiin, jotka voivat rikkoa logiikan, API:n,
+tallennuksen tai soittoketjun.
+
+Raportti: mitä muuttui + versionumero, 1–3 riviä.
+
 ## Toiminnallisuus muuttuu → testaa
 
 Testit ajetaan, kun muuttuu logiikka, putki, API, DB, OAuth, kvantisointi,
