@@ -7,6 +7,7 @@ Run it with its own port (default 8020):
 
 from __future__ import annotations
 
+import shutil
 from pathlib import Path
 
 from fastapi import FastAPI, HTTPException, Request
@@ -39,6 +40,13 @@ class ProcessRequest(BaseModel):
     url: str = Field(min_length=1, max_length=2048)
     start: float = Field(ge=0.0)
     end: float = Field(gt=0.0)
+
+
+class PieceUpdateRequest(BaseModel):
+    """Only the display name is editable; audio and notes stay untouched."""
+
+    artist: str | None = Field(default=None, max_length=200)
+    title: str | None = Field(default=None, max_length=200)
 
 
 def _validate_source(value: str) -> str:
@@ -178,6 +186,54 @@ def piece(piece_id: str) -> dict:
         except OSError:
             pass
     return record
+
+
+@app.patch("/api/piano/pieces/{piece_id}", tags=["pieces"])
+def rename_piece(piece_id: str, request: PieceUpdateRequest) -> dict:
+    """Rename a generated guide so a messy YouTube title is readable.
+
+    The first edit keeps the automatic title/artist in ``original_title`` /
+    ``original_artist``; nothing else in the piece (audio, notes, window) is
+    touched. Renaming does not reorder the list.
+    """
+    try:
+        piece = store.load_piece(piece_id)
+    except (FileNotFoundError, ValueError):
+        raise HTTPException(status_code=404, detail="Pätkää ei löytynyt.")
+    source = piece.setdefault("source", {})
+    if request.artist is not None:
+        artist = request.artist.strip()
+        if artist != (source.get("artist") or ""):
+            if source.get("artist") and "original_artist" not in source:
+                source["original_artist"] = source["artist"]
+            source["artist"] = artist
+    if request.title is not None:
+        title = request.title.strip()
+        if not title:
+            raise HTTPException(status_code=422, detail="Nimi ei voi olla tyhjä.")
+        if title != (source.get("title") or ""):
+            if source.get("title") and "original_title" not in source:
+                source["original_title"] = source["title"]
+            source["title"] = title
+    store.save_piece(piece)
+    return piece
+
+
+@app.delete("/api/piano/pieces/{piece_id}", status_code=204, tags=["pieces"])
+def delete_piece(piece_id: str) -> Response:
+    """Delete a generated guide and its folder. Cannot be undone."""
+    try:
+        store.load_piece(piece_id)
+        directory = store.piece_dir(piece_id)
+    except (FileNotFoundError, ValueError):
+        raise HTTPException(status_code=404, detail="Pätkää ei löytynyt.")
+    try:
+        shutil.rmtree(directory)
+    except OSError as error:
+        raise HTTPException(
+            status_code=409, detail=f"Ohjetta ei voitu poistaa: {error}"
+        )
+    return Response(status_code=204)
 
 
 @app.get("/api/piano/pieces/{piece_id}/audio", tags=["pieces"])

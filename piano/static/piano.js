@@ -18,14 +18,15 @@
   const analyzeButton = $("analyze");
   const startInput = $("window-start");
   const endInput = $("window-end");
-  const useSuggestionButton = $("use-suggestion");
   const processButton = $("process");
+  const windowPreview = $("window-preview");
   const statusEl = $("status");
   const suggestionEl = $("suggestion");
   const progressWrap = $("progress-wrap");
   const progressBar = $("progress-bar");
   const recentCard = $("recent-card");
   const recentEl = $("recent");
+  const recentEditButton = $("recent-edit");
 
   const player = $("player");
   const canvas = $("keys");
@@ -39,22 +40,19 @@
   const speedInput = $("speed");
   const speedReadout = $("speed-readout");
   const loopInput = $("loop");
-  const synthInput = $("synth");
   const cycleInput = $("cycle");
   const cycleInfo = $("cycle-info");
   const cycleLengthInput = $("cycle-length");
   const cycleHalfButton = $("cycle-half");
   const cycleDoubleButton = $("cycle-double");
-  const backingInput = $("backing");
-  const backingHint = $("backing-hint");
   const downloadAudio = $("download-audio");
   const downloadMidi = $("download-midi");
   const downloadGuide = $("download-guide");
   const playOrgButton = $("play-org");
   const playMidButton = $("play-mid");
-  const lanRow = $("lan-row");
-  const lanUrl = $("lan-url");
-  const lanQr = $("lan-qr");
+  const libraryToggle = $("library-toggle");
+  const helpToggle = $("help-toggle");
+  const helpPanel = $("help-panel");
   const phoneQr = $("phone-qr");
   const pieceQr = $("piece-qr");
   const showLeftInput = $("show-left");
@@ -62,6 +60,25 @@
   const splitInput = $("split");
   const splitName = $("split-name");
   const audio = $("audio");
+
+  const processDialog = $("process-dialog");
+  const processSummary = $("process-summary");
+  const processCancel = $("process-cancel");
+  const processConfirm = $("process-confirm");
+  const pieceDialog = $("piece-dialog");
+  const pieceArtistInput = $("piece-artist");
+  const pieceTitleInput = $("piece-title-input");
+  const pieceSaveButton = $("piece-save");
+  const pieceCancelButton = $("piece-cancel");
+  const pieceDeleteButton = $("piece-delete");
+  const pieceError = $("piece-error");
+  const pieceSource = $("piece-source");
+  const pieceSourceLink = $("piece-source-link");
+  const deleteDialog = $("delete-dialog");
+  const deleteName = $("delete-name");
+  const deleteCancel = $("delete-cancel");
+  const deleteConfirm = $("delete-confirm");
+  const deleteError = $("delete-error");
 
   const ctx2d = canvas.getContext("2d");
 
@@ -73,7 +90,6 @@
     cycleOn: false,
     cycleLength: 0,
     keyRange: { lo: FIRST_MIDI, hi: LAST_MIDI },
-    suggestion: null,
     source: null,
     playing: false,
     speed: 1,
@@ -81,11 +97,13 @@
     showLeft: true,
     showRight: true,
     loop: true,
-    synth: false,
-    backing: true,
+    playMode: "org", // "org" | "mid" | "mute" (neither source selected)
     lastSynth: -1,
     voices: 0,
     busy: false,
+    editingRecent: false,
+    editingPiece: null,
+    deletingPiece: null,
     cssWidth: 0,
     cssHeight: 0,
   };
@@ -123,6 +141,34 @@
     return `${minutes}:${rest.toFixed(1).padStart(4, "0")}`;
   }
 
+  // Alku/Loppu are entered as min:sek (1:42) or plain seconds (102). Whole
+  // seconds are enough: the window is a musical choice, not a measurement.
+  function parseClockInput(raw) {
+    const text = String(raw ?? "").trim();
+    if (!text) return null;
+    let total;
+    if (text.includes(":")) {
+      const parts = text.split(":");
+      if (parts.length !== 2) return null;
+      const minutes = Number(parts[0].replace(",", "."));
+      const seconds = Number(parts[1].replace(",", "."));
+      if (!Number.isFinite(minutes) || !Number.isFinite(seconds)) return null;
+      if (minutes < 0 || seconds < 0 || seconds >= 60) return null;
+      total = minutes * 60 + seconds;
+    } else {
+      total = Number(text.replace(",", "."));
+    }
+    if (!Number.isFinite(total) || total < 0) return null;
+    return Math.round(total);
+  }
+
+  function formatClock(seconds) {
+    const total = Math.max(0, Math.round(Number(seconds) || 0));
+    const minutes = Math.floor(total / 60);
+    const rest = total % 60;
+    return `${minutes}:${String(rest).padStart(2, "0")}`;
+  }
+
   function clamp(value, low, high) {
     return Math.min(Math.max(value, low), high);
   }
@@ -158,17 +204,29 @@
     state.busy = busy;
     analyzeButton.disabled = busy;
     processButton.disabled = busy;
-    useSuggestionButton.disabled = busy;
+  }
+
+  // The (i) panel is the only place for instructions; the transport itself
+  // stays clean and relies on the button tooltips.
+  function setHelp(open) {
+    if (!helpToggle || !helpPanel) return;
+    helpPanel.hidden = !open;
+    helpToggle.setAttribute("aria-expanded", open ? "true" : "false");
   }
 
   async function readError(response) {
     try {
       const payload = await response.json();
       if (payload && typeof payload.detail === "string") return payload.detail;
-      return `HTTP ${response.status}`;
     } catch (error) {
-      return `HTTP ${response.status}`;
+      /* not JSON */
     }
+    // A 405 on the new PATCH/DELETE means the page runs against an older
+    // PianoCapture process that was started before this feature existed.
+    if (response.status === 405) {
+      return "Palvelin ei tue tätä toimintoa. Käynnistä PianoCapture uudelleen.";
+    }
+    return `HTTP ${response.status}`;
   }
 
   async function waitJob(jobId) {
@@ -206,19 +264,21 @@
     try {
       const result = await startJob("/api/piano/analyze", { url });
       state.source = result.source;
-      state.suggestion = result.suggestion;
       const start = Math.max(0, Number(result.suggestion.start) || 0);
       const end = Math.max(start + 3, Number(result.suggestion.end) || start + 30);
-      startInput.value = start.toFixed(1);
-      endInput.value = end.toFixed(1);
+      startInput.value = formatClock(start);
+      endInput.value = formatClock(end);
+      updateWindowPreview();
       suggestionEl.hidden = false;
       suggestionEl.textContent = `${result.suggestion.reason} Varmuus ${Math.round(
         (Number(result.suggestion.confidence) || 0) * 100
       )} %.`;
-      useSuggestionButton.hidden = false;
       const title = result.source.title || "YouTube";
       const artist = result.source.artist ? `${result.source.artist} — ` : "";
-      setStatus(`Ehdotus valmis: ${artist}${title}. Tarkista rajat ja käsittele pätkä.`, "ok");
+      setStatus(
+        `Ehdotus valmis: ${artist}${title}. Tarkista rajat ja luo soitto-ohje.`,
+        "ok"
+      );
       setProgress(1);
     } catch (error) {
       setStatus(error instanceof Error ? error.message : String(error), "error");
@@ -228,36 +288,75 @@
     }
   }
 
-  function useSuggestion() {
-    if (!state.suggestion) return;
-    const start = Math.max(0, Number(state.suggestion.start) || 0);
-    const end = Math.max(start + 3, Number(state.suggestion.end) || start + 30);
-    startInput.value = start.toFixed(1);
-    endInput.value = end.toFixed(1);
+  // --- confirm + process ------------------------------------------------
+  // The card has one main action: "Luo soitto-ohje". It validates the range,
+  // then a dialog explains the job and asks for Jatka/Peruuta. "Ehdota rajat"
+  // is only an optional helper for filling the two number fields.
+  function updateWindowPreview() {
+    if (!windowPreview) return;
+    const start = parseClockInput(startInput.value);
+    const end = parseClockInput(endInput.value);
+    if (start === null || end === null || !(end > start)) {
+      windowPreview.textContent = "";
+      return;
+    }
+    windowPreview.textContent = `${formatClock(start)}–${formatClock(
+      end
+    )} · ${end - start} s`;
   }
 
-  async function processWindow() {
+  function readSelection() {
     const url = sourceInput.value.trim();
     if (!url) {
       setStatus("Anna YouTube-linkki.", "error");
-      return;
+      return null;
     }
-    const start = Math.max(0, Number(String(startInput.value).replace(",", ".")) || 0);
-    const end = Number(String(endInput.value).replace(",", ".")) || 0;
+    const start = parseClockInput(startInput.value);
+    const end = parseClockInput(endInput.value);
+    if (start === null || end === null) {
+      setStatus("Anna aika muodossa min:sek, esim. 1:42.", "error");
+      return null;
+    }
     if (!(end > start)) {
       setStatus("Lopun pitää olla alun jälkeen.", "error");
-      return;
+      return null;
     }
     if (end - start < 3) {
       setStatus("Pätkä on liian lyhyt (vähintään 3 s).", "error");
-      return;
+      return null;
     }
+    return { url, start, end };
+  }
+
+  function openProcessDialog() {
+    const selection = readSelection();
+    if (!selection) return;
+    const typed = sourceInput.value.trim();
+    const source = state.source && state.source.url === typed ? state.source : null;
+    const name =
+      source && source.title
+        ? `${source.artist ? `${source.artist} — ` : ""}${source.title}`
+        : "Valittu pätkä";
+    processSummary.textContent = `${name}: ${formatClock(
+      selection.start
+    )}–${formatClock(selection.end)} (${selection.end - selection.start} s).`;
+    processDialog.showModal();
+    if (processConfirm) processConfirm.focus();
+  }
+
+  async function processWindow() {
+    const selection = readSelection();
+    if (!selection) return;
     setBusy(true);
     setProgress(0.02, "Ladataan…");
     try {
-      const result = await startJob("/api/piano/process", { url, start, end });
+      const result = await startJob("/api/piano/process", selection);
       setProgress(1);
       await loadPiece(result.piece_id);
+      // The import card stays clean after a finished job: the player and the
+      // library already show the new guide.
+      setProgress(0);
+      setStatus("");
       player.scrollIntoView({ behavior: "smooth", block: "nearest" });
     } catch (error) {
       setStatus(error instanceof Error ? error.message : String(error), "error");
@@ -302,7 +401,9 @@
   }
 
   async function loadPiece(pieceId) {
-    setStatus("Ladataan pätkää…");
+    // Opening a saved guide must not leave import-status text behind.
+    setStatus("");
+    if (suggestionEl) suggestionEl.hidden = true;
     const response = await fetch(`/api/piano/pieces/${pieceId}`, { cache: "no-store" });
     if (!response.ok) throw new Error(await readError(response));
     const piece = await response.json();
@@ -314,24 +415,20 @@
     state.lastSynth = -1;
     state.voices = 0;
     state.cycle = piece.cycle || null;
-    state.cycleOn = Boolean(
-      state.cycle && Number(state.cycle.confidence) >= 0.55
-    );
+    // KIERTO is opt-in. The default is the whole piece with Loop on, so the
+    // player sees every note of the guide and the piece repeats at the end.
+    state.cycleOn = false;
     state.cycleLength = state.cycle
       ? clamp(Number(state.cycle.length) || 8, 1.5, Math.max(1.5, state.duration))
       : Math.min(8, Math.max(1.5, state.duration));
-    if (cycleInput) cycleInput.checked = state.cycleOn;
+    if (cycleInput) cycleInput.checked = false;
     if (cycleLengthInput) cycleLengthInput.value = state.cycleLength.toFixed(1);
+    syncCycleControls();
     const savedHands = readHands(pieceId) || { left: true, right: true };
     state.showLeft = savedHands.left;
     state.showRight = savedHands.right;
     if (showLeftInput) showLeftInput.checked = savedHands.left;
     if (showRightInput) showRightInput.checked = savedHands.right;
-    // Never open a piece with no source at all: fall back to the recording.
-    if (!state.backing && !state.synth) {
-      if (backingInput) backingInput.checked = true;
-      applyBacking();
-    }
     syncPlayMode();
 
     const source = piece.source || {};
@@ -339,18 +436,19 @@
     titleEl.textContent = `${artist}${source.title || "Piano"}`;
     const start = Number(piece.window && piece.window.start) || 0;
     const end = Number(piece.window && piece.window.end) || 0;
-    const cycleText = state.cycle
-      ? ` · kierto ${Number(state.cycle.length).toFixed(1)} s × ${Number(
-          state.cycle.repeats
-        ).toFixed(1)}`
-      : "";
+    const cycleText =
+      state.cycle && state.cycleOn
+        ? ` · kierto ${Number(state.cycle.length).toFixed(1)} s × ${Number(
+            state.cycle.repeats
+          ).toFixed(1)}`
+        : "";
     metaEl.textContent = `${formatTime(start)}–${formatTime(end)} · ${
       state.notes.length
     } nuottia${cycleText} · transkriboitu automaattisesti`;
 
     audio.src = `/api/piano/pieces/${pieceId}/audio?v=${Date.now()}`;
     audio.load();
-    audio.muted = !state.backing;
+    syncPlayMode();
     audio.playbackRate = state.speed;
     if (downloadAudio) {
       downloadAudio.href = `/api/piano/pieces/${pieceId}/audio.mp3`;
@@ -372,13 +470,17 @@
     updateCycleInfo();
     emptyEl.hidden = state.notes.length > 0;
     player.hidden = false;
+    document.body.classList.add("player-open");
+    // Keep the address bar in sync when a guide is opened from the library;
+    // a reload (or a copied link) then opens the guide that is on screen.
+    try {
+      const url = new URL(window.location.href);
+      url.searchParams.set("piece", pieceId);
+      window.history.replaceState(null, "", url);
+    } catch (error) {
+      /* history is a convenience */
+    }
     resizeCanvas();
-    setStatus(
-      state.notes.length
-        ? `Valmis: ${state.notes.length} nuottia. Space = PLAY/PAUSE.`
-        : "Pätkä valmis, mutta pianoa ei tunnistettu tästä kohdasta.",
-      state.notes.length ? "ok" : "error"
-    );
     await refreshRecent();
   }
 
@@ -468,91 +570,60 @@
     state.lastSynth = value - 0.02;
   }
 
-  // --- backing (v0.3) ---------------------------------------------------
-  // "Taustaääni" on: the clip plays under the falling notes. Off: the clip is
-  // muted but still runs the clock, so the notes keep moving and the user can
-  // play their own piano along. The choice is remembered in this browser.
-  function readBacking() {
+  // --- play source: ORG / MID / mute (v0.7) ----------------------------
+  // ORG plays the recording; MID mutes it and plays the transcription with
+  // the piano synth. Clicking the active source again selects neither, i.e.
+  // mute: the notes keep falling so the user can play along on their own
+  // piano. Switching while playing swaps the source at the same position.
+  function readPlayMode() {
     try {
-      const stored = localStorage.getItem("pianocap:backing");
-      return stored === null ? true : stored === "1";
+      return localStorage.getItem("pianocap:mode") === "mid" ? "mid" : "org";
     } catch (error) {
-      return true;
+      return "org";
     }
   }
 
-  function applyBacking() {
-    state.backing = Boolean(backingInput && backingInput.checked);
-    audio.muted = !state.backing;
-    updateBackingHint();
-    syncPlayMode();
+  function savePlayMode() {
     try {
-      localStorage.setItem("pianocap:backing", state.backing ? "1" : "0");
-    } catch (error) {
-      /* storage disabled */
-    }
-  }
-
-  function readSynth() {
-    try {
-      return localStorage.getItem("pianocap:synth") === "1";
-    } catch (error) {
-      return false;
-    }
-  }
-
-  function saveSynth() {
-    try {
-      localStorage.setItem("pianocap:synth", state.synth ? "1" : "0");
+      // Mute is a "play it yourself" state, not a preference: a reload goes
+      // back to the last audible source instead of opening a silent player.
+      if (state.playMode === "mute") {
+        localStorage.removeItem("pianocap:mode");
+      } else {
+        localStorage.setItem("pianocap:mode", state.playMode);
+      }
     } catch (error) {
       /* storage disabled */
     }
   }
 
-  function updateBackingHint() {
-    if (!backingHint) return;
-    if (state.backing) {
-      backingHint.textContent = "";
-    } else if (state.synth) {
-      backingHint.textContent = "Tausta pois – kuulet vain ohjeen.";
-    } else {
-      backingHint.textContent = "Tausta pois – soita itse mukana.";
-    }
-  }
-
-  // --- play source: ORG / MID (v0.5.1) ---------------------------------
-  // The choice sits next to PLAY: ORG plays the recording, MID plays the
-  // transcription (backing muted, piano synth on). Switching while playing
-  // swaps the source at the same position, so A/B is instant.
   function syncPlayMode() {
-    // Each source is shown independently: mix (both on) lights both, and a
-    // normal single source lights exactly one. A reload never leaves the
-    // control blank because init normalises "neither" to ORG.
     if (playOrgButton) {
-      playOrgButton.setAttribute(
-        "aria-pressed",
-        state.backing ? "true" : "false"
-      );
+      const on = state.playMode === "org";
+      playOrgButton.setAttribute("aria-pressed", on ? "true" : "false");
+      playOrgButton.title = on
+        ? "Alkuperäinen äänite soi. Klikkaa = mykistä."
+        : "Soita alkuperäinen äänite.";
     }
     if (playMidButton) {
-      playMidButton.setAttribute("aria-pressed", state.synth ? "true" : "false");
+      const on = state.playMode === "mid";
+      playMidButton.setAttribute("aria-pressed", on ? "true" : "false");
+      playMidButton.title = on
+        ? "Transkriptio soi. Klikkaa = mykistä."
+        : "Soita transkriptio synteettisellä pianolla.";
     }
+    audio.muted = state.playMode !== "org";
   }
 
   function setPlayMode(mode) {
-    const mid = mode === "mid";
-    if (backingInput) {
-      backingInput.checked = !mid;
-      applyBacking();
-    }
-    if (synthInput) {
-      synthInput.checked = mid;
-      state.synth = mid;
-      if (mid) ensureAudioContext();
-      saveSynth();
-    }
-    updateBackingHint();
+    state.playMode = mode === "mid" || mode === "mute" ? mode : "org";
+    if (state.playMode === "mid") ensureAudioContext();
+    savePlayMode();
     syncPlayMode();
+  }
+
+  function togglePlayMode(mode) {
+    setPlayMode(state.playMode === mode ? "mute" : mode);
   }
 
   // --- cycle (v0.2) -----------------------------------------------------
@@ -573,7 +644,19 @@
     cycleInfo.textContent = `${loopEnd().toFixed(1)} s × ${repeats.toFixed(1)}`;
   }
 
+  // The cycle length and ÷2/×2 are only meaningful when KIERTO is on; hiding
+  // them keeps the default player to the basic controls.
+  function syncCycleControls() {
+    const on = Boolean(cycleInput && cycleInput.checked);
+    const lengthLabel = cycleLengthInput ? cycleLengthInput.closest("label") : null;
+    for (const el of [cycleInfo, lengthLabel, cycleHalfButton, cycleDoubleButton]) {
+      if (!el) continue;
+      el.style.display = on ? "" : "none";
+    }
+  }
+
   function applyCycle(restart) {
+    syncCycleControls();
     if (!state.duration) return;
     state.cycleOn = Boolean(cycleInput && cycleInput.checked);
     const fallback = state.cycle
@@ -710,7 +793,7 @@
   }
 
   function pumpSynth(now) {
-    if (!state.synth || audio.paused) return;
+    if (state.playMode !== "mid" || audio.paused) return;
     const from = state.lastSynth;
     const to = now + 0.04;
     const end = loopEnd();
@@ -922,69 +1005,242 @@
     window.requestAnimationFrame(frame);
   }
 
-  // --- recent pieces ----------------------------------------------------
-  async function refreshRecent() {
-    try {
-      const response = await fetch("/api/piano/pieces?limit=8", { cache: "no-store" });
-      if (!response.ok) return;
-      const items = await response.json();
-      recentEl.textContent = "";
-      if (!Array.isArray(items) || !items.length) {
-        recentCard.hidden = true;
-        return;
-      }
-      for (const item of items) {
+  // --- generated guides: list, rename, delete (v0.8) --------------------
+  function pieceName(item) {
+    const artist = item.artist ? `${item.artist} — ` : "";
+    return `${artist}${item.title || "Piano"}`;
+  }
+
+  function pieceMeta(item) {
+    const start = Number(item.window && item.window.start) || 0;
+    const end = Number(item.window && item.window.end) || 0;
+    return `${formatTime(start)}–${formatTime(end)} · ${
+      item.note_count || 0
+    } nuottia`;
+  }
+
+  function openPieceById(item) {
+    loadPiece(item.id)
+      .then(() => player.scrollIntoView({ behavior: "smooth", block: "start" }))
+      .catch((error) =>
+        setStatus(error instanceof Error ? error.message : String(error), "error")
+      );
+  }
+
+  function openLibrary() {
+    if (!recentCard || recentCard.hidden) return;
+    recentCard.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  function syncRecentEditButton() {
+    if (!recentEditButton) return;
+    const editing = state.editingRecent;
+    recentEditButton.setAttribute("aria-pressed", editing ? "true" : "false");
+    recentEditButton.textContent = editing ? "VALMIS" : "MUOKKAA";
+    recentEditButton.title = editing
+      ? "Lopeta muokkaaminen."
+      : "Muokkaa ohjeiden nimiä ja poista huonoja ohjeita.";
+  }
+
+  function setRecentEditing(editing) {
+    state.editingRecent = editing;
+    syncRecentEditButton();
+    refreshRecent();
+  }
+
+  function renderRecent(items) {
+    recentEl.textContent = "";
+    for (const item of items) {
+      if (!state.editingRecent) {
         const button = document.createElement("button");
         button.type = "button";
         button.className = "ghost";
-        const label = `${item.artist ? item.artist + " — " : ""}${item.title || "Piano"}`;
-        button.textContent = label;
+        button.textContent = pieceName(item);
+        if (item.url) button.title = item.url;
         const meta = document.createElement("span");
         meta.className = "recent-meta";
-        const start = Number(item.window && item.window.start) || 0;
-        const end = Number(item.window && item.window.end) || 0;
-        meta.textContent = `${formatTime(start)}–${formatTime(end)} · ${
-          item.note_count || 0
-        } nuottia`;
+        meta.textContent = pieceMeta(item);
         button.appendChild(meta);
-        button.addEventListener("click", () => {
-          loadPiece(item.id)
-            .then(() =>
-              player.scrollIntoView({ behavior: "smooth", block: "start" })
-            )
-            .catch((error) =>
-              setStatus(error instanceof Error ? error.message : String(error), "error")
-            );
-        });
+        button.addEventListener("click", () => openPieceById(item));
         recentEl.appendChild(button);
+        continue;
+      }
+      // Edit mode: the row no longer plays the guide; it exposes rename and
+      // delete, so a bad automatic title can be fixed or the guide removed.
+      const row = document.createElement("div");
+      row.className = "recent-item";
+      const text = document.createElement("div");
+      text.className = "recent-item-text";
+      const name = document.createElement("span");
+      name.className = "recent-name";
+      name.textContent = pieceName(item);
+      const meta = document.createElement("span");
+      meta.className = "recent-meta";
+      meta.textContent = pieceMeta(item);
+      text.append(name, meta);
+      if (item.url) {
+        const source = document.createElement("a");
+        source.className = "recent-source";
+        source.href = item.url;
+        source.target = "_blank";
+        source.rel = "noopener";
+        source.textContent = "Lähde";
+        source.title = item.url;
+        text.appendChild(source);
+      }
+      const actions = document.createElement("div");
+      actions.className = "recent-actions";
+      const rename = document.createElement("button");
+      rename.type = "button";
+      rename.className = "ghost small";
+      rename.textContent = "NIMEÄ";
+      rename.title = "Muuta ohjeen nimeä.";
+      rename.addEventListener("click", () => openPieceDialog(item));
+      const remove = document.createElement("button");
+      remove.type = "button";
+      remove.className = "ghost small danger";
+      remove.textContent = "POISTA";
+      remove.title = "Poista ohje pysyvästi.";
+      remove.addEventListener("click", () => openDeleteDialog(item));
+      actions.append(rename, remove);
+      row.append(text, actions);
+      recentEl.appendChild(row);
+    }
+  }
+
+  async function refreshRecent() {
+    try {
+      const response = await fetch("/api/piano/pieces?limit=50", {
+        cache: "no-store",
+      });
+      if (!response.ok) return;
+      const items = await response.json();
+      if (!Array.isArray(items) || !items.length) {
+        recentEl.textContent = "";
+        recentCard.hidden = true;
+        if (state.editingRecent) {
+          state.editingRecent = false;
+          syncRecentEditButton();
+        }
+        return;
       }
       recentCard.hidden = false;
+      renderRecent(items);
     } catch (error) {
       /* recent list is a convenience only */
     }
   }
 
-  // --- phone/tablet (v0.4) ----------------------------------------------
-  // The laptop can sit in another room: the phone in front of the piano opens
-  // the same page over the LAN. The setup card shows that address and a QR.
-  async function loadLanInfo() {
-    if (!lanRow) return;
+  // --- rename/delete dialogs (v0.8) -------------------------------------
+  function showDialogError(element, text) {
+    if (!element) return;
+    element.textContent = text || "";
+    element.hidden = !text;
+  }
+
+  function openPieceDialog(item) {
+    state.editingPiece = item;
+    pieceArtistInput.value = item.artist || "";
+    pieceTitleInput.value = item.title || "";
+    if (pieceSource && pieceSourceLink) {
+      const url = item.url || "";
+      pieceSource.hidden = !url;
+      pieceSourceLink.href = url || "#";
+      pieceSourceLink.textContent = url;
+      pieceSourceLink.title = url;
+    }
+    showDialogError(pieceError, "");
+    pieceDialog.showModal();
+    pieceTitleInput.focus();
+    pieceTitleInput.select();
+  }
+
+  async function savePieceName() {
+    const item = state.editingPiece;
+    if (!item) return;
+    const artist = pieceArtistInput.value.trim();
+    const title = pieceTitleInput.value.trim();
+    if (!title) {
+      showDialogError(pieceError, "Anna ohjeelle nimi.");
+      pieceTitleInput.focus();
+      return;
+    }
+    if (pieceSaveButton.disabled) return;
+    pieceSaveButton.disabled = true;
     try {
-      const response = await fetch("/api/piano/lan", { cache: "no-store" });
-      if (!response.ok) return;
-      const info = await response.json();
-      if (!info || !info.url) return;
-      if (lanUrl) {
-        lanUrl.href = info.url;
-        lanUrl.textContent = info.url;
+      const response = await fetch(
+        `/api/piano/pieces/${encodeURIComponent(item.id)}`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ artist, title }),
+        }
+      );
+      if (!response.ok) throw new Error(await readError(response));
+      const updated = await response.json();
+      if (state.piece && state.piece.id === item.id && updated.source) {
+        state.piece.source = updated.source;
+        titleEl.textContent = pieceName(updated.source);
       }
-      if (lanQr) {
-        lanQr.src = `${info.qr}?t=${Date.now()}`;
-        lanQr.hidden = false;
-      }
-      lanRow.hidden = false;
+      pieceDialog.close();
+      setStatus("Nimi tallennettu.", "ok");
+      await refreshRecent();
     } catch (error) {
-      /* LAN info is a convenience only */
+      showDialogError(
+        pieceError,
+        error instanceof Error ? error.message : String(error)
+      );
+    } finally {
+      pieceSaveButton.disabled = false;
+    }
+  }
+
+  function openDeleteDialog(item) {
+    state.deletingPiece = item;
+    deleteName.textContent = pieceName(item);
+    showDialogError(deleteError, "");
+    deleteDialog.showModal();
+  }
+
+  async function deletePiece() {
+    const item = state.deletingPiece;
+    if (!item) return;
+    if (deleteConfirm.disabled) return;
+    deleteConfirm.disabled = true;
+    try {
+      const response = await fetch(
+        `/api/piano/pieces/${encodeURIComponent(item.id)}`,
+        { method: "DELETE" }
+      );
+      if (!response.ok) throw new Error(await readError(response));
+      deleteDialog.close();
+      if (state.piece && state.piece.id === item.id) {
+        pause();
+        state.piece = null;
+        state.notes = [];
+        state.duration = 0;
+        audio.removeAttribute("src");
+        audio.load();
+        player.hidden = true;
+        document.body.classList.remove("player-open");
+        // The deep link would now point at a deleted guide.
+        try {
+          const url = new URL(window.location.href);
+          url.searchParams.delete("piece");
+          window.history.replaceState(null, "", url);
+        } catch (error) {
+          /* history is a convenience */
+        }
+      }
+      setStatus("Soitto-ohje poistettu.", "ok");
+      await refreshRecent();
+    } catch (error) {
+      showDialogError(
+        deleteError,
+        error instanceof Error ? error.message : String(error)
+      );
+    } finally {
+      deleteConfirm.disabled = false;
     }
   }
 
@@ -992,8 +1248,9 @@
   let seekDragging = false;
 
   analyzeButton.addEventListener("click", analyze);
-  useSuggestionButton.addEventListener("click", useSuggestion);
-  processButton.addEventListener("click", processWindow);
+  processButton.addEventListener("click", openProcessDialog);
+  startInput.addEventListener("input", updateWindowPreview);
+  endInput.addEventListener("input", updateWindowPreview);
   playButton.addEventListener("click", togglePlay);
   audio.addEventListener("play", () => setPlayLabel(true));
   audio.addEventListener("pause", () => setPlayLabel(false));
@@ -1030,19 +1287,79 @@
   loopInput.addEventListener("change", () => {
     state.loop = loopInput.checked;
   });
-  synthInput.addEventListener("change", () => {
-    state.synth = synthInput.checked;
-    if (state.synth) ensureAudioContext();
-    saveSynth();
-    updateBackingHint();
-    syncPlayMode();
-  });
   if (playOrgButton) {
-    playOrgButton.addEventListener("click", () => setPlayMode("org"));
+    playOrgButton.addEventListener("click", () => togglePlayMode("org"));
   }
   if (playMidButton) {
-    playMidButton.addEventListener("click", () => setPlayMode("mid"));
+    playMidButton.addEventListener("click", () => togglePlayMode("mid"));
   }
+  if (helpToggle && helpPanel) {
+    helpToggle.addEventListener("click", () => setHelp(helpPanel.hidden));
+  }
+  if (libraryToggle) {
+    libraryToggle.addEventListener("click", openLibrary);
+  }
+
+  // Confirmation before the long job. The dialog carries the explanation, so
+  // the setup card itself can stay to one main button.
+  if (processCancel) {
+    processCancel.addEventListener("click", () => processDialog.close());
+  }
+  if (processConfirm) {
+    processConfirm.addEventListener("click", () => {
+      processDialog.close();
+      processWindow();
+    });
+  }
+
+  // Edit mode for generated guides: rename a messy YouTube title or delete it.
+  if (recentEditButton) {
+    recentEditButton.addEventListener("click", () =>
+      setRecentEditing(!state.editingRecent)
+    );
+  }
+  if (pieceSaveButton) {
+    pieceSaveButton.addEventListener("click", savePieceName);
+  }
+  if (pieceCancelButton) {
+    pieceCancelButton.addEventListener("click", () => pieceDialog.close());
+  }
+  if (pieceDeleteButton) {
+    pieceDeleteButton.addEventListener("click", () => {
+      const item = state.editingPiece;
+      if (!item) return;
+      pieceDialog.close();
+      openDeleteDialog(item);
+    });
+  }
+  for (const input of [pieceArtistInput, pieceTitleInput]) {
+    if (!input) continue;
+    input.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        savePieceName();
+      }
+    });
+  }
+  if (pieceDialog) {
+    pieceDialog.addEventListener("close", () => {
+      state.editingPiece = null;
+      showDialogError(pieceError, "");
+    });
+  }
+  if (deleteCancel) {
+    deleteCancel.addEventListener("click", () => deleteDialog.close());
+  }
+  if (deleteConfirm) {
+    deleteConfirm.addEventListener("click", deletePiece);
+  }
+  if (deleteDialog) {
+    deleteDialog.addEventListener("close", () => {
+      state.deletingPiece = null;
+      showDialogError(deleteError, "");
+    });
+  }
+
   if (cycleInput) {
     cycleInput.addEventListener("change", () => applyCycle(true));
   }
@@ -1054,9 +1371,6 @@
   }
   if (cycleDoubleButton) {
     cycleDoubleButton.addEventListener("click", () => scaleCycle(2));
-  }
-  if (backingInput) {
-    backingInput.addEventListener("change", applyBacking);
   }
   showLeftInput.addEventListener("change", () => {
     state.showLeft = showLeftInput.checked;
@@ -1081,6 +1395,10 @@
     const tag = event.target && event.target.tagName;
     const typing = ["INPUT", "TEXTAREA", "SELECT"].includes(tag);
     if (typing) return;
+    if (event.key === "Escape" && helpPanel && !helpPanel.hidden) {
+      setHelp(false);
+      return;
+    }
     if (event.code === "Space") {
       event.preventDefault();
       togglePlay();
@@ -1111,33 +1429,35 @@
         })
       : null;
   if (resizeObserver) resizeObserver.observe(canvas);
+  let lastOrientation =
+    window.innerWidth > window.innerHeight ? "landscape" : "portrait";
   window.addEventListener("resize", () => {
     resizeCanvas();
     fitKeyRange();
     draw();
+    // Rotating a phone keeps the old scroll offset; pull the player card to
+    // the top so the keyboard and transport stay on screen. Only orientation
+    // changes do this, so the mobile address bar can still collapse freely.
+    const orientation =
+      window.innerWidth > window.innerHeight ? "landscape" : "portrait";
+    if (orientation !== lastOrientation) {
+      lastOrientation = orientation;
+      if (document.body.classList.contains("player-open") && !player.hidden) {
+        player.scrollIntoView({ block: "start" });
+      }
+    }
   });
 
   applySplit();
+  updateWindowPreview();
   if (cycleInput) cycleInput.checked = false;
-  if (backingInput) backingInput.checked = readBacking();
-  if (synthInput) synthInput.checked = readSynth();
-  if (
-    !(backingInput && backingInput.checked) &&
-    !(synthInput && synthInput.checked)
-  ) {
-    // A reload after a MID session used to leave both sources off (backing was
-    // persisted, synth was not). Default to the recording so PLAY is not mute.
-    if (backingInput) backingInput.checked = true;
-    if (synthInput) synthInput.checked = false;
-  }
-  applyBacking();
-  state.synth = Boolean(synthInput && synthInput.checked);
+  syncCycleControls();
+  state.playMode = readPlayMode();
   syncPlayMode();
   resizeCanvas();
   draw();
   window.requestAnimationFrame(frame);
   refreshRecent();
-  loadLanInfo();
 
   // A phone can be linked straight to one piece: /?piece=<id> (the QR in the
   // player head uses this).

@@ -6,42 +6,46 @@
   <meta name="color-scheme" content="dark">
   <title>PianoCapture</title>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="/static/piano.css?v=0.6.2">
+  <link rel="stylesheet" href="/static/piano.css?v=1.06">
 </head>
 <body>
   <header class="topbar">
     <div class="brand">
       <span class="brand-mark" aria-hidden="true">PC</span>
       <span class="brand-name">PIANO CAPTURE</span>
-      <span id="version-tag" class="version">v0.6.2</span>
+      <span id="version-tag" class="version">v1.06</span>
     </div>
-    <p class="tagline">YouTube-pätkä → 88 koskettinta. Oletus: soitin on piano.</p>
   </header>
 
   <main class="shell">
     <section class="card setup" aria-label="Lähde ja pätkä">
       <div class="row">
         <label class="field grow">
-          <span>YouTube-linkki tai äänitiedosto</span>
+          <span class="field-prompt">Valitse YouTube-linkki tai äänitiedosto, josta haluat generoida soitto-ohjeen</span>
           <input id="source-url" type="text" spellcheck="false"
                  placeholder="https://www.youtube.com/watch?v=..."
                  autocomplete="off">
         </label>
-        <button id="analyze" type="button" class="primary"
-                title="Lataa alku ja etsii pianon alun sekä bändin sisääntulon.">ANALYSOI ALKU</button>
       </div>
 
       <div class="row">
         <label class="field small">
-          <span>Alku (s)</span>
-          <input id="window-start" type="number" min="0" step="0.1" value="0">
+          <span>Alku (min:sek)</span>
+          <input id="window-start" type="text" spellcheck="false"
+                 placeholder="0:00" value="0:00" autocomplete="off"
+                 title="Muoto min:sek, esim. 1:42. Voit syöttää myös pelkät sekunnit.">
         </label>
         <label class="field small">
-          <span>Loppu (s)</span>
-          <input id="window-end" type="number" min="1" step="0.1" value="30">
+          <span>Loppu (min:sek)</span>
+          <input id="window-end" type="text" spellcheck="false"
+                 placeholder="1:42" value="0:30" autocomplete="off"
+                 title="Muoto min:sek, esim. 1:42. Voit syöttää myös pelkät sekunnit.">
         </label>
-        <button id="use-suggestion" type="button" class="ghost" hidden>KÄYTÄ EHDOTUSTA</button>
-        <button id="process" type="button" class="primary">KÄSITTELE PÄTKÄ</button>
+        <button id="analyze" type="button" class="ghost"
+                title="Valinnainen apu: hakee äänestä pianon alun ja bändin sisääntulon ja täyttää rajat. Voit syöttää rajat myös itse.">EHDOTA RAJAT</button>
+        <button id="process" type="button" class="primary"
+                title="Luo soitto-ohje valitusta pätkästä. Vahvistat vielä ennen kuin työ alkaa.">LUO SOITTO-OHJE</button>
+        <span id="window-preview" class="window-preview muted" aria-live="polite"></span>
       </div>
 
       <p id="status" class="status" aria-live="polite"></p>
@@ -49,15 +53,14 @@
       <div class="progress" id="progress-wrap" hidden>
         <div id="progress-bar" class="progress-bar"></div>
       </div>
-      <div class="lan-row" id="lan-row" hidden>
-        <span class="muted">Puhelin/tabletti samassa verkossa:</span>
-        <a id="lan-url" class="lan-url" href="#" target="_blank" rel="noopener"></a>
-        <img id="lan-qr" class="qr" alt="QR-koodi: avaa PianoCapture puhelimessa" hidden>
-      </div>
     </section>
 
-    <section id="recent-card" class="card" hidden aria-label="Viimeisimmät pätkät">
-      <h2>Viimeisimmät pätkät</h2>
+    <section id="recent-card" class="card" hidden aria-label="Kirjasto">
+      <div class="card-head">
+        <h2>Kirjasto</h2>
+        <button id="recent-edit" type="button" class="ghost small" aria-pressed="false"
+                title="Muokkaa ohjeiden nimiä ja poista huonoja ohjeita.">MUOKKAA</button>
+      </div>
       <div id="recent" class="recent"></div>
     </section>
 
@@ -67,14 +70,34 @@
           <h2 id="piece-title">–</h2>
           <p id="piece-meta" class="muted"></p>
         </div>
-        <div class="phone-qr" id="phone-qr" hidden>
-          <img id="piece-qr" class="qr" alt="QR-koodi: avaa tämä pätkä puhelimessa">
-          <span class="muted">Puhelin</span>
+        <div class="player-tools">
+          <button id="library-toggle" type="button" class="ghost library-toggle"
+                  title="Avaa kirjasto ja vaihda soitto-ohjetta.">KIRJASTO</button>
+          <div class="legend" aria-hidden="true">
+            <span class="dot left"></span> vasen käsi
+            <span class="dot right"></span> oikea käsi
+          </div>
+          <button id="help-toggle" type="button" class="info" aria-expanded="false"
+                  aria-controls="help-panel" aria-label="Ohjeet ja pikanäppäimet"
+                  title="Ohjeet ja pikanäppäimet">i</button>
         </div>
-        <div class="legend" aria-hidden="true">
-          <span class="dot left"></span> vasen käsi
-          <span class="dot right"></span> oikea käsi
-        </div>
+      </div>
+
+      <div id="help-panel" class="help-panel" role="region" aria-label="Ohjeet" hidden>
+        <p>YouTube-pätkä → 88 koskettinta. Oletus: soitin on piano.</p>
+        <p>
+          Space = PLAY/PAUSE · vasen/oikea nuoli = ±5 s · Home = alkuun.
+          <strong>KIERTO</strong> näyttää vain toistuvan kuvion ja loopittaa sen:
+          opettele yksi kierto, soita sitten koko alku. <strong>ORG / MID</strong>
+          PLAYn vieressä valitsee, soiko alkuperäinen vai transkriptio – tai ei
+          kumpikaan, jolloin ääni on mykistetty ja soitat itse mukana. Näin
+          tarkistat korvalla, onko ohje oikein. Tämä on esimerkki siitä, miten
+          kappale menee, ei virheetön transkriptio. ORG toistaa alkuperäisen
+          mixin (rummut ja muut soittimet mukana); MID on synteettinen
+          transkriptio. Ohjelma ei erottele soittimia, joten myös pitkä pätkä
+          transkriboidaan sellaisenaan ja bändi voi näkyä haamunuotteina.
+          Sininen nuotti = vasen käsi, oranssi = oikea käsi.
+        </p>
       </div>
 
       <div class="stage">
@@ -87,11 +110,12 @@
 
       <div class="transport">
         <button id="play" type="button" class="primary" title="Toista tai pysäytä. Välilyönti toimii myös.">PLAY</button>
-        <div class="play-mode" role="group" aria-label="Toistolähde">
+        <div class="play-mode" role="group"
+             aria-label="Toistolähde: ORG, MID tai ei kumpaakaan (mykistetty)">
           <button id="play-org" type="button" aria-pressed="true"
-                  title="Soita alkuperäinen äänite.">ORG</button>
+                  title="Soita alkuperäinen äänite. Klikkaa uudelleen = mykistä.">ORG</button>
           <button id="play-mid" type="button" aria-pressed="false"
-                  title="Soita transkriptio synteettisellä pianolla (MIDI-data).">MID</button>
+                  title="Soita transkriptio synteettisellä pianolla. Klikkaa uudelleen = mykistä.">MID</button>
         </div>
         <span id="time-current" class="time">0:00.0</span>
         <input id="seek" class="seek" type="range" min="0" max="1" step="0.01" value="0"
@@ -105,14 +129,8 @@
         <label class="toggle" title="Toista pätkä uudelleen alusta.">
           <input id="loop" type="checkbox" checked> Loop
         </label>
-        <label class="toggle" title="Päällä: pätkä soi taustalla. Pois: ääni ei soi, mutta nuotit liikkuvat – soita itse mukana.">
-          <input id="backing" type="checkbox" checked> Taustaääni
-        </label>
-        <label class="toggle" title="Soita transkriptio pianomaisella synteesillä. Tausta pois -tilassa kuulet vain ohjeen.">
-          <input id="synth" type="checkbox"> Ohjeääni
-        </label>
         <label class="toggle" title="Näytä ja loopita vain toistuva kuvio: opettele yksi kierto, soita sitten koko alku.">
-          <input id="cycle" type="checkbox" checked> KIERTO
+          <input id="cycle" type="checkbox"> KIERTO
         </label>
         <span id="cycle-info" class="cycle-info muted"></span>
         <label class="mini" title="Kierron pituus sekunteina. Analyysi ehdottaa automaattisesti; säädä korvalla.">
@@ -121,16 +139,16 @@
           <span>s</span>
         </label>
         <button id="cycle-half" type="button" class="ghost small"
-                title="Puoleta kierron pituus (esim. 2 tahtia → 1 tahti).">÷2</button>
+                title="Puolita kierron pituus (esim. 2 tahtia → 1 tahti).">÷2</button>
         <button id="cycle-double" type="button" class="ghost small"
                 title="Kaksinkertaista kierron pituus (esim. 2 tahtia → 4 tahtia).">×2</button>
-        <label class="toggle" title="Näytä vasen käsi.">
+        <label class="toggle hand-toggle" title="Näytä vasen käsi.">
           <input id="show-left" type="checkbox" checked> Vasen
         </label>
-        <label class="toggle" title="Näytä oikea käsi.">
+        <label class="toggle hand-toggle" title="Näytä oikea käsi.">
           <input id="show-right" type="checkbox" checked> Oikea
         </label>
-        <label class="mini" title="Käsien raja MIDI-nuottina. Oletus 60 = C4.">
+        <label class="mini split-mini" title="Käsien raja MIDI-nuottina. Oletus 60 = C4.">
           <span>Käsiraja</span>
           <input id="split" type="number" min="21" max="108" step="1" value="60">
           <span id="split-name" class="muted">C4</span>
@@ -141,20 +159,78 @@
         <a id="download-audio" class="ghost" href="#" download>LATAA AUDIO (MP3)</a>
         <a id="download-guide" class="ghost" href="#" download>LATAA OHJE (MP3)</a>
         <a id="download-midi" class="ghost" href="#" download>LATAA MIDI</a>
-        <span id="backing-hint" class="muted"></span>
+        <div class="phone-qr" id="phone-qr" hidden>
+          <img id="piece-qr" class="qr" alt="QR-koodi: avaa tämä pätkä puhelimessa">
+          <span class="muted qr-caption">Puhelin
+            <span class="qr-info" tabindex="0" role="note"
+                  aria-label="Voit avata soitto-ohjeen puhelimeen lukemalla QR-koodin kameralla. PC ja puhelin täytyy olla samassa wifi-verkossa, jotta linkitys toimii."
+                  data-tip="Voit avata soitto-ohjeen puhelimeen lukemalla QR-koodin kameralla.&#10;PC ja puhelin täytyy olla samassa wifi-verkossa, jotta linkitys toimii.">(i)</span>
+          </span>
+        </div>
       </div>
-      <p class="hint">
-        Space = PLAY/PAUSE · vasen/oikea nuoli = ±5 s · Home = alkuun.
-        <strong>KIERTO</strong> näyttää vain toistuvan kuvion ja loopittaa sen:
-        opettele yksi kierto, soita sitten koko alku. <strong>ORG / MID</strong>
-        PLAYn vieressä valitsee, soiko alkuperäinen vai transkriptio – näin
-        tarkistat korvalla, onko ohje oikein. Tämä on esimerkki siitä, miten
-        kappale menee, ei virheetön transkriptio.
-      </p>
     </section>
   </main>
 
+  <dialog id="process-dialog" class="dialog" aria-labelledby="process-dialog-title">
+    <div class="dialog-form">
+      <h2 id="process-dialog-title">Luo soitto-ohje?</h2>
+      <p id="process-summary" class="dialog-lead"></p>
+      <ol class="dialog-steps">
+        <li>Ääni ladataan ja pätkä leikataan valituista rajoista.</li>
+        <li>Piano transkriboidaan nuoteiksi ja toistuva kierto etsitään.</li>
+        <li>Valmis ohje avautuu soittimeen ja tallentuu Kirjastoon.</li>
+      </ol>
+      <div class="dialog-actions">
+        <button id="process-cancel" type="button" class="ghost">PERUUTA</button>
+        <button id="process-confirm" type="button" class="primary">JATKA</button>
+      </div>
+    </div>
+  </dialog>
+
+  <dialog id="piece-dialog" class="dialog" aria-labelledby="piece-dialog-title">
+    <div class="dialog-form">
+      <h2 id="piece-dialog-title">Nimeä soitto-ohje</h2>
+      <label class="field">
+        <span>Artisti</span>
+        <input id="piece-artist" type="text" maxlength="200" autocomplete="off">
+      </label>
+      <label class="field">
+        <span>Kappale</span>
+        <input id="piece-title-input" type="text" maxlength="200" autocomplete="off">
+      </label>
+      <p class="dialog-note">
+        Nimi näkyy listassa ja soittimen otsikossa. Alkuperäinen YouTube-nimi
+        säilyy piilossa, jos haluat palata siihen myöhemmin.
+      </p>
+      <p id="piece-source" class="dialog-source" hidden>
+        Lähde: <a id="piece-source-link" href="#" target="_blank" rel="noopener"></a>
+      </p>
+      <p id="piece-error" class="dialog-error" hidden></p>
+      <div class="dialog-actions">
+        <button id="piece-delete" type="button" class="danger">POISTA</button>
+        <span class="dialog-spacer"></span>
+        <button id="piece-cancel" type="button" class="ghost">PERUUTA</button>
+        <button id="piece-save" type="button" class="primary">TALLENNA</button>
+      </div>
+    </div>
+  </dialog>
+
+  <dialog id="delete-dialog" class="dialog" aria-labelledby="delete-dialog-title">
+    <div class="dialog-form">
+      <h2 id="delete-dialog-title">Poista soitto-ohje?</h2>
+      <p id="delete-name" class="dialog-lead"></p>
+      <p class="dialog-note">
+        Ohje, sen ääni ja nuotit poistetaan pysyvästi. Tätä ei voi peruuttaa.
+      </p>
+      <p id="delete-error" class="dialog-error" hidden></p>
+      <div class="dialog-actions">
+        <button id="delete-cancel" type="button" class="ghost">PERUUTA</button>
+        <button id="delete-confirm" type="button" class="danger-solid">POISTA</button>
+      </div>
+    </div>
+  </dialog>
+
   <audio id="audio" preload="auto"></audio>
-  <script src="/static/piano.js?v=0.6.2" defer></script>
+  <script src="/static/piano.js?v=1.06" defer></script>
 </body>
 </html>

@@ -1,4 +1,4 @@
-# 🎹 PianoCapture v0.6.2
+# 🎹 PianoCapture v1.06
 
 PianoCapture on **erillinen, kevyt app** AI TabToolin rinnalla samassa repossa.
 Se ottaa YouTube-linkin (tai äänitiedoston), etsii pianon alun ja bändin
@@ -40,21 +40,47 @@ start-piano.bat
 
 ## Työnkulku
 
-1. **ANALYSOI ALKU** – lataa äänen kerran (`data_piano/sources/`), ottaa
-   ensimmäiset 180 s ja ehdottaa ikkunan:
+1. **EHDOTA RAJAT (valinnainen apu)** – lataa äänen kerran
+   (`data_piano/sources/`), ottaa ensimmäiset 180 s ja ehdottaa ikkunan:
    - **piano alkaa** = ensimmäinen kestävä harmoninen alkusoitto
      (HPSS: harmoninen vs. perkussiivinen energia; vesi/taustakohina on
      pääosin perkussiivista, piano harmonista),
    - **bändi tulee mukaan** = ensimmäinen kestävä (~0,5 s) hyppy sekä
      perkussiivisuudessa että kokonaisäänenvoimakkuudessa; matala kaista ja
      onset-tiheys ovat lisätodisteita.
-2. **KÄYTÄ EHDOTUSTA / säädä** – alku ja loppu sekunteina.
-3. **KÄSITTELE PÄTKÄ** – leikkaa pätkä, transkriboi Basic Pitchillä ja tallentaa
-   pätkän (`data_piano/pieces/<id>/`).
+   Tämä ei ole pakollinen: voit kirjoittaa aloitus- ja lopetussekunnit itse.
+2. **Tarkista rajat** – alku ja loppu annetaan muodossa **min:sek**
+   (esim. `1:42`) tai pelkkinä sekunteina. Kenttien vieressä näkyy sama väli
+   kokonaisina sekunteina, esim. `0:00–1:42 · 102 s`.
+3. **LUO SOITTO-OHJE** – ainoa pääpainike. Se avaa vahvistusdialogin, joka
+   kertoo mitä tapahtuu (ääni ladataan, pätkä leikataan, piano transkriboidaan,
+   ohje tallentuu). **PERUUTA** lopettaa ennen työtä, **JATKA** käynnistää
+   taustatyön. Valmis pätkä tallentuu `data_piano/pieces/<id>/`.
 4. **Soita** – 88 koskettinta, laskevat nuotit, soittopää, vasen/oikea käsi
-   eri väreillä, nopeus 50–100 %, loop, valinnainen synteettinen näppäinääni.
+   eri väreillä, nopeus 50–100 %, loop ja ORG/MID/mute-toistolähde.
+   Käyttöohjeet ovat soittimen **(i)**-painikkeen takana, ja painikkeiden
+   hover-vihjeet kertovat loput.
 
 Pikanäppäimet: `Space` = PLAY/PAUSE, `←`/`→` = ±5 s, `Home` = alkuun.
+
+## Kirjasto – nimeä ja poista
+
+YouTube antaa usein sotkuisen otsikon (esim. *For Us: Metal Instrumentals —
+THE GATHERING - Shrink [Instrumental]*). Listan oikeassa ylänurkassa on
+**MUOKKAA**:
+
+- **NIMEÄ** avaa dialogin, jossa artisti ja kappale voi kirjoittaa siistiksi.
+  Nimi päivittyy heti listaan ja soittimen otsikkoon. Ensimmäinen automaattinen
+  otsikko säilyy `piece.json`issa (`original_title` / `original_artist`),
+  joten alkuperäinen YouTube-nimi ei häviä.
+- **POISTA** kysyy vahvistuksen ja poistaa ohjeen äänineen ja nuotteineen
+  pysyvästi (`DELETE /api/piano/pieces/<id>`).
+- **VALMIS** palaa normaalitilaan, jossa rivi avaa ohjeen soittimeen.
+- **Lähde** näkyy rivin tooltipissa ja NIMEÄ-dialogissa; `piece.json` säilyttää
+  alkuperäisen URLin (`source.url`), joten lähde on aina tarkistettavissa.
+
+Nimeäminen ei muuta nuotteja, ääntä eikä kiertoa – vain sen, miltä ohje
+näyttää listassa.
 
 ## KIERTO – opettele yksi kuvio
 
@@ -74,6 +100,9 @@ sama asia bändin kanssa.
 - Jos toistoa ei löydy varmasti (onset-autokorrelaation huippu alle 0,15),
   **KIERTO on pois päältä** ja näytetään koko pätkä. Näin kautta sävelletylle
   introlle ei tarjota väkisin kiertoa – sen voi silti asettaa käsin.
+- **KIERTO on oletuksena pois:** koko pätkä näytetään ja **Loop** toistaa
+  sen. KIERTO valitaan käsin, jolloin näytetään ja loopitetaan yksi kuvio;
+  kierron pituus ja ÷2/×2 ilmestyvät vasta silloin.
 
 Kun kierto on opeteltu, ota **KIERTO** pois päältä: soitto jatkuu koko pätkän
 (yhteensä bändin kanssa), ja nuotit näytetään alkuperäisessä pituudessaan.
@@ -85,10 +114,10 @@ levyyn. Siksi ohjeen voi **kuunnella sellaisenaan**:
 
 - **ORG / MID PLAY-painikkeen vieressä:** **ORG** soittaa alkuperäisen
   äänitteen, **MID** soittaa transkription pianomaisella synteesillä
-  (harmoninen sarja + vaimeneva envelope). Vaihto kesken toiston vaihtaa
-  lähteen samasta kohdasta, joten A/B-vertailu on välitön.
-- **Ohjeääni + Taustaääni** yhdessä = kuulet molemmat päällekkäin ja huomaat
-  heti, jos nuotti on väärä.
+  (harmoninen sarja + vaimeneva envelope). Kun klikkaat valittua painiketta
+  uudelleen, kumpikaan lähde ei ole päällä: ääni on mykistetty ja nuotit
+  liikkuvat – soitat itse mukana omalla pianolla. Vaihto kesken toiston
+  vaihtaa lähteen samasta kohdasta, joten A/B-vertailu on välitön.
 - **LATAA OHJE (MP3)** – koko transkriptio audiotiedostona (serveri renderöi
   sen `guide.wav` → `guide.mp3`, cache pätkän kansiossa). Voit kuunnella sen
   puhelimessa tai hidastaa sitä missä tahansa soittimessa.
@@ -122,11 +151,94 @@ sovellus palauttaa automaattisesti ORGin – PLAY ei jää mykäksi eikä
 ORG/MID-valinta tyhjäksi. Mix-tilassa (molemmat päällä) molemmat vaihtoehdot
 näkyvät valittuina.
 
-## Tausta ja lataukset
+**v0.7.0:** ORG/MID on nyt **kolmitilainen**: ORG, MID tai ei kumpaakaan
+(= mykistetty). Erilliset **Taustaääni**- ja **Ohjeääni**-valinnat poistettiin,
+koska sama asia valitaan ORG/MID-painikkeilla. Mute ei ole pysyvä asetus:
+reload palaa viimeksi valittuun äänilähteeseen, joten sivu ei avaudu mykkänä.
+Kaikki käyttöohjeet siirtyivät PLAY-rivin alta **(i)**-painikkeen taakse ja
+painikkeiden hover-vihjeet kertovat loput. Samalla korjattiin ÷2-vihjeen
+kirjoitusvirhe ("Puoleta" → "Puolita").
 
-- **Taustaääni** (oletuksena päällä): pätkä soi nuottien alla. Kun sen ottaa
-  pois, ääni vaikenee mutta kello ja nuotit jatkavat – voit soittaa omalla
-  pianolla mukana, tai kuunnella pelkän ohjeen. Valinta muistetaan selaimessa.
+**v0.8.0:** työnkulussa on **yksi pääpainike**: **LUO SOITTO-OHJE** avaa
+vahvistusdialogin, joka kertoo mitä tapahtuu (ääni, leikkaus, transkriptio,
+tallennus), ja vasta **JATKA** käynnistää työn. **EHDOTA RAJAT** on nyt
+valinnainen, hillitty apuri – kaksi samanarvoista nappia ei enää kilpaile.
+Lista on **Kirjasto**, jossa **MUOKKAA** avaa **NIMEÄ**- ja
+**POISTA**-toiminnot sotkuisten YouTube-otsikoiden siistimiseen.
+
+**v0.8.1:** QR-koodi pois tuontikortista – tuonti tehdään PC:llä. Soittokortin
+pätkä-QR siirrettiin kortin **oikeaan alakulmaan** latausrivin perään;
+**Vasen/Oikea**-käsien selite ja **(i)** jäivät otsikkorivin oikeaan reunaan.
+
+**v0.8.2:** tuontikortti siivottiin: **Puhelin/tabletti**-rivi ja sen
+LAN-osoite poistettiin (pätkä-QR riittää) eikä kirjastosta avattu ohje
+kirjoita enää "Valmis: N nuottia." -statusta tuontikorttiin. Lähdekentän
+ohje on nyt kokonainen lause: *Valitse YouTube-linkki tai äänitiedosto,
+josta haluat generoida soitto-ohjeen*. Listan nimi on **Kirjasto**.
+
+**v0.8.3:** QR-koodin alla lukee nyt **Puhelin (i)**. `(i)`-vihje kertoo
+hoverilla lyhyesti: *Voit avata soitto-ohjeen puhelimeen lukemalla QR-koodin
+kameralla. PC ja puhelin täytyy olla samassa wifi-verkossa, jotta linkitys
+toimii.*
+
+**v0.9.0:** pitkä tuonti ei enää avaudu 5 sekunnin kiertona: automaattinen
+KIERTO rajattiin enintään 30 s pätkille. Tuontikortti näyttää ikkunan myös
+muodossa `0:00–2:22`, joten sekunnit eivät sekoitu aikaan 1:42. Kirjaston
+rivi näyttää lähde-URLin tooltipissa, muokkaustilassa **Lähde**-linkkinä ja
+NIMEÄ-dialogissa; `GET /api/piano/pieces` palauttaa nyt `url`-kentän.
+
+**v0.10.0:** **Alku** ja **Loppu** syötetään muodossa **min:sek** (esim.
+`1:42`) tai sekunteina; kentät, esikatselu ja vahvistusdialogi käyttävät
+kokonaisia sekunteja. Myös analyysin ehdotusteksti pyöristyy muotoon `1:02`,
+joten YouTube-UI:n `1:42` ei enää muutu vahingossa 142 sekunniksi.
+
+**v1.00 – ensimmäinen release (15.11.2026).** UI ja tuontiputki on hiottu
+release-kuntoon: yksi pääpainike ja vahvistusdialogi, Kirjasto
+(nimeä/poista/lähde-URL), min:sek-rajat kokonaisina sekunteina, KIERTO
+automaattisesti vain lyhyille pätkille, QR-vihje ja siisti mobiiliasettelu.
+Tästä eteenpäin versio nousee **+0.01** jokaisesta muutoksesta (1.01, 1.02…).
+
+**v1.01 – mobiilisoitin (15.11.2026).** Puhelimessa ja matalassa
+vaakaruudussa pelaamisen ajaksi piilotetaan yläpalkki ja kappaleen alla oleva
+ylimääräinen metarivi; soittokortti täyttää näytön ja koskettimisto skaalautuu
+jäljelle jäävään tilaan. Soittorivi pysyy koskettimiston alla ja vierittyy
+tarvittaessa vaakaan, joten PLAY/ORG/MID eivät katoa ruudun ulkopuolelle.
+Latausrivi piilotetaan mobiilissa; käsien värit kerrotaan (i)-ohjeessa.
+
+**v1.02 – vaakatason esitystila (15.11.2026).** Lyhyessä vaakanäkymässä
+kappaleen otsikko piilotetaan ja (i) jää kelluvaksi ylänurkkaan. Soittorivi
+on yksi kompakti rivi koskettimiston alla, joten tulevat nuotit ja
+koskettimisto saavat lähes koko näytön. Pystyssä otsikko ja riveitty
+soittorivi säilyvät.
+
+**v1.03 – kappaleen vaihto puhelimessa (15.11.2026).** Soittimen otsikkoon
+tuli **KIRJASTO**-painike: se vie kirjastoon, josta voi valita toisen
+soitto-ohjeen. Lisäksi koskettimiston päältä voi nyt pyyhkäistä
+pystysuunnassa (aiempi `touch-action: none` esti vierityksen), joten
+kirjastoon pääsee myös eleellä.
+
+**v1.04 – osoiterivi seuraa kappaletta (15.11.2026).** Kirjastosta
+vaihtaminen päivittää `?piece=<id>`-osoitteen, joten reload tai kopioitu
+linkki avaa juuri sen ohjeen, joka on ruudulla – ei edellistä. (Diablon
+landscape-näkymän "kasaan meneminen" ei johdu datasta: Diablossa on
+KIERTO päällä eli 3,8 s kierto ja lyhyet staccato-nuotit, kun taas
+Shrinkissä KIERTO on pois ja pitkät nuotit täyttävät kankaan.)
+
+**v1.05 – perussoiton oletukset (15.11.2026).** **Loop on oletuksena päällä
+ja KIERTO pois**, joten koko kappale näkyy ja toistuu (myös Diablo 15 s).
+KIERTO on nyt aina opt-in; sen pituus- ja ÷2/×2-säädöt piilotetaan, kun
+KIERTO ei ole päällä. Nopeus 100 %, ORG ja molemmat kädet ovat oletukset.
+
+**v1.06 – isompi puhelin-QR (15.11.2026).** PC-näkymän QR-koodi kasvoi
+84 px:stä **112 px:iin** ja sai hieman lisää valkoista reunaa, jotta
+puhelimen kamera (esim. Galaxy S10 Lite) lukee sen helpommin ruudulta.
+
+## Toisto ja lataukset
+
+- **Toistolähde ORG / MID / ei kumpaakaan:** ORG soittaa pätkän nuottien alla,
+  MID soittaa transkription ja mykistää alkuperäisen, ja ei kumpikaan valittuna
+  tarkoittaa mykistystä – kello ja nuotit jatkavat, joten voit soittaa omalla
+  pianolla mukana. ORG/MID muistetaan selaimessa.
 - **LATAA AUDIO (MP3)** – pätkä MP3:nä puhelimeen, DAW:iin tai
   taustanauhakäyttöön. Ensimmäinen lataus koodaa tiedoston ffmpegillä, sen
   jälkeen se tulee cachesta pätkän kansiosta.
@@ -139,14 +251,15 @@ näkyvät valittuina.
 Pianon edessä ei ole tilaa PC:lle, joten koko näkymä toimii puhelimessa tai
 tabletissa samassa Wi-Fi-verkossa:
 
-- `start-piano.bat` sitoo palvelimen `0.0.0.0`:aan. Asetusnäytön
-  **Puhelin/tabletti**-rivillä on LAN-osoite ja QR-koodi, jolla puhelin avaa
-  saman sivun. Soittimen otsikossa on **pieni QR**, joka avaa juuri sen pätkän
-  suoraan (`/?piece=<id>`).
+- `start-piano.bat` sitoo palvelimen `0.0.0.0`:aan. Soittokortin
+  **oikeassa alakulmassa** on pieni QR, joka avaa juuri sen pätkän suoraan
+  (`/?piece=<id>`). QR:n alla on **Puhelin (i)** -vihje: kamera lukee koodin
+  ja PC:n sekä puhelimen pitää olla samassa wifi-verkossa. Erillistä
+  osoiteriviä ei enää näytetä; tuonti (linkki ja rajat) tehdään PC:llä.
 - Kapealla näytöllä klaviatuuri **rajautuu kappaleen käyttämään sävelalueeseen**
   (vähintään 2 oktaavia), jotta koskettimet pysyvät luettavina. Leveällä
   näytöllä näkyvät kaikki 88.
-- Puhelin toistaa taustaäänen itse (tai Taustaääni pois), joten PC:tä ei
+- Puhelin toistaa äänen itse (tai ORG/MID pois = mykistetty), joten PC:tä ei
   tarvita pianon viereen – se voi olla toisessa huoneessa palvelimena.
 - Jos puhelin ei yhdistä, salli portti **8020** Windows Defenderin
   palomuurissa yksityisille verkoille.
@@ -242,7 +355,8 @@ piano/
 ```
 
 Testit käyttävät synteettistä audiota ja monkeypatchattua transkriptiota:
-ei verkkoa, ei TensorFlow'ta, ei mallilatauksia.
+ei verkkoa, ei TensorFlow'ta, ei mallilatauksia. 16 testiä kattaa mm.
+nimeämisen ja poiston (`PATCH`/`DELETE`) sekä UI-sopimuksen.
 
 ## Tunnetut rajat (v0.2)
 

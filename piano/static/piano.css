@@ -79,12 +79,6 @@ body {
   padding: 0.12rem 0.5rem;
 }
 
-.tagline {
-  margin: 0;
-  color: var(--muted);
-  font-size: 0.8rem;
-}
-
 .shell {
   width: min(1500px, 100%);
   margin: 0 auto;
@@ -107,6 +101,19 @@ body {
   font-size: 1rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
+}
+
+/* Section title on the left, a small edit action on the right. */
+.card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.8rem;
+  margin-bottom: 0.6rem;
+}
+
+.card-head h2 {
+  margin: 0;
 }
 
 .row {
@@ -141,6 +148,15 @@ body {
   font-size: 0.7rem;
   letter-spacing: 0.12em;
   text-transform: uppercase;
+}
+
+/* The source field label is a full sentence, so it reads as a prompt instead
+   of a shouty uppercase tag. */
+.field .field-prompt {
+  color: var(--text);
+  font-size: 0.8rem;
+  letter-spacing: 0.01em;
+  text-transform: none;
 }
 
 input[type="text"],
@@ -190,6 +206,26 @@ button.primary:hover {
   border-color: var(--accent);
 }
 
+button.danger {
+  color: var(--error);
+  border-color: rgba(255, 123, 123, 0.38);
+}
+
+button.danger:hover {
+  border-color: var(--error);
+  background: rgba(255, 123, 123, 0.10);
+}
+
+button.danger-solid {
+  background: var(--error);
+  border-color: var(--error);
+  color: #1c0d0d;
+}
+
+button.danger-solid:hover {
+  filter: brightness(1.06);
+}
+
 button:disabled {
   opacity: 0.5;
   cursor: default;
@@ -206,6 +242,15 @@ button:focus-visible {
   min-height: 1.2rem;
   color: var(--muted);
   font-size: 0.82rem;
+}
+
+/* Live "0:00.0–2:22.0 · 142.0 s" readout: seconds fields cannot be mistaken
+   for minutes:seconds any more. */
+.window-preview {
+  margin-left: auto;
+  font-size: 0.72rem;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
 
 .status.is-error {
@@ -264,6 +309,54 @@ button:focus-visible {
   margin-top: 0.15rem;
 }
 
+/* Edit mode (v0.8): one full-width row per guide with rename/delete actions. */
+.recent-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.8rem;
+  flex: 1 1 100%;
+  min-width: 0;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 0.5rem 0.75rem;
+}
+
+.recent-item-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  min-width: 0;
+}
+
+.recent-name {
+  font-size: 0.85rem;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.recent-source {
+  width: max-content;
+  color: var(--accent);
+  font-size: 0.68rem;
+  text-decoration: none;
+}
+
+.recent-source:hover {
+  text-decoration: underline;
+}
+
+.recent-actions {
+  display: flex;
+  gap: 0.4rem;
+  flex: 0 0 auto;
+}
+
+.recent-actions button {
+  padding: 0.45rem 0.7rem;
+  font-size: 0.66rem;
+}
+
 .player-head {
   display: flex;
   align-items: flex-start;
@@ -284,6 +377,73 @@ button:focus-visible {
   text-transform: none;
   letter-spacing: 0.02em;
   font-size: 1.05rem;
+}
+
+/* Title on the left; QR, hand legend and the (i) help button on the right. */
+.player-tools {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  flex-wrap: wrap;
+}
+
+/* The (i) button: the only place for instructions, so the transport stays
+   short. A round serif "i" reads as info, not as a transport button. */
+.info {
+  width: 1.9rem;
+  height: 1.9rem;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  font-family: Georgia, "Times New Roman", serif;
+  font-style: italic;
+  font-weight: 700;
+  font-size: 0.95rem;
+  letter-spacing: 0;
+  line-height: 1;
+  color: var(--muted);
+}
+
+.library-toggle {
+  padding: 0.4rem 0.6rem;
+  font-size: 0.66rem;
+  letter-spacing: 0.1em;
+}
+
+.info:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.info[aria-expanded="true"] {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.help-panel {
+  margin: 0 0 0.7rem;
+  padding: 0.7rem 0.9rem;
+  border: 1px solid rgba(240, 179, 90, 0.28);
+  border-radius: 12px;
+  background: var(--accent-soft);
+  color: var(--text);
+  font-size: 0.78rem;
+  line-height: 1.55;
+}
+
+.help-panel[hidden] {
+  display: none;
+}
+
+.help-panel p {
+  margin: 0;
+}
+
+.help-panel p + p {
+  margin-top: 0.45rem;
+  color: var(--muted);
 }
 
 .muted {
@@ -332,7 +492,8 @@ button:focus-visible {
   width: 100%;
   height: min(58vh, 520px);
   min-height: 320px;
-  touch-action: none;
+  /* Let a phone swipe up/down over the notes to reach the library. */
+  touch-action: pan-y;
 }
 
 .empty {
@@ -444,12 +605,6 @@ button:focus-visible {
   height: 1rem;
 }
 
-.hint {
-  margin: 0.7rem 0 0;
-  color: var(--muted);
-  font-size: 0.72rem;
-}
-
 /* Lataukset (v0.3): the clip as MP3 for a phone and the notes as MIDI. */
 .download-row {
   display: flex;
@@ -479,33 +634,14 @@ a.ghost:hover {
   text-decoration: none;
 }
 
-/* Puhelin/tabletti (v0.4): the laptop can sit elsewhere; the phone in front
-   of the piano opens the same page. The QR opens the app (setup card) or this
-   exact piece (player head). On a phone the blocks hide themselves. */
-.lan-row {
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-  flex-wrap: wrap;
-  margin-top: 0.8rem;
-}
-
-.lan-row[hidden] {
-  display: none;
-}
-
-.lan-url {
-  color: var(--accent);
-  font-size: 0.8rem;
-  word-break: break-all;
-}
-
+/* Puhelin/tabletti (v0.8): the player card's bottom-right QR opens this exact
+   piece on a phone in the same network. On a phone the QR hides itself. */
 .qr {
-  width: 84px;
-  height: 84px;
+  width: 112px;
+  height: 112px;
   border-radius: 8px;
   background: #f6f8fb;
-  padding: 4px;
+  padding: 5px;
 }
 
 .phone-qr {
@@ -514,24 +650,182 @@ a.ghost:hover {
   align-items: center;
   gap: 0.2rem;
   font-size: 0.66rem;
+  /* Bottom-right corner of the player card, after the download links. */
+  margin-left: auto;
+}
+
+/* "Puhelin (i)": the (i) carries the QR help as a native hover tooltip. */
+.qr-caption {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.qr-info {
+  position: relative;
+  color: var(--accent);
+  font-size: 0.75rem;
+  line-height: 1;
+  padding: 0.12rem 0.15rem;
+  letter-spacing: 0.02em;
+  border-bottom: 1px dotted rgba(240, 179, 90, 0.6);
+  cursor: help;
+}
+
+.qr-info:hover {
+  border-bottom-color: var(--accent);
+}
+
+.qr-info:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* A styled tooltip instead of the browser's one-line title bubble: the
+   sentences are separated by a real line break in data-tip. */
+.qr-info::after {
+  content: attr(data-tip);
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + 10px);
+  width: max-content;
+  max-width: 28rem;
+  padding: 0.55rem 0.7rem;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: #11151c;
+  color: var(--text);
+  box-shadow: var(--shadow);
+  font-size: 0.72rem;
+  font-weight: 400;
+  line-height: 1.5;
+  letter-spacing: 0;
+  text-align: left;
+  white-space: pre-line;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(2px);
+  transition: opacity 120ms ease, transform 120ms ease;
+  pointer-events: none;
+  z-index: 20;
+}
+
+.qr-info:hover::after,
+.qr-info:focus-visible::after {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
 }
 
 .phone-qr[hidden] {
   display: none;
 }
 
+/* Dialogs (v0.8): the confirmation before a job and the rename/delete editor.
+   Native <dialog> keeps focus trapping and Esc handling for free. */
+.dialog {
+  width: min(32rem, calc(100vw - 2rem));
+  max-height: calc(100vh - 2rem);
+  margin: auto;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: #11151c;
+  color: var(--text);
+  box-shadow: var(--shadow);
+  overflow: auto;
+}
+
+.dialog::backdrop {
+  background: rgba(5, 7, 10, 0.68);
+  backdrop-filter: blur(3px);
+}
+
+.dialog-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  padding: 1.1rem 1.2rem 1.2rem;
+}
+
+.dialog-form h2 {
+  margin: 0;
+  font-size: 1.05rem;
+  letter-spacing: 0.02em;
+  text-transform: none;
+}
+
+.dialog-lead {
+  margin: 0;
+  font-size: 0.85rem;
+}
+
+.dialog-steps {
+  margin: 0;
+  padding-left: 1.15rem;
+  color: var(--muted);
+  font-size: 0.8rem;
+  line-height: 1.55;
+}
+
+.dialog-steps li + li {
+  margin-top: 0.15rem;
+}
+
+.dialog-note {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.74rem;
+  line-height: 1.5;
+}
+
+.dialog-source {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.74rem;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.dialog-source[hidden] {
+  display: none;
+}
+
+.dialog-source a {
+  color: var(--accent);
+}
+
+.dialog-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-top: 0.25rem;
+}
+
+.dialog-spacer {
+  flex: 1 1 auto;
+}
+
+.dialog-error {
+  margin: 0;
+  color: var(--error);
+  font-size: 0.78rem;
+}
+
+.dialog-error[hidden] {
+  display: none;
+}
+
 @media (max-width: 900px) {
-  .lan-row,
   .phone-qr {
     display: none;
   }
 }
 
 @media (max-width: 700px) {
-  .tagline {
-    display: none;
-  }
-
   #keys {
     height: 42vh;
     min-height: 240px;
@@ -543,5 +837,195 @@ a.ghost:hover {
 
   .field.small {
     flex: 1 1 6rem;
+  }
+
+  .dialog {
+    width: calc(100vw - 1.2rem);
+  }
+
+  /* Narrow dialogs: the destructive action gets its own full-width row, the
+     two safe actions sit side by side underneath. */
+  .dialog-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .dialog-actions .dialog-spacer {
+    display: none;
+  }
+
+  .dialog-actions .danger {
+    grid-column: 1 / -1;
+  }
+
+  .recent-item {
+    flex-wrap: wrap;
+  }
+
+  .recent-actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+}
+
+/* Phones and short landscape screens: the player takes the viewport. The
+   brand bar and the extra meta line are hidden while playing, and the
+   transport stays directly under the keyboard. */
+@media (max-width: 900px), (max-height: 800px) {
+  body.player-open .topbar {
+    display: none;
+  }
+
+  body.player-open .shell {
+    padding-bottom: 0.5rem;
+  }
+
+  #player.player {
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 1rem);
+    height: calc(100dvh - 1rem);
+    min-height: 0;
+    padding: 0.6rem 0.7rem 0.7rem;
+    scroll-margin-top: 0.5rem;
+  }
+
+  /* The hidden attribute must win over the flex layout above. */
+  #player.player[hidden] {
+    display: none;
+  }
+
+  #player .player-head {
+    align-items: center;
+    flex-wrap: nowrap;
+    margin-bottom: 0.35rem;
+  }
+
+  #player .player-head > div:first-child {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  #player .player-tools {
+    flex: 0 0 auto;
+  }
+
+  #player #piece-title {
+    font-size: 0.95rem;
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+  }
+
+  /* The song title stays; the range/count/cycle statistics do not help while
+     playing, so they are hidden on the phone. */
+  #player #piece-meta,
+  #player .legend {
+    display: none;
+  }
+
+  #player .stage {
+    flex: 1 1 auto;
+    min-height: 0;
+  }
+
+  #player #keys {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+  }
+
+  /* All transport controls remain visible below the keyboard; on a narrow
+     phone they wrap into a compact second/third line instead of disappearing. */
+  #player .transport {
+    flex: 0 0 auto;
+    gap: 0.5rem;
+    margin-top: 0.45rem;
+    padding-top: 0.45rem;
+    border-top: 1px solid var(--border);
+  }
+
+  #player .mini input[type="range"] {
+    width: 4.75rem;
+  }
+
+  #player .seek {
+    flex: 1 1 8rem;
+    min-width: 6rem;
+  }
+
+  #player .download-row {
+    display: none;
+  }
+
+  #player .help-panel {
+    max-height: 30vh;
+    overflow: auto;
+  }
+}
+
+/* Landscape phones: performance mode. The title/head is hidden and the
+   transport is one compact line, so the falling notes and the keyboard get
+   almost the whole screen. */
+@media (orientation: landscape) and (max-height: 700px) {
+  #player.player {
+    position: relative;
+    height: calc(100vh - 0.5rem);
+    height: calc(100dvh - 0.5rem);
+    padding: 0.25rem;
+    scroll-margin-top: 0.25rem;
+  }
+
+  #player .player-head {
+    position: absolute;
+    top: 0.3rem;
+    right: 0.3rem;
+    z-index: 6;
+    width: auto;
+    margin: 0;
+  }
+
+  #player .player-head > div:first-child {
+    display: none;
+  }
+
+  #player .stage {
+    flex: 1 1 auto;
+    min-height: 0;
+  }
+
+  #player .transport {
+    flex: 0 0 auto;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    gap: 0.4rem;
+    margin-top: 0.3rem;
+    padding-top: 0.3rem;
+    border-top: 1px solid var(--border);
+    scrollbar-width: none;
+  }
+
+  #player .transport::-webkit-scrollbar {
+    display: none;
+  }
+
+  #player .transport > * {
+    flex: 0 0 auto;
+  }
+
+  #player .transport button {
+    padding: 0.45rem 0.7rem;
+  }
+
+  #player .seek {
+    flex: 0 0 8rem;
+  }
+
+  /* Hand visibility and split are setup choices; in landscape performance
+     mode they stay in portrait so the transport fits on one line. */
+  #player .hand-toggle,
+  #player .split-mini {
+    display: none;
   }
 }

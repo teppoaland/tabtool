@@ -163,10 +163,10 @@ def _band_entry(
 
 
 def _format_seconds(value: float) -> str:
-    total = max(0.0, float(value))
-    minutes = int(total // 60)
-    seconds = total - minutes * 60
-    return f"{minutes}:{seconds:04.1f}"
+    total = max(0, int(round(float(value))))
+    minutes = total // 60
+    seconds = total % 60
+    return f"{minutes}:{seconds:02d}"
 
 
 def suggest_window(

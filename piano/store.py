@@ -76,6 +76,7 @@ def list_pieces(limit: int = 20) -> list[dict]:
                 "created": piece.get("created"),
                 "title": (piece.get("source") or {}).get("title"),
                 "artist": (piece.get("source") or {}).get("artist"),
+                "url": (piece.get("source") or {}).get("url"),
                 "window": piece.get("window"),
                 "note_count": piece.get("note_count", 0),
             }

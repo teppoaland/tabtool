@@ -121,6 +121,8 @@ def test_suggestion_finds_the_solo_piano_and_the_band_entry(tmp_path) -> None:
     assert suggestion.end == pytest.approx(suggestion.band_entry, abs=0.01)
     assert 0.0 <= suggestion.confidence <= 1.0
     assert "Piano alkaa" in suggestion.reason
+    # v0.10: the suggestion speaks whole seconds, like the input fields.
+    assert "0:09" in suggestion.reason
 
     data = suggestion.as_dict()
     assert set(data) == {
@@ -318,9 +320,71 @@ def test_api_processes_a_local_file_and_serves_the_piece(
     assert b"<svg" in qr.content
 
 
+def test_suggestion_times_are_whole_seconds() -> None:
+    assert analyze._format_seconds(61.56) == "1:02"
+    assert analyze._format_seconds(102.0) == "1:42"
+
+
 def test_api_rejects_a_missing_source() -> None:
     response = CLIENT.post("/api/piano/analyze", json={"url": ""})
     assert response.status_code == 422
+
+
+def test_generated_guide_can_be_renamed_and_deleted(piano_data) -> None:
+    """v0.8: fix a messy YouTube title or remove a bad guide from the list."""
+    piece_id = "abc123abc123"
+    store.save_piece(
+        {
+            "id": piece_id,
+            "created": store.created_stamp(),
+            "source": {
+                "title": "For Us: Metal Instrumentals — THE GATHERING - Shrink [Instrumental]",
+                "artist": "",
+                "url": "https://www.youtube.com/watch?v=example",
+            },
+            "window": {"start": 0.0, "end": 18.0, "duration": 18.0},
+            "notes": [{"pitch": 60, "start": 0.0, "end": 1.0, "velocity": 90}],
+            "note_count": 1,
+        }
+    )
+
+    renamed = CLIENT.patch(
+        f"/api/piano/pieces/{piece_id}",
+        json={"artist": "The Gathering", "title": "Shrink"},
+    )
+    assert renamed.status_code == 200, renamed.text
+    source = renamed.json()["source"]
+    assert source["artist"] == "The Gathering"
+    assert source["title"] == "Shrink"
+    # The automatic YouTube name is kept for reference, not overwritten.
+    assert source["original_title"].startswith("For Us")
+
+    listed = CLIENT.get("/api/piano/pieces").json()
+    assert listed[0]["artist"] == "The Gathering"
+    assert listed[0]["title"] == "Shrink"
+    assert listed[0]["note_count"] == 1
+    # v0.9: the library carries the source URL for later verification.
+    assert listed[0]["url"] == "https://www.youtube.com/watch?v=example"
+
+    # The notes and window survive a rename.
+    piece = CLIENT.get(f"/api/piano/pieces/{piece_id}").json()
+    assert piece["note_count"] == 1
+    assert piece["notes"][0]["pitch"] == 60
+
+    assert (
+        CLIENT.patch(f"/api/piano/pieces/{piece_id}", json={"title": "   "}).status_code
+        == 422
+    )
+    assert (
+        CLIENT.patch("/api/piano/pieces/does-not-exist", json={"title": "x"}).status_code
+        == 404
+    )
+
+    deleted = CLIENT.delete(f"/api/piano/pieces/{piece_id}")
+    assert deleted.status_code == 204
+    assert CLIENT.get(f"/api/piano/pieces/{piece_id}").status_code == 404
+    assert not (config.PIECES_DIR / piece_id).exists()
+    assert CLIENT.delete(f"/api/piano/pieces/{piece_id}").status_code == 404
 
 
 def test_api_404_for_unknown_piece() -> None:
@@ -400,33 +464,97 @@ def test_keyboard_ui_covers_88_keys_and_hides_the_empty_overlay() -> None:
     assert 'id="seek"' in html
     assert 'id="speed"' in html
     assert 'id="loop"' in html
-    assert 'id="synth"' in html
     assert 'id="cycle"' in html
     assert 'id="cycle-length"' in html
     assert 'id="cycle-half"' in html
     assert 'id="cycle-double"' in html
-    assert 'id="backing"' in html
+    assert "Puolita kierron pituus" in html
+    assert "Puoleta" not in html
     assert 'id="download-audio"' in html
     assert 'id="download-midi"' in html
     assert 'id="download-guide"' in html
     assert 'id="play-org"' in html
     assert 'id="play-mid"' in html
-    assert 'id="lan-row"' in html
-    assert 'id="lan-qr"' in html
+    assert 'id="lan-row"' not in html  # v0.8.2: no address/QR on the import card
+    assert 'id="lan-qr"' not in html
     assert 'id="piece-qr"' in html
-    assert "Ohjeääni" in html
-    assert "audio.muted = !state.backing" in script
+    assert 'class="qr-info"' in html
+    assert "lukemalla QR-koodin kameralla" in html
+    assert "samassa wifi-verkossa" in html
+    assert (
+        "Valitse YouTube-linkki tai äänitiedosto, josta haluat generoida soitto-ohjeen"
+        in html
+    )
+    # v0.9: a live m:ss window preview, a 30 s auto-KIERTO limit, and the
+    # source URL visible in the library / rename dialog.
+    assert 'id="window-preview"' in html
+    assert "Alku (min:sek)" in html
+    assert "Loppu (min:sek)" in html
+    assert "function parseClockInput" in script
+    assert "function formatClock" in script
+    assert "function updateWindowPreview" in script
+    assert "state.cycleOn = false" in script
+    assert "function syncCycleControls" in script
+    assert 'id="piece-source"' in html
+    assert 'id="piece-source-link"' in html
+    assert "Lähde" in html
+    # v0.7: instructions live behind (i); the transport has no hint paragraph.
+    assert 'id="help-toggle"' in html
+    assert 'id="help-panel"' in html
+    assert "Space = PLAY/PAUSE" in html
+    # v0.7: ORG / MID / neither (mute) is the whole source choice, so the two
+    # separate checkboxes are gone.
+    assert 'id="backing"' not in html
+    assert 'id="synth"' not in html
+    assert "Taustaääni" not in html
+    assert "Ohjeääni" not in html
+    assert "audio.muted = state.playMode" in script
     assert "function setPlayMode" in script
     assert "function syncPlayMode" in script
+    assert "function togglePlayMode" in script
+    assert 'state.playMode === mode ? "mute" : mode' in script
     assert "function handQuery" in script
     assert "function updateDownloadLinks" in script
     assert "hand=right" in script
     assert "pianocap:hands:" in script
     assert "function saveHands" in script
-    assert "pianocap:synth" in script
-    assert "function readSynth" in script
-    # A reload must never leave both sources off (blank ORG/MID, mute PLAY).
-    assert "!(backingInput && backingInput.checked)" in script
+    assert "pianocap:mode" in script
+    assert "function readPlayMode" in script
+    # The old two-checkbox state must not survive in the script.
+    assert "backingInput" not in script
+    assert "synthInput" not in script
+    # A reload must never open a silent player: mute is not persisted.
+    assert 'localStorage.removeItem("pianocap:mode")' in script
+    assert "function setHelp" in script
+    assert 'searchParams.set("piece"' in script
+    # v0.8: one primary setup action with a confirmation dialog, and the guide
+    # list became an editable library (rename/delete) instead of "recent".
+    assert "LUO SOITTO-OHJE" in html
+    assert "KÄSITTELE PÄTKÄ" not in html
+    assert "ANALYSOI ALKU" not in html
+    assert "EHDOTA RAJAT" in html
+    assert 'id="use-suggestion"' not in html
+    # v0.8.2: the generated-guide list is simply the "Kirjasto"; the setup
+    # card no longer shows a status/address of its own.
+    assert "Kirjasto" in html
+    assert "Generoidut soitto-ohjeet" not in html
+    assert "Viimeisimmät pätkät" not in html
+    assert "loadLanInfo" not in script
+    assert 'id="recent-edit"' in html
+    assert 'id="process-dialog"' in html
+    assert 'id="piece-dialog"' in html
+    assert 'id="delete-dialog"' in html
+    assert "function openProcessDialog" in script
+    assert "function processWindow" in script
+    assert "function setRecentEditing" in script
+    assert "function renderRecent" in script
+    assert "function savePieceName" in script
+    assert "function deletePiece" in script
+    assert 'method: "PATCH"' in script
+    assert 'method: "DELETE"' in script
+    assert "useSuggestion" not in script
+    assert ".dialog" in css
+    assert ".recent-item" in css
     # v0.5.2: an audio-time voice throttle silenced a short piece after a long
     # one (Gathering 127 s -> Diablo 15 s). The per-note voice count is enough.
     assert "voicesReset" not in script
