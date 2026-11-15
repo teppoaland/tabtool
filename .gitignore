@@ -5,6 +5,8 @@ data_piano/
 tabs/
 private/
 library/
+# Henkilökohtainen kehitysmuistio – pidetään lokaalina
+memory-bank/
 
 # Koko kappaleen nuottidata (tekijänoikeus) – pidetään paikallisena
 scripts/build_kiss_legend.py
