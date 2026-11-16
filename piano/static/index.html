@@ -6,14 +6,14 @@
   <meta name="color-scheme" content="dark">
   <title>PianoCapture</title>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="/static/piano.css?v=1.06">
+  <link rel="stylesheet" href="/static/piano.css?v=1.14">
 </head>
 <body>
   <header class="topbar">
     <div class="brand">
       <span class="brand-mark" aria-hidden="true">PC</span>
       <span class="brand-name">PIANO CAPTURE</span>
-      <span id="version-tag" class="version">v1.06</span>
+      <span id="version-tag" class="version">v1.14</span>
     </div>
   </header>
 
@@ -87,6 +87,8 @@
         <p>YouTube-pätkä → 88 koskettinta. Oletus: soitin on piano.</p>
         <p>
           Space = PLAY/PAUSE · vasen/oikea nuoli = ±5 s · Home = alkuun.
+          Pyyhkäise nuoteista vasemmalle tai alas = eteenpäin, oikealle tai
+          ylös = taaksepäin.
           <strong>KIERTO</strong> näyttää vain toistuvan kuvion ja loopittaa sen:
           opettele yksi kierto, soita sitten koko alku. <strong>ORG / MID</strong>
           PLAYn vieressä valitsee, soiko alkuperäinen vai transkriptio – tai ei
@@ -155,10 +157,10 @@
         </label>
       </div>
       <div class="download-row">
-        <span class="muted">Taustaksi:</span>
-        <a id="download-audio" class="ghost" href="#" download>LATAA AUDIO (MP3)</a>
-        <a id="download-guide" class="ghost" href="#" download>LATAA OHJE (MP3)</a>
+        <button id="download-video" type="button" class="ghost"
+                title="Tallenna koskettimisto ja nuotit MP4-videona. Tallennus kestää kappaleen pituuden.">LATAA VIDEO (MP4)</button>
         <a id="download-midi" class="ghost" href="#" download>LATAA MIDI</a>
+        <a id="download-audio" class="ghost" href="#" download>LATAA AUDIO (MP3)</a>
         <div class="phone-qr" id="phone-qr" hidden>
           <img id="piece-qr" class="qr" alt="QR-koodi: avaa tämä pätkä puhelimessa">
           <span class="muted qr-caption">Puhelin
@@ -231,6 +233,6 @@
   </dialog>
 
   <audio id="audio" preload="auto"></audio>
-  <script src="/static/piano.js?v=1.06" defer></script>
+  <script src="/static/piano.js?v=1.14" defer></script>
 </body>
 </html>

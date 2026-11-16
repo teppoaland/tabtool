@@ -7,13 +7,17 @@ Run it with its own port (default 8020):
 
 from __future__ import annotations
 
+import asyncio
 import shutil
+import subprocess
+import uuid
 from pathlib import Path
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import FileResponse, Response
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
+from starlette.background import BackgroundTask
 
 from piano import __version__, audio, config, jobs, lan, pattern, pipeline, render, store
 
@@ -357,6 +361,103 @@ def piece_midi(piece_id: str, hand: str = "all", split: int = 60) -> FileRespons
     if path is None:
         raise HTTPException(status_code=404, detail="MIDIä ei löytynyt.")
     return FileResponse(path, media_type="audio/midi", filename=f"{piece_id}.mid")
+
+
+def _cleanup_video_files(*paths: Path) -> None:
+    for path in paths:
+        try:
+            path.unlink()
+        except FileNotFoundError:
+            pass
+
+
+@app.post("/api/piano/video", tags=["pieces"])
+async def convert_piano_video(request: Request):
+    """Convert the browser's canvas recording (WebM) into an MP4."""
+    payload = await request.body()
+    if not payload:
+        raise HTTPException(status_code=400, detail="Tyhjä video.")
+    if len(payload) > 250 * 1024 * 1024:
+        raise HTTPException(status_code=413, detail="Video on liian suuri.")
+    try:
+        audio.ensure_ffmpeg()
+    except Exception as error:  # pragma: no cover - environment dependent
+        raise HTTPException(
+            status_code=500,
+            detail=f"ffmpeg puuttuu: {error}",
+        ) from error
+
+    source = config.TMP_DIR / f"video-{uuid.uuid4().hex}.webm"
+    target = source.with_suffix(".mp4")
+    source.write_bytes(payload)
+
+    def convert() -> None:
+        command = [
+            "ffmpeg",
+            "-y",
+            "-i",
+            str(source),
+            "-map",
+            "0:v:0",
+            "-map",
+            "0:a?",
+            "-vf",
+            "scale=trunc(iw/2)*2:trunc(ih/2)*2",
+            "-c:v",
+            "libx264",
+            "-preset",
+            "veryfast",
+            "-crf",
+            "23",
+            "-pix_fmt",
+            "yuv420p",
+            "-c:a",
+            "aac",
+            "-b:a",
+            "128k",
+            "-movflags",
+            "+faststart",
+            str(target),
+        ]
+        result = subprocess.run(
+            command,
+            capture_output=True,
+            text=True,
+            timeout=300,
+            creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
+        )
+        if result.returncode != 0:
+            lines = (result.stderr or result.stdout or "").strip().splitlines()
+            errors = [
+                line
+                for line in lines
+                if any(
+                    word in line.lower()
+                    for word in ("error", "invalid", "failed", "could not")
+                )
+            ]
+            detail = " | ".join((errors or lines)[-3:])
+            raise RuntimeError(detail or "ffmpeg-virhe")
+
+    try:
+        await asyncio.to_thread(convert)
+        if not target.exists() or target.stat().st_size == 0:
+            raise RuntimeError("ffmpeg ei tuottanut videota.")
+        return FileResponse(
+            target,
+            media_type="video/mp4",
+            filename="PianoCapture.mp4",
+            background=BackgroundTask(_cleanup_video_files, source, target),
+        )
+    except HTTPException:
+        _cleanup_video_files(source, target)
+        raise
+    except Exception as error:
+        _cleanup_video_files(source, target)
+        raise HTTPException(
+            status_code=500,
+            detail=f"Videon muunnos epäonnistui: {error}",
+        ) from error
 
 
 if __name__ == "__main__":  # pragma: no cover - manual start

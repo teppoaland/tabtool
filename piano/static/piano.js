@@ -9,6 +9,7 @@
   const LAST_MIDI = 108; // C8
   const BLACK_PITCHES = new Set([1, 3, 6, 8, 10]);
   const VISIBLE_SECONDS = 2.8;
+  const SEEK_SECONDS_PER_SWIPE = 8;
   const KEYBOARD_RATIO = 0.24;
   const NOTE_NAMES = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
 
@@ -47,9 +48,9 @@
   const cycleDoubleButton = $("cycle-double");
   const downloadAudio = $("download-audio");
   const downloadMidi = $("download-midi");
-  const downloadGuide = $("download-guide");
   const playOrgButton = $("play-org");
   const playMidButton = $("play-mid");
+  const downloadVideoButton = $("download-video");
   const libraryToggle = $("library-toggle");
   const helpToggle = $("help-toggle");
   const helpPanel = $("help-panel");
@@ -508,22 +509,123 @@
       : query.includes("hand=left")
         ? "-vasen"
         : "";
-    if (downloadGuide) {
-      downloadGuide.href = `/api/piano/pieces/${id}/guide.mp3${query}`;
-      downloadGuide.setAttribute(
-        "download",
-        `pianocapture-${id}${suffix}-guide.mp3`
-      );
-      downloadGuide.title = query
-        ? "Lataa ohje vain näkyvistä käsistä."
-        : "Lataa koko ohje MP3:na.";
-    }
     if (downloadMidi) {
       downloadMidi.href = `/api/piano/pieces/${id}/midi${query}`;
       downloadMidi.setAttribute("download", `pianocapture-${id}${suffix}.mid`);
       downloadMidi.title = query
         ? "Lataa MIDI vain näkyvistä käsistä."
         : "Lataa koko transkriptio MIDInä.";
+    }
+  }
+
+  let videoBusy = false;
+
+  async function downloadVideo() {
+    if (videoBusy || !state.piece || !state.duration) return;
+    if (
+      typeof MediaRecorder === "undefined" ||
+      typeof canvas.captureStream !== "function"
+    ) {
+      setStatus("Tämä selain ei tue videon tallennusta.", "error");
+      return;
+    }
+    videoBusy = true;
+    const label = downloadVideoButton.textContent;
+    downloadVideoButton.disabled = true;
+    downloadVideoButton.textContent = "TALLENNETAAN…";
+    setStatus("Tallennetaan videota…");
+    const wasLoop = state.loop;
+    const wasTime = currentTime();
+    const duration = loopEnd() || state.duration;
+    state.loop = false;
+    if (loopInput) loopInput.checked = false;
+    pause();
+    seekTo(0);
+    let stream = null;
+    try {
+      const canvasStream = canvas.captureStream(30);
+      const tracks = [...canvasStream.getVideoTracks()];
+      if (!tracks.length) throw new Error("Selain ei antanut videokuvaa.");
+      if (typeof audio.captureStream === "function") {
+        try {
+          tracks.push(...audio.captureStream().getAudioTracks());
+        } catch (error) {
+          /* a silent video is still useful */
+        }
+      }
+      stream = new MediaStream(tracks);
+      const mime = [
+        "video/webm;codecs=vp9,opus",
+        "video/webm;codecs=vp8,opus",
+        "video/webm",
+      ].find((type) => MediaRecorder.isTypeSupported(type));
+      const recorder = new MediaRecorder(
+        stream,
+        mime ? { mimeType: mime, videoBitsPerSecond: 4_000_000 } : undefined
+      );
+      const chunks = [];
+      recorder.addEventListener("dataavailable", (event) => {
+        if (event.data && event.data.size) chunks.push(event.data);
+      });
+      const stopped = new Promise((resolve) =>
+        recorder.addEventListener("stop", resolve, { once: true })
+      );
+      recorder.start(1000);
+      await audio.play();
+      await new Promise((resolve) => {
+        let done = false;
+        let timer = 0;
+        const finish = () => {
+          if (done) return;
+          done = true;
+          window.clearTimeout(timer);
+          resolve();
+        };
+        timer = window.setTimeout(
+          finish,
+          Math.max(1000, (duration + 0.4) * 1000)
+        );
+        audio.addEventListener("ended", finish, { once: true });
+      });
+      recorder.stop();
+      await stopped;
+      audio.pause();
+      stream.getTracks().forEach((track) => track.stop());
+      const blob = new Blob(chunks, { type: mime || "video/webm" });
+      setStatus("Muunnetaan MP4:ksi…");
+      const response = await fetch("/api/piano/video", {
+        method: "POST",
+        headers: { "Content-Type": blob.type || "video/webm" },
+        body: blob,
+      });
+      if (!response.ok) throw new Error(await readError(response));
+      const mp4 = await response.blob();
+      const url = URL.createObjectURL(mp4);
+      const title =
+        (state.piece.source && state.piece.source.title) || "PianoCapture";
+      const name =
+        String(title)
+          .replace(/[^\w-]+/g, "_")
+          .replace(/^_+|_+$/g, "") || "PianoCapture";
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `${name}-${state.piece.id}.mp4`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.setTimeout(() => URL.revokeObjectURL(url), 10000);
+      setStatus("Video ladattu.", "ok");
+    } catch (error) {
+      setStatus(error instanceof Error ? error.message : String(error), "error");
+    } finally {
+      if (stream) stream.getTracks().forEach((track) => track.stop());
+      audio.pause();
+      state.loop = wasLoop;
+      if (loopInput) loopInput.checked = wasLoop;
+      seekTo(wasTime);
+      videoBusy = false;
+      downloadVideoButton.disabled = false;
+      downloadVideoButton.textContent = label;
     }
   }
 
@@ -815,8 +917,12 @@
     const dpr = window.devicePixelRatio || 1;
     state.cssWidth = Math.max(1, rect.width);
     state.cssHeight = Math.max(1, rect.height);
-    canvas.width = Math.round(state.cssWidth * dpr);
-    canvas.height = Math.round(state.cssHeight * dpr);
+    // MediaRecorder/VP9 can silently drop odd-sized canvas frames. Keep the
+    // backing store even so the MP4 export always gets a video track.
+    const pixelWidth = Math.max(2, Math.round(state.cssWidth * dpr));
+    const pixelHeight = Math.max(2, Math.round(state.cssHeight * dpr));
+    canvas.width = pixelWidth - (pixelWidth % 2);
+    canvas.height = pixelHeight - (pixelHeight % 2);
     ctx2d.setTransform(dpr, 0, 0, dpr, 0, 0);
   }
 
@@ -829,6 +935,16 @@
     ctx2d.arcTo(x, y + height, x, y, r);
     ctx2d.arcTo(x, y, x + width, y, r);
     ctx2d.closePath();
+  }
+
+  // Taller PC stage => more upcoming notes, with the same note length. The
+  // phone keeps the familiar 2.8 s window. Capped so the whole piece is not
+  // forced onto the screen.
+  function visibleSeconds(noteArea) {
+    if (!window.matchMedia("(min-width: 901px)").matches) {
+      return VISIBLE_SECONDS;
+    }
+    return clamp((VISIBLE_SECONDS * noteArea) / 395, VISIBLE_SECONDS, 8);
   }
 
   function draw() {
@@ -848,7 +964,7 @@
     const whiteOffset = whiteKeys.length ? whiteKeys[0].x : 0;
     const keyByMidi = new Map(visibleKeys.map((key) => [key.midi, key]));
     const keyX = (key) => (key.x - whiteOffset) * whiteWidth;
-    const pixelsPerSecond = top / VISIBLE_SECONDS;
+    const pixelsPerSecond = top / visibleSeconds(top);
     const t = state.piece ? currentTime() : 0;
     // In KIERTO only the first cycle is drawn, so the sheet is short.
     const endT = state.cycleOn ? loopEnd() : Infinity;
@@ -1299,6 +1415,9 @@
   if (libraryToggle) {
     libraryToggle.addEventListener("click", openLibrary);
   }
+  if (downloadVideoButton) {
+    downloadVideoButton.addEventListener("click", downloadVideo);
+  }
 
   // Confirmation before the long job. The dialog carries the explanation, so
   // the setup card itself can stay to one main button.
@@ -1429,6 +1548,64 @@
         })
       : null;
   if (resizeObserver) resizeObserver.observe(canvas);
+
+  // Drag/swipe across the notes to seek. Horizontal: left = forward, right =
+  // backward. Vertical: down = forward, up = backward (the direction the notes
+  // travel). A full width/height is about 8 s. The canvas owns both axes;
+  // KIRJASTO and the controls outside it still scroll the page.
+  let scrub = null;
+  function endScrub(event) {
+    if (!scrub || event.pointerId !== scrub.id) return;
+    if (scrub.active) {
+      canvas.classList.remove("scrubbing");
+      try {
+        canvas.releasePointerCapture(event.pointerId);
+      } catch (error) {
+        /* pointer capture is optional */
+      }
+    }
+    scrub = null;
+  }
+  canvas.addEventListener("pointerdown", (event) => {
+    if (!state.piece || !state.duration) return;
+    if (event.pointerType === "mouse" && event.button !== 0) return;
+    const rect = canvas.getBoundingClientRect();
+    scrub = {
+      id: event.pointerId,
+      x: event.clientX,
+      y: event.clientY,
+      time: currentTime(),
+      width: rect.width,
+      height: rect.height,
+      axis: null,
+      active: false,
+    };
+  });
+  canvas.addEventListener("pointermove", (event) => {
+    if (!scrub || event.pointerId !== scrub.id) return;
+    const dx = event.clientX - scrub.x;
+    const dy = event.clientY - scrub.y;
+    if (!scrub.active) {
+      if (Math.hypot(dx, dy) < 8) return;
+      scrub.axis = Math.abs(dx) > Math.abs(dy) ? "x" : "y";
+      scrub.active = true;
+      canvas.classList.add("scrubbing");
+      try {
+        canvas.setPointerCapture(event.pointerId);
+      } catch (error) {
+        /* pointer capture is optional */
+      }
+    }
+    event.preventDefault();
+    const max = loopEnd() || state.duration || 0;
+    const delta =
+      scrub.axis === "x"
+        ? -(dx / Math.max(1, scrub.width)) * SEEK_SECONDS_PER_SWIPE
+        : (dy / Math.max(1, scrub.height)) * SEEK_SECONDS_PER_SWIPE;
+    seekTo(clamp(scrub.time + delta, 0, max));
+  });
+  canvas.addEventListener("pointerup", endScrub);
+  canvas.addEventListener("pointercancel", endScrub);
   let lastOrientation =
     window.innerWidth > window.innerHeight ? "landscape" : "portrait";
   window.addEventListener("resize", () => {

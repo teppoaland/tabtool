@@ -492,8 +492,14 @@ button:focus-visible {
   width: 100%;
   height: min(58vh, 520px);
   min-height: 320px;
-  /* Let a phone swipe up/down over the notes to reach the library. */
-  touch-action: pan-y;
+  /* The canvas handles both swipe axes for seeking; KIRJASTO and the
+     controls outside it scroll the page. */
+  touch-action: none;
+  cursor: grab;
+}
+
+#keys.scrubbing {
+  cursor: grabbing;
 }
 
 .empty {
@@ -632,6 +638,24 @@ a.ghost:hover {
   border-color: var(--accent);
   color: var(--accent);
   text-decoration: none;
+}
+
+#download-video {
+  border: 2px solid #8b93a7;
+  border-radius: 999px;
+  padding: 0.35rem 0.7rem;
+  background: rgba(139, 147, 167, 0.16);
+  color: var(--text);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+}
+
+#download-video:hover,
+#download-video:focus-visible {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent);
 }
 
 /* Puhelin/tabletti (v0.8): the player card's bottom-right QR opens this exact
@@ -1027,5 +1051,40 @@ a.ghost:hover {
   #player .hand-toggle,
   #player .split-mini {
     display: none;
+  }
+}
+
+/* Tall PC windows: let the player card use the free height below the setup
+   and library. The card is not forced to 100dvh, so a short window does not
+   get an artificial page scrollbar. */
+@media (min-width: 901px) and (min-height: 801px) {
+  body.player-open {
+    display: flex;
+    flex-direction: column;
+    min-height: 100dvh;
+  }
+
+  body.player-open .shell {
+    flex: 1 1 auto;
+  }
+
+  body.player-open #player.player {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    min-height: 820px;
+  }
+
+  body.player-open #player .stage {
+    flex: 1 1 auto;
+    min-height: 0;
+  }
+
+  body.player-open #player #keys {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    min-height: 0;
   }
 }

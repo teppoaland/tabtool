@@ -1,4 +1,4 @@
-# 🎹 PianoCapture v1.06
+# 🎹 PianoCapture v1.14
 
 PianoCapture on **erillinen, kevyt app** AI TabToolin rinnalla samassa repossa.
 Se ottaa YouTube-linkin (tai äänitiedoston), etsii pianon alun ja bändin
@@ -232,6 +232,46 @@ KIERTO ei ole päällä. Nopeus 100 %, ORG ja molemmat kädet ovat oletukset.
 **v1.06 – isompi puhelin-QR (15.11.2026).** PC-näkymän QR-koodi kasvoi
 84 px:stä **112 px:iin** ja sai hieman lisää valkoista reunaa, jotta
 puhelimen kamera (esim. Galaxy S10 Lite) lukee sen helpommin ruudulta.
+
+**v1.07 – PC-ikkuna venyy (16.11.2026).** PC-selaimessa soittokortti täyttää
+setupin ja kirjaston alle jäävän vapaan korkeuden. Nuottanäkymä skaalautuu
+korkeuden mukaan: isompi ikkuna näyttää enemmän tulevia nuotteja samalla
+nuottien pituudella (2,8 s → enintään 8 s), ei venytä nuotteja eikä pakota
+koko kappaletta kerralla. Puhelin pysyy 2,8 s:ssä.
+
+**v1.08 – nuoteista pyyhkäisy (16.11.2026).** Nuottialueelta voi pyyhkäistä
+vasemmalle = eteenpäin ja oikealle = taaksepäin; täysi leveys ≈ 8 s. Toimii
+hiirellä ja kosketuksella, myös puhelimessa. Pystypyyhkäisy vierittää sivua
+edelleen, ja aikajana toimii ennallaan.
+
+**v1.09 – pystysuuntainen haku (16.11.2026).** Nuoteista voi pyyhkäistä nyt
+myös pystysuunnassa: alas = eteenpäin, ylös = taaksepäin (nuotien
+kulkusuunta). Vaakasuunta toimii edelleen. Nuottiala varaa molemmat akselit,
+joten sivun vieritys tapahtuu KIRJASTO-painikkeella tai nuottialueen
+ulkopuolelta; aikajana toimii ennallaan.
+
+**v1.10 – visuaalinen lataus (16.11.2026).** **LATAA VIDEO (MP4)** tallentaa
+soittimen koskettimiston ja nuottialueen + äänen videoksi. Tallennus kestää
+kappaleen pituuden; palvelin muuntaa WebM:n ffmpegillä MP4:ksi ja video
+ladataan. Videon alueella ei ole kontrolleja.
+
+**v1.11 – latausrivin turha teksti pois (16.11.2026).** Latausnappien edestä
+poistettiin “Taustaksi:”/“Lataa:”-teksti; pelkät napit.
+
+**v1.12 – videonauhauksen parillinen koko (16.11.2026).** Canvasin
+taustapuskuri pakotetaan parilliseen leveyteen/korkeuteen, koska
+MediaRecorder/VP9 pudotti parittomat videokehykset (audio tallentui, video jäi
+0 kehykseen). Palvelin skaalaa videon myös parilliseksi ja raportoi
+tarkemman ffmpeg-virheen.
+
+**v1.13 – latausrivin järjestys (16.11.2026).** **LATAA VIDEO (MP4)** on
+ensimmäisenä ja korostettu pysyvällä paksulla harmaalla reunuksella;
+**LATAA AUDIO (MP3)** on viimeisenä. Ohje on transkriptio soitettuna pianolla
+(MP3), MIDI on nuottidata DAWiin ilman ääntä; video sisältää jo ohjeäänen.
+
+**v1.14 – ohje-MP3 pois (16.11.2026).** LATAA OHJE (MP3) -nappi poistettu;
+jäljellä **VIDEO, MIDI ja AUDIO**. VIDEO pysyy korostettuna paksulla
+harmaalla reunuksella ja saa keltaisen hoverin kuten muutkin.
 
 ## Toisto ja lataukset
 
