@@ -1,4 +1,4 @@
-# 🎹 PianoCapture v1.14
+# 🎹 PianoCapture v1.15
 
 PianoCapture on **erillinen, kevyt app** AI TabToolin rinnalla samassa repossa.
 Se ottaa YouTube-linkin (tai äänitiedoston), etsii pianon alun ja bändin
@@ -272,6 +272,12 @@ ensimmäisenä ja korostettu pysyvällä paksulla harmaalla reunuksella;
 **v1.14 – ohje-MP3 pois (16.11.2026).** LATAA OHJE (MP3) -nappi poistettu;
 jäljellä **VIDEO, MIDI ja AUDIO**. VIDEO pysyy korostettuna paksulla
 harmaalla reunuksella ja saa keltaisen hoverin kuten muutkin.
+
+**v1.15 – päivitysilmoitus Windows-versioon (17.11.2026).** Käynnistin
+tarkistaa GitHubista uusimman PianoCapture-julkaisun ja ilmoittaa
+ilmaisinalueella, jos uudempi versio on saatavilla; klikkaus avaa
+lataussivun. Asennus ei ole automaattinen (pakettia ei ole allekirjoitettu).
+Asentajan nimi on jatkossa ilman versionumeroa (`PianoCapture-Setup.exe`).
 
 ## Toisto ja lataukset
 
