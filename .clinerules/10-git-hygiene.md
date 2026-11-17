@@ -24,11 +24,14 @@
 ## Lokaali git ja GitHub
 
 - Sääntö-, doc- ja konfiguraatiomuutokset saa committaa **lokaalisti**
-  (`docs(...)`-prefix).
-- Devaustyö menee aina myös GitHubiin, joten **kaikki mikä on `main`issa voi
-  päätyä julkiseksi**. Siksi työpuu siivotaan ennen committia ja pushia:
-  lokaaliin committiin ei jätetä mitään, mitä ei haluta GitHubiin.
-- Push vain erillisestä pyynnöstä; committikaan ei ole lupa pushata.
+  (`docs(...)`-prefix). Push vain erillisestä pyynnöstä.
+- **GitHubiin viedään vain arvokas data:** koodi, dokumentaatio,
+  konfiguraatio ja julkaisut – jotta projekti säilyy, jos kone hajoaa, ja
+  jotta sitä voi tutkia. Roska estetään jo ennen committia, ei siivota
+  jälkikäteen.
+- **Historiaa ei siivota eikä uudelleenkirjoiteta** – ei `filter-repo`ia,
+  ei force-pushia. Vanhat commitit saavat jäädä; niissä ei ole salaisuuksia.
+- Memory bank on henkilökohtainen työmuisti: **paikallinen, ei GitHubiin.**
 
 ## Sääntö lyhyesti
 
