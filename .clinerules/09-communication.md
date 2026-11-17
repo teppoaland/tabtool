@@ -8,5 +8,9 @@
   **"Aloitetaanko tällä? K"**.
 - Kirjoita lyhyesti ja konkreettisesti: ei turhaa tekniikkaa, toistoa eikä
   pitkiä listoja.
+- **Aiheen ulkopuoliset kysymykset ja ideat** (esim. "voisiko tätä käyttää
+  peleissä", muut kokeilut): vastaa lyhyesti chattiin, älä kirjaa niitä
+  mihinkään – ei memory bankiin, ei tiedostoihin, ei committiin. Vain
+  projektiin liittyvät asiat päätyvät työlogiin.
 - **Testaus:** käyttäjä testaa perustoiminnot itse. Älä aja selainta,
   paikallista serveriä tai koko testisarjaa ilman erillistä pyyntöä.
