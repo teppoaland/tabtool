@@ -1,4 +1,4 @@
-# 🎹 PianoCapture v1.15
+# 🎹 PianoCapture v1.16
 
 PianoCapture on **erillinen, kevyt app** AI TabToolin rinnalla samassa repossa.
 Se ottaa YouTube-linkin (tai äänitiedoston), etsii pianon alun ja bändin
@@ -278,6 +278,12 @@ tarkistaa GitHubista uusimman PianoCapture-julkaisun ja ilmoittaa
 ilmaisinalueella, jos uudempi versio on saatavilla; klikkaus avaa
 lataussivun. Asennus ei ole automaattinen (pakettia ei ole allekirjoitettu).
 Asentajan nimi on jatkossa ilman versionumeroa (`PianoCapture-Setup.exe`).
+
+**v1.16 – päivitysilmoitus myös web-UI:hin (17.11.2026).** Sivu kysyy
+`/api/piano/update` ja näyttää yläpalkissa **Päivitys saatavilla: V1.x**
+-linkin, kun GitHubissa on uudempi julkaisu. Ilmoitus näkyy myös
+ilmaisinalueella (Windows-launcher). Ei automaattiasennusta – linkki avaa
+julkaisusivun.
 
 ## Toisto ja lataukset
 

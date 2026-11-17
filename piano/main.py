@@ -19,7 +19,7 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 from starlette.background import BackgroundTask
 
-from piano import __version__, audio, config, jobs, lan, pattern, pipeline, render, store
+from piano import __version__, audio, config, jobs, lan, pattern, pipeline, render, store, update
 
 APP_NAME = "PianoCapture"
 
@@ -99,6 +99,12 @@ def lan_info(request: Request) -> dict:
         "url": url,
         "qr": "/api/piano/lan/qr.svg" if url else None,
     }
+
+
+@app.get("/api/piano/update", tags=["system"])
+def update_info() -> dict:
+    """Whether a newer PianoCapture release exists on GitHub (notify only)."""
+    return update.status()
 
 
 @app.get("/api/piano/lan/qr.svg", include_in_schema=False)

@@ -1625,6 +1625,28 @@
     }
   });
 
+  // The Windows package can only be updated by hand, so tell the user in the
+  // page itself when GitHub has a newer release; the tray balloon alone is
+  // easy to miss while the browser is the actual UI.
+  const updateBanner = $("update-banner");
+
+  async function checkForUpdate() {
+    if (!updateBanner) return;
+    try {
+      const response = await fetch("/api/piano/update", { cache: "no-store" });
+      if (!response.ok) return;
+      const info = await response.json();
+      if (!info || !info.available || !info.latest || !info.url) return;
+      updateBanner.textContent = "Päivitys saatavilla: " + info.latest;
+      updateBanner.href = info.url;
+      updateBanner.title =
+        "Asennettu versio " + info.current + " – avaa lataussivu";
+      updateBanner.hidden = false;
+    } catch (error) {
+      // Offline or rate limited: no banner, nothing to tell the user.
+    }
+  }
+
   applySplit();
   updateWindowPreview();
   if (cycleInput) cycleInput.checked = false;
@@ -1635,6 +1657,7 @@
   draw();
   window.requestAnimationFrame(frame);
   refreshRecent();
+  checkForUpdate();
 
   // A phone can be linked straight to one piece: /?piece=<id> (the QR in the
   // player head uses this).
