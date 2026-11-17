@@ -1,0 +1,48 @@
+PianoCapture 1.16 – pikaohje
+============================
+
+Käynnistys
+----------
+Käynnistä PianoCapture työpöydän tai Käynnistä-valikon kuvakkeesta.
+Ohjelma käynnistyy taustalle (ilmaisinalueen PC-kuvake) ja avaa
+selaimen automaattisesti.
+
+Sulje ohjelma
+-------------
+Napsauta ilmaisinalueen PianoCapture-kuvaketta hiiren oikealla
+painikkeella ja valitse "Lopeta". Pelkkä selainvälilehden sulkeminen
+ei pysäytä taustapalvelinta.
+
+Käyttö
+------
+1. Liitä YouTube-linkki tai valitse äänitiedosto.
+2. Anna alku ja loppu muodossa min:sek, esim. 1:42.
+3. Paina LUO SOITTO-OHJE ja vahvista JATKA.
+4. Valmis ohje avautuu soittimeen ja tallentuu Kirjastoon.
+5. Soittimesta voi ladata myös MP4-videon (LATAA VIDEO):
+   koskettimisto + nuotit + ääni.
+
+Päivitykset
+-----------
+Käynnistyksen yhteydessä ohjelma tarkistaa, onko uudempi versio
+saatavilla. Ilmoitus näkyy ilmaisinalueella ja selaimen yläpalkissa;
+klikkaamalla avautuu lataussivu. Asenna uusi versio vanhan päälle –
+data säilyy. Päivitys ei asennu automaattisesti.
+
+Puhelin
+-------
+Kun soittokortti on auki, oikeassa alakulmassa on QR-koodi. Skannaa se
+puhelimen kameralla. PC:n ja puhelimen pitää olla samassa wifi-verkossa.
+Windows saattaa kysyä palomuurilupaa ensimmäisellä käynnistyksellä –
+salli se yksityisille verkoille, jos haluat käyttää puhelinta.
+
+Tiedot
+------
+Käyttäjän tiedot tallennetaan kansioon:
+%LOCALAPPDATA%\PianoCapture\data_piano
+
+Ohjelman asennuskansio:
+%LOCALAPPDATA%\Programs\PianoCapture
+
+Lokit (vianetsintää varten):
+%LOCALAPPDATA%\PianoCapture\logs\server.log
