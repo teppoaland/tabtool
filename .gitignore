@@ -89,6 +89,9 @@ build/
 tmp/
 temp/
 *.tmp
+# Agentin tutkinta-/analyysiskriptit – eivät koskaan gittiin
+.tmp-*
+*.tmp-*
 *.bak
 *.backup
 *.old

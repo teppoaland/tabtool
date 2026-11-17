@@ -37,13 +37,8 @@ alustuksessa. Älä lue koko repoa tai vanhaa keskusteluhistoriaa.
 
 ## 3. Vastaa lyhyesti
 
-Kerro 3–6 rivillä:
-
-- versio + commit
-- git-tila (clean / ahead)
-- testien tulos
-- seuraava vaihe `activeContext.md`:stä
-- mahdolliset ristiriidat memory bankin ja koodin välillä
+Kerro **1–2 rivillä** oleellinen: mitä oli menossa ja mikä on seuraava.
+Versio/git/testit vain jos ne ovat olennaisia; muuten ohita.
 
 Jos käyttäjän viestissä on jo tehtävä, jatka siitä. Muuten ehdota
 `activeContext.md`:n seuraavaa vaihetta.
@@ -58,10 +53,9 @@ Jos käyttäjän viestissä on jo tehtävä, jatka siitä. Muuten ehdota
   committiin.
 - Pidä tiedostot tiiviinä: tavoite < 200 riviä / tiedosto. Jos paisuu,
   siirrä yksityiskohdat README:hen/koodiin ja tiivistä.
-- Memory bank on julkinen (committed): ei salaisuuksia, tokeneita,
-  henkilötietoja eikä audio-/tab-sisältöä.
-- Memory bank -muutokset commitoidaan `docs:`-prefixillä; ei
-  versiobumppia.
+- Memory bank on **paikallinen** ja `.gitignore`ssa: ei committia eikä
+  pushia. Älä kirjoita siihen salaisuuksia, tokeneita, henkilötietoja
+  eikä audio-/tab-sisältöä.
 - `docs/` ja `data/` pysyvät gitignorattuina.
 
 ## 5. Totuusjärjestys
@@ -76,6 +70,8 @@ memory bank.
 ## 6. Älä
 
 - Älä laita memory bankiin pitkiä rimpsuja tai koko sessiohistoriaa.
+- Älä committaa keskusteluja, tutkintaskriptejä tai väliaikaistiedostoja
+  (`.tmp-*`) – ks. `10-git-hygiene.md`.
 - Älä käynnistä raskaita ML-ajoja `lue membank` -komennolla.
 - Älä muuta `docs/`- tai `data/`-sisältöä.
 - Älä unohda `.clinerules`-sääntöjä.
